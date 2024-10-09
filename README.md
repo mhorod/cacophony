@@ -5,7 +5,7 @@ An imperative language made as team project for Compilers course.
 ## Language Specification
 
 ### Expressions
-There is no distinction between statements and expressions - everything has a value (hence everything is an expression), although sometimes the returned value is `()` or `Unit` or `Void` however we call it.
+There is no distinction between statements and expressions - everything has a value (hence everything is an expression), although sometimes the returned value is `()` or `Unit` however we call it.
 
 Possible expressions in our language are:
 - variable definition
