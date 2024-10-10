@@ -1,0 +1,21 @@
+# conditional statement without else has type Unit
+# so variable of other type can't be initialized with it
+let x: Bool = if false then true;
+
+# condition is not Bool
+if () then true else false;
+
+# condition is not Bool 2
+if let f = [x: Bool, y: Unit] -> Bool => x then
+  true
+else 
+  false;
+
+# branches have different types
+if true then
+  false
+else
+  ();
+
+# else without if 
+else false;
