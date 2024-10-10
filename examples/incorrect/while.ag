@@ -1,0 +1,15 @@
+# condition is not Bool
+while () do 
+  work[];
+
+# while has type Unit so we can't initialize
+# variables of other types using it
+let x: Bool = while true do 
+  break;
+
+# while as condition in other while
+while while true do break do 
+  break;
+
+# break outside loop
+break;
