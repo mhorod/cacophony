@@ -4,6 +4,11 @@ An imperative language made as team project for Compilers course.
 
 ## Language Specification
 
+### Comments
+
+There is only one type of comments - inline comments, and there are no multiline comments.
+A comment starts with a hash sign `#` and ranges to the end of the line. Everything after the `#` is  ignored by the compiler
+
 ### Expressions
 There is no distinction between statements and expressions - everything has a value (hence everything is an expression), although sometimes the returned value is `()` or `Unit` however we call it.
 
