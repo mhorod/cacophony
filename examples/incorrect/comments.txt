@@ -1,0 +1,5 @@
+// this is not a comment
+
+/* this is also not a comment */
+
+; neither is this
