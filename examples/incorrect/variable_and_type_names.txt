@@ -1,5 +1,6 @@
 #variable with uppercase name
 
+let Check: Bool = 0;
 let A: Int = 2;
 
 #type with lowercase name
