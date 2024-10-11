@@ -1,0 +1,11 @@
+#variable with uppercase name
+
+let A: Int = 2;
+
+#type with lowercase name
+
+let b: boolean = true;
+
+#name not starting with letter
+
+let 1abc = 2;
