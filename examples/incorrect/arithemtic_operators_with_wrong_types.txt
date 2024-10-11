@@ -1,0 +1,13 @@
+# integer operators with boolean argument(s)
+4 + true;
+false - true;
+false * 0;
+3 / false;
+3 == false;
+true < 4;
+false > 5;
+
+# boolean operators with integer argument(s)
+true && 73;
+13 || 42;
+
