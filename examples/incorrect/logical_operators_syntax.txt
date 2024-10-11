@@ -1,0 +1,11 @@
+#incorrectly used operators
+
+true!;
+true!false;
+||false;
+true&&;
+
+#non existing operators
+
+not true;
+true or false;

@@ -1,0 +1,12 @@
+#logical operators with non boolean arguments
+
+!2;
+4||5;
+true&&1;
+
+#assigning logical operators value to variable with different type
+
+let a: Int = true||false;
+
+let b: Int = 1;
+b = !false;
