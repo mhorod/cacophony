@@ -1,0 +1,2 @@
+let is_fast = [is_red: Bool, goes_vroom: Bool] => is_red || goes_vroom;
+is_fast[goes_vroom = true, is_red = true]; # argument names are *not* part of the function interface

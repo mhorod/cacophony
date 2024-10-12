@@ -1,0 +1,1 @@
+return 42; # the `return` keyword cannot occur outside of a function definition
