@@ -1,8 +1,12 @@
-# [name TBD] lang Compiler
+# Cacophony Compiler
 
 An imperative language made as team project for Compilers course.
 
 ## Language Specification
+
+### Extension
+
+Files of cacophony language should have `.ccp` extension.
 
 ### Comments
 
@@ -10,7 +14,7 @@ There is only one type of comments - inline comments, and there are no multiline
 A comment starts with a hash sign `#` and ranges to the end of the line. Everything after the `#` is  ignored by the compiler
 
 ### Expressions
-There is no distinction between statements and expressions - everything has a value (hence everything is an expression), although sometimes the returned value is `()` or `Unit` however we call it.
+There is no distinction between statements and expressions - everything has a value (hence everything is an expression), although sometimes the returned value is `()` which has type `Unit`.
 
 Possible expressions in our language are:
 - variable definition
@@ -21,8 +25,6 @@ Possible expressions in our language are:
 - `return` from a function
 - arithmetic operations
 - logical operations
-- block (list) of consecutive expressions
-- comments
 
 ### Declaring types
 
@@ -85,9 +87,25 @@ It is possible to exit early from a loop by using `break` keyword
 
 ### Blocks
 
-To allow for sequential execution/evaluation of expressions they can be organized into blocks of form `(<expression>; <expression>; ...)`
+To allow for sequential execution/evaluation of expressions they can be organized into blocks of form `<expression>; <expression>; ... <expression>;`
 
-The value (and hence the type) of such block is the value of last expression in the block.
+Such block on itself is not treated as an expression - for example
+in expressions like:
+-  `while x do y; z;`
+- `if x then y; z;`
+
+`z` does not belong to body of the `while` or `if` and is always executed
+
+To use block as a sub-expression it has to be wrapped in parentheses:
+-  `while x do (y; z;)`
+- `if x then (y; z;)`
+
+
+The value of a block is the value of the expression after the last semicolon.
+In particular:
+- `(x; y)` has value of `y`
+- `(x;y;)` has Unit value since the last expression is empty
+- `(;)`, `(x;)`, `(;;;)`, `(x;;;)` - all are valid blocks with Unit value
 
 
 ### Operators
@@ -100,3 +118,4 @@ Probably we should cover the basic ones:
 - `/` (integer division)
 - `&&` (boolean and)
 - `||` (boolean or)
+- `<`, `>`, `<=`, `>=`, `==` (comparison operators)
