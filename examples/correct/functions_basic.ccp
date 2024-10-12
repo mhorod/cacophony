@@ -5,7 +5,7 @@ let complex_check = [x: Int] -> Bool => (
     let temporary = simple[x];
     temporary || x == 43
 ); # the body of a function can also be a block
-complex_check[43]; # returns true
+complex_check[43]; # returns `true`
 
 let global = false;
 let confusing = [x: Int] -> Bool =>

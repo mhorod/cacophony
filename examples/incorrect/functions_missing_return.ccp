@@ -1,0 +1,1 @@
+let f = [x: Int] -> Bool => if x == 42 then return true; # missing return is in fact a mismatch with the `Unit` type

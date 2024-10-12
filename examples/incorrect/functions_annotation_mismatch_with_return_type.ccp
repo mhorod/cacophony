@@ -1,0 +1,1 @@
+let f: [Int] -> Bool = [x: Int] -> Int => 2 * x; # the declared function return type must match the type annotation

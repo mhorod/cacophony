@@ -1,1 +1,1 @@
-let f = [x: Int] -> Int => x == 42; # the type of the defining block is Bool while the declared return type is Int
+let f = [x: Int] -> Int => x == 42; # the type of the defining block is `Bool` while the declared return type is `Int`

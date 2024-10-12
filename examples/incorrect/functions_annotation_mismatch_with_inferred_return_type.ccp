@@ -1,0 +1,1 @@
+let f: [Int] -> Int = [x: Int] => x == 42; # the inferred function return type must match the type annotation - here it does not because it is `Bool`

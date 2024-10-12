@@ -1,0 +1,2 @@
+let ADD_1000 = [x: Int] -> Int => x + 1000; # a function name must not start with a capital letter
+let 1000_ADD = [x: Int] -> Int => x + 1000; # a function name must not start with a digit
