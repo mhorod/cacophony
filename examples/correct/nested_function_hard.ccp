@@ -1,4 +1,4 @@
-let f=[a:Int]->Int=>(
+let f = [a: Int] -> Int => (
   let g = [
     a: Int,
     b: Bool,
@@ -6,8 +6,10 @@ let f=[a:Int]->Int=>(
   ] -> Bool => (
     let ret = [d: Int] -> Int => d;
     ret[a];
-    ret[c]; b
+    ret[c];
+    b
   );
-  g[a, true, a] ;a
-) ;
+  g[a, true, a];
+  a
+);
 f[0]
