@@ -19,3 +19,14 @@ let voids_in_action = [] -> Bool => (
 );
 
 let nested_return = [] -> Bool => return return return true; # only the rightmost `return` will actually... well... return
+
+let f = [early: Bool] -> Int => (
+    let g = [] -> Int => (
+        if early then
+            return 1; # returns from `g`, not from `f`
+        20;
+    );
+    let result = g[x];
+    result + 41
+);
+f[early]; # `42`, not `1`
