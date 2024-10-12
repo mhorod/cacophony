@@ -19,6 +19,26 @@ let voids_in_action = [] -> Bool => (
 );
 
 let nested_return = [] -> Bool => return return return true; # only the rightmost `return` will actually... well... return
+# more generally, the first return to take effect is the first one whose expression is fully evaluated the soonest
+let clean_code = [x: Bool, y: Bool] -> Int =>
+    if
+        return
+            if x then
+                return 1;
+            else (
+                while y || return 2 do
+                    return 3;
+                4
+            )
+    then
+        return 5
+    else
+        return 6
+    return 7;
+);
+clean_code[false, false]; # `3`
+clean_code[true, false]; # `1`
+clean_code[false, true]; # `2`
 
 let f = [early: Bool] -> Int => (
     let g = [] -> Int => (
