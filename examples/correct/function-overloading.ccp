@@ -33,7 +33,7 @@
 # shadowing/overloading in same scope
 (
     let f = [] -> Bool => true;
-    let f = [x: Int] => Int => x;
+    let f = [x: Int] -> Int => x;
     let f = [] -> Int => 1;
     let check = [x: Int] -> Int => x;
     check[f[] + f[1]];
@@ -42,12 +42,12 @@
 # shadowing/overloading in different scope
 (
     let f = [] -> Bool -> true;
-    let f = [x: Int] => Int => x;
+    let f = [x: Int] -> Int => x;
     (
         let f = [] -> Int => 1;
         let check = [x: Int] -> Int => x;
         check[f[] + f[1]];
-        let f = [x: Bool] => Int => 1;
+        let f = [x: Bool] -> Int => 1;
         check[f[] + f[true]];
     );
     let check = [x: Bool] -> Bool => x;
@@ -73,8 +73,8 @@
 
 # shadowing stopping recursion
 (
-    let f = [x: Bool] -> Int (
+    let f = [x: Bool] -> Int => (
         let f = [x: Int] -> Int => x;
-        f[1];
+        f[1]
     );
 );
