@@ -1,0 +1,10 @@
+let x: Int = 42;
+x = x;
+
+(
+    let y: Int = 0;
+    x = y;
+)
+
+# syntactic sugar for x = x + 1
+x += 1
