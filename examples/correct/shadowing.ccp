@@ -43,7 +43,7 @@
 # shadowing of parameter
 (
     let g = [x: Bool] -> Int => 1;
-    let f = [x: Int] -> Int (
+    let f = [x: Int] -> Int => (
         let x : Bool = true;
         g[x]
     );
