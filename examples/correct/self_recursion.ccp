@@ -30,7 +30,7 @@ let ackermann = [x: Int, y: Int] -> Int => (
     if x == 0 then
         y + 1
     else (
-        if y == 1 then
+        if y == 0 then
             ackermann(x - 1, 1)
         else
             ackermann(x - 1, ackermann(x, y - 1))
