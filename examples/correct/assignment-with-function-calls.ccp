@@ -6,6 +6,6 @@ x = x + 1;
 let y: Int = f[x];
 y = x + f[y];
 
-x = -y;
+x = 0 - y;
 
 x += f[x];
