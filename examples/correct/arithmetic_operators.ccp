@@ -17,3 +17,10 @@ true || false;
 # initializing variable with arithmetic expression value
 let x: Int = (4 + 5) + 7;
 let y: Bool = (4 < 5) || (4 > 5);
+
+# using arithmetic operators with variables
+let a: Int = 2;
+let b: Int = 1;
+let c: Int = 3;
+let d: Int = (a * c) + b;
+

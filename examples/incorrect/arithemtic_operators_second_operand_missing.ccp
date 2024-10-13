@@ -1,0 +1,6 @@
+# second operand missing in binary arithmetic operators
+5 +;
+4 -;
+4 /;
+5 <;
+
