@@ -1,0 +1,6 @@
+# using binary arithmetic operators with first operand being boolean
+false - true;
+false * 0;
+true < 4;
+false / 5;
+
