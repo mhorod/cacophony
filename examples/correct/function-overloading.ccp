@@ -41,7 +41,7 @@
 
 # shadowing/overloading in different scope
 (
-    let f = [] -> Bool -> true;
+    let f = [] -> Bool => true;
     let f = [x: Int] -> Int => x;
     (
         let f = [] -> Int => 1;
