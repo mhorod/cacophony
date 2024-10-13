@@ -1,0 +1,1 @@
+let f = [x: Int, x: Bool] -> Bool => x; # function parameter names must be unique
