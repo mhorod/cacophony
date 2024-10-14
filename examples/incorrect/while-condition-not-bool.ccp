@@ -1,0 +1,2 @@
+while () do 
+  work[];
