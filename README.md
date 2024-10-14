@@ -46,27 +46,26 @@ Functions are introduced using lambda-like syntax: `let <name> = [<args>] -> <Ty
 
 For now this is only part of `let` syntax, the `[<args>] -> <Type> => <expression>` part is not an expression itself, although it might be when we decide to implement anonymous functions.
 
-Functions can be recursive - they can refer to themselves as well as to other functions visible in the same scope.
+Functions can be recursive - they can refer to themselves and other visible functions.
 
 Function definitions can be nested - we can define and use new function in the body of another.
 
 The names of the arguments are not visible outside of the function.
 
-### Function overloading
+### Function overloading and shadowing
 
-We allow overloading - there can be two functions with the same name **defined in the same block** that differ in the argument lists.
+When creating a new variable with `let` it shadows all variables and functions with the same name.
 
-### Shadowing
+However introducing a new function creates a new overload which does not shadow other functions.
 
-Apart from function overloading there cannot be two variables or functions with the same name defined in the same block.
-
-However, it is possible to shadow already existing variable or function in a nested block.
 
 ### Returning value from a function
 
 Value from a function is returned with `return` keyword, currently with mandatory value. 
 
-The `return <expr>` as expression itself has no value (type `Unit`) but the type of expression has to match with return type of the corresponding function
+The `return <expr>` as expression itself has type `Void` which indicates that no calculations happen after return.
+
+`Void` is a subtype of any other type which allows constructions like `let x = if y then return z else w`
 
 ### If conditional
 
