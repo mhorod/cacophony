@@ -1,0 +1,3 @@
+#variables and types names should start with letter
+
+let 1abc = 2;
