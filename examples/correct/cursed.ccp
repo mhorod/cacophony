@@ -2,6 +2,7 @@ let x: Unit = while true do break;
 
 let y: Int = (((((0)))));
 
+# break exits the outer loop
 while true do while (break; true) do 1 / 0;
 
 while true do let v: Unit = break;
