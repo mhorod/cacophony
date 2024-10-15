@@ -10,6 +10,9 @@ interface NFA<NFAState> {
     // Checks if provided state is accepting
     fun isAccepting(state: NFAState): Boolean
 
+    // Returns all NFA states
+    fun getAllStates(): List<NFAState>
+
     // Returns list of reachable states, returned list may be empty.
     fun getProductions(
         state: NFAState,

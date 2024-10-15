@@ -1,4 +1,4 @@
-package cacophony.util
+package cacophony.utils
 
 interface Input {
     // Retrieves next character from the input and advances the cursor.

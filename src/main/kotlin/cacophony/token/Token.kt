@@ -1,5 +1,5 @@
 package cacophony.token
 
-import cacophony.util.Location
+import cacophony.utils.Location
 
-class Token<TC : Enum<TC>>(val category: TC, val context: String, val rangeFrom: Location, val rangeTo: Location)
+data class Token<TC : Enum<TC>>(val category: TC, val context: String, val rangeFrom: Location, val rangeTo: Location)

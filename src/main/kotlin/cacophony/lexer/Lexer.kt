@@ -2,9 +2,9 @@ package cacophony.lexer
 
 import cacophony.automata.DFA
 import cacophony.token.Token
-import cacophony.util.AlgebraicRegex
-import cacophony.util.Diagnostics
-import cacophony.util.Input
+import cacophony.utils.AlgebraicRegex
+import cacophony.utils.Diagnostics
+import cacophony.utils.Input
 
 class Lexer<TC : Enum<TC>> {
     companion object {

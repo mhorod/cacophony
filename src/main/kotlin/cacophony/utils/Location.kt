@@ -1,3 +1,3 @@
-package cacophony.util
+package cacophony.utils
 
-class Location(val value: Int)
+data class Location(val value: Int)

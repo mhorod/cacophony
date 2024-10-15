@@ -1,4 +1,4 @@
-package cacophony.util
+package cacophony.utils
 
 class Diagnostics() {
     fun report(

@@ -1,8 +1,14 @@
 package cacophony.automata
 
 interface DFA<DFAState> {
+    // Returns starting state
+    fun getStartingState(): DFAState
+
     // Checks if provided state is accepting
     fun isAccepting(state: DFAState): Boolean
+
+    // Returns all DFA states
+    fun getAllStates(): List<DFAState>
 
     // Returns state produced from provided state and symbol, or null if it doesn't exist.
     fun getProduction(
