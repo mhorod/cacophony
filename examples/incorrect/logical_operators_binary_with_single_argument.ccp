@@ -1,0 +1,3 @@
+#incorrectly used operator
+
+||false;
