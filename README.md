@@ -6,7 +6,7 @@ An imperative language made as team project for Compilers course.
 
 ### Extension
 
-Files of cacophony language should have `.ccp` extension.
+Files of cacophony language should have `.cac` extension.
 
 ### Comments
 
@@ -14,9 +14,11 @@ There is only one type of comments - inline comments, and there are no multiline
 A comment starts with a hash sign `#` and ranges to the end of the line. Everything after the `#` is  ignored by the compiler
 
 ### Expressions
+
 There is no distinction between statements and expressions - everything has a value (hence everything is an expression), although sometimes the returned value is `()` which has type `Unit`.
 
 Possible expressions in our language are:
+
 - variable definition
 - assignment to a variable
 - function definition
@@ -34,7 +36,7 @@ For readability types are denoted in `Uppercase` while variables and functions a
 
 ### Variable definition
 
-New variable is introduced as `let <name> : <Type> = <expression>`. 
+New variable is introduced as `let <name> : <Type> = <expression>`.
 
 The type is optional as we don't allow uninitialized variables.
 
@@ -58,10 +60,9 @@ When creating a new variable with `let` it shadows all variables and functions w
 
 However introducing a new function creates a new overload which does not shadow other functions.
 
-
 ### Returning value from a function
 
-Value from a function is returned with `return` keyword, currently with mandatory value. 
+Value from a function is returned with `return` keyword, currently with mandatory value.
 
 The `return <expr>` as expression itself has type `Void` which indicates that no calculations happen after return.
 
@@ -70,6 +71,7 @@ The `return <expr>` as expression itself has type `Void` which indicates that no
 ### If conditional
 
 The if conditional can take two forms:
+
 - `if <expression> then <expression>`
 - `if <expression> then <expression> else <expression>`
 
@@ -90,27 +92,29 @@ To allow for sequential execution/evaluation of expressions they can be organize
 
 Such block on itself is not treated as an expression - for example
 in expressions like:
--  `while x do y; z;`
+
+- `while x do y; z;`
 - `if x then y; z;`
 
 `z` does not belong to body of the `while` or `if` and is always executed
 
 To use block as a sub-expression it has to be wrapped in parentheses:
--  `while x do (y; z;)`
-- `if x then (y; z;)`
 
+- `while x do (y; z;)`
+- `if x then (y; z;)`
 
 The value of a block is the value of the expression after the last semicolon.
 In particular:
+
 - `(x; y)` has value of `y`
 - `(x;y;)` has Unit value since the last expression is empty
 - `(;)`, `(x;)`, `(;;;)`, `(x;;;)` - all are valid blocks with Unit value
-
 
 ### Operators
 
 Currently we don't define what operators we use, it's left for a future decision.
 Probably we should cover the basic ones:
+
 - `+` (addition)
 - `-` (subtraction)
 - `*` (multiplication)
