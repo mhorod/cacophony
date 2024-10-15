@@ -6,7 +6,7 @@ let f = [] -> Bool => true;
     f[];
     # ok
     f[1];
-)
+);
 # ok
 f[];
 # bad

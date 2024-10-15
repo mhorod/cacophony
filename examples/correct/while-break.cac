@@ -1,3 +1,5 @@
-while true do
-  say_hello[]
+while true do (
+  let say_hello = [] -> Unit => ();
+  say_hello[];
   break;
+);

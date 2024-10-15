@@ -16,10 +16,6 @@ let four = two + two;
 
 let result = fn[];
 
-# Multiple definitions
-
-let three = 3, four = 4;
-
 # Uninitialized variables
 
 let non_existent : Int;

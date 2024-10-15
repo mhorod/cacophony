@@ -1,2 +1,3 @@
+let work = [] -> Unit => ();
 while () do 
   work[];
