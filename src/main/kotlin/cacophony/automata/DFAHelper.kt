@@ -1,18 +1,30 @@
 package cacophony.automata
 
 interface DFAHelper<StateA, StateB> {
-    fun areDistinguishable(a: StateA, b: StateB): Boolean
+    fun areDistinguishable(
+        a: StateA,
+        b: StateB,
+    ): Boolean
 
-    fun areEquivalent(a: StateA, b: StateB): Boolean {
+    fun areEquivalent(
+        a: StateA,
+        b: StateB,
+    ): Boolean {
         return !areDistinguishable(a, b)
     }
 }
 
-fun <StateA, StateB> areEquivalent(dfaA: DFA<StateA>, dfaB: DFA<StateB>): Boolean {
+fun <StateA, StateB> areEquivalent(
+    dfaA: DFA<StateA>,
+    dfaB: DFA<StateB>,
+): Boolean {
     return createHelper(dfaA, dfaB).areEquivalent(dfaA.getStartingState(), dfaB.getStartingState())
 }
 
-fun <StateA, StateB> createHelper(dfaA: DFA<StateA>, dfaB: DFA<StateB>): DFAHelper<StateA, StateB> {
+fun <StateA, StateB> createHelper(
+    dfaA: DFA<StateA>,
+    dfaB: DFA<StateB>,
+): DFAHelper<StateA, StateB> {
     val symbols = getSymbols(dfaA.getProductions()) union getSymbols(dfaB.getProductions())
     val invA = invertProductions(dfaA, symbols)
     val invB = invertProductions(dfaB, symbols)
@@ -40,7 +52,10 @@ fun <StateA, StateB> createHelper(dfaA: DFA<StateA>, dfaB: DFA<StateB>): DFAHelp
         }
     }
     return object : DFAHelper<StateA, StateB> {
-        override fun areDistinguishable(a: StateA, b: StateB): Boolean {
+        override fun areDistinguishable(
+            a: StateA,
+            b: StateB,
+        ): Boolean {
             return distinguishable.contains(Pair(a, b))
         }
     }
@@ -50,7 +65,10 @@ private fun <State> getSymbols(productions: Map<Pair<State, Char>, State>): Set<
     return productions.keys.map { it.second }.toSet()
 }
 
-private fun <State> invertProductions(dfa: DFA<State>, symbols: Set<Char>): Map<Pair<State?, Char>, Set<State?>> {
+private fun <State> invertProductions(
+    dfa: DFA<State>,
+    symbols: Set<Char>,
+): Map<Pair<State?, Char>, Set<State?>> {
     val inverted = mutableMapOf<Pair<State?, Char>, MutableSet<State?>>()
     for (symbol in symbols) {
         for (state in dfa.getAllStates()) {
