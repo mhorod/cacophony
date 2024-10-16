@@ -290,7 +290,7 @@ class DFAEquivalenceTest {
                     Pair(4, 'a') to 6,
                     Pair(5, 'a') to 6,
                 ),
-                setOf(6)
+                setOf(6),
             )
         val multipleAccepting =
             createDFA(
@@ -303,9 +303,9 @@ class DFAEquivalenceTest {
                     Pair(1, 'c') to 6,
                     Pair(6, 'a') to 7,
                     Pair(1, 'd') to 8,
-                    Pair(8, 'a') to 9
+                    Pair(8, 'a') to 9,
                 ),
-                setOf(3, 5, 7, 9)
+                setOf(3, 5, 7, 9),
             )
         assertTrue(areEquivalent(singleAccepting, multipleAccepting))
     }
@@ -361,7 +361,7 @@ class DFAEquivalenceTest {
                     Pair(2, 'a') to 1,
                     Pair(3, 'b') to 1,
                     Pair(4, 'a') to 2,
-                    Pair(4, 'b') to 3
+                    Pair(4, 'b') to 3,
                 ),
                 setOf(),
             )
@@ -386,7 +386,7 @@ class DFAEquivalenceTest {
                     Pair(1, 'a') to 1,
                     Pair(1, 'b') to 2,
                 ),
-                setOf(2)
+                setOf(2),
             )
         assertFalse(areEquivalent(noAcceptingStates, reachableAcceptingStates))
     }
