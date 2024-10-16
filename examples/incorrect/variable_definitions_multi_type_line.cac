@@ -1,3 +1,5 @@
 # Multiple definitions
 
 let a: Int = 2, b: Int = 3;
+
+let three = 3, four = 4;
