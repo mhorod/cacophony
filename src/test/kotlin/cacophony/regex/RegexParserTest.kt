@@ -212,14 +212,14 @@ class RegexParserTest {
     @Test
     fun `lowercase group special character`() {
         val result = parseRegex("""\l""")
-        val expected = parseRegex("abcdefghijklmnopqrstuvwxyz".map { it }.joinToString("|"))
+        val expected = parseRegex(('a'..'z').map { it }.joinToString("|"))
         assertEqualAlgebraicRegex(result, expected)
     }
 
     @Test
     fun `uppercase group special character`() {
         val result = parseRegex("""\u""")
-        val expected = parseRegex("ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { it }.joinToString("|"))
+        val expected = parseRegex(('A'..'Z').map { it }.joinToString("|"))
         assertEqualAlgebraicRegex(result, expected)
     }
 

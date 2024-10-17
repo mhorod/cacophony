@@ -41,9 +41,9 @@ internal val SPECIAL_CHARACTER_MAP =
         // Whitespaces
         Pair('s', Union(arrayListOf(Atom(' '), Atom('\t'), Atom('\r'), Atom('\n')))),
         // lowercase ASCII letters
-        Pair('l', Union(arrayListOf(*"abcdefghijklmnopqrstuvwxyz".map { Atom(it) }.toTypedArray()))),
+        Pair('l', Union(arrayListOf(*('a'..'z').map { Atom(it) }.toTypedArray()))),
         // uppercase ASCII letters
-        Pair('u', Union(arrayListOf(*"ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Atom(it) }.toTypedArray()))),
+        Pair('u', Union(arrayListOf(*('A'..'Z').map { Atom(it) }.toTypedArray()))),
         // regex special characters
         *"()|*\\".map { Pair(it, Atom(it)) }.toTypedArray(),
     )
