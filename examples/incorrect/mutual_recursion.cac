@@ -1,10 +1,10 @@
 # using not visible function
 let is_odd = [x: Int] -> Bool => (
-        if x == 0 then
-            false
-        else
-            is_even[x - 1]
-    );
+    if x == 0 then
+        false
+    else
+        is_even[x - 1]
+);
 
 let is_even = [x: Int] -> Bool => (
     if x == 0 then

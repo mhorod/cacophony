@@ -1,2 +1,4 @@
+let keep_going = [] -> Bool => true;
+let say_hello = [] -> Unit => ();
 while keep_going[] do
   say_hello[];

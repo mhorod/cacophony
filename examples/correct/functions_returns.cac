@@ -20,11 +20,11 @@ let voids_in_action = [] -> Bool => (
 
 let nested_return = [] -> Bool => return return return true; # only the rightmost `return` will actually... well... return
 # more generally, the first return to take effect is the first one whose expression is fully evaluated the soonest
-let clean_code = [x: Bool, y: Bool] -> Int =>
+let clean_code = [x: Bool, y: Bool] -> Int => (
     if
         return
             if x then
-                return 1;
+                return 1
             else (
                 while y || return 2 do
                     return 3;

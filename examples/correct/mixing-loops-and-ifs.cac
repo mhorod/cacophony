@@ -22,4 +22,3 @@ if (c > 63) then
 else 
 	while (c < 32) do
 		(c = (c * 2));
-

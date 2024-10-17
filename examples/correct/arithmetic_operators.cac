@@ -23,4 +23,3 @@ let a: Int = 2;
 let b: Int = 1;
 let c: Int = 3;
 let d: Int = (a * c) + b;
-

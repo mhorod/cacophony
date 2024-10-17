@@ -11,4 +11,3 @@ while (d < (b + 1)) do
             ans = ans + 1
         else (if (x * d) > b then break);
     d = d + 1;
-

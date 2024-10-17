@@ -1,3 +1,5 @@
+let it_is_time_to_stop = [] -> Bool => false;
+let not_yet = [] -> Unit => ();
 while true do
   if it_is_time_to_stop[] then
     break
