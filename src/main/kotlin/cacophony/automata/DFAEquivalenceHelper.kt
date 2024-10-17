@@ -1,6 +1,6 @@
 package cacophony.automata
 
-interface DFAHelper<StateA, StateB> {
+interface DFAEquivalenceHelper<StateA, StateB> {
     fun areDistinguishable(
         a: StateA,
         b: StateB,
@@ -18,13 +18,28 @@ fun <StateA, StateB> areEquivalent(
     dfaA: DFA<StateA>,
     dfaB: DFA<StateB>,
 ): Boolean {
-    return createHelper(dfaA, dfaB).areEquivalent(dfaA.getStartingState(), dfaB.getStartingState())
+    return createDFAEquivalenceHelper(dfaA, dfaB).areEquivalent(dfaA.getStartingState(), dfaB.getStartingState())
 }
 
-fun <StateA, StateB> createHelper(
+fun <StateA, StateB> createDFAEquivalenceHelper(
     dfaA: DFA<StateA>,
     dfaB: DFA<StateB>,
-): DFAHelper<StateA, StateB> {
+): DFAEquivalenceHelper<StateA, StateB> {
+    val distinguishable = initializeDistinguishableStates(dfaA, dfaB)
+    return object : DFAEquivalenceHelper<StateA, StateB> {
+        override fun areDistinguishable(
+            a: StateA,
+            b: StateB,
+        ): Boolean {
+            return distinguishable.contains(Pair(a, b))
+        }
+    }
+}
+
+private fun <StateA, StateB> initializeDistinguishableStates(
+    dfaA: DFA<StateA>,
+    dfaB: DFA<StateB>,
+): Set<Pair<StateA?, StateB?>> {
     val symbols = getSymbols(dfaA.getProductions()) union getSymbols(dfaB.getProductions())
     val invA = invertProductions(dfaA, symbols)
     val invB = invertProductions(dfaB, symbols)
@@ -51,14 +66,7 @@ fun <StateA, StateB> createHelper(
             }
         }
     }
-    return object : DFAHelper<StateA, StateB> {
-        override fun areDistinguishable(
-            a: StateA,
-            b: StateB,
-        ): Boolean {
-            return distinguishable.contains(Pair(a, b))
-        }
-    }
+    return distinguishable
 }
 
 private fun <State> getSymbols(productions: Map<Pair<State, Char>, State>): Set<Char> {
