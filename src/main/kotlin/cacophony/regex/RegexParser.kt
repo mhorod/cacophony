@@ -12,14 +12,9 @@ fun parseRegex(str: String): AlgebraicRegex {
     regex.indices.forEach {
         val c = regex[it]
         if (specialCharacter) {
-            if (c !in """()|\*ntr""") throw RegexSyntaxErrorException()
+            if (c !in SPECIAL_CHARACTER_MAP.keys) throw RegexSyntaxErrorException()
             if (it > 1 && (regex[it - 2] !in "(|" || lastEscaped == it - 2)) parser.pushOperation(ConcatOperator)
-            when (c) {
-                in """"()|\*""" -> parser.pushSymbol(c)
-                'n' -> parser.pushSymbol('\n')
-                't' -> parser.pushSymbol('\t')
-                'r' -> parser.pushSymbol('\r')
-            }
+            parser.pushRegex(SPECIAL_CHARACTER_MAP[c]!!) // safe because of previous check
             specialCharacter = false
             lastEscaped = it
         } else {
@@ -29,7 +24,7 @@ fun parseRegex(str: String): AlgebraicRegex {
                     parser.pushOperation(LeftParenthesis)
                 }
                 ')' -> parser.pushOperation(RightParenthesis)
-                '*' -> parser.pushOperation(Star)
+                '*' -> parser.pushOperation(StarOperator)
                 '|' -> parser.pushOperation(UnionOperator)
                 '\\' -> specialCharacter = true
                 else -> {
@@ -55,7 +50,11 @@ private class RegexParser {
     }
 
     fun pushSymbol(c: Char) {
-        result.push(RegexType.Atom(c))
+        result.push(Atom(c))
+    }
+
+    fun pushRegex(c: RegexType) {
+        result.push(c)
     }
 
     fun finalize(): RegexType {
@@ -79,9 +78,9 @@ private data object RightParenthesis : Operator() {
     }
 }
 
-private data object Star : Operator() {
+private data object StarOperator : Operator() {
     override fun addToStack(parser: RegexParser) {
-        parser.result.push(RegexType.Star(parser.result.pop()))
+        parser.result.push(Star(parser.result.pop()))
     }
 }
 
@@ -128,11 +127,11 @@ private data object UnionOperator : InfixOperator(1) {
     override fun merge(
         x: RegexType,
         y: RegexType,
-    ) = if (x is RegexType.Union) {
+    ) = if (x is Union) {
         x.summands.add(y)
         x
     } else {
-        RegexType.Union(arrayListOf(x, y))
+        Union(arrayListOf(x, y))
     }
 }
 
@@ -140,10 +139,10 @@ private data object ConcatOperator : InfixOperator(2) {
     override fun merge(
         x: RegexType,
         y: RegexType,
-    ) = if (x is RegexType.Concat) {
+    ) = if (x is Concat) {
         x.factors.add(y)
         x
     } else {
-        RegexType.Concat(arrayListOf(x, y))
+        Concat(arrayListOf(x, y))
     }
 }

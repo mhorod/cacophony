@@ -9,6 +9,58 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class RegexParserTest {
+    private fun algebraicRegexEquals(
+        x: AlgebraicRegex,
+        y: AlgebraicRegex,
+    ): Boolean {
+        when (x) {
+            is AtomicRegex ->
+                if (y is AtomicRegex) {
+                    return x.symbol == y.symbol
+                }
+            is ConcatenationRegex ->
+                if (y is ConcatenationRegex) {
+                    return x.internalRegexes.size == y.internalRegexes.size &&
+                        x.internalRegexes.zip(y.internalRegexes).all {
+                                (a, b) ->
+                            algebraicRegexEquals(a, b)
+                        }
+                }
+            is StarRegex ->
+                if (y is StarRegex) {
+                    return algebraicRegexEquals(x.internalRegex, y.internalRegex)
+                }
+            is UnionRegex ->
+                if (y is UnionRegex) {
+                    return x.internalRegexes.size == y.internalRegexes.size &&
+                        x.internalRegexes.zip(y.internalRegexes).all {
+                                (a, b) ->
+                            algebraicRegexEquals(a, b)
+                        }
+                }
+        }
+        return false
+    }
+
+    private fun algebraicRegexToString(ar: AlgebraicRegex): String {
+        return when (ar) {
+            is AtomicRegex -> ar.symbol.toString()
+            is ConcatenationRegex ->
+                ar.internalRegexes.joinToString(
+                    "",
+                    "(",
+                    ")",
+                ) { algebraicRegexToString(it) }
+            is StarRegex -> "(${algebraicRegexToString(ar.internalRegex)})*"
+            is UnionRegex ->
+                ar.internalRegexes.joinToString(
+                    "|",
+                    "(",
+                    ")",
+                ) { algebraicRegexToString(it) }
+        }
+    }
+
     private fun assertEqualAlgebraicRegex(
         result: AlgebraicRegex,
         expected: AlgebraicRegex,
@@ -147,6 +199,35 @@ class RegexParserTest {
     @Test
     fun `empty space`() {
         assertThrows<RegexSyntaxErrorException> { parseRegex("abc||xyz|a") }
+    }
+
+    @Test
+    fun `whitespace group special character`() {
+        val regex = """\s"""
+        val result = parseRegex(regex)
+        val expected = SPECIAL_CHARACTER_MAP['s']!!.toAlgebraicRegex()
+        assertEqualAlgebraicRegex(result, expected)
+    }
+
+    @Test
+    fun `lowercase group special character`() {
+        val result = parseRegex("""\l""")
+        val expected = parseRegex("abcdefghijklmnopqrstuvwxyz".map { it }.joinToString("|"))
+        assertEqualAlgebraicRegex(result, expected)
+    }
+
+    @Test
+    fun `uppercase group special character`() {
+        val result = parseRegex("""\u""")
+        val expected = parseRegex("ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { it }.joinToString("|"))
+        assertEqualAlgebraicRegex(result, expected)
+    }
+
+    @Test
+    fun `not-newline special character`() {
+        val result = parseRegex("""\N""")
+        val expected = SPECIAL_CHARACTER_MAP['N']!!.toAlgebraicRegex()
+        assertEqualAlgebraicRegex(result, expected)
     }
 
     @Test

@@ -8,74 +8,42 @@ import cacophony.utils.AlgebraicRegex.UnionRegex
 
 class RegexSyntaxErrorException : Exception()
 
-fun algebraicRegexEquals(
-    x: AlgebraicRegex,
-    y: AlgebraicRegex,
-): Boolean {
-    when (x) {
-        is AtomicRegex ->
-            if (y is AtomicRegex) {
-                return x.symbol == y.symbol
-            }
-        is ConcatenationRegex ->
-            if (y is ConcatenationRegex) {
-                return x.internalRegexes.size == y.internalRegexes.size &&
-                    x.internalRegexes.zip(y.internalRegexes).all {
-                            (a, b) ->
-                        algebraicRegexEquals(a, b)
-                    }
-            }
-        is StarRegex ->
-            if (y is StarRegex) {
-                return algebraicRegexEquals(x.internalRegex, y.internalRegex)
-            }
-        is UnionRegex ->
-            if (y is UnionRegex) {
-                return x.internalRegexes.size == y.internalRegexes.size &&
-                    x.internalRegexes.zip(y.internalRegexes).all {
-                            (a, b) ->
-                        algebraicRegexEquals(a, b)
-                    }
-            }
-    }
-    return false
-}
-
-fun algebraicRegexToString(ar: AlgebraicRegex): String {
-    return when (ar) {
-        is AtomicRegex -> ar.symbol.toString()
-        is ConcatenationRegex ->
-            ar.internalRegexes.joinToString(
-                "",
-                "(",
-                ")",
-            ) { algebraicRegexToString(it) }
-        is StarRegex -> "(${algebraicRegexToString(ar.internalRegex)})*"
-        is UnionRegex ->
-            ar.internalRegexes.joinToString(
-                "|",
-                "(",
-                ")",
-            ) { algebraicRegexToString(it) }
-    }
-}
-
 internal sealed class RegexType {
     abstract fun toAlgebraicRegex(): AlgebraicRegex
-
-    class Atom(val symbol: Char) : RegexType() {
-        override fun toAlgebraicRegex() = AtomicRegex(symbol)
-    }
-
-    class Union(val summands: ArrayList<RegexType>) : RegexType() {
-        override fun toAlgebraicRegex() = UnionRegex(*summands.map { it.toAlgebraicRegex() }.toTypedArray())
-    }
-
-    class Concat(val factors: ArrayList<RegexType>) : RegexType() {
-        override fun toAlgebraicRegex() = ConcatenationRegex(*factors.map { it.toAlgebraicRegex() }.toTypedArray())
-    }
-
-    class Star(val internal: RegexType) : RegexType() {
-        override fun toAlgebraicRegex() = StarRegex(internal.toAlgebraicRegex())
-    }
 }
+
+internal class Atom(val symbol: Char) : RegexType() {
+    override fun toAlgebraicRegex() = AtomicRegex(symbol)
+}
+
+internal class Union(val summands: ArrayList<RegexType>) : RegexType() {
+    override fun toAlgebraicRegex() = UnionRegex(*summands.map { it.toAlgebraicRegex() }.toTypedArray())
+}
+
+internal class Concat(val factors: ArrayList<RegexType>) : RegexType() {
+    override fun toAlgebraicRegex() = ConcatenationRegex(*factors.map { it.toAlgebraicRegex() }.toTypedArray())
+}
+
+internal class Star(val internal: RegexType) : RegexType() {
+    override fun toAlgebraicRegex() = StarRegex(internal.toAlgebraicRegex())
+}
+
+internal val SPECIAL_CHARACTER_MAP =
+    mapOf(
+        // Newline
+        Pair('n', Atom('\n')),
+        // Horizontal tab
+        Pair('t', Atom('\t')),
+        // Carriage return
+        Pair('r', Atom('\r')),
+        // Every `normal` character except newline (comments match #\N*)
+        Pair('N', Union(arrayListOf(Atom('\t'), Atom('\r'), Atom(' '), *(32..126).map { Atom(it.toChar()) }.toTypedArray()))),
+        // Whitespaces
+        Pair('s', Union(arrayListOf(Atom(' '), Atom('\t'), Atom('\r'), Atom('\n')))),
+        // lowercase ASCII letters
+        Pair('l', Union(arrayListOf(*"abcdefghijklmnopqrstuvwxyz".map { Atom(it) }.toTypedArray()))),
+        // uppercase ASCII letters
+        Pair('u', Union(arrayListOf(*"ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Atom(it) }.toTypedArray()))),
+        // regex special characters
+        *"()|*\\".map { Pair(it, Atom(it)) }.toTypedArray(),
+    )
