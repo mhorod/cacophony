@@ -13,7 +13,8 @@ object RegexStrings {
             TokenCategoryGeneral.TYPE_IDENTIFIER to """\u\w*""",
             TokenCategoryGeneral.VARIABLE_IDENTIFIER to """(\l|_)\w*""",
             TokenCategoryGeneral.WHITESPACE to """(\n|\r|\t| )*""",
-            TokenCategoryGeneral.COMMENT to """#\N*""", // dont know if it will be implemented
+            // dont know if it will be implemented
+            TokenCategoryGeneral.COMMENT to """#\N*""",
         )
 
     private val specificCategoryMap =
