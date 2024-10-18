@@ -11,6 +11,7 @@ enum class TokenCategorySpecific {
     COLON,
     SEMICOLON,
     COMMA,
+
     // keywords
     KEYWORD_LET,
     KEYWORD_IF,
@@ -20,6 +21,7 @@ enum class TokenCategorySpecific {
     KEYWORD_DO,
     KEYWORD_BREAK,
     KEYWORD_RETURN,
+
     // operators
     OPERATOR_EQUALS,
     OPERATOR_NOT_EQUALS,
@@ -41,11 +43,11 @@ enum class TokenCategorySpecific {
     OPERATOR_LOGICAL_OR,
     OPERATOR_LOGICAL_AND,
     OPERATOR_LOGICAL_NOT,
+
     // and the others
     LITERAL,
     TYPE_IDENTIFIER,
     VARIABLE_IDENTIFIER,
     WHITESPACE,
-    COMMENT
+    COMMENT,
 }
-

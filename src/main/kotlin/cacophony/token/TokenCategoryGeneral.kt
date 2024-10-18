@@ -8,5 +8,5 @@ enum class TokenCategoryGeneral {
     TYPE_IDENTIFIER,
     VARIABLE_IDENTIFIER,
     WHITESPACE,
-    COMMENT
+    COMMENT,
 }

@@ -3,7 +3,6 @@ package cacophony.regex
 import cacophony.token.TokenCategoryGeneral
 import cacophony.token.TokenCategorySpecific
 
-
 object RegexStrings {
     private val generalCategoryMap =
         mapOf(
@@ -14,7 +13,7 @@ object RegexStrings {
             TokenCategoryGeneral.TYPE_IDENTIFIER to """\u\w*""",
             TokenCategoryGeneral.VARIABLE_IDENTIFIER to """(\l|_)\w*""",
             TokenCategoryGeneral.WHITESPACE to """(\n|\r|\t| )*""",
-            TokenCategoryGeneral.COMMENT to """#\N*""" // dont know if it will be implemented
+            TokenCategoryGeneral.COMMENT to """#\N*""", // dont know if it will be implemented
         )
 
     private val specificCategoryMap =
@@ -63,7 +62,7 @@ object RegexStrings {
             TokenCategorySpecific.TYPE_IDENTIFIER to """\u\w*""",
             TokenCategorySpecific.VARIABLE_IDENTIFIER to """(\l|_)\w*""",
             TokenCategorySpecific.WHITESPACE to """(\n|\r|\t| )*""",
-            TokenCategorySpecific.COMMENT to """#\N*"""
+            TokenCategorySpecific.COMMENT to """#\N*""",
         )
 
     private val specialCharacterMap =
@@ -71,18 +70,18 @@ object RegexStrings {
             'w' to """\d|\l|\u|_""",
             'd' to """0|1|2|3|4|5|6|7|8|9""",
             'l' to """a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z""",
-            'u' to """A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z"""
+            'u' to """A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z""",
         )
 
-    fun getCategoryRegex (category: TokenCategoryGeneral): String? {
+    fun getCategoryRegex(category: TokenCategoryGeneral): String? {
         return generalCategoryMap.get(category)
     }
 
-    fun getCategoryRegex (category: TokenCategorySpecific): String? {
+    fun getCategoryRegex(category: TokenCategorySpecific): String? {
         return specificCategoryMap.get(category)
     }
 
-    fun getSpecialCharacterRegex (character: Char): String? {
+    fun getSpecialCharacterRegex(character: Char): String? {
         return specialCharacterMap.get(character)
     }
 }
