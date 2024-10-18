@@ -1,11 +1,12 @@
 package cacophony.automata.minimalization
 
-import cacophony.automata.areEquivalent
-import cacophony.automata.createDFA
-import cacophony.automata.via
+import cacophony.automata.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import kotlin.math.ceil
+import kotlin.random.Random
 
 class DFAMinimalizationTest {
     @Test
@@ -78,5 +79,70 @@ class DFAMinimalizationTest {
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(16, minimized.getAllStates().size)
+    }
+
+    fun <E> checkMinimality(dfa: DFA<E>) {
+        val helper = createHelper(dfa, dfa)
+
+        val states = dfa.getAllStates()
+        val equivClassesMap: MutableMap<E, MutableSet<E>> = mutableMapOf()
+
+        states.forEach {
+            for (s in states) {
+                if (helper.areEquivalent(s, it)) {
+                    equivClassesMap.getOrPut(s) { mutableSetOf() }.add(it)
+                    return@forEach
+                }
+            }
+            throw Exception()
+        }
+
+        val equivClassesBruted = equivClassesMap.values.toSet()
+
+        val minDfa = dfa.minimalize()
+        val equivalenceClasses = minDfa.getAllStates().map { it.originalStates.toSet() }.toMutableSet()
+
+        val returnedByMinimalization = equivalenceClasses.flatten()
+        assertEquals(returnedByMinimalization.toSet().size, returnedByMinimalization.size)
+
+        val missingEquivalenceClass = dfa.getAllStates().minus(returnedByMinimalization.toSet())
+        if (missingEquivalenceClass.isNotEmpty()) {
+            equivalenceClasses.add(missingEquivalenceClass.toSet())
+        }
+
+        assertEquals(equivClassesBruted, equivalenceClasses)
+    }
+
+    private fun <E> check(dfa: DFA<E>) {
+        if (dfa.isLanguageEmpty()) {
+            assertThrows<IllegalArgumentException> {
+                dfa.minimalize()
+            }
+        } else {
+            val minDfa = dfa.minimalize()
+            assertTrue(areEquivalent(dfa, minDfa))
+            checkMinimality(dfa)
+        }
+    }
+
+    private fun generateDFA(
+        n: Int,
+        random: Random,
+    ): DFA<Int> {
+        val density = 0.2
+        val symbols = "abc"
+        val states = 1..n
+        return createDFA(
+            states.random(random),
+            states.filter { random.nextDouble() < 0.2 }.toSet(),
+            (0..<ceil(density * n * symbols.length).toInt()).associate {
+                states.random(random) via symbols.random(random) to states.random(random)
+            },
+        )
+    }
+
+    @Test
+    fun `randomly check DFAs`() {
+        (0..2000).forEach { check(generateDFA(1 + it % 50, Random(0))) }
     }
 }
