@@ -1,7 +1,7 @@
 package cacophony.automata
 
-import kotlin.collections.mutableListOf
 import kotlin.collections.mutableMapOf
+import kotlin.collections.mutableSetOf
 import kotlin.collections.setOf
 
 public fun <StateType> determinize(nfa: NFA<StateType>): DFA<Int> =
@@ -18,28 +18,39 @@ private fun <StateType> determinize(
     charset: Iterable<Char>,
 ): DFA<Int> {
     val startingState = setOf(nfa.getStartingState())
-    var list = mutableListOf(startingState)
+    var createdStates = mutableSetOf<Set<StateType>>(startingState)
+    var worklist = ArrayDeque(listOf(startingState))
     var dfaProductions = mutableMapOf<Set<StateType>, MutableMap<Char, Set<StateType>>>()
 
-    while (!list.isEmpty()) {
-        val states = list.removeFirst()
+    while (!worklist.isEmpty()) {
+        val states = worklist.removeFirst()
 
         dfaProductions.getOrPut(states) { mutableMapOf() }.run {
-            charset.forEach { this[it] = nfa.getSetEdge(states, it) }
+            charset.forEach {
+                nfa.getSetEdge(states, it).also { neighbor ->
+                    this[it] = neighbor
+                    createdStates.add(neighbor) && worklist.add(neighbor)
+                }
+            }
         }
     }
 
-    val setToInt = dfaProductions.keys.mapIndexed { index, states -> states to index }.toMap()
-    val acceptingStates = dfaProductions.keys.filter { it.any { nfa.isAccepting(it) } }.map { setToInt[it]!! }.toSet()
+    val setToInt = createdStates.mapIndexed { index, states -> states to index }.toMap()
+    val acceptingStates =
+        createdStates
+            .filter { it.any { nfa.isAccepting(it) } }
+            .map { setToInt[it]!! }
+            .toSet()
     val productions =
         dfaProductions
-            .flatMap { (state, edges) -> edges.map { Pair(setToInt[state]!!, it.key) to setToInt[it.value]!! } }
-            .toMap()
+            .flatMap { (state, edges) ->
+                edges.map { Pair(setToInt[state]!!, it.key) to setToInt[it.value]!! }
+            }.toMap()
     return SimpleDFA(setToInt[startingState]!!, productions, acceptingStates)
 }
 
-private fun <StateType> NFA<StateType>.epsilonClosure(states: Iterable<StateType>): MutableSet<StateType> {
-    var queue = states.toMutableList()
+private fun <StateType> NFA<StateType>.epsilonClosure(states: Collection<StateType>): MutableSet<StateType> {
+    var queue = ArrayDeque(states)
     var visited = states.toMutableSet()
     var res = states.toMutableSet()
 
@@ -64,24 +75,3 @@ private fun <StateType> NFA<StateType>.getSetEdge(
     this.epsilonClosure(states).also { closure ->
         closure.addAll(this.epsilonClosure(closure.flatMap { this.getProductions(it, symbol) }))
     }
-
-private class SimpleDFA<StateType>(
-    private val start: StateType,
-    private val prod: Map<Pair<StateType, Char>, StateType>,
-    private val accept: Set<StateType>,
-) : DFA<StateType> {
-    val all = prod.keys.map { (state, _) -> state }
-
-    public override fun getStartingState() = start
-
-    public override fun isAccepting(state: StateType) = state in accept
-
-    public override fun getAllStates() = all
-
-    public override fun getProductions() = prod
-
-    public override fun getProduction(
-        state: StateType,
-        symbol: Char,
-    ) = prod[state to symbol]
-}
