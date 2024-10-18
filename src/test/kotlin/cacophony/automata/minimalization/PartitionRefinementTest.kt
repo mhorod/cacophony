@@ -33,14 +33,20 @@ class PartitionRefinementTest {
         assertEquals(1, refinements.size)
     }
 
-    private fun <E> refineOnce(partitions: Set<Set<E>>, refiningSet: Set<E>): Set<Set<E>> {
+    private fun <E> refineOnce(
+        partitions: Set<Set<E>>,
+        refiningSet: Set<E>,
+    ): Set<Set<E>> {
         return partitions
             .flatMap { listOf(it.intersect(refiningSet), it.subtract(refiningSet)) }
             .filter { it.isNotEmpty() }
             .toSet()
     }
 
-    private fun getAllPartitionsLargeRandomOnce(n: Int, seed: Int) {
+    private fun getAllPartitionsLargeRandomOnce(
+        n: Int,
+        seed: Int,
+    ) {
         val random = Random(seed)
         val base = (0..n).toSet()
         val pr = PartitionRefinement(base)
@@ -49,7 +55,7 @@ class PartitionRefinementTest {
         for (it in 0..20) {
             assertEquals(correct, pr.getAllPartitions().toSet())
 
-            val refiningSet = base.filter { _ -> random.nextBoolean()}.toSet()
+            val refiningSet = base.filter { _ -> random.nextBoolean() }.toSet()
             pr.refine(refiningSet)
             correct = refineOnce(correct, refiningSet)
         }
