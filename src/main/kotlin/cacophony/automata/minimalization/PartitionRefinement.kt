@@ -34,11 +34,11 @@ class PartitionRefinement<E>(baseSet: Collection<E>) {
     }
 
     fun getPartitionId(e: E): PartitionId {
-        return elementToPartitionId[e]!!
+        return elementToPartitionId[e] ?: throw IllegalArgumentException("This element is not in the base set")
     }
 
     fun getElements(id: PartitionId): Set<E> {
-        return partitionToElements[id]!!
+        return partitionToElements[id] ?: throw IllegalArgumentException("This partition does not exist")
     }
 
     fun getAllPartitions(): Collection<Set<E>> {
