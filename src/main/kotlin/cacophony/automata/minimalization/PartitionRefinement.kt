@@ -1,9 +1,13 @@
 package cacophony.automata.minimalization
 
 // Represents a set of the partition and allow for quick comparisons
-data class PartitionId(val id: Int)
+data class PartitionId(
+    val id: Int,
+)
 
-class PartitionRefinement<E>(baseSet: Collection<E>) {
+class PartitionRefinement<E>(
+    baseSet: Collection<E>,
+) {
     private val elementToPartitionId: MutableMap<E, PartitionId> = HashMap()
     private val partitionToElements: MutableMap<PartitionId, MutableSet<E>> = HashMap()
 
@@ -29,19 +33,12 @@ class PartitionRefinement<E>(baseSet: Collection<E>) {
                 for (e in newPartition) elementToPartitionId[e] = newId
 
                 return@map Pair(oldId, newId)
-            }
-            .filterNotNull()
+            }.filterNotNull()
     }
 
-    fun getPartitionId(e: E): PartitionId {
-        return elementToPartitionId[e] ?: throw IllegalArgumentException("This element is not in the base set")
-    }
+    fun getPartitionId(e: E): PartitionId = elementToPartitionId[e] ?: throw IllegalArgumentException("This element is not in the base set")
 
-    fun getElements(id: PartitionId): Set<E> {
-        return partitionToElements[id] ?: throw IllegalArgumentException("This partition does not exist")
-    }
+    fun getElements(id: PartitionId): Set<E> = partitionToElements[id] ?: throw IllegalArgumentException("This partition does not exist")
 
-    fun getAllPartitions(): Collection<Set<E>> {
-        return partitionToElements.values
-    }
+    fun getAllPartitions(): Collection<Set<E>> = partitionToElements.values
 }
