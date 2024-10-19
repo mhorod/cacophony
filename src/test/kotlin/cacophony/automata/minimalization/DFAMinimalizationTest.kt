@@ -1,6 +1,10 @@
 package cacophony.automata.minimalization
 
-import cacophony.automata.*
+import cacophony.automata.DFA
+import cacophony.automata.areEquivalent
+import cacophony.automata.createDFA
+import cacophony.automata.createDFAEquivalenceHelper
+import cacophony.automata.via
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -121,8 +125,7 @@ class DFAMinimalizationTest {
             try {
                 dfa.minimalize()
                 TODO("Fix tests once DFA interface allows empty language")
-            }
-            catch (e: NotImplementedError) {
+            } catch (e: NotImplementedError) {
                 return
             }
         }
