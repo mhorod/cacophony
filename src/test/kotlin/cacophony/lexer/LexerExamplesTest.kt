@@ -1,8 +1,8 @@
 package cacophony.lexer
 
 import cacophony.examples.AssertNoErrors
+import cacophony.examples.ExampleRunner
 import cacophony.examples.IncorrectExampleDescription
-import cacophony.examples.Runner
 import cacophony.examples.TestDiagnostics
 import cacophony.examples.assertionFromDescription
 import cacophony.examples.loadCorrectExamples
@@ -13,8 +13,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
 
-class LexerExampleRunner {
-    class LexerRunner : Runner {
+class LexerExamplesTest {
+    class LexerExampleRunner : ExampleRunner {
         override fun run(
             input: Input,
             diagnostics: TestDiagnostics,
@@ -28,7 +28,7 @@ class LexerExampleRunner {
     fun `lexer lexes correct examples without errors`(path: Path) {
         runExample(
             path,
-            LexerRunner(),
+            LexerExampleRunner(),
             AssertNoErrors(),
         )
     }
@@ -38,7 +38,7 @@ class LexerExampleRunner {
     fun `lexer lexes incorrect examples with described errors`(description: IncorrectExampleDescription) {
         runExample(
             Path.of(description.path),
-            LexerRunner(),
+            LexerExampleRunner(),
             assertionFromDescription(description),
         )
     }
