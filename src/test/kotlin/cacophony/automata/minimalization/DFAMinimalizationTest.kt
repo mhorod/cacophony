@@ -12,6 +12,22 @@ import kotlin.random.Random
 
 class DFAMinimalizationTest {
     @Test
+    fun `DFA accepting empty word and aa is not changed`() {
+        val dfa =
+            createDFA(
+                0,
+                setOf(0, 2),
+                mapOf(
+                    0 via 'a' to 1,
+                    1 via 'a' to 2,
+                ),
+            )
+        val minimized = dfa.minimalize()
+        assertTrue(areEquivalent(dfa, minimized))
+        assertEquals(3, minimized.getAllStates().size)
+    }
+
+    @Test
     fun `DFA accepting multiples of a is minimized to single state`() {
         val dfa =
             createDFA(
@@ -83,7 +99,7 @@ class DFAMinimalizationTest {
         assertEquals(16, minimized.getAllStates().size)
     }
 
-    fun <E> checkThatMinimalizedDFAIsEquivalent(dfa: DFA<E>) {
+    private fun <E> checkThatMinimalizedDFAIsEquivalent(dfa: DFA<E>) {
         val minDfa = dfa.minimalize()
         val helper = createDFAEquivalenceHelper(dfa, minDfa)
 
