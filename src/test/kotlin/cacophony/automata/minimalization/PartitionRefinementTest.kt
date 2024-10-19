@@ -7,6 +7,18 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class PartitionRefinementTest {
+    private fun initRefinement(n: Int) = PartitionRefinement((0..<n).toList())
+
+    private val part =
+        object {
+            operator fun get(vararg values: Int): MutableSet<Set<Int>> = mutableSetOf(values.toSet())
+        }
+
+    private operator fun MutableSet<Set<Int>>.get(vararg values: Int): MutableSet<Set<Int>> =
+        apply {
+            this.add(values.toSet())
+        }
+
     @Test
     fun `getAllPartitions works after one refinement`() {
         val pr = initRefinement(5)
@@ -171,16 +183,4 @@ class PartitionRefinementTest {
             pr.getElements(invalidId)
         }
     }
-
-    private fun initRefinement(n: Int) = PartitionRefinement((0..<n).toList())
-
-    private val part =
-        object {
-            operator fun get(vararg values: Int): MutableSet<Set<Int>> = mutableSetOf(values.toSet())
-        }
-
-    private operator fun MutableSet<Set<Int>>.get(vararg values: Int): MutableSet<Set<Int>> =
-        apply {
-            this.add(values.toSet())
-        }
 }

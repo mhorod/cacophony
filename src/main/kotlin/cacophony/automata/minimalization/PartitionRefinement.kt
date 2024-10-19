@@ -16,8 +16,12 @@ class PartitionRefinement<E>(
         partitionToElements[PartitionId(0)] = baseSet.toMutableSet()
     }
 
-    // Refines the partition
-    // Returns a list of pairs (OldId, NewId), indicating that the OldId set has been split into two sets (OldId, NewId)
+    // Refines the partition. For each set U of partition, such that U \cap refineBy and U \ refineBy are both not empty,
+    // set U is removed from partition, and sets U \cap refineBy and U \ refineBy are added to partition.
+    //
+    // Returns a list of pairs. Pair (U_ID, V_ID) indicates that the set with id U_ID has been removed from partition,
+    // U \cap refineBy is represented by new id V_ID,
+    // U \ refineBy reuses the old id U_ID (due to complexity).
     fun refine(refineBy: Collection<E>): List<Pair<PartitionId, PartitionId>> {
         return refineBy
             .groupBy(this::getPartitionId)
@@ -36,9 +40,9 @@ class PartitionRefinement<E>(
             }.filterNotNull()
     }
 
-    fun getPartitionId(e: E): PartitionId = elementToPartitionId[e] ?: throw IllegalArgumentException("This element is not in the base set")
+    fun getPartitionId(e: E): PartitionId = elementToPartitionId[e] ?: throw IllegalArgumentException("Non existing element")
 
-    fun getElements(id: PartitionId): Set<E> = partitionToElements[id] ?: throw IllegalArgumentException("This partition does not exist")
+    fun getElements(id: PartitionId): Set<E> = partitionToElements[id] ?: throw IllegalArgumentException("Non existing partition")
 
     fun getAllPartitions(): Collection<Set<E>> = partitionToElements.values
 }
