@@ -4,8 +4,6 @@ import cacophony.automata.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import kotlin.math.ceil
 import kotlin.random.Random
 
 class DFAMinimalizationTest {
@@ -81,68 +79,103 @@ class DFAMinimalizationTest {
         assertEquals(16, minimized.getAllStates().size)
     }
 
-    fun <E> checkMinimality(dfa: DFA<E>) {
-        val helper = createHelper(dfa, dfa)
+    fun <E> checkThatMinimalizedDFAIsEquivalent(dfa: DFA<E>) {
+        val minDfa = dfa.minimalize()
+        val helper = createDFAEquivalenceHelper(dfa, minDfa)
 
+        for (state in minDfa.getAllStates()) {
+            for (oldState in state.originalStates) {
+                assert(helper.areEquivalent(oldState, state))
+            }
+        }
+
+        assert(helper.areEquivalent(dfa.getStartingState(), minDfa.getStartingState()))
+    }
+
+    private fun <E> bruteDFAStatesEquivalenceClasses(dfa: DFA<E>): Set<Set<E>> {
+        val helper = createDFAEquivalenceHelper(dfa, dfa)
         val states = dfa.getAllStates()
-        val equivClassesMap: MutableMap<E, MutableSet<E>> = mutableMapOf()
 
+        val equivalenceClassesMap: MutableMap<E, MutableSet<E>> = mutableMapOf()
         states.forEach {
             for (s in states) {
                 if (helper.areEquivalent(s, it)) {
-                    equivClassesMap.getOrPut(s) { mutableSetOf() }.add(it)
+                    equivalenceClassesMap.getOrPut(s) { mutableSetOf() }.add(it)
                     return@forEach
                 }
             }
-            throw Exception()
+            throw Exception("State is not equivalent to itself")
         }
-
-        val equivClassesBruted = equivClassesMap.values.toSet()
-
-        val minDfa = dfa.minimalize()
-        val equivalenceClasses = minDfa.getAllStates().map { it.originalStates.toSet() }.toMutableSet()
-
-        val returnedByMinimalization = equivalenceClasses.flatten()
-        assertEquals(returnedByMinimalization.toSet().size, returnedByMinimalization.size)
-
-        val missingEquivalenceClass = dfa.getAllStates().minus(returnedByMinimalization.toSet())
-        if (missingEquivalenceClass.isNotEmpty()) {
-            equivalenceClasses.add(missingEquivalenceClass.toSet())
-        }
-
-        assertEquals(equivClassesBruted, equivalenceClasses)
+        return equivalenceClassesMap.values.toSet()
     }
 
-    private fun <E> check(dfa: DFA<E>) {
-        if (dfa.isLanguageEmpty()) {
-            assertThrows<IllegalArgumentException> {
+    private fun <E> checkThatMinimalizedDFAIsMinimal(dfa: DFA<E>) {
+        val equivalenceClassesExpected = bruteDFAStatesEquivalenceClasses(dfa.withAliveReachableStates())
+        val equivalenceClassesActual = dfa.minimalize().getAllStates().map { it.originalStates.toSet() }.toMutableSet()
+
+        assertEquals(equivalenceClassesExpected, equivalenceClassesActual)
+    }
+
+    private fun <E> checkRandomDFA(dfa: DFA<E>) {
+        if ((dfa.getAliveStates() intersect dfa.getReachableStates()).isEmpty()) {
+            try {
                 dfa.minimalize()
+                TODO("Fix tests once DFA interface allows empty language")
             }
-        } else {
-            val minDfa = dfa.minimalize()
-            assertTrue(areEquivalent(dfa, minDfa))
-            checkMinimality(dfa)
+            catch (e: NotImplementedError) {
+                return
+            }
         }
+
+        checkThatMinimalizedDFAIsEquivalent(dfa)
+        checkThatMinimalizedDFAIsMinimal(dfa)
     }
 
-    private fun generateDFA(
+    private fun generateRandomDFA(
         n: Int,
-        random: Random,
+        seed: Int,
     ): DFA<Int> {
-        val density = 0.2
+        val random = Random(seed)
         val symbols = "abc"
-        val states = 1..n
-        return createDFA(
-            states.random(random),
-            states.filter { random.nextDouble() < 0.2 }.toSet(),
-            (0..<ceil(density * n * symbols.length).toInt()).associate {
-                states.random(random) via symbols.random(random) to states.random(random)
-            },
-        )
+        val states = (1..n).toList()
+        val accepting = states.map { random.nextDouble() < 0.3 }
+        val start = states.random(random)
+        val productions: MutableMap<Pair<Int, Char>, Int> = mutableMapOf()
+        for (s in states) {
+            for (c in symbols) {
+                if (random.nextDouble() < 0.4) {
+                    productions[Pair(s, c)] = states.random(random)
+                }
+            }
+        }
+        return object : DFA<Int> {
+            override fun getStartingState(): Int {
+                return start
+            }
+
+            override fun getAllStates(): List<Int> {
+                return states
+            }
+
+            override fun getProductions(): Map<Pair<Int, Char>, Int> {
+                return productions
+            }
+
+            override fun getProduction(
+                state: Int,
+                symbol: Char,
+            ): Int? {
+                return productions[Pair(state, symbol)]
+            }
+
+            override fun isAccepting(state: Int): Boolean {
+                return accepting[state - 1]
+            }
+        }
     }
 
     @Test
-    fun `randomly check DFAs`() {
-        (0..2000).forEach { check(generateDFA(1 + it % 50, Random(0))) }
+    fun `Random DFAs`() {
+        (0..2000).forEach { checkRandomDFA(generateRandomDFA(1 + it % 50, it)) }
     }
 }

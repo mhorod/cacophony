@@ -2,15 +2,15 @@ package cacophony.automata.minimalization
 
 import cacophony.automata.DFA
 
-fun <E> PartitionRefinement<E>.smallerSet(
+private fun <E> PartitionRefinement<E>.smallerSet(
     a: PartitionId,
     b: PartitionId,
 ): PartitionId {
     return if (getElements(a).size < getElements(b).size) a else b
 }
 
-// this is class and not dataclass to make equals() and hashcode() test for object identity,
-// which is sufficient in our case and makes sure there are no checks for the list equality
+// This is class and not dataclass to make equals() and hashcode() test for object identity,
+// which is sufficient in our case and makes sure there are no checks for the list equality.
 class ContractedDFAState<DFAState>(states: List<DFAState>) {
     val originalStates: List<DFAState> = states
 
@@ -19,11 +19,12 @@ class ContractedDFAState<DFAState>(states: List<DFAState>) {
     }
 }
 
+// Removes dead/unreachable states and performs DFA minimalization.
 fun <DFAState> DFA<DFAState>.minimalize(): DFA<ContractedDFAState<DFAState>> {
     return minimalizeImpl(withAliveReachableStates())
 }
 
-// assumes dfa contains only alive and reachable states
+// Assumes dfa contains only alive and reachable states.
 private fun <DFAState> minimalizeImpl(dfa: DFA<DFAState>): DFA<ContractedDFAState<DFAState>> {
     val preimagesCalculator = DFAPreimagesCalculator(dfa)
 
