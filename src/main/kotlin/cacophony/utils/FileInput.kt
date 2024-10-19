@@ -6,6 +6,7 @@ class FileInput(filePath: String) : Input {
     private val file = File(filePath)
     private val lines = file.readLines().toMutableList()
     private val lineBeginPos = mutableListOf<Int>()
+    private val totalLength: Int
     private var curLineInd = 0
     private var curPos = 0
 
@@ -23,6 +24,7 @@ class FileInput(filePath: String) : Input {
             linesLengthSum += line.length
             lineBeginPos.add(linesLengthSum)
         }
+        totalLength = linesLengthSum
     }
 
     private fun advancePosition() {
@@ -51,7 +53,12 @@ class FileInput(filePath: String) : Input {
         return Location(lineBeginPos[lineInd] + pos)
     }
 
+    // Returns first after last position if not in range.
     private fun decodeLocation(loc: Location): Pair<Int, Int> {
+        if (loc.value < 0 || loc.value >= totalLength) {
+            return Pair(lines.size, 0)
+        }
+
         var lineInd = lineBeginPos.binarySearch(loc.value)
         if (lineInd < 0) lineInd = -(lineInd + 2)
         return Pair(lineInd, loc.value - lineBeginPos[lineInd])
@@ -87,5 +94,32 @@ class FileInput(filePath: String) : Input {
         val (lineInd, pos) = decodeLocation(loc)
         val charAtLoc = getCharAtPosition(lineInd, pos)
         return "line $lineInd, position $pos with '$charAtLoc'"
+    }
+
+    override fun locationRangeToString(
+        locBegin: Location,
+        locEnd: Location,
+    ): String {
+        val (lineIndBegin, posBegin) = decodeLocation(locBegin)
+        val (lineIndEnd, posEnd) = decodeLocation(locEnd)
+
+        assert(lineIndBegin < lineIndEnd || posBegin <= posEnd)
+
+        var content = ""
+        if (lineIndBegin == lineIndEnd) {
+            if (lines.elementAtOrNull(lineIndBegin) != null) {
+                content = lines[lineIndBegin].substring(posBegin, posEnd)
+            }
+        } else {
+            content = lines[lineIndBegin].substring(posBegin)
+            for (lineInd in lineIndBegin + 1..<lineIndEnd) {
+                content += lines[lineInd]
+            }
+            if (lines.elementAtOrNull(lineIndEnd) != null) {
+                content += lines[lineIndEnd].substring(0, posEnd)
+            }
+        }
+
+        return "from line $lineIndBegin, position $posBegin to line $lineIndEnd, position $posEnd with \"$content\""
     }
 }

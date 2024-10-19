@@ -1,5 +1,7 @@
 package cacophony.utils
 
+import kotlin.math.min
+
 class StringInput(private val text: String) : Input {
     // Current position of the cursor in string.
     private var position = 0
@@ -30,5 +32,15 @@ class StringInput(private val text: String) : Input {
 
     override fun locationToString(loc: Location): String {
         return "position ${loc.value} with '${text.elementAtOrNull(loc.value)}'"
+    }
+
+    override fun locationRangeToString(
+        locBegin: Location,
+        locEnd: Location,
+    ): String {
+        assert(locBegin.value <= locEnd.value)
+
+        val content = text.substring(locBegin.value, min(locEnd.value, text.length))
+        return "positions from ${locBegin.value} to ${locEnd.value} with \"$content\""
     }
 }

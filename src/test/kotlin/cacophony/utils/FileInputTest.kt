@@ -238,7 +238,7 @@ class FileInputTest {
     }
 
     @Test
-    fun `locationToString in a multiple lines`() {
+    fun `locationToString in multiple lines`() {
         val path = createFileWithContent("abc de\nf g\nhijk\n")
         val input = FileInput(path)
 
@@ -275,6 +275,54 @@ class FileInputTest {
     }
 
     @Test
+    fun `locationRangeToString in a single line`() {
+        val path = createFileWithContent("abcd ef")
+        val input = FileInput(path)
+
+        input.next()
+        val locB = input.getLocation()
+        input.next()
+        input.next()
+        input.next()
+        input.next()
+        val locE = input.getLocation()
+        input.next()
+
+        assertEquals(
+            "from line 0, position 1 to line 0, position 5 with \"bcd \"",
+            input.locationRangeToString(locB, locE),
+        )
+    }
+
+    @Test
+    fun `locationRangeToString in multiple lines`() {
+        val path = createFileWithContent("abc de\nf g\nhijk\n")
+        val input = FileInput(path)
+
+        input.next()
+        val locB = input.getLocation()
+        for (i in 0..11) {
+            input.next()
+        }
+        val locJ = input.getLocation()
+        input.next()
+        input.next()
+        input.next()
+        input.next()
+        input.next()
+        val locNull = input.getLocation()
+
+        assertEquals(
+            "from line 0, position 1 to line 2, position 2 with \"bc de\nf g\nhi\"",
+            input.locationRangeToString(locB, locJ),
+        )
+        assertEquals(
+            "from line 2, position 2 to line 3, position 0 with \"jk\n\"",
+            input.locationRangeToString(locJ, locNull),
+        )
+    }
+
+    @Test
     fun `all functionalities together`() {
         val path = createFileWithContent("abc de\nf g\nhijk\n")
         val input = FileInput(path)
@@ -299,7 +347,10 @@ class FileInputTest {
         input.next()
         val locJ = input.getLocation()
         input.next()
-        assertEquals("line 2, position 0 with 'h'", input.locationToString(locH))
+        assertEquals(
+            "from line 2, position 0 to line 2, position 2 with \"hi\"",
+            input.locationRangeToString(locH, locJ),
+        )
         input.next()
         input.setLocation(locSpace)
         input.next()

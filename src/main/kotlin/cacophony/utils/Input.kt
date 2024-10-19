@@ -19,4 +19,11 @@ interface Input {
 
     // Converts current cursor to human-readable string that may contain additional information.
     fun locationToString(loc: Location): String
+
+    // Converts cursor range to human-readable string that may contain additional information.
+    // locBegin cannot be greater than locEnd.
+    fun locationRangeToString(
+        locBegin: Location,
+        locEnd: Location,
+    ): String
 }

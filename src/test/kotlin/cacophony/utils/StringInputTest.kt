@@ -112,6 +112,27 @@ class StringInputTest {
     }
 
     @Test
+    fun `locationRangeToString simple`() {
+        val input = StringInput("abcd efg")
+
+        input.next()
+        input.next()
+        val locC = input.getLocation()
+        input.next()
+        input.next()
+        input.next()
+        input.next()
+        input.next()
+        val locG = input.getLocation()
+        input.next()
+        input.next()
+        val locNull = input.getLocation()
+
+        assertEquals("positions from 2 to 7 with \"cd ef\"", input.locationRangeToString(locC, locG))
+        assertEquals("positions from 2 to 9 with \"cd efg\"", input.locationRangeToString(locC, locNull))
+    }
+
+    @Test
     fun `all functionalities together`() {
         val input = StringInput("abc de\nf g\nhijk\n")
 
@@ -135,7 +156,7 @@ class StringInputTest {
         input.next()
         val locJ = input.getLocation()
         input.next()
-        assertEquals("position 11 with 'h'", input.locationToString(locH))
+        assertEquals("positions from 11 to 13 with \"hi\"", input.locationRangeToString(locH, locJ))
         input.next()
         input.setLocation(locSpace)
         input.next()
