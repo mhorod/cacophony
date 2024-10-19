@@ -1,12 +1,6 @@
 {
   "examples": [
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "functions_parameter_separation.cac",
       "errors": {
         "lexerErrors": false

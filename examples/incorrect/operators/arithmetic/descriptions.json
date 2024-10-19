@@ -7,12 +7,6 @@
       }
     },
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "arithmetic_operators_second_operand_missing.cac",
       "errors": {
         "lexerErrors": false

@@ -1,12 +1,6 @@
 {
   "examples": [
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "comments_002.cac",
       "errors": {
         "lexerErrors": false

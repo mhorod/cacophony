@@ -1,12 +1,6 @@
 {
   "examples": [
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "functions_annotation_mismatch_with_inferred_return_type.cac",
       "errors": {
         "lexerErrors": false

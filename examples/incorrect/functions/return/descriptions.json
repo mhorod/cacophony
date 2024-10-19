@@ -1,12 +1,6 @@
 {
   "examples": [
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "functions_after_return.cac",
       "errors": {
         "lexerErrors": false

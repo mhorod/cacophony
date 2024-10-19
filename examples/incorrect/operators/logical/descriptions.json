@@ -1,12 +1,6 @@
 {
   "examples": [
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "logical_operators_unary_with_two_arguments.cac",
       "errors": {
         "lexerErrors": false

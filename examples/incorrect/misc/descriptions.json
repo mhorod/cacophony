@@ -1,12 +1,6 @@
 {
   "examples": [
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "wrong_parentheses_while_inside_if.cac",
       "errors": {
         "lexerErrors": false

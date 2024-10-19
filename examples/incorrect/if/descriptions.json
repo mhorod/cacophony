@@ -13,12 +13,6 @@
       }
     },
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "if-condition-is-not-bool.cac",
       "errors": {
         "lexerErrors": false

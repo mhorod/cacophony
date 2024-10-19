@@ -1,12 +1,6 @@
 {
   "examples": [
     {
-      "path": "descriptions.json",
-      "errors": {
-        "lexerErrors": false
-      }
-    },
-    {
       "path": "variable_and_type_names_uppercase_variable.cac",
       "errors": {
         "lexerErrors": false
