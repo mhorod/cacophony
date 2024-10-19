@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 
 class StringInputTest {
     @Test
-    fun next() {
+    fun `next simple`() {
         val input = StringInput("abcde")
 
         assertEquals('a', input.next())
@@ -18,7 +18,7 @@ class StringInputTest {
     }
 
     @Test
-    fun peek() {
+    fun `peek simple`() {
         val input = StringInput("abcde")
 
         assertEquals('a', input.peek())
@@ -37,7 +37,7 @@ class StringInputTest {
     }
 
     @Test
-    fun skip() {
+    fun `skip simple`() {
         val input = StringInput("aababaccdbdab")
 
         input.skip('b')
@@ -90,7 +90,7 @@ class StringInputTest {
     }
 
     @Test
-    fun locationToString() {
+    fun `locationToString simple`() {
         val input = StringInput("abcd e")
 
         input.next()

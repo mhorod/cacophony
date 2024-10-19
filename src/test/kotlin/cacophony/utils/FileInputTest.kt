@@ -13,7 +13,7 @@ class FileInputTest {
     }
 
     @Test
-    fun next() {
+    fun `next simple`() {
         val path = createFileWithContent("abcde")
         val input = FileInput(path)
 
@@ -29,7 +29,7 @@ class FileInputTest {
     }
 
     @Test
-    fun peek() {
+    fun `peek simple`() {
         val path = createFileWithContent("abcde")
         val input = FileInput(path)
 
@@ -50,7 +50,7 @@ class FileInputTest {
     }
 
     @Test
-    fun skip() {
+    fun `skip simple`() {
         val path = createFileWithContent("aab bab\nacc\ndbd ab\n")
         val input = FileInput(path)
 

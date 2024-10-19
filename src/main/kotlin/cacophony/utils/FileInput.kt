@@ -25,7 +25,7 @@ class FileInput(filePath: String) : Input {
         }
     }
 
-    private fun setNextPosition() {
+    private fun advancePosition() {
         if (curLineInd >= lines.size) return
 
         curPos++
@@ -59,7 +59,7 @@ class FileInput(filePath: String) : Input {
 
     override fun next(): Char? {
         val nextChar = getCharAtPosition(curLineInd, curPos)
-        setNextPosition()
+        advancePosition()
         return nextChar
     }
 
@@ -69,7 +69,7 @@ class FileInput(filePath: String) : Input {
 
     override fun skip(c: Char) {
         while ((peek() != null) and (peek() != c)) {
-            setNextPosition()
+            advancePosition()
         }
     }
 

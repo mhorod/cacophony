@@ -1,7 +1,7 @@
 package cacophony.utils
 
 class StringInput(private val text: String) : Input {
-    // current position of the cursor in string
+    // Current position of the cursor in string.
     private var position = 0
 
     override fun next(): Char? {
