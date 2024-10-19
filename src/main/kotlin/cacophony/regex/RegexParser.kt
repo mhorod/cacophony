@@ -23,7 +23,7 @@ fun parseRegex(str: String): AlgebraicRegex {
                     if (it != 0 && (regex[it - 1] !in "(|" || lastEscaped == it - 1)) parser.pushOperation(ConcatOperator)
                     parser.pushOperation(LeftParenthesis)
                 }
-                ')' -> parser.pushOperation(RightParenthesis)
+                ')' -> parser.closeParenthesis()
                 '*' -> parser.pushOperation(StarOperator)
                 '|' -> parser.pushOperation(UnionOperator)
                 '\\' -> specialCharacter = true
@@ -39,7 +39,7 @@ fun parseRegex(str: String): AlgebraicRegex {
 
 private class RegexParser {
     val resultStack = ArrayDeque<RegexType>()
-    val operatorStack = ArrayDeque<StackOperator>()
+    val operatorStack = ArrayDeque<Operator>()
 
     fun pushOperation(operator: Operator) {
         try {
@@ -61,39 +61,58 @@ private class RegexParser {
         if (resultStack.size != 1 || operatorStack.isNotEmpty()) throw RegexSyntaxErrorException("Mismatched operators or parenthesis")
         return resultStack.removeLast()
     }
-}
 
-private sealed class Operator {
-    abstract fun addToStack(parser: RegexParser)
-}
-
-private data object RightParenthesis : Operator() {
-    override fun addToStack(parser: RegexParser) {
-        while (true) {
-            when (val top = parser.operatorStack.removeLast()) {
-                is InfixOperator -> top.applyToResult(parser)
-                is LeftParenthesis -> break
+    fun closeParenthesis() {
+        try {
+            while (true) {
+                when (val top = operatorStack.removeLast()) {
+                    is LeftParenthesis -> break
+                    else -> top.applyToResult(this)
+                }
             }
+        } catch (e: NoSuchElementException) {
+            throw RegexSyntaxErrorException("Mismatched operators or parenthesis")
         }
     }
 }
 
-private data object StarOperator : Operator() {
+private sealed class Operator(val priority: Int) {
+    open fun addToStack(parser: RegexParser) {
+        val stack = parser.operatorStack
+        while (true) {
+            val topOperator = stack.last()
+            if (priority <= topOperator.priority) {
+                stack.removeLast()
+                topOperator.applyToResult(parser)
+                if (priority < topOperator.priority) continue
+            }
+            stack.add(this)
+            return
+        }
+    }
+
+    abstract fun applyToResult(parser: RegexParser)
+}
+
+private data object LeftParenthesis : Operator(0) {
     override fun addToStack(parser: RegexParser) {
+        parser.operatorStack.add(this)
+    }
+
+    // Should never be reached, as LeftParenthesis has the lowest priority
+    override fun applyToResult(parser: RegexParser) {
+        throw IllegalStateException("Internal RegexParser invariant violated")
+    }
+}
+
+private data object StarOperator : Operator(3) {
+    override fun applyToResult(parser: RegexParser) {
         parser.resultStack.add(Star(parser.resultStack.removeLast()))
     }
 }
 
-private sealed class StackOperator(val priority: Int) : Operator()
-
-private data object LeftParenthesis : StackOperator(0) {
-    override fun addToStack(parser: RegexParser) {
-        parser.operatorStack.add(LeftParenthesis)
-    }
-}
-
-private sealed class InfixOperator(priority: Int) : StackOperator(priority) {
-    fun applyToResult(parser: RegexParser) {
+private sealed class InfixOperator(priority: Int) : Operator(priority) {
+    override fun applyToResult(parser: RegexParser) {
         val stack = parser.resultStack
         val x = stack.removeLast()
         val y = stack.removeLast()
@@ -104,23 +123,6 @@ private sealed class InfixOperator(priority: Int) : StackOperator(priority) {
         x: RegexType,
         y: RegexType,
     ): RegexType
-
-    override fun addToStack(parser: RegexParser) {
-        val stack = parser.operatorStack
-        while (true) {
-            val topOperator = stack.last()
-            if (priority > topOperator.priority) {
-                stack.add(this)
-            } else {
-                stack.removeLast()
-                require(topOperator is InfixOperator) // invariant: infix operators have larger priority.
-                topOperator.applyToResult(parser)
-                if (priority < topOperator.priority) continue
-                stack.add(this)
-            }
-            return
-        }
-    }
 }
 
 private data object UnionOperator : InfixOperator(1) {
