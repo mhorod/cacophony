@@ -6,7 +6,7 @@ import cacophony.utils.AlgebraicRegex.ConcatenationRegex
 import cacophony.utils.AlgebraicRegex.StarRegex
 import cacophony.utils.AlgebraicRegex.UnionRegex
 
-class RegexSyntaxErrorException : Exception()
+class RegexSyntaxErrorException(reason: String) : Exception(reason)
 
 internal sealed class RegexType {
     abstract fun toAlgebraicRegex(): AlgebraicRegex
@@ -28,22 +28,52 @@ internal class Star(val internal: RegexType) : RegexType() {
     override fun toAlgebraicRegex() = StarRegex(internal.toAlgebraicRegex())
 }
 
+private fun atoms(range: CharRange): Array<Atom> = range.map { Atom(it) }.toTypedArray()
+
 internal val SPECIAL_CHARACTER_MAP =
     mapOf(
         // Newline
-        Pair('n', Atom('\n')),
+        'n' to Atom('\n'),
         // Horizontal tab
-        Pair('t', Atom('\t')),
+        't' to Atom('\t'),
         // Carriage return
-        Pair('r', Atom('\r')),
+        'r' to Atom('\r'),
         // Every `normal` character except newline (comments match #\N*)
-        Pair('N', Union(arrayListOf(Atom('\t'), Atom('\r'), Atom(' '), *(32..126).map { Atom(it.toChar()) }.toTypedArray()))),
+        'N' to
+            Union(
+                arrayListOf(
+                    Atom('\t'),
+                    Atom('\r'),
+                    Atom(' '),
+                    *(32..126).map { Atom(it.toChar()) }.toTypedArray(),
+                ),
+            ),
         // Whitespaces
-        Pair('s', Union(arrayListOf(Atom(' '), Atom('\t'), Atom('\r'), Atom('\n')))),
+        's' to
+            Union(
+                arrayListOf(
+                    Atom(' '),
+                    Atom('\t'),
+                    Atom('\r'),
+                    Atom('\n'),
+                ),
+            ),
         // lowercase ASCII letters
-        Pair('l', Union(arrayListOf(*('a'..'z').map { Atom(it) }.toTypedArray()))),
+        'l' to Union(arrayListOf(*atoms('a'..'z'))),
         // uppercase ASCII letters
-        Pair('u', Union(arrayListOf(*('A'..'Z').map { Atom(it) }.toTypedArray()))),
+        'u' to Union(arrayListOf(*atoms('A'..'Z'))),
+        // digits
+        'd' to Union(arrayListOf(*atoms('0'..'9'))),
+        // alphanumeric and underscore
+        'w' to
+            Union(
+                arrayListOf(
+                    *atoms('a'..'z'),
+                    *atoms('A'..'Z'),
+                    *atoms('0'..'9'),
+                    Atom('_'),
+                ),
+            ),
         // regex special characters
         *"()|*\\".map { Pair(it, Atom(it)) }.toTypedArray(),
     )

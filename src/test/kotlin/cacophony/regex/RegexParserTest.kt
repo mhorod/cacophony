@@ -5,10 +5,12 @@ import cacophony.utils.AlgebraicRegex.AtomicRegex
 import cacophony.utils.AlgebraicRegex.ConcatenationRegex
 import cacophony.utils.AlgebraicRegex.StarRegex
 import cacophony.utils.AlgebraicRegex.UnionRegex
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class RegexParserTest {
+    // Checks _exact_ structure, i.e. returns false for (a|b) and (b|a).
     private fun algebraicRegexEquals(
         x: AlgebraicRegex,
         y: AlgebraicRegex,
@@ -177,18 +179,19 @@ class RegexParserTest {
     }
 
     @Test
-    fun `mismatched parenthesis 1`() {
+    fun `mismatched right parenthesis`() {
         assertThrows<RegexSyntaxErrorException> { parseRegex("abc|x(z|d))ef") }
     }
 
     @Test
-    fun `wrong escaped character`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex(""""abc|\yx(z|d)ef""") }
+    fun `mismatched left parenthesis`() {
+        assertThrows<RegexSyntaxErrorException> { parseRegex("abc|x(((z|d))ef") }
     }
 
     @Test
-    fun `mismatched parenthesis 2`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex("abc|x(((z|d))ef") }
+    fun `wrong escaped character`() {
+        val exception = assertThrows<RegexSyntaxErrorException> { parseRegex("""abc|\yx(z|d)ef""") }
+        assertEquals("Invalid escaped character 'y' at position 5", exception.message)
     }
 
     @Test

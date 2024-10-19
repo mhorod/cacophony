@@ -1,8 +1,6 @@
 package cacophony.regex
 
 import cacophony.utils.AlgebraicRegex
-import java.util.EmptyStackException
-import java.util.Stack
 
 fun parseRegex(str: String): AlgebraicRegex {
     val parser = RegexParser()
@@ -12,9 +10,11 @@ fun parseRegex(str: String): AlgebraicRegex {
     regex.indices.forEach {
         val c = regex[it]
         if (specialCharacter) {
-            if (c !in SPECIAL_CHARACTER_MAP.keys) throw RegexSyntaxErrorException()
+            val specialRegex =
+                SPECIAL_CHARACTER_MAP[c]
+                    ?: throw RegexSyntaxErrorException("Invalid escaped character '$c' at position ${it - 1}")
             if (it > 1 && (regex[it - 2] !in "(|" || lastEscaped == it - 2)) parser.pushOperation(ConcatOperator)
-            parser.pushRegex(SPECIAL_CHARACTER_MAP[c]!!) // safe because of previous check
+            parser.pushRegex(specialRegex)
             specialCharacter = false
             lastEscaped = it
         } else {
@@ -38,28 +38,28 @@ fun parseRegex(str: String): AlgebraicRegex {
 }
 
 private class RegexParser {
-    val result = Stack<RegexType>()
-    val stack = Stack<StackOperator>()
+    val resultStack = ArrayDeque<RegexType>()
+    val operatorStack = ArrayDeque<StackOperator>()
 
     fun pushOperation(operator: Operator) {
         try {
             operator.addToStack(this)
-        } catch (e: EmptyStackException) {
-            throw RegexSyntaxErrorException()
+        } catch (e: NoSuchElementException) {
+            throw RegexSyntaxErrorException("Mismatched operators or parenthesis")
         }
     }
 
     fun pushSymbol(c: Char) {
-        result.push(Atom(c))
+        resultStack.add(Atom(c))
     }
 
     fun pushRegex(c: RegexType) {
-        result.push(c)
+        resultStack.add(c)
     }
 
     fun finalize(): RegexType {
-        if (result.size != 1 || stack.isNotEmpty()) throw RegexSyntaxErrorException()
-        return result.pop()
+        if (resultStack.size != 1 || operatorStack.isNotEmpty()) throw RegexSyntaxErrorException("Mismatched operators or parenthesis")
+        return resultStack.removeLast()
     }
 }
 
@@ -70,7 +70,7 @@ private sealed class Operator {
 private data object RightParenthesis : Operator() {
     override fun addToStack(parser: RegexParser) {
         while (true) {
-            when (val top = parser.stack.pop()) {
+            when (val top = parser.operatorStack.removeLast()) {
                 is InfixOperator -> top.applyToResult(parser)
                 is LeftParenthesis -> break
             }
@@ -80,7 +80,7 @@ private data object RightParenthesis : Operator() {
 
 private data object StarOperator : Operator() {
     override fun addToStack(parser: RegexParser) {
-        parser.result.push(Star(parser.result.pop()))
+        parser.resultStack.add(Star(parser.resultStack.removeLast()))
     }
 }
 
@@ -88,16 +88,16 @@ private sealed class StackOperator(val priority: Int) : Operator()
 
 private data object LeftParenthesis : StackOperator(0) {
     override fun addToStack(parser: RegexParser) {
-        parser.stack.push(LeftParenthesis)
+        parser.operatorStack.add(LeftParenthesis)
     }
 }
 
 private sealed class InfixOperator(priority: Int) : StackOperator(priority) {
     fun applyToResult(parser: RegexParser) {
-        val stack = parser.result
-        val x = stack.pop()
-        val y = stack.pop()
-        stack.push(merge(y, x))
+        val stack = parser.resultStack
+        val x = stack.removeLast()
+        val y = stack.removeLast()
+        stack.add(merge(y, x))
     }
 
     abstract fun merge(
@@ -106,17 +106,17 @@ private sealed class InfixOperator(priority: Int) : StackOperator(priority) {
     ): RegexType
 
     override fun addToStack(parser: RegexParser) {
-        val stack = parser.stack
+        val stack = parser.operatorStack
         while (true) {
-            val topOperator = stack.peek()
+            val topOperator = stack.last()
             if (priority > topOperator.priority) {
-                stack.push(this)
+                stack.add(this)
             } else {
-                stack.pop()
-                require(topOperator is InfixOperator) // invariant: infix operators have larger priority
+                stack.removeLast()
+                require(topOperator is InfixOperator) // invariant: infix operators have larger priority.
                 topOperator.applyToResult(parser)
                 if (priority < topOperator.priority) continue
-                stack.push(this)
+                stack.add(this)
             }
             return
         }
