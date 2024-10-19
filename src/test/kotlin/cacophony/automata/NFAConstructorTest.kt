@@ -1,11 +1,13 @@
 package cacophony.automata
 
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.assertFalse
 import cacophony.utils.AlgebraicRegex
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Test
 
 class NFAConstructorTest {
-    private class NFAWalker<NFAState>(val nfa: NFA<NFAState>) {
+    private class NFAWalker<NFAState>(
+        val nfa: NFA<NFAState>,
+    ) {
         private fun epsClosure(states: Set<NFAState>): Set<NFAState> {
             var states = states
             while (true) {
@@ -14,17 +16,24 @@ class NFAConstructorTest {
                     val epsNeighbors = nfa.getEpsilonProductions()[state] ?: emptyList()
                     newStates = newStates union epsNeighbors
                 }
-                if ((newStates union states) == states) break
-                else states = (newStates union states).toMutableSet()
+                if ((newStates union states) == states) {
+                    break
+                } else {
+                    states = (newStates union states).toMutableSet()
+                }
             }
             return states
         }
 
-        private fun step(states: Set<NFAState>, symbol: Char): Set<NFAState> {
+        private fun step(
+            states: Set<NFAState>,
+            symbol: Char,
+        ): Set<NFAState> {
             val states = epsClosure(states)
             var newStates: Set<NFAState> = setOf()
-            for (state in states)
+            for (state in states) {
                 newStates = newStates union nfa.getProductions(state, symbol)
+            }
             return epsClosure(newStates)
         }
 
@@ -95,12 +104,12 @@ class NFAConstructorTest {
         // #(((AB)*|(BA)*)#)*
         val reA = AlgebraicRegex.AtomicRegex('A')
         val reB = AlgebraicRegex.AtomicRegex('B')
-        val re_hash = AlgebraicRegex.AtomicRegex('#')
-        val reAB_star = AlgebraicRegex.StarRegex(AlgebraicRegex.ConcatenationRegex(reA, reB))
-        val reBA_star = AlgebraicRegex.StarRegex(AlgebraicRegex.ConcatenationRegex(reB, reA))
-        val re_union = AlgebraicRegex.UnionRegex(reAB_star, reBA_star)
-        val re_union_hash = AlgebraicRegex.ConcatenationRegex(re_union, re_hash)
-        val re = AlgebraicRegex.ConcatenationRegex(re_hash, AlgebraicRegex.StarRegex(re_union_hash))
+        val reHash = AlgebraicRegex.AtomicRegex('#')
+        val reABxStar = AlgebraicRegex.StarRegex(AlgebraicRegex.ConcatenationRegex(reA, reB))
+        val reBAxStar = AlgebraicRegex.StarRegex(AlgebraicRegex.ConcatenationRegex(reB, reA))
+        val reUnion = AlgebraicRegex.UnionRegex(reABxStar, reBAxStar)
+        val reUnionHash = AlgebraicRegex.ConcatenationRegex(reUnion, reHash)
+        val re = AlgebraicRegex.ConcatenationRegex(reHash, AlgebraicRegex.StarRegex(reUnionHash))
         val walker = NFAWalker(buildNFAFromRegex(re))
         assert(walker.accepts("##"))
         assert(walker.accepts("#AB#"))
