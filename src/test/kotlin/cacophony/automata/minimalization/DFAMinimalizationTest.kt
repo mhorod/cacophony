@@ -2,12 +2,11 @@ package cacophony.automata.minimalization
 
 import cacophony.automata.DFA
 import cacophony.automata.areEquivalent
-import cacophony.automata.createDFA
 import cacophony.automata.createDFAEquivalenceHelper
-import cacophony.automata.via
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.math.ceil
 import kotlin.random.Random
 
 class DFAMinimalizationTest {
@@ -131,7 +130,12 @@ class DFAMinimalizationTest {
 
     private fun <E> checkThatMinimalizedDFAIsMinimal(dfa: DFA<E>) {
         val equivalenceClassesExpected = bruteDFAStatesEquivalenceClasses(dfa.withAliveReachableStates())
-        val equivalenceClassesActual = dfa.minimalize().getAllStates().map { it.originalStates.toSet() }.toMutableSet()
+        val equivalenceClassesActual =
+            dfa
+                .minimalize()
+                .getAllStates()
+                .map { it.originalStates.toSet() }
+                .toMutableSet()
 
         assertEquals(equivalenceClassesExpected, equivalenceClassesActual)
     }
@@ -152,49 +156,23 @@ class DFAMinimalizationTest {
 
     private fun generateRandomDFA(
         n: Int,
-        seed: Int,
+        random: Random,
     ): DFA<Int> {
-        val random = Random(seed)
+        val density = 0.2
         val symbols = "abc"
-        val states = (1..n).toList()
-        val accepting = states.map { random.nextDouble() < 0.3 }
-        val start = states.random(random)
-        val productions: MutableMap<Pair<Int, Char>, Int> = mutableMapOf()
-        for (s in states) {
-            for (c in symbols) {
-                if (random.nextDouble() < 0.4) {
-                    productions[Pair(s, c)] = states.random(random)
-                }
-            }
-        }
-        return object : DFA<Int> {
-            override fun getStartingState(): Int {
-                return start
-            }
-
-            override fun getAllStates(): List<Int> {
-                return states
-            }
-
-            override fun getProductions(): Map<Pair<Int, Char>, Int> {
-                return productions
-            }
-
-            override fun getProduction(
-                state: Int,
-                symbol: Char,
-            ): Int? {
-                return productions[Pair(state, symbol)]
-            }
-
-            override fun isAccepting(state: Int): Boolean {
-                return accepting[state - 1]
-            }
-        }
+        val states = 1..n
+        return createDFA(
+            states.random(random),
+            states.filter { random.nextDouble() < 0.2 }.toSet(),
+            (0..<ceil(density * n * symbols.length).toInt()).associate {
+                states.random(random) via symbols.random(random) to states.random(random)
+            },
+        )
     }
 
     @Test
     fun `Random DFAs`() {
-        (0..2000).forEach { checkRandomDFA(generateRandomDFA(1 + it % 50, it)) }
+        val random = Random(0)
+        (0..2000).forEach { checkRandomDFA(generateRandomDFA(1 + it % 50, random)) }
     }
 }

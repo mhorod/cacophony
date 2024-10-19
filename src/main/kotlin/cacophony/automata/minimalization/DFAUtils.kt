@@ -2,25 +2,25 @@ package cacophony.automata.minimalization
 
 import cacophony.automata.DFA
 
-class DFAPreimagesCalculator<DFAState>(dfa: DFA<DFAState>) {
-    private val cache: Map<DFAState, Map<Char, Set<DFAState>>>
+class DFAPreimagesCalculator<DFAState>(
+    dfa: DFA<DFAState>,
+) {
+    private val cache: Map<DFAState, Map<Char, Set<DFAState>>> =
+        dfa
+            .getProductions()
+            .entries
+            .groupBy({ it.value }, { it.key })
+            .mapValues { entry ->
+                entry.value.groupBy({ it.second }, { it.first }).mapValues { it.value.toSet() }
+            }
 
-    init {
-        val result: MutableMap<DFAState, MutableMap<Char, MutableSet<DFAState>>> = mutableMapOf()
-        dfa.getProductions().forEach {
-            val inner = result.getOrPut(it.value) { mutableMapOf() }
-            inner.getOrPut(it.key.second) { mutableSetOf() }.add(it.key.first)
-        }
-        cache = result
-    }
-
-    fun getPreimages(states: Set<DFAState>): Map<Char, Set<DFAState>> {
-        val result: MutableMap<Char, MutableSet<DFAState>> = mutableMapOf()
-        for (state in states) {
-            cache[state]?.forEach { result.getOrPut(it.key) { mutableSetOf() }.addAll(it.value) }
-        }
-        return result
-    }
+    fun getPreimages(states: Set<DFAState>): Map<Char, Set<DFAState>> =
+        states
+            .mapNotNull { state -> cache[state]?.let { state to it } }
+            .flatMap { it.second.entries }
+            .flatMap { entry -> entry.value.map { entry.key to it } }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { it.value.toSet() }
 }
 
 fun <DFAState> getDFAForEmptyLanguage(): DFA<DFAState> = TODO("DFA interface does not allow empty languages")
@@ -53,9 +53,7 @@ fun <DFAState> DFA<DFAState>.getAliveStates(): Set<DFAState> {
     return getReachableFrom(getAllStates().filter(this::isAccepting), graph)
 }
 
-fun <DFAState> DFA<DFAState>.withAliveReachableStates(): DFA<DFAState> {
-    return withStates(getAliveStates() intersect getReachableStates())
-}
+fun <DFAState> DFA<DFAState>.withAliveReachableStates(): DFA<DFAState> = withStates(getAliveStates() intersect getReachableStates())
 
 fun <DFAState> DFA<DFAState>.withStates(retain: Set<DFAState>): DFA<DFAState> {
     if (!retain.contains(getStartingState())) {
@@ -63,31 +61,41 @@ fun <DFAState> DFA<DFAState>.withStates(retain: Set<DFAState>): DFA<DFAState> {
     }
 
     val productions = getProductions().filter { retain.contains(it.key.first) && retain.contains(it.value) }
-    val retainList = retain.toList()
     val fullDFA = this
 
+    return createDFA(
+        fullDFA.getStartingState(),
+        retain.filter { fullDFA.isAccepting(it) }.toSet(),
+        productions,
+    )
+}
+
+fun <DFAState> createDFA(
+    starting: DFAState,
+    accepting: Set<DFAState>,
+    productions: Map<Pair<DFAState, Char>, DFAState>,
+): DFA<DFAState> {
+    val allStates =
+        setOf(starting)
+            .union(accepting)
+            .union(productions.keys.map { it.first })
+            .union(productions.values)
+            .toList()
+
     return object : DFA<DFAState> {
-        override fun getStartingState(): DFAState {
-            return fullDFA.getStartingState()
-        }
+        override fun getStartingState(): DFAState = starting
 
-        override fun getAllStates(): List<DFAState> {
-            return retainList
-        }
+        override fun getAllStates(): List<DFAState> = allStates
 
-        override fun getProductions(): Map<Pair<DFAState, Char>, DFAState> {
-            return productions
-        }
+        override fun getProductions(): Map<Pair<DFAState, Char>, DFAState> = productions
 
         override fun getProduction(
             state: DFAState,
             symbol: Char,
-        ): DFAState? {
-            return productions[Pair(state, symbol)]
-        }
+        ): DFAState? = productions[state via symbol]
 
-        override fun isAccepting(state: DFAState): Boolean {
-            return fullDFA.isAccepting(state)
-        }
+        override fun isAccepting(state: DFAState): Boolean = accepting.contains(state)
     }
 }
+
+infix fun <DFAState> DFAState.via(label: Char): Pair<DFAState, Char> = Pair(this, label)
