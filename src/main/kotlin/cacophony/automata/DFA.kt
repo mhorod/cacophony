@@ -21,12 +21,18 @@ interface DFA<DFAState> {
     fun getProductions(): Map<Pair<DFAState, Char>, DFAState>
 }
 
-public class SimpleDFA<StateType>(
+public data class SimpleDFA<StateType>(
     private val start: StateType,
     private val prod: Map<Pair<StateType, Char>, StateType>,
     private val accept: Set<StateType>,
 ) : DFA<StateType> {
-    val all = prod.keys.map { (state, _) -> state }
+    val all =
+        (
+            prod.keys
+                .unzip()
+                .first
+                .toSet() union setOf(start) union accept union prod.values.toSet()
+        ).toList()
 
     public override fun getStartingState() = start
 
