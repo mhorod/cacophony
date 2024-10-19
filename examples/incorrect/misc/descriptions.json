@@ -1,0 +1,28 @@
+{
+  "examples": [
+    {
+      "path": "descriptions.json",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "wrong_parentheses_while_inside_if.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "wrong_parentheses_ifs_inside_while.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "blocks.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

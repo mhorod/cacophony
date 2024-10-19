@@ -1,0 +1,34 @@
+{
+  "examples": [
+    {
+      "path": "while-condition-not-bool.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "descriptions.json",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "while-break-outside-loop.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "while-as-condition.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "while-non-unit-initialization.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

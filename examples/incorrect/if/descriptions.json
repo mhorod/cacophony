@@ -1,0 +1,34 @@
+{
+  "examples": [
+    {
+      "path": "if-else-without-if.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "if-invalid-initialization.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "descriptions.json",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "if-condition-is-not-bool.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "if-branches-have-different-types.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

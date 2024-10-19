@@ -1,0 +1,22 @@
+{
+  "examples": [
+    {
+      "path": "descriptions.json",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "mutual_recursion.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "functions_calls.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

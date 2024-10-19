@@ -1,0 +1,70 @@
+{
+  "examples": [
+    {
+      "path": "descriptions.json",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_and_type_names_uppercase_variable.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_definitions_reserved_keyword.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_definitions_multi_type_line.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_and_type_names_lowercase_types.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_definitions_nonexistent_type.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_definitions_illegal_symbols_name.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_definitions_invalid_type.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_and_type_names_illegal_character.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_definitions_uppercase_name.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "variable_definitions_missing_value_and_type.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

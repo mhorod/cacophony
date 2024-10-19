@@ -1,0 +1,40 @@
+{
+  "examples": [
+    {
+      "path": "shadowing-var-fun.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "descriptions.json",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "shadowing-var-var.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "shadowing-fun-var.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "shadowing-recursion.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "shadowing-fun-fun.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}
