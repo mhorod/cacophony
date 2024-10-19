@@ -1,47 +1,11 @@
 package cacophony.automata
 
+import cacophony.createDFA
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DFAEquivalenceTest {
-    private fun createDFA(
-        starting: Int,
-        productions: Map<Pair<Int, Char>, Int>,
-        accepting: Set<Int>,
-    ): DFA<Int> {
-        val allStates =
-            (
-                setOf(starting) union accepting union
-                    productions.keys.map { it.first }
-                        .toSet() union productions.values
-            ).toList()
-        return object : DFA<Int> {
-            override fun getStartingState(): Int {
-                return starting
-            }
-
-            override fun getAllStates(): List<Int> {
-                return allStates
-            }
-
-            override fun getProductions(): Map<Pair<Int, Char>, Int> {
-                return productions
-            }
-
-            override fun getProduction(
-                state: Int,
-                symbol: Char,
-            ): Int? {
-                return productions[Pair(state, symbol)]
-            }
-
-            override fun isAccepting(state: Int): Boolean {
-                return accepting.contains(state)
-            }
-        }
-    }
-
     @Test
     fun `DFA is equivalent to itself`() {
         val dfa =
