@@ -172,7 +172,6 @@ class DFAMinimalizationTest {
 
     @Test
     fun `Random DFAs`() {
-        val random = Random(0)
-        (0..2000).forEach { checkRandomDFA(generateRandomDFA(1 + it % 50, random)) }
+        (0..2000).forEach { checkRandomDFA(generateRandomDFA(1 + it % 50, Random(it))) }
     }
 }
