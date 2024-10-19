@@ -42,7 +42,7 @@ class DeterminizationTest {
         }
 
     @Test
-    fun `Empty language NFA maps to empty language DFA`() {
+    fun `empty language NFA maps to empty language DFA`() {
         val nfa =
             makeNFA(
                 1,
@@ -63,7 +63,7 @@ class DeterminizationTest {
     }
 
     @Test
-    fun `Empty word singleton NFA maps to empty word singleton DFA`() {
+    fun `empty word singleton NFA maps to empty word singleton DFA`() {
         val nfa =
             makeNFA(
                 1,
@@ -84,7 +84,7 @@ class DeterminizationTest {
 
     // Language is (a|b)*
     @Test
-    fun `Deterministic NFA maps to equivalent DFA`() {
+    fun `deterministic NFA maps to equivalent DFA`() {
         val nfa =
             makeNFA(
                 1,
@@ -103,7 +103,7 @@ class DeterminizationTest {
 
     // Language is (a|b)*
     @Test
-    fun `Highly nondeterministic NFA maps to equivalent DFA`() {
+    fun `highly nondeterministic NFA maps to equivalent DFA`() {
         val nfa =
             makeNFA(
                 1,
@@ -130,7 +130,7 @@ class DeterminizationTest {
 
     // Language is (baaaa|bcba|bcaaa|caaa)*
     @Test
-    fun `Large NFA maps to equivalent DFA`() {
+    fun `large NFA maps to equivalent DFA`() {
         val nfa =
             makeNFA(
                 1,
