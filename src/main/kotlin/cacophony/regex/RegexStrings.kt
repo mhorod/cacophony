@@ -2,6 +2,7 @@ package cacophony.regex
 
 import cacophony.token.TokenCategoryGeneral
 import cacophony.token.TokenCategorySpecific
+// we will want to use only one of them
 
 object RegexStrings {
     private val generalCategoryMap =
@@ -66,23 +67,11 @@ object RegexStrings {
             TokenCategorySpecific.COMMENT to """#\N*""",
         )
 
-    private val specialCharacterMap =
-        mapOf(
-            'w' to """\d|\l|\u|_""",
-            'd' to """0|1|2|3|4|5|6|7|8|9""",
-            'l' to """a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z""",
-            'u' to """A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z""",
-        )
-
     fun getCategoryRegex(category: TokenCategoryGeneral): String? {
         return generalCategoryMap.get(category)
     }
 
     fun getCategoryRegex(category: TokenCategorySpecific): String? {
         return specificCategoryMap.get(category)
-    }
-
-    fun getSpecialCharacterRegex(character: Char): String? {
-        return specialCharacterMap.get(character)
     }
 }
