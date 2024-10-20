@@ -25,8 +25,6 @@ class DFAPreimagesCalculator<DFAState>(
             .mapValues { it.value.toSet() }
 }
 
-fun <DFAState> getDFAForEmptyLanguage(): DFA<DFAState> = TODO("DFA interface does not allow empty languages")
-
 // Returns a set of all elements reachable from a collection of nodes in a directed graph.
 fun <E> getReachableFrom(
     from: Collection<E>,
@@ -62,9 +60,10 @@ fun <DFAState> DFA<DFAState>.getAliveStates(): Set<DFAState> {
 fun <DFAState> DFA<DFAState>.withAliveReachableStates(): DFA<DFAState> = withStates(getAliveStates() intersect getReachableStates())
 
 // Returns a copy of this DFA with all states not belonging to retain set removed.
+// IllegalArgumentException iff retain does not contain starting state
 fun <DFAState> DFA<DFAState>.withStates(retain: Set<DFAState>): DFA<DFAState> {
     if (!retain.contains(getStartingState())) {
-        return getDFAForEmptyLanguage()
+        throw IllegalArgumentException("Cannot remove starting state")
     }
 
     val productions = getProductions().filter { retain.contains(it.key.first) && retain.contains(it.value) }

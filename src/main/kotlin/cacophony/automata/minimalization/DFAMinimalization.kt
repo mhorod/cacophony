@@ -19,6 +19,7 @@ class ContractedDFAState<DFAState>(
 }
 
 // Returns a minimalized copy of this DFA, with dead/unreachable states removed.
+// Throws IllegalArgumentException if DFA is invalid (i.e. it does not accept any word).
 fun <DFAState> DFA<DFAState>.minimalize(): DFA<ContractedDFAState<DFAState>> = minimalizeImpl(withAliveReachableStates())
 
 // minimalize() helper function. Assumes dfa contains only alive and reachable states.

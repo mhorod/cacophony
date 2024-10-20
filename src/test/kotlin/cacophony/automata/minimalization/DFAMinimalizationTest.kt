@@ -7,6 +7,7 @@ import cacophony.automata.createDFAEquivalenceHelper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.math.ceil
 import kotlin.random.Random
 
@@ -143,12 +144,9 @@ class DFAMinimalizationTest {
 
     private fun <E> checkRandomDFA(dfa: DFA<E>) {
         if ((dfa.getAliveStates() intersect dfa.getReachableStates()).isEmpty()) {
-            try {
-                dfa.minimalize()
-                TODO("Fix tests once DFA interface allows empty language")
-            } catch (e: NotImplementedError) {
-                return
-            }
+            // Generated DFA is invalid.
+            assertThrows<IllegalArgumentException>{ dfa.minimalize() }
+            return
         }
 
         checkThatMinimalizedDFAIsEquivalent(dfa)
