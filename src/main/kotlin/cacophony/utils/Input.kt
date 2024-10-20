@@ -5,6 +5,12 @@ interface Input {
     // Returns null if the end is reached.
     fun next(): Char?
 
+    // Retrieves next character without advancing the cursor.
+    fun peek(): Char?
+
+    // Advances cursor to the position of next occurrence of c or the end of input.
+    fun skip(c: Char)
+
     // Gets the current position of the cursor in the input.
     fun getLocation(): Location
 
@@ -13,4 +19,11 @@ interface Input {
 
     // Converts current cursor to human-readable string that may contain additional information.
     fun locationToString(loc: Location): String
+
+    // Converts cursor range to human-readable string that may contain additional information.
+    // locBegin cannot be greater than locEnd.
+    fun locationRangeToString(
+        locBegin: Location,
+        locEnd: Location,
+    ): String
 }

@@ -2,3 +2,4 @@
 build/
 .gradle
 *.jar
+kls_database.db

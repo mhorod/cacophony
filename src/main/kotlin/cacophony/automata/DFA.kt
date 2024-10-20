@@ -20,3 +20,30 @@ interface DFA<DFAState> {
     // Returned value is map accepting current state and symbol, and returning new state, which may not exist.
     fun getProductions(): Map<Pair<DFAState, Char>, DFAState>
 }
+
+public data class SimpleDFA<StateType>(
+    private val start: StateType,
+    private val prod: Map<Pair<StateType, Char>, StateType>,
+    private val accept: Set<StateType>,
+) : DFA<StateType> {
+    val all =
+        (
+            prod.keys
+                .unzip()
+                .first
+                .toSet() union setOf(start) union accept union prod.values.toSet()
+        ).toList()
+
+    public override fun getStartingState() = start
+
+    public override fun isAccepting(state: StateType) = state in accept
+
+    public override fun getAllStates() = all
+
+    public override fun getProductions() = prod
+
+    public override fun getProduction(
+        state: StateType,
+        symbol: Char,
+    ) = prod[state to symbol]
+}
