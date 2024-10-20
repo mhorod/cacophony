@@ -15,8 +15,9 @@ sealed class AlgebraicRegex {
         vararg val internalRegexes: AlgebraicRegex,
     ) : AlgebraicRegex()
 
-
-    class StarRegex(val internalRegex: AlgebraicRegex) : AlgebraicRegex()
+    class StarRegex(
+        val internalRegex: AlgebraicRegex,
+    ) : AlgebraicRegex()
 
     companion object {
         fun fromString(regex: String): AlgebraicRegex = parseRegex(regex)
