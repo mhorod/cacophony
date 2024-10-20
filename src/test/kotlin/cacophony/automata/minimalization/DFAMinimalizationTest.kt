@@ -1,6 +1,7 @@
 package cacophony.automata.minimalization
 
 import cacophony.automata.DFA
+import cacophony.automata.SimpleDFA
 import cacophony.automata.areEquivalent
 import cacophony.automata.createDFAEquivalenceHelper
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,13 +14,13 @@ class DFAMinimalizationTest {
     @Test
     fun `DFA accepting empty word and aa is not changed`() {
         val dfa =
-            createDFA(
+            SimpleDFA(
                 0,
-                setOf(0, 2),
                 mapOf(
                     0 via 'a' to 1,
                     1 via 'a' to 2,
                 ),
+                setOf(0, 2),
             )
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
@@ -29,14 +30,14 @@ class DFAMinimalizationTest {
     @Test
     fun `DFA accepting multiples of a is minimized to single state`() {
         val dfa =
-            createDFA(
+            SimpleDFA(
                 0,
-                setOf(0, 1, 2),
                 mapOf(
                     0 via 'a' to 1,
                     1 via 'a' to 2,
                     2 via 'a' to 0,
                 ),
+                setOf(0, 1, 2),
             )
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
@@ -46,15 +47,15 @@ class DFAMinimalizationTest {
     @Test
     fun `DFA accepting a single letter is minimized to two states`() {
         val dfa =
-            createDFA(
+            SimpleDFA(
                 0,
-                setOf(1),
                 mapOf(
                     0 via 'a' to 1,
                     1 via 'b' to 2,
                     2 via 'a' to 3,
                     3 via 'a' to 2,
                 ),
+                setOf(1),
             )
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
@@ -64,9 +65,8 @@ class DFAMinimalizationTest {
     @Test
     fun `DFA accepting a single 15-word is minimized to 16 states`() {
         val dfa =
-            createDFA(
+            SimpleDFA(
                 0,
-                setOf(15),
                 mapOf(
                     0 via 'd' to 1,
                     1 via 'e' to 2,
@@ -92,6 +92,7 @@ class DFAMinimalizationTest {
                     // unreachable state
                     20 via 'x' to 7,
                 ),
+                setOf(15),
             )
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
@@ -161,12 +162,12 @@ class DFAMinimalizationTest {
         val density = 0.2
         val symbols = "abc"
         val states = 1..n
-        return createDFA(
+        return SimpleDFA(
             states.random(random),
-            states.filter { random.nextDouble() < 0.2 }.toSet(),
             (0..<ceil(density * n * symbols.length).toInt()).associate {
                 states.random(random) via symbols.random(random) to states.random(random)
             },
+            states.filter { random.nextDouble() < 0.2 }.toSet(),
         )
     }
 

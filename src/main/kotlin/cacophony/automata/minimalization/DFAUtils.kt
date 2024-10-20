@@ -1,6 +1,7 @@
 package cacophony.automata.minimalization
 
 import cacophony.automata.DFA
+import cacophony.automata.SimpleDFA
 
 class DFAPreimagesCalculator<DFAState>(
     dfa: DFA<DFAState>,
@@ -63,39 +64,11 @@ fun <DFAState> DFA<DFAState>.withStates(retain: Set<DFAState>): DFA<DFAState> {
     val productions = getProductions().filter { retain.contains(it.key.first) && retain.contains(it.value) }
     val fullDFA = this
 
-    return createDFA(
+    return SimpleDFA(
         fullDFA.getStartingState(),
-        retain.filter { fullDFA.isAccepting(it) }.toSet(),
         productions,
+        retain.filter { fullDFA.isAccepting(it) }.toSet(),
     )
-}
-
-fun <DFAState> createDFA(
-    starting: DFAState,
-    accepting: Set<DFAState>,
-    productions: Map<Pair<DFAState, Char>, DFAState>,
-): DFA<DFAState> {
-    val allStates =
-        setOf(starting)
-            .union(accepting)
-            .union(productions.keys.map { it.first })
-            .union(productions.values)
-            .toList()
-
-    return object : DFA<DFAState> {
-        override fun getStartingState(): DFAState = starting
-
-        override fun getAllStates(): List<DFAState> = allStates
-
-        override fun getProductions(): Map<Pair<DFAState, Char>, DFAState> = productions
-
-        override fun getProduction(
-            state: DFAState,
-            symbol: Char,
-        ): DFAState? = productions[state via symbol]
-
-        override fun isAccepting(state: DFAState): Boolean = accepting.contains(state)
-    }
 }
 
 infix fun <DFAState> DFAState.via(label: Char): Pair<DFAState, Char> = Pair(this, label)

@@ -1,6 +1,7 @@
 package cacophony.automata.minimalization
 
 import cacophony.automata.DFA
+import cacophony.automata.SimpleDFA
 
 private fun <E> PartitionRefinement<E>.smallerSet(
     a: PartitionId,
@@ -65,9 +66,9 @@ private fun <DFAState> minimalizeImpl(dfa: DFA<DFAState>): DFA<ContractedDFAStat
                 return@map Pair(Pair(newFrom, symbol), newResult)
             }.toMap()
 
-    return createDFA(
+    return SimpleDFA(
         newStartingState,
-        newAcceptingStates,
         newProductions,
+        newAcceptingStates,
     )
 }
