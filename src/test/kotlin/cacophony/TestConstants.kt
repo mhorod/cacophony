@@ -1,16 +1,17 @@
 package cacophony
 
+import cacophony.automata.SimpleDFA
+
 enum class MockCategory {
     NON_EMPTY,
     SQUARE,
     FIRST_UPPER_CASE,
     UPPER_CASE,
-    QUOTE,
 }
 
 // (a|A|b|B)+
 val DFA_NON_EMPTY =
-    createDFA(
+    SimpleDFA(
         1,
         mapOf(
             Pair(1, 'a') to 2,
@@ -27,7 +28,7 @@ val DFA_NON_EMPTY =
 
 // (A|B)(a|b)*
 val DFA_FIRST_UPPER_CASE =
-    createDFA(
+    SimpleDFA(
         1,
         mapOf(
             Pair(1, 'A') to 2,
@@ -40,7 +41,7 @@ val DFA_FIRST_UPPER_CASE =
 
 // (A|B)+
 val DFA_UPPER_CASE =
-    createDFA(
+    SimpleDFA(
         1,
         mapOf(
             Pair(1, 'A') to 2,
@@ -53,7 +54,7 @@ val DFA_UPPER_CASE =
 
 // [(a|A|b|B)*]
 val DFA_SQUARE =
-    createDFA(
+    SimpleDFA(
         1,
         mapOf(
             Pair(1, '[') to 2,
