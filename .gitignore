@@ -1,5 +1,5 @@
 .idea
 build/
-kls_database.db
 .gradle
 *.jar
+kls_database.db
