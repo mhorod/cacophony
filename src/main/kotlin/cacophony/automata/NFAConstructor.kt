@@ -5,7 +5,7 @@ import kotlin.collections.emptyMap
 
 fun buildNFAFromRegex(regex: AlgebraicRegex): NFA<Int> = buildSimpleNFAFromRegex(regex)
 
-// implementation relies on the fact that the initial state will always have number 0
+// Implementation relies on the fact that the initial state will always have number 0.
 private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
     when (regex) {
         is AlgebraicRegex.AtomicRegex ->
@@ -18,7 +18,7 @@ private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
 
         is AlgebraicRegex.UnionRegex -> {
             var totalSize = 1
-            var prods: Map<Pair<Int, Char>, List<Int>> = mapOf()
+            val prods: MutableMap<Pair<Int, Char>, List<Int>> = mutableMapOf()
             val epsProds: MutableMap<Int, MutableList<Int>> = mutableMapOf()
             val initState = 0
             var finalState = 1
@@ -30,7 +30,7 @@ private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
             }
             for (subAutomaton in subAutomata) {
                 val sub = subAutomaton.offsetStateNumbers(totalSize)
-                prods = prods + sub.getProductions()
+                prods.putAll(sub.getProductions())
                 sub.getEpsilonProductions().forEach { (key, value) -> epsProds[key] = value.toMutableList() }
                 epsProds.getOrPut(initState) { mutableListOf() }.add(sub.getStartingState())
                 totalSize += sub.size()
@@ -45,7 +45,7 @@ private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
         }
 
         is AlgebraicRegex.ConcatenationRegex -> {
-            var prods: Map<Pair<Int, Char>, List<Int>> = mapOf()
+            val prods: MutableMap<Pair<Int, Char>, List<Int>> = mutableMapOf()
             val epsProds: MutableMap<Int, MutableList<Int>> = mutableMapOf()
             val initState = 0
             var finalState = 1
@@ -59,7 +59,7 @@ private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
             epsProds.getOrPut(initState) { mutableListOf() }.add(1)
             for (subAutomaton in subAutomata) {
                 val sub = subAutomaton.offsetStateNumbers(totalSize)
-                prods = prods + sub.getProductions()
+                prods.putAll(sub.getProductions())
                 sub.getEpsilonProductions().forEach { (key, value) -> epsProds[key] = value.toMutableList() }
                 totalSize += sub.size()
                 epsProds.getOrPut(sub.getAcceptingState()) { mutableListOf() }.add(totalSize)
@@ -89,58 +89,24 @@ private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
         }
     }
 
-private class SimpleNFA(
-    private val start: Int,
-    private val prod: Map<Pair<Int, Char>, List<Int>>,
-    private val epsProd: Map<Int, List<Int>>,
-    private val accept: Int,
-) : NFA<Int> {
-    private val all =
-        (
-            setOf(start, accept) union
-                prod.keys
-                    .unzip()
-                    .first
-                    .toSet() union prod.values.flatten().toSet() union epsProd.keys union
-                epsProd.values
-                    .flatten()
-                    .toSet()
-        ).toList()
+fun SimpleNFA.size(): Int = this.getAllStates().size
 
-    override fun getStartingState() = start
-
-    override fun getAcceptingState() = accept
-
-    override fun isAccepting(state: Int): Boolean = state == accept
-
-    override fun getAllStates() = all
-
-    override fun getProductions() = prod
-
-    override fun getProductions(
-        state: Int,
-        symbol: Char,
-    ) = prod[state to symbol] ?: emptyList()
-
-    override fun getEpsilonProductions(): Map<Int, List<Int>> = epsProd
-
-    fun size() = all.size
-
-    fun offsetStateNumbers(offset: Int): SimpleNFA =
-        SimpleNFA(
-            this.start + offset,
-            this.prod
-                .mapKeys { (key, _) ->
-                    Pair(key.first + offset, key.second)
-                }.mapValues { (_, value) ->
-                    value.map { it + offset }
-                },
-            this.epsProd
-                .mapKeys { (key, _) ->
-                    key + offset
-                }.mapValues { (_, value) ->
-                    value.map { it + offset }
-                },
-            this.accept + offset,
-        )
-}
+fun SimpleNFA.offsetStateNumbers(offset: Int): SimpleNFA =
+    SimpleNFA(
+        this.getStartingState() + offset,
+        this
+            .getProductions()
+            .mapKeys { (key, _) ->
+                Pair(key.first + offset, key.second)
+            }.mapValues { (_, value) ->
+                value.map { it + offset }
+            },
+        this
+            .getEpsilonProductions()
+            .mapKeys { (key, _) ->
+                key + offset
+            }.mapValues { (_, value) ->
+                value.map { it + offset }
+            },
+        this.getAcceptingState() + offset,
+    )

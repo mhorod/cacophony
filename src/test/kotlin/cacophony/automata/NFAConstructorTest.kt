@@ -47,7 +47,7 @@ class NFAConstructorTest {
     }
 
     @Test
-    fun `Simple atomic regex test`() {
+    fun `simple atomic regex test`() {
         val re = AlgebraicRegex.AtomicRegex('A')
         val walker = NFAWalker(buildNFAFromRegex(re))
         assert(walker.accepts("A"))
@@ -57,7 +57,7 @@ class NFAConstructorTest {
     }
 
     @Test
-    fun `Simple concat regex test`() {
+    fun `simple concat regex test`() {
         val reA = AlgebraicRegex.AtomicRegex('A')
         val reB = AlgebraicRegex.AtomicRegex('B')
         val re = AlgebraicRegex.ConcatenationRegex(reB, reA, reA)
@@ -70,7 +70,7 @@ class NFAConstructorTest {
     }
 
     @Test
-    fun `Simple star regex test`() {
+    fun `simple star regex test`() {
         val reA = AlgebraicRegex.AtomicRegex('A')
         val reAA = AlgebraicRegex.ConcatenationRegex(reA, reA)
         val re = AlgebraicRegex.StarRegex(reAA)
@@ -83,7 +83,7 @@ class NFAConstructorTest {
     }
 
     @Test
-    fun `Union regex test`() {
+    fun `union regex test`() {
         val reA = AlgebraicRegex.AtomicRegex('A')
         val reB = AlgebraicRegex.AtomicRegex('B')
         val reAB = AlgebraicRegex.ConcatenationRegex(reA, reB)
@@ -100,7 +100,7 @@ class NFAConstructorTest {
     }
 
     @Test
-    fun `Complicated regex test`() {
+    fun `complicated regex test`() {
         // #(((AB)*|(BA)*)#)*
         val reA = AlgebraicRegex.AtomicRegex('A')
         val reB = AlgebraicRegex.AtomicRegex('B')
