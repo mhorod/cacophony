@@ -18,10 +18,10 @@ class ContractedDFAState<DFAState>(
     override fun toString(): String = "ContractedDFAState(originalStates=$originalStates)"
 }
 
-// Removes dead/unreachable states and performs DFA minimalization.
+// Returns a minimalized copy of this DFA, with dead/unreachable states removed.
 fun <DFAState> DFA<DFAState>.minimalize(): DFA<ContractedDFAState<DFAState>> = minimalizeImpl(withAliveReachableStates())
 
-// Assumes dfa contains only alive and reachable states.
+// minimalize() helper function. Assumes dfa contains only alive and reachable states.
 private fun <DFAState> minimalizeImpl(dfa: DFA<DFAState>): DFA<ContractedDFAState<DFAState>> {
     val preimagesCalculator = DFAPreimagesCalculator(dfa)
 

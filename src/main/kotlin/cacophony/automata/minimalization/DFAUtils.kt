@@ -15,6 +15,7 @@ class DFAPreimagesCalculator<DFAState>(
                 entry.value.groupBy({ it.second }, { it.first }).mapValues { it.value.toSet() }
             }
 
+    // getPreimages(S)[c] is a set of all states t, such that a production (t, c, element from S) exists.
     fun getPreimages(states: Set<DFAState>): Map<Char, Set<DFAState>> =
         states
             .mapNotNull { state -> cache[state]?.let { state to it } }
@@ -26,6 +27,7 @@ class DFAPreimagesCalculator<DFAState>(
 
 fun <DFAState> getDFAForEmptyLanguage(): DFA<DFAState> = TODO("DFA interface does not allow empty languages")
 
+// Returns a set of all elements reachable from a collection of nodes in a directed graph.
 fun <E> getReachableFrom(
     from: Collection<E>,
     graph: Map<E, Collection<E>>,
@@ -44,18 +46,22 @@ fun <E> getReachableFrom(
     return reachable
 }
 
+// Returns a set of states reachable from starting state.
 fun <DFAState> DFA<DFAState>.getReachableStates(): Set<DFAState> {
     val graph = getProductions().map { Pair(it.key.first, it.value) }.groupBy({ it.first }, { it.second })
     return getReachableFrom(listOf(getStartingState()), graph)
 }
 
+// Returns a set of alive states (states such that there exist a path to some accepting state).
 fun <DFAState> DFA<DFAState>.getAliveStates(): Set<DFAState> {
     val graph = getProductions().map { Pair(it.key.first, it.value) }.groupBy({ it.second }, { it.first })
     return getReachableFrom(getAllStates().filter(this::isAccepting), graph)
 }
 
+// Returns a copy of this DFA with only alive and reachable states.
 fun <DFAState> DFA<DFAState>.withAliveReachableStates(): DFA<DFAState> = withStates(getAliveStates() intersect getReachableStates())
 
+// Returns a copy of this DFA with all states not belonging to retain set removed.
 fun <DFAState> DFA<DFAState>.withStates(retain: Set<DFAState>): DFA<DFAState> {
     if (!retain.contains(getStartingState())) {
         return getDFAForEmptyLanguage()
