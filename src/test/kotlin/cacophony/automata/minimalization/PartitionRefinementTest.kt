@@ -20,25 +20,12 @@ class PartitionRefinementTest {
         }
 
     @Test
-    fun `getAllPartitions works after one refinement`() {
-        val pr = initRefinement(5)
-        pr.refine(listOf(0, 2, 3, 4))
-        assertEquals(part[0, 2, 3, 4][1], pr.getAllPartitions().toSet())
-    }
-
-    @Test
-    fun `getAllPartitions works after two refinements`() {
-        val pr = initRefinement(5)
-        pr.refine(listOf(0, 2, 3, 4))
-        pr.refine(listOf(3))
-        assertEquals(part[0, 2, 4][1][3], pr.getAllPartitions().toSet())
-    }
-
-    @Test
     fun `getAllPartitions works after three refinements`() {
         val pr = initRefinement(7)
         pr.refine(listOf(0, 1, 2, 3))
+        assertEquals(part[0, 1, 2, 3][4, 5, 6], pr.getAllPartitions().toSet())
         pr.refine(listOf(2, 3, 4))
+        assertEquals(part[0, 1][2, 3][4][5, 6], pr.getAllPartitions().toSet())
         pr.refine(listOf(1))
         assertEquals(part[0][1][2, 3][4][5, 6], pr.getAllPartitions().toSet())
     }

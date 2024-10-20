@@ -145,7 +145,7 @@ class DFAMinimalizationTest {
     private fun <E> checkRandomDFA(dfa: DFA<E>) {
         if ((dfa.getAliveStates() intersect dfa.getReachableStates()).isEmpty()) {
             // Generated DFA is invalid.
-            assertThrows<IllegalArgumentException>{ dfa.minimalize() }
+            assertThrows<IllegalArgumentException> { dfa.minimalize() }
             return
         }
 
