@@ -13,32 +13,23 @@ class DFAEquivalenceTest {
         val allStates =
             (
                 setOf(starting) union accepting union
-                    productions.keys.map { it.first }
+                    productions.keys
+                        .map { it.first }
                         .toSet() union productions.values
             ).toList()
         return object : DFA<Int> {
-            override fun getStartingState(): Int {
-                return starting
-            }
+            override fun getStartingState(): Int = starting
 
-            override fun getAllStates(): List<Int> {
-                return allStates
-            }
+            override fun getAllStates(): List<Int> = allStates
 
-            override fun getProductions(): Map<Pair<Int, Char>, Int> {
-                return productions
-            }
+            override fun getProductions(): Map<Pair<Int, Char>, Int> = productions
 
             override fun getProduction(
                 state: Int,
                 symbol: Char,
-            ): Int? {
-                return productions[Pair(state, symbol)]
-            }
+            ): Int? = productions[Pair(state, symbol)]
 
-            override fun isAccepting(state: Int): Boolean {
-                return accepting.contains(state)
-            }
+            override fun isAccepting(state: Int): Boolean = accepting.contains(state)
         }
     }
 
