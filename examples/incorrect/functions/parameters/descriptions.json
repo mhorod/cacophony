@@ -1,0 +1,40 @@
+{
+  "examples": [
+    {
+      "path": "functions_parameter_separation.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "functions_parameter_names.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "functions_argument_type_mismatch.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "functions_parameter_type.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "functions_no_named_arguments.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "functions_parameter_delimiters.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

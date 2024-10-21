@@ -1,0 +1,28 @@
+{
+  "examples": [
+    {
+      "path": "assignment-incorrect-types.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "assignment-var-to-function.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "assignment-function-to-var.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "assignment-function-to-function.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}
