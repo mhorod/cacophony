@@ -8,29 +8,39 @@ import cacophony.utils.AlgebraicRegex.UnionRegex
 
 class RegexSyntaxErrorException(reason: String) : Exception(reason)
 
-internal sealed class RegexType {
+internal sealed class RegexType : Cloneable {
+    public abstract override fun clone(): RegexType
+
     abstract fun toAlgebraicRegex(): AlgebraicRegex
 }
 
 internal class Atom(val symbol: Char) : RegexType() {
     override fun toAlgebraicRegex() = AtomicRegex(symbol)
+
+    override fun clone(): Atom = Atom(symbol)
 }
 
-internal class Union(val summands: ArrayList<RegexType>) : RegexType() {
+internal class Union(val summands: MutableList<RegexType>) : RegexType() {
     override fun toAlgebraicRegex() = UnionRegex(*summands.map { it.toAlgebraicRegex() }.toTypedArray())
+
+    override fun clone(): Union = Union(summands.map { it.clone() }.toMutableList())
 }
 
-internal class Concat(val factors: ArrayList<RegexType>) : RegexType() {
+internal class Concat(val factors: MutableList<RegexType>) : RegexType() {
     override fun toAlgebraicRegex() = ConcatenationRegex(*factors.map { it.toAlgebraicRegex() }.toTypedArray())
+
+    override fun clone(): Concat = Concat(factors.map { it.clone() }.toMutableList())
 }
 
 internal class Star(val internal: RegexType) : RegexType() {
     override fun toAlgebraicRegex() = StarRegex(internal.toAlgebraicRegex())
+
+    override fun clone(): Star = Star(internal.clone())
 }
 
 private fun atoms(range: CharRange): Array<Atom> = range.map { Atom(it) }.toTypedArray()
 
-internal val SPECIAL_CHARACTER_MAP =
+private val SPECIAL_CHARACTER_MAP =
     mapOf(
         // Newline
         'n' to Atom('\n'),
@@ -77,3 +87,7 @@ internal val SPECIAL_CHARACTER_MAP =
         // regex special characters
         *"()|*\\".map { Pair(it, Atom(it)) }.toTypedArray(),
     )
+
+internal fun getSpecialCharacterRegex(c: Char): RegexType? {
+    return SPECIAL_CHARACTER_MAP[c]?.clone()
+}

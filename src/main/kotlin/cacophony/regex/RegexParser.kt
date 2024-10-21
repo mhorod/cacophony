@@ -11,7 +11,7 @@ fun parseRegex(str: String): AlgebraicRegex {
         val c = regex[it]
         if (specialCharacter) {
             val specialRegex =
-                SPECIAL_CHARACTER_MAP[c]
+                getSpecialCharacterRegex(c)
                     ?: throw RegexSyntaxErrorException("Invalid escaped character '$c' at position ${it - 1}")
             if (it > 1 && (regex[it - 2] !in "(|" || lastEscaped == it - 2)) parser.pushOperation(ConcatOperator)
             parser.pushRegex(specialRegex)
@@ -132,8 +132,12 @@ private data object UnionOperator : InfixOperator(1) {
     ) = if (x is Union) {
         x.summands.add(y)
         x
+    } else if (y is Union) {
+        // Does not need to be at 0, but this is more consistent with string representation.
+        y.summands.add(0, x)
+        y
     } else {
-        Union(arrayListOf(x, y))
+        Union(mutableListOf(x, y))
     }
 }
 
@@ -144,7 +148,10 @@ private data object ConcatOperator : InfixOperator(2) {
     ) = if (x is Concat) {
         x.factors.add(y)
         x
+    } else if (y is Concat) {
+        y.factors.add(0, x)
+        y
     } else {
-        Concat(arrayListOf(x, y))
+        Concat(mutableListOf(x, y))
     }
 }
