@@ -3,33 +3,40 @@ package cacophony.lexer
 import cacophony.COMMENT_START_CHAR
 import cacophony.END_OF_LINE_CHAR
 import cacophony.automata.DFA
+import cacophony.automata.buildNFAFromRegex
+import cacophony.automata.determinize
+import cacophony.automata.minimalization.ContractedDFAState
+import cacophony.automata.minimalization.minimalize
 import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex
 import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 class RegularLanguageLexer<TC : Enum<TC>>(
-    private val automata: Map<TC, DFA<Int>>,
+    private val automata: Map<TC, DFA<ContractedDFAState<Int>>>,
     private val priorities: Map<TC, Int>,
 ) : Lexer<TC> {
     companion object {
         // Factory accepting list of DFAs.
         // Param is list of pairs (token_category, DFA). Pairs are provided in descending order of category priority.
-        fun <TC : Enum<TC>> fromAutomata(automata: List<Pair<TC, DFA<Int>>>): RegularLanguageLexer<TC> =
-            RegularLanguageLexer(
-                automata.toMap(),
-                automata.mapIndexed { index, (category, _) -> Pair(category, index) }.toMap(),
+        fun <TC : Enum<TC>> fromAutomata(automata: List<Pair<TC, DFA<Int>>>): RegularLanguageLexer<TC> {
+            // DFA minimalization is a RegularLanguageLexer implementation detail.
+            val minimalizedAutomata = automata.map { (category, automaton) -> Pair(category, automaton.minimalize()) }
+
+            return RegularLanguageLexer(
+                minimalizedAutomata.toMap(),
+                minimalizedAutomata.mapIndexed { index, (category, _) -> Pair(category, index) }.toMap(),
             )
+        }
 
         // Special factory accepting regexes instead of already created NFAs.
         // Param is list of pairs (token_category, regex). Pairs are provided in descending order of category priority.
-        fun <TC : Enum<TC>> fromRegexes(regexes: List<Pair<TC, AlgebraicRegex>>): RegularLanguageLexer<TC> {
-            // TODO: Waiting for AlgebraicRegex -> DFA implementation.
-            //   It will look something like this:
-            //     return fromAutomata(regexes.map { (category, regex) ->
-            //     Pair(category, DFA.fromRegex(regex) }
-            TODO("Not yet implemented")
-        }
+        fun <TC : Enum<TC>> fromRegexes(regexes: List<Pair<TC, AlgebraicRegex>>): RegularLanguageLexer<TC> =
+            fromAutomata(
+                regexes.map { (category, regex) ->
+                    Pair(category, determinize(buildNFAFromRegex(regex)))
+                },
+            )
     }
 
     // Tries to match new token starting with the current cursor in input.
@@ -43,7 +50,7 @@ class RegularLanguageLexer<TC : Enum<TC>>(
 
         // List of current states in simulation sorted by category priority in increasing order.
         // This assures that the last match found has the highest priority.
-        val states: MutableList<Pair<TC, Int?>> =
+        val states: MutableList<Pair<TC, ContractedDFAState<Int>?>> =
             automata
                 .map { (category, automaton) ->
                     Pair(category, automaton.getStartingState())

@@ -5,20 +5,25 @@ import cacophony.DFA_NON_EMPTY
 import cacophony.DFA_SQUARE
 import cacophony.DFA_UPPER_CASE
 import cacophony.MockCategory
+import cacophony.automata.SimpleDFA
+import cacophony.automata.SimpleNFA
+import cacophony.automata.buildNFAFromRegex
+import cacophony.automata.determinize
 import cacophony.token.Token
+import cacophony.utils.AlgebraicRegex
 import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import cacophony.utils.StringInput
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.just
+import io.mockk.mockkStatic
+import io.mockk.runs
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 
 class RegularLanguageLexerTest {
     private val lexer =
@@ -31,16 +36,33 @@ class RegularLanguageLexerTest {
             ),
         )
 
-    private val diagnostics: Diagnostics = mock()
+    @MockK
+    lateinit var diagnostics: Diagnostics
 
     @BeforeEach
-    fun setUp() {
-        Mockito.reset(diagnostics)
+    fun setUpMocks() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        every { diagnostics.report(any(), any(), any()) } just runs
     }
 
     @Test
-    fun `should properly construct lexer from regexes`() {
-        TODO("Waiting for implementation of Regex->DFA")
+    fun `should construct automata if constructed from regexes`() {
+        // given
+        val regex = AlgebraicRegex.AtomicRegex('a')
+        val mockNFA = SimpleNFA(0, mapOf(), mapOf(), 0)
+        val mockDFA = SimpleDFA(0, mapOf(), setOf(0))
+
+        mockkStatic("cacophony.automata.NFAConstructorKt")
+        every { buildNFAFromRegex(regex) } returns mockNFA
+        mockkStatic("cacophony.automata.DeterminizationKt")
+        every { determinize<Int>(any()) } returns mockDFA
+
+        // when
+        RegularLanguageLexer.fromRegexes(listOf(Pair(MockCategory.NON_EMPTY, regex)))
+
+        // then
+        verify { buildNFAFromRegex(regex) }
+        verify { determinize(mockNFA) }
     }
 
     @Test
@@ -73,7 +95,7 @@ class RegularLanguageLexerTest {
         lexer.process(validInput, diagnostics)
 
         // then
-        verify(diagnostics, never()).report(any(), any(), any())
+        verify(exactly = 0) { diagnostics.report(any(), any(), any()) }
     }
 
     @Test
@@ -113,8 +135,13 @@ class RegularLanguageLexerTest {
             ),
             tokens,
         )
-        verify(diagnostics, times(1))
-            .report(eq("Lexer failure: no valid token found."), eq(invalidInput), eq(Location(2)))
+        verify(exactly = 1) {
+            diagnostics.report(
+                eq("Lexer failure: no valid token found."),
+                eq(invalidInput),
+                eq(Location(2)),
+            )
+        }
     }
 
     @Test
@@ -133,6 +160,6 @@ class RegularLanguageLexerTest {
             ),
             tokens,
         )
-        verify(diagnostics, never()).report(any(), any(), any())
+        verify(exactly = 0) { diagnostics.report(any(), any(), any()) }
     }
 }
