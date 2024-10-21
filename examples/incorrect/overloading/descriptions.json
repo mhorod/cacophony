@@ -1,0 +1,28 @@
+{
+  "examples": [
+    {
+      "path": "function-overloading-visibility-1.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "function-overloading-visibility-3.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "function-overloading-visibility-2.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "function-overloading-leaking.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

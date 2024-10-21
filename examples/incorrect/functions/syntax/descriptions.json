@@ -1,0 +1,16 @@
+{
+  "examples": [
+    {
+      "path": "functions_naming.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "functions_arrow_syntax.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

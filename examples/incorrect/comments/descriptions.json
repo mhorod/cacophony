@@ -1,0 +1,22 @@
+{
+  "examples": [
+    {
+      "path": "comments_002.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "comments_003.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    },
+    {
+      "path": "comments_001.cac",
+      "errors": {
+        "lexerErrors": false
+      }
+    }
+  ]
+}

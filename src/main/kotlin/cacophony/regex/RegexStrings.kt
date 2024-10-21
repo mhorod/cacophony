@@ -5,7 +5,7 @@ import cacophony.token.TokenCategorySpecific
 // we will want to use only one of them
 
 object RegexStrings {
-    private val generalCategoryMap =
+    val generalCategoryMap =
         mapOf(
             TokenCategoryGeneral.PUNCTUATION to """\(|\)|[|]|->|=>|;|:|,""",
             TokenCategoryGeneral.KEYWORD to """let|if|then|else|while|do|break|return""",
@@ -18,7 +18,7 @@ object RegexStrings {
             TokenCategoryGeneral.COMMENT to """#\N*""",
         )
 
-    private val specificCategoryMap =
+    val specificCategoryMap =
         mapOf(
             TokenCategorySpecific.LEFT_PARENTHESIS to """\(""",
             TokenCategorySpecific.RIGHT_PARENTHESIS to """\)""",
