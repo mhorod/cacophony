@@ -5,38 +5,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DFAEquivalenceTest {
-    private fun createDFA(
-        starting: Int,
-        productions: Map<Pair<Int, Char>, Int>,
-        accepting: Set<Int>,
-    ): DFA<Int> {
-        val allStates =
-            (
-                setOf(starting) union accepting union
-                    productions.keys
-                        .map { it.first }
-                        .toSet() union productions.values
-            ).toList()
-        return object : DFA<Int> {
-            override fun getStartingState(): Int = starting
-
-            override fun getAllStates(): List<Int> = allStates
-
-            override fun getProductions(): Map<Pair<Int, Char>, Int> = productions
-
-            override fun getProduction(
-                state: Int,
-                symbol: Char,
-            ): Int? = productions[Pair(state, symbol)]
-
-            override fun isAccepting(state: Int): Boolean = accepting.contains(state)
-        }
-    }
-
     @Test
     fun `DFA is equivalent to itself`() {
         val dfa =
-            createDFA(
+            SimpleDFA(
                 42,
                 mapOf(
                     Pair(42, 'b') to 43,
@@ -52,7 +24,7 @@ class DFAEquivalenceTest {
         // These two DFAs accept all words that contain at least one 'b'
         // They are identical up to state renaming
         val first =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 1,
@@ -63,7 +35,7 @@ class DFAEquivalenceTest {
                 setOf(2),
             )
         val second =
-            createDFA(
+            SimpleDFA(
                 2,
                 mapOf(
                     Pair(2, 'a') to 2,
@@ -80,7 +52,7 @@ class DFAEquivalenceTest {
     fun `two DFAs for different simple languages but of the same size are not equivalent`() {
         // This DFA accepts all words that contain at least one 'b'
         val first =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 1,
@@ -92,7 +64,7 @@ class DFAEquivalenceTest {
             )
         // This DFA accepts all words that contain at least one 'a'
         val second =
-            createDFA(
+            SimpleDFA(
                 2,
                 mapOf(
                     Pair(2, 'a') to 1,
@@ -109,7 +81,7 @@ class DFAEquivalenceTest {
     fun `two DFAs for full language without epsilon are equivalent`() {
         // These two DFAs accept all nonempty words
         val first =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -120,7 +92,7 @@ class DFAEquivalenceTest {
                 setOf(2),
             )
         val second =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -139,7 +111,7 @@ class DFAEquivalenceTest {
     fun `DFAs for the same simple language are equivalent when one of them has missing transitions`() {
         // These two DFAs accept all words that start with 'a'
         val first =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -149,7 +121,7 @@ class DFAEquivalenceTest {
                 setOf(2),
             )
         val second =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -168,7 +140,7 @@ class DFAEquivalenceTest {
     fun `two DFAs for different simple languages are not equivalent when both have missing transitions`() {
         // This DFA accepts all words that start with 'a'
         val first =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -179,7 +151,7 @@ class DFAEquivalenceTest {
             )
         // This DFA accepts only nonempty sequences of 'a''s
         val second =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -197,7 +169,7 @@ class DFAEquivalenceTest {
     fun `two DFAs for the same language are equivalent`() {
         // The two DFAs recognize the regex: (baaaa|bcba|bcaaa|caaa)*
         val large =
-            createDFA(
+            SimpleDFA(
                 2,
                 (
                     mapOf(
@@ -253,7 +225,7 @@ class DFAEquivalenceTest {
                 setOf(2),
             )
         val small =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'b') to 2,
@@ -274,7 +246,7 @@ class DFAEquivalenceTest {
     @Test
     fun `two DFAs for the same language are equivalent when one has multiple accepting states`() {
         val singleAccepting =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -289,7 +261,7 @@ class DFAEquivalenceTest {
                 setOf(6),
             )
         val multipleAccepting =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -309,7 +281,7 @@ class DFAEquivalenceTest {
     @Test
     fun `two DFAs for the same language are equivalent when both have multiple accepting states`() {
         val first =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 3,
@@ -321,7 +293,7 @@ class DFAEquivalenceTest {
                 setOf(3, 4, 5),
             )
         val second =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 2,
@@ -340,7 +312,7 @@ class DFAEquivalenceTest {
     @Test
     fun `DFA with no accepting states is equivalent to one with unreachable accepting states`() {
         val noAcceptingStates =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 1,
@@ -349,7 +321,7 @@ class DFAEquivalenceTest {
                 setOf(),
             )
         val unreachableAcceptingStates =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 1,
@@ -367,7 +339,7 @@ class DFAEquivalenceTest {
     @Test
     fun `DFA with no accepting states is not equivalent to one with reachable accepting states`() {
         val noAcceptingStates =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 1,
@@ -376,7 +348,7 @@ class DFAEquivalenceTest {
                 setOf(),
             )
         val reachableAcceptingStates =
-            createDFA(
+            SimpleDFA(
                 1,
                 mapOf(
                     Pair(1, 'a') to 1,
