@@ -8,14 +8,14 @@ import cacophony.utils.AlgebraicRegex
 import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
-class RegularLanguageLexer<TC : Enum<TC>, State>(
-    private val automata: Map<TC, DFA<State>>,
+class RegularLanguageLexer<TC : Enum<TC>>(
+    private val automata: Map<TC, DFA<Int>>,
     private val priorities: Map<TC, Int>,
 ) : Lexer<TC> {
     companion object {
         // Factory accepting list of DFAs.
         // Param is list of pairs (token_category, DFA). Pairs are provided in descending order of category priority.
-        fun <TC : Enum<TC>, State> fromAutomata(automata: List<Pair<TC, DFA<State>>>): RegularLanguageLexer<TC, State> =
+        fun <TC : Enum<TC>> fromAutomata(automata: List<Pair<TC, DFA<Int>>>): RegularLanguageLexer<TC> =
             RegularLanguageLexer(
                 automata.toMap(),
                 automata.mapIndexed { index, (category, _) -> Pair(category, index) }.toMap(),
@@ -23,7 +23,7 @@ class RegularLanguageLexer<TC : Enum<TC>, State>(
 
         // Special factory accepting regexes instead of already created NFAs.
         // Param is list of pairs (token_category, regex). Pairs are provided in descending order of category priority.
-        fun <TC : Enum<TC>, State> fromRegexes(regexes: List<Pair<TC, AlgebraicRegex>>): RegularLanguageLexer<TC, State> {
+        fun <TC : Enum<TC>> fromRegexes(regexes: List<Pair<TC, AlgebraicRegex>>): RegularLanguageLexer<TC> {
             // TODO: Waiting for AlgebraicRegex -> DFA implementation.
             //   It will look something like this:
             //     return fromAutomata(regexes.map { (category, regex) ->
@@ -43,7 +43,7 @@ class RegularLanguageLexer<TC : Enum<TC>, State>(
 
         // List of current states in simulation sorted by category priority in increasing order.
         // This assures that the last match found has the highest priority.
-        val states: MutableList<Pair<TC, State?>> =
+        val states: MutableList<Pair<TC, Int?>> =
             automata
                 .map { (category, automaton) ->
                     Pair(category, automaton.getStartingState())
