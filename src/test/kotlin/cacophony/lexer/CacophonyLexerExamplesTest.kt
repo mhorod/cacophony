@@ -14,7 +14,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
 
 class CacophonyLexerExamplesTest {
-    class LexerExampleRunner : ExampleRunner {
+    class CacophonyLexerExampleRunner : ExampleRunner {
         private val lexer = CacophonyLexer()
 
         override fun run(
@@ -24,8 +24,6 @@ class CacophonyLexerExamplesTest {
             lexer.process(input, diagnostics)
         }
     }
-
-    private val lexerRunner = LexerExampleRunner()
 
     @ParameterizedTest
     @MethodSource("correctExamples")
@@ -53,5 +51,7 @@ class CacophonyLexerExamplesTest {
 
         @JvmStatic
         fun incorrectExamples() = loadIncorrectExamples()
+
+        private val lexerRunner = CacophonyLexerExampleRunner()
     }
 }
