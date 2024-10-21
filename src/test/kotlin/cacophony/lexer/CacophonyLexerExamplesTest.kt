@@ -13,22 +13,26 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
 
-class LexerExamplesTest {
+class CacophonyLexerExamplesTest {
     class LexerExampleRunner : ExampleRunner {
+        private val lexer = CacophonyLexer()
+
         override fun run(
             input: Input,
             diagnostics: TestDiagnostics,
         ) {
-            // TODO: Call lexer when implemented
+            lexer.process(input, diagnostics)
         }
     }
+
+    private val lexerRunner = LexerExampleRunner()
 
     @ParameterizedTest
     @MethodSource("correctExamples")
     fun `lexer lexes correct examples without errors`(path: Path) {
         runExample(
             path,
-            LexerExampleRunner(),
+            lexerRunner,
             AssertNoErrors(),
         )
     }
@@ -38,7 +42,7 @@ class LexerExamplesTest {
     fun `lexer lexes incorrect examples with described errors`(description: IncorrectExampleDescription) {
         runExample(
             Path.of(description.path),
-            LexerExampleRunner(),
+            lexerRunner,
             assertionFromDescription(description),
         )
     }
