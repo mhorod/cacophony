@@ -111,7 +111,7 @@ class RegexParserTest {
         val result = parseRegex("""abc|x(a|b)|x*(ab*)""")
         val s0 = ConcatenationRegex(*"""abc""".map { AtomicRegex(it) }.toTypedArray())
         val s1 = ConcatenationRegex(AtomicRegex('x'), UnionRegex(AtomicRegex('a'), AtomicRegex('b')))
-        val s2 = ConcatenationRegex(StarRegex(AtomicRegex('x')), ConcatenationRegex(AtomicRegex('a'), StarRegex(AtomicRegex('b'))))
+        val s2 = ConcatenationRegex(StarRegex(AtomicRegex('x')), AtomicRegex('a'), StarRegex(AtomicRegex('b')))
         val expected: AlgebraicRegex = UnionRegex(s0, s1, s2)
         assertEqualAlgebraicRegex(result, expected)
     }
@@ -121,7 +121,7 @@ class RegexParserTest {
         val result = parseRegex("""(((a))((b))(c)|(x)(((((a))))|(((b))))|(((x)))*((a)(((b)))*))""")
         val s0 = ConcatenationRegex(*"""abc""".map { AtomicRegex(it) }.toTypedArray())
         val s1 = ConcatenationRegex(AtomicRegex('x'), UnionRegex(AtomicRegex('a'), AtomicRegex('b')))
-        val s2 = ConcatenationRegex(StarRegex(AtomicRegex('x')), ConcatenationRegex(AtomicRegex('a'), StarRegex(AtomicRegex('b'))))
+        val s2 = ConcatenationRegex(StarRegex(AtomicRegex('x')), AtomicRegex('a'), StarRegex(AtomicRegex('b')))
         val expected: AlgebraicRegex = UnionRegex(s0, s1, s2)
         assertEqualAlgebraicRegex(result, expected)
     }
@@ -208,7 +208,7 @@ class RegexParserTest {
     fun `whitespace group special character`() {
         val regex = """\s"""
         val result = parseRegex(regex)
-        val expected = SPECIAL_CHARACTER_MAP['s']!!.toAlgebraicRegex()
+        val expected = getSpecialCharacterRegex('s')!!.toAlgebraicRegex()
         assertEqualAlgebraicRegex(result, expected)
     }
 
@@ -229,7 +229,7 @@ class RegexParserTest {
     @Test
     fun `not-newline special character`() {
         val result = parseRegex("""\N""")
-        val expected = SPECIAL_CHARACTER_MAP['N']!!.toAlgebraicRegex()
+        val expected = getSpecialCharacterRegex('N')!!.toAlgebraicRegex()
         assertEqualAlgebraicRegex(result, expected)
     }
 
@@ -243,7 +243,8 @@ class RegexParserTest {
                 ConcatenationRegex(
                     UnionRegex(
                         AtomicRegex('a'),
-                        UnionRegex(AtomicRegex('a'), AtomicRegex('b')),
+                        AtomicRegex('a'),
+                        AtomicRegex('b'),
                         ConcatenationRegex(AtomicRegex('a'), StarRegex(AtomicRegex('a'))),
                     ),
                     AtomicRegex('x'),
