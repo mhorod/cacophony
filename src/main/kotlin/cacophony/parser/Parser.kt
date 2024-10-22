@@ -3,9 +3,9 @@ package cacophony.parser
 import cacophony.grammars.ParseTree
 import cacophony.utils.Diagnostics
 
-interface Parser<Symbol : Enum<Symbol>> {
+interface Parser<SymbolType : Enum<SymbolType>> {
     fun process(
-        terminals: List<ParseTree.Leaf<Symbol>>,
+        terminals: List<ParseTree.Leaf<SymbolType>>,
         diagnostics: Diagnostics,
-    ): ParseTree<Symbol>
+    ): ParseTree<SymbolType>
 }

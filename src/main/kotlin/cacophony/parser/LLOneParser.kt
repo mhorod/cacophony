@@ -4,17 +4,19 @@ import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.utils.Diagnostics
 
-class LLOneParser<Symbol : Enum<Symbol>> : Parser<Symbol> {
+class LLOneParser<SymbolType : Enum<SymbolType>> : Parser<SymbolType> {
     companion object {
-        fun <State, Symbol : Enum<Symbol>> fromAnalyzedGrammar(analyzedGrammar: AnalyzedGrammar<State, Symbol>): LLOneParser<Symbol> {
+        fun <StateType, SymbolType : Enum<SymbolType>> fromAnalyzedGrammar(
+            analyzedGrammar: AnalyzedGrammar<StateType, SymbolType>,
+        ): LLOneParser<SymbolType> {
             TODO("Not yet implemented")
         }
     }
 
     override fun process(
-        terminals: List<ParseTree.Leaf<Symbol>>,
+        terminals: List<ParseTree.Leaf<SymbolType>>,
         diagnostics: Diagnostics,
-    ): ParseTree<Symbol> {
+    ): ParseTree<SymbolType> {
         TODO("Not yet implemented")
     }
 }
