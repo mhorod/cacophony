@@ -2,6 +2,9 @@ package cacophony.automata.minimalization
 
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
+import cacophony.automata.buildNFAFromRegex
+import cacophony.automata.determinize
+import cacophony.utils.AlgebraicRegex
 
 class DFAPreimagesCalculator<DFAState>(
     dfa: DFA<DFAState>,
@@ -76,4 +79,9 @@ fun <DFAState> DFA<DFAState>.withStates(retain: Set<DFAState>): DFA<DFAState> {
     )
 }
 
-infix fun <DFAState> DFAState.via(label: Char): Pair<DFAState, Char> = Pair(this, label)
+infix fun <DFAState, Atom> DFAState.via(label: Atom): Pair<DFAState, Atom> = Pair(this, label)
+
+// Some utility functions, to not write whole pipeline each time
+fun buildDFAFromRegex(regex: AlgebraicRegex) = determinize(buildNFAFromRegex(regex)).minimalize()
+
+fun buildDFAFromRegex(regex: String) = buildDFAFromRegex(AlgebraicRegex.fromString(regex))

@@ -1,11 +1,16 @@
 package cacophony.automata
 
-interface DFA<DFAState> {
+// TODO: Changes here are only till Jan merges his PR
+
+interface GenericDFA<DFAState, Atom, Result> {
     // Returns starting state
     fun getStartingState(): DFAState
 
     // Checks if provided state is accepting
     fun isAccepting(state: DFAState): Boolean
+
+    // Returns resulting type of state
+    fun result(state: DFAState): Result
 
     // Returns all DFA states
     fun getAllStates(): List<DFAState>
@@ -13,12 +18,16 @@ interface DFA<DFAState> {
     // Returns state produced from provided state and symbol, or null if it doesn't exist.
     fun getProduction(
         state: DFAState,
-        symbol: Char,
+        symbol: Atom,
     ): DFAState?
 
     // Returns all productions.
     // Returned value is map accepting current state and symbol, and returning new state, which may not exist.
-    fun getProductions(): Map<Pair<DFAState, Char>, DFAState>
+    fun getProductions(): Map<Pair<DFAState, Atom>, DFAState>
+}
+
+interface DFA<DFAState> : GenericDFA<DFAState, Char, Boolean> {
+    override fun result(state: DFAState): Boolean = isAccepting(state)
 }
 
 public data class SimpleDFA<StateType>(
