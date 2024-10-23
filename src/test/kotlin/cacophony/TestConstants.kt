@@ -23,7 +23,9 @@ val DFA_NON_EMPTY =
             Pair(2, 'A') to 2,
             Pair(2, 'B') to 2,
         ),
-        setOf(2),
+        mapOf(
+            2 to true,
+        ),
     )
 
 // (A|B)(a|b)*
@@ -36,7 +38,9 @@ val DFA_FIRST_UPPER_CASE =
             Pair(2, 'a') to 2,
             Pair(2, 'b') to 2,
         ),
-        setOf(2),
+        mapOf(
+            2 to true,
+        ),
     )
 
 // (A|B)+
@@ -49,7 +53,9 @@ val DFA_UPPER_CASE =
             Pair(2, 'A') to 2,
             Pair(2, 'B') to 2,
         ),
-        setOf(2),
+        mapOf(
+            2 to true,
+        ),
     )
 
 // [(a|A|b|B)*]
@@ -64,5 +70,7 @@ val DFA_SQUARE =
             Pair(2, 'B') to 2,
             Pair(2, ']') to 3,
         ),
-        setOf(3),
+        mapOf(
+            3 to true,
+        ),
     )

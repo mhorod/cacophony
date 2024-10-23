@@ -20,21 +20,30 @@ class ContractedDFAState<DFAState>(
 
 // Returns a minimalized copy of this DFA, with dead/unreachable states removed.
 // Throws IllegalArgumentException if DFA is invalid (i.e. it does not accept any word).
-fun <DFAState> DFA<DFAState>.minimalize(): DFA<ContractedDFAState<DFAState>> = minimalizeImpl(withAliveReachableStates())
+fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.minimalize():
+    DFA<ContractedDFAState<DFAState>, AtomType, ResultType> =
+    minimalizeImpl(
+        withAliveReachableStates(),
+    )
 
 // minimalize() helper function. Assumes dfa contains only alive and reachable states.
-private fun <DFAState> minimalizeImpl(dfa: DFA<DFAState>): DFA<ContractedDFAState<DFAState>> {
+private fun <DFAState, AtomType, ResultType> minimalizeImpl(
+    dfa: DFA<DFAState, AtomType, ResultType>,
+): DFA<ContractedDFAState<DFAState>, AtomType, ResultType> {
     val preimagesCalculator = DFAPreimagesCalculator(dfa)
 
-    val acceptingStates = dfa.getAllStates().filter(dfa::isAccepting)
     val refineStructure = PartitionRefinement(dfa.getAllStates())
 
-    refineStructure.refine(acceptingStates)
+    val initialPartitions = dfa.getAllStates().groupBy { dfa.result(it) }.values
+    initialPartitions.forEach {
+        refineStructure.refine(it)
+    }
+
     val queue = dfa.getAllStates().map { refineStructure.getPartitionId(it) }.toMutableSet()
 
     while (queue.isNotEmpty()) {
         val partitionId = queue.first().also { queue.remove(it) }
-        val preimages: Map<Char, Set<DFAState>> = preimagesCalculator.getPreimages(refineStructure.getElements(partitionId))
+        val preimages: Map<AtomType, Set<DFAState>> = preimagesCalculator.getPreimages(refineStructure.getElements(partitionId))
 
         for (preimageClass in preimages.values) {
             for ((oldId, newId) in refineStructure.refine(preimageClass)) {
@@ -55,7 +64,11 @@ private fun <DFAState> minimalizeImpl(dfa: DFA<DFAState>): DFA<ContractedDFAStat
             return@map newState
         }
 
-    val newAcceptingStates = acceptingStates.map { toNewState[it]!! }.toSet()
+    val newResults =
+        allNewStates.mapNotNull {
+            val result = dfa.result(it.originalStates[0])
+            if (result != null) it to result else null
+        }.toMap()
     val newStartingState = toNewState[dfa.getStartingState()]!!
     val newProductions =
         dfa
@@ -70,6 +83,6 @@ private fun <DFAState> minimalizeImpl(dfa: DFA<DFAState>): DFA<ContractedDFAStat
     return SimpleDFA(
         newStartingState,
         newProductions,
-        newAcceptingStates,
+        newResults,
     )
 }

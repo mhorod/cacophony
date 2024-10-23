@@ -4,29 +4,29 @@ import kotlin.collections.mutableMapOf
 import kotlin.collections.mutableSetOf
 import kotlin.collections.setOf
 
-public fun <StateType> determinize(nfa: NFA<StateType>): DFA<Int> =
+public fun <StateType, AtomType> determinize(nfa: NFA<StateType, AtomType>): DFA<Int, AtomType, Boolean> =
     determinize(
         nfa,
-        nfa.getProductions().keys.fold(mutableSetOf()) { charset, (_, char) ->
-            charset.add(char)
-            charset
+        nfa.getProductions().keys.fold(mutableSetOf()) { atomset, (_, atom) ->
+            atomset.add(atom)
+            atomset
         },
     )
 
-private fun <StateType> determinize(
-    nfa: NFA<StateType>,
-    charset: Iterable<Char>,
-): DFA<Int> {
+private fun <StateType, AtomType> determinize(
+    nfa: NFA<StateType, AtomType>,
+    atomset: Iterable<AtomType>,
+): DFA<Int, AtomType, Boolean> {
     val startingState: Set<StateType> = nfa.epsilonClosure(setOf(nfa.getStartingState()))
     var createdStates = mutableSetOf(startingState)
     var worklist = ArrayDeque(listOf(startingState))
-    var dfaProductions = mutableMapOf<Set<StateType>, MutableMap<Char, Set<StateType>>>()
+    var dfaProductions = mutableMapOf<Set<StateType>, MutableMap<AtomType, Set<StateType>>>()
 
     while (!worklist.isEmpty()) {
         val states = worklist.removeFirst()
 
         dfaProductions.getOrPut(states) { mutableMapOf() }.run {
-            charset.forEach {
+            atomset.forEach {
                 nfa.getSetEdge(states, it).also { neighbor ->
                     this[it] = neighbor
                     createdStates.add(neighbor) && worklist.add(neighbor)
@@ -40,7 +40,7 @@ private fun <StateType> determinize(
         createdStates
             .filter { it.any { nfa.isAccepting(it) } }
             .map { setToInt[it]!! }
-            .toSet()
+            .associate { it to true }
     val productions =
         dfaProductions
             .flatMap { (state, edges) ->
@@ -49,7 +49,7 @@ private fun <StateType> determinize(
     return SimpleDFA(setToInt[startingState]!!, productions, acceptingStates)
 }
 
-private fun <StateType> NFA<StateType>.epsilonClosure(states: Collection<StateType>): MutableSet<StateType> {
+private fun <StateType> NFA<StateType, *>.epsilonClosure(states: Collection<StateType>): MutableSet<StateType> {
     var queue = ArrayDeque(states)
     var visited = states.toMutableSet()
 
@@ -64,9 +64,9 @@ private fun <StateType> NFA<StateType>.epsilonClosure(states: Collection<StateTy
     return visited
 }
 
-private fun <StateType> NFA<StateType>.getSetEdge(
+private fun <StateType, AtomType> NFA<StateType, AtomType>.getSetEdge(
     states: Set<StateType>,
-    symbol: Char,
+    symbol: AtomType,
 ): Set<StateType> =
     this.epsilonClosure(states).let { closure ->
         this.epsilonClosure(closure.flatMap { this.getProductions(it, symbol) }.toSet())

@@ -2,7 +2,7 @@ package cacophony.regex
 
 import cacophony.utils.AlgebraicRegex
 
-fun parseRegex(str: String): AlgebraicRegex {
+fun parseRegex(str: String): AlgebraicRegex<Char> {
     val parser = RegexParser()
     val regex = "($str)"
     var specialCharacter = false

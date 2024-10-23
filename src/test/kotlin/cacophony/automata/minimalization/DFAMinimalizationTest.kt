@@ -21,7 +21,10 @@ class DFAMinimalizationTest {
                     0 via 'a' to 1,
                     1 via 'a' to 2,
                 ),
-                setOf(0, 2),
+                mapOf(
+                    0 to true,
+                    2 to true,
+                ),
             )
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
@@ -38,11 +41,68 @@ class DFAMinimalizationTest {
                     1 via 'a' to 2,
                     2 via 'a' to 0,
                 ),
-                setOf(0, 1, 2),
+                mapOf(
+                    0 to true,
+                    1 to true,
+                    2 to true,
+                ),
             )
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(1, minimized.getAllStates().size)
+    }
+
+    @Test
+    fun `DFA with different result type is minimized properly`() {
+        var dfa =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via 'a' to 1,
+                    0 via 'b' to 2,
+                ),
+                mapOf(
+                    1 to "Good",
+                    2 to "Good",
+                ),
+            )
+        var minimized = dfa.minimalize()
+        assertTrue(areEquivalent(dfa, minimized))
+        assertEquals(2, minimized.getAllStates().size)
+
+        dfa =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via 'a' to 1,
+                    0 via 'b' to 2,
+                ),
+                mapOf(
+                    1 to "Good",
+                    2 to "NoGood",
+                ),
+            )
+        minimized = dfa.minimalize()
+        assertTrue(areEquivalent(dfa, minimized))
+        assertEquals(3, minimized.getAllStates().size)
+
+        dfa =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via 'a' to 1,
+                    0 via 'b' to 2,
+                    1 via 'a' to 3,
+                    2 via 'a' to 4,
+                ),
+                mapOf(
+                    3 to "Good",
+                    4 to "Good",
+                ),
+            )
+        minimized = dfa.minimalize()
+        assertTrue(areEquivalent(dfa, minimized))
+        assertEquals(3, minimized.getAllStates().size)
     }
 
     @Test
@@ -56,7 +116,9 @@ class DFAMinimalizationTest {
                     2 via 'a' to 3,
                     3 via 'a' to 2,
                 ),
-                setOf(1),
+                mapOf(
+                    1 to true,
+                ),
             )
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
@@ -93,14 +155,16 @@ class DFAMinimalizationTest {
                     // unreachable state
                     20 via 'x' to 7,
                 ),
-                setOf(15),
+                mapOf(
+                    15 to true,
+                ),
             )
         val minimized = dfa.minimalize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(16, minimized.getAllStates().size)
     }
 
-    private fun <E> checkThatMinimalizedDFAIsEquivalent(dfa: DFA<E>) {
+    private fun <E> checkThatMinimalizedDFAIsEquivalent(dfa: DFA<E, Char, Boolean>) {
         val minDfa = dfa.minimalize()
         val helper = createDFAEquivalenceHelper(dfa, minDfa)
 
@@ -113,7 +177,7 @@ class DFAMinimalizationTest {
         assert(helper.areEquivalent(dfa.getStartingState(), minDfa.getStartingState()))
     }
 
-    private fun <E> bruteDFAStatesEquivalenceClasses(dfa: DFA<E>): Set<Set<E>> {
+    private fun <E> bruteDFAStatesEquivalenceClasses(dfa: DFA<E, Char, Boolean>): Set<Set<E>> {
         val helper = createDFAEquivalenceHelper(dfa, dfa)
         val states = dfa.getAllStates()
 
@@ -130,7 +194,7 @@ class DFAMinimalizationTest {
         return equivalenceClassesMap.values.toSet()
     }
 
-    private fun <E> checkThatMinimalizedDFAIsMinimal(dfa: DFA<E>) {
+    private fun <E> checkThatMinimalizedDFAIsMinimal(dfa: DFA<E, Char, Boolean>) {
         val equivalenceClassesExpected = bruteDFAStatesEquivalenceClasses(dfa.withAliveReachableStates())
         val equivalenceClassesActual =
             dfa
@@ -142,7 +206,7 @@ class DFAMinimalizationTest {
         assertEquals(equivalenceClassesExpected, equivalenceClassesActual)
     }
 
-    private fun <E> checkRandomDFA(dfa: DFA<E>) {
+    private fun <E> checkRandomDFA(dfa: DFA<E, Char, Boolean>) {
         if ((dfa.getAliveStates() intersect dfa.getReachableStates()).isEmpty()) {
             // Generated DFA is invalid.
             assertThrows<IllegalArgumentException> { dfa.minimalize() }
@@ -156,7 +220,7 @@ class DFAMinimalizationTest {
     private fun generateRandomDFA(
         n: Int,
         random: Random,
-    ): DFA<Int> {
+    ): DFA<Int, Char, Boolean> {
         val density = 0.2
         val symbols = "abc"
         val states = 1..n
@@ -165,7 +229,7 @@ class DFAMinimalizationTest {
             (0..<ceil(density * n * symbols.length).toInt()).associate {
                 states.random(random) via symbols.random(random) to states.random(random)
             },
-            states.filter { random.nextDouble() < 0.2 }.toSet(),
+            states.filter { random.nextDouble() < 0.2 }.associate { it to true },
         )
     }
 

@@ -1,6 +1,6 @@
 package cacophony.automata
 
-interface NFA<NFAState> {
+interface NFA<NFAState, AtomType> {
     // Returns starting state
     fun getStartingState(): NFAState
 
@@ -16,24 +16,24 @@ interface NFA<NFAState> {
     // Returns list of reachable states, returned list may be empty.
     fun getProductions(
         state: NFAState,
-        symbol: Char,
+        symbol: AtomType,
     ): List<NFAState>
 
     // Returns all non-epsilon productions.
     // Returned value is map accepting current state and symbol, and returning all reachable states.
-    fun getProductions(): Map<Pair<NFAState, Char>, List<NFAState>>
+    fun getProductions(): Map<Pair<NFAState, AtomType>, List<NFAState>>
 
     // Returns all epsilon productions.
     // Returned value is map accepting current state, and returning all states reachable by single epsilon production.
     fun getEpsilonProductions(): Map<NFAState, List<NFAState>>
 }
 
-data class SimpleNFA(
+data class SimpleNFA<AtomType>(
     private val start: Int,
-    private val prod: Map<Pair<Int, Char>, List<Int>>,
+    private val prod: Map<Pair<Int, AtomType>, List<Int>>,
     private val epsProd: Map<Int, List<Int>>,
     private val accept: Int,
-) : NFA<Int> {
+) : NFA<Int, AtomType> {
     private val all =
         (
             setOf(start, accept) union
@@ -58,7 +58,7 @@ data class SimpleNFA(
 
     override fun getProductions(
         state: Int,
-        symbol: Char,
+        symbol: AtomType,
     ) = prod[state to symbol] ?: emptyList()
 
     override fun getEpsilonProductions(): Map<Int, List<Int>> = epsProd

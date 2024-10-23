@@ -9,8 +9,8 @@ class DeterminizationTest {
         productions: Map<Pair<Int, Char>, List<Int>>,
         epsilonProductions: Map<Int, List<Int>>,
         accepting: Int,
-    ): NFA<Int> =
-        object : NFA<Int> {
+    ): NFA<Int, Char> =
+        object : NFA<Int, Char> {
             private val allStates =
                 (
                     setOf(starting, accepting) union
@@ -57,7 +57,7 @@ class DeterminizationTest {
                 2,
             )
 
-        val expected = SimpleDFA(1, mapOf(), setOf(2))
+        val expected = SimpleDFA<Int, Char, Boolean>(1, mapOf(), mapOf(2 to true))
 
         assertTrue(areEquivalent(determinize(nfa), expected))
     }
@@ -77,7 +77,7 @@ class DeterminizationTest {
                 2,
             )
 
-        val expected = SimpleDFA(1, mapOf(), setOf(1))
+        val expected = SimpleDFA<Int, Char, Boolean>(1, mapOf(), mapOf(1 to true))
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())
     }
@@ -96,7 +96,7 @@ class DeterminizationTest {
                 1,
             )
 
-        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), setOf(1))
+        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), mapOf(1 to true))
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())
     }
@@ -123,7 +123,7 @@ class DeterminizationTest {
                 2,
             )
 
-        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), setOf(1))
+        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), mapOf(1 to true))
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())
     }
@@ -179,7 +179,9 @@ class DeterminizationTest {
                     Pair(5, 'a') to 6,
                     Pair(6, 'a') to 1,
                 ),
-                setOf(1),
+                mapOf(
+                    1 to true,
+                ),
             )
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())

@@ -11,7 +11,7 @@ class RegexSyntaxErrorException(reason: String) : Exception(reason)
 internal sealed class RegexType : Cloneable {
     public abstract override fun clone(): RegexType
 
-    abstract fun toAlgebraicRegex(): AlgebraicRegex
+    abstract fun toAlgebraicRegex(): AlgebraicRegex<Char>
 }
 
 internal class Atom(val symbol: Char) : RegexType() {

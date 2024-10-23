@@ -49,13 +49,13 @@ class RegularLanguageLexerTest {
     fun `should construct automata if constructed from regexes`() {
         // given
         val regex = AlgebraicRegex.AtomicRegex('a')
-        val mockNFA = SimpleNFA(0, mapOf(), mapOf(), 0)
-        val mockDFA = SimpleDFA(0, mapOf(), setOf(0))
+        val mockNFA = SimpleNFA<Char>(0, mapOf(), mapOf(), 0)
+        val mockDFA = SimpleDFA<Int, Char, Boolean>(0, mapOf(), mapOf(0 to true))
 
         mockkStatic("cacophony.automata.NFAConstructorKt")
         every { buildNFAFromRegex(regex) } returns mockNFA
         mockkStatic("cacophony.automata.DeterminizationKt")
-        every { determinize<Int>(any()) } returns mockDFA
+        every { determinize<Int, Char>(any()) } returns mockDFA
 
         // when
         RegularLanguageLexer.fromRegexes(listOf(Pair(MockCategory.NON_EMPTY, regex)))
