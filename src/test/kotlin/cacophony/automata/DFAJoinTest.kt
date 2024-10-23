@@ -45,7 +45,7 @@ class DFAJoinTest {
     fun `joining single automaton produces equivalent one`() {
         val prev = buildDFAFromRegex("abc")
         // Have to do this way, because joinAutomata has different Result type
-        // then dfa from buildDFAFromRegex (Something? vs Boolean)
+        // then a dfa from buildDFAFromRegex (Something? vs. Boolean)
         val dfa1 = joinAutomata(listOf(prev to Unit))
         val dfa2 = joinAutomata(listOf(dfa1 to Unit))
         // TODO: uncomment after merging Jan's PR
