@@ -13,13 +13,13 @@ import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 class RegularLanguageLexer<TC : Enum<TC>>(
-    private val automata: Map<TC, DFA<ContractedDFAState<Int>>>,
+    private val automata: Map<TC, DFA<ContractedDFAState<Int>, Char, Unit>>,
     private val priorities: Map<TC, Int>,
 ) : Lexer<TC> {
     companion object {
         // Factory accepting list of DFAs.
         // Param is list of pairs (token_category, DFA). Pairs are provided in descending order of category priority.
-        fun <TC : Enum<TC>> fromAutomata(automata: List<Pair<TC, DFA<Int>>>): RegularLanguageLexer<TC> {
+        fun <TC : Enum<TC>> fromAutomata(automata: List<Pair<TC, DFA<Int, Char, Unit>>>): RegularLanguageLexer<TC> {
             // DFA minimalization is a RegularLanguageLexer implementation detail.
             val minimalizedAutomata = automata.map { (category, automaton) -> Pair(category, automaton.minimalize()) }
 
@@ -31,7 +31,7 @@ class RegularLanguageLexer<TC : Enum<TC>>(
 
         // Special factory accepting regexes instead of already created NFAs.
         // Param is list of pairs (token_category, regex). Pairs are provided in descending order of category priority.
-        fun <TC : Enum<TC>> fromRegexes(regexes: List<Pair<TC, AlgebraicRegex>>): RegularLanguageLexer<TC> =
+        fun <TC : Enum<TC>> fromRegexes(regexes: List<Pair<TC, AlgebraicRegex<Char>>>): RegularLanguageLexer<TC> =
             fromAutomata(
                 regexes.map { (category, regex) ->
                     Pair(category, determinize(buildNFAFromRegex(regex)))

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 
 class NFAConstructorTest {
     private class NFAWalker<NFAState>(
-        val nfa: NFA<NFAState>,
+        val nfa: NFA<NFAState, Char>,
     ) {
         private fun epsClosure(states: Set<NFAState>): Set<NFAState> {
             var states = states

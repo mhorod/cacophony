@@ -3,10 +3,10 @@ package cacophony.automata.minimalization
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
 
-class DFAPreimagesCalculator<DFAState>(
-    dfa: DFA<DFAState>,
+class DFAPreimagesCalculator<DFAState, AtomType>(
+    dfa: DFA<DFAState, AtomType, *>,
 ) {
-    private val cache: Map<DFAState, Map<Char, Set<DFAState>>> =
+    private val cache: Map<DFAState, Map<AtomType, Set<DFAState>>> =
         dfa
             .getProductions()
             .entries
@@ -16,7 +16,7 @@ class DFAPreimagesCalculator<DFAState>(
             }
 
     // getPreimages(S)[c] is a set of all states t, such that a production (t, c, element from S) exists.
-    fun getPreimages(states: Set<DFAState>): Map<Char, Set<DFAState>> =
+    fun getPreimages(states: Set<DFAState>): Map<AtomType, Set<DFAState>> =
         states
             .mapNotNull { state -> cache[state]?.let { state to it } }
             .flatMap { it.second.entries }
@@ -45,23 +45,28 @@ fun <E> getReachableFrom(
 }
 
 // Returns a set of states reachable from starting state.
-fun <DFAState> DFA<DFAState>.getReachableStates(): Set<DFAState> {
+fun <DFAState> DFA<DFAState, *, *>.getReachableStates(): Set<DFAState> {
     val graph = getProductions().map { Pair(it.key.first, it.value) }.groupBy({ it.first }, { it.second })
     return getReachableFrom(listOf(getStartingState()), graph)
 }
 
 // Returns a set of alive states (states such that there exist a path to some accepting state).
-fun <DFAState> DFA<DFAState>.getAliveStates(): Set<DFAState> {
+fun <DFAState> DFA<DFAState, *, *>.getAliveStates(): Set<DFAState> {
     val graph = getProductions().map { Pair(it.key.first, it.value) }.groupBy({ it.second }, { it.first })
     return getReachableFrom(getAllStates().filter(this::isAccepting), graph)
 }
 
 // Returns a copy of this DFA with only alive and reachable states.
-fun <DFAState> DFA<DFAState>.withAliveReachableStates(): DFA<DFAState> = withStates(getAliveStates() intersect getReachableStates())
+fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.withAliveReachableStates(): DFA<DFAState, AtomType, ResultType> =
+    withStates(
+        getAliveStates() intersect getReachableStates(),
+    )
 
 // Returns a copy of this DFA with all states not belonging to retain set removed.
 // IllegalArgumentException iff retain does not contain starting state
-fun <DFAState> DFA<DFAState>.withStates(retain: Set<DFAState>): DFA<DFAState> {
+fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.withStates(
+    retain: Set<DFAState>,
+): DFA<DFAState, AtomType, ResultType> {
     if (!retain.contains(getStartingState())) {
         throw IllegalArgumentException("Cannot remove starting state")
     }
@@ -72,8 +77,11 @@ fun <DFAState> DFA<DFAState>.withStates(retain: Set<DFAState>): DFA<DFAState> {
     return SimpleDFA(
         fullDFA.getStartingState(),
         productions,
-        retain.filter { fullDFA.isAccepting(it) }.toSet(),
+        retain.mapNotNull {
+            val result = fullDFA.result(it)
+            if (result != null) it to result else null
+        }.toMap(),
     )
 }
 
-infix fun <DFAState> DFAState.via(label: Char): Pair<DFAState, Char> = Pair(this, label)
+infix fun <DFAState, AtomType> DFAState.via(label: AtomType): Pair<DFAState, AtomType> = Pair(this, label)
