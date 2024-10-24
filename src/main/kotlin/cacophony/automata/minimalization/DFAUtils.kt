@@ -84,4 +84,4 @@ fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.withSta
     )
 }
 
-infix fun <DFAState> DFAState.via(label: Char): Pair<DFAState, Char> = Pair(this, label)
+infix fun <DFAState, AtomType> DFAState.via(label: AtomType): Pair<DFAState, AtomType> = Pair(this, label)

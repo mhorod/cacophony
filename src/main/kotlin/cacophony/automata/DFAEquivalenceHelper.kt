@@ -49,8 +49,8 @@ private fun <StateA, StateB, AtomType, ResultType> initializeDistinguishableStat
             if (dfaA.result(a) != dfaB.result(b)) {
                 distinguishable.add(Pair(a, b))
             }
-    dfaA.getAllStates().filter { dfaA.result(it) != null }.forEach { distinguishable.add(Pair(it, null)) }
-    dfaB.getAllStates().filter { dfaB.result(it) != null }.forEach { distinguishable.add(Pair(null, it)) }
+    dfaA.getAllStates().filter { dfaA.isAccepting(it) }.forEach { distinguishable.add(Pair(it, null)) }
+    dfaB.getAllStates().filter { dfaB.isAccepting(it) }.forEach { distinguishable.add(Pair(null, it)) }
     val toVisit = ArrayDeque(distinguishable)
     while (!toVisit.isEmpty()) {
         val (currentA, currentB) = toVisit.removeFirst()

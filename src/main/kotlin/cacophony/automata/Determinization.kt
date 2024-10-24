@@ -4,19 +4,19 @@ import kotlin.collections.mutableMapOf
 import kotlin.collections.mutableSetOf
 import kotlin.collections.setOf
 
-public fun <StateType, AtomType> determinize(nfa: NFA<StateType, AtomType>): DFA<Int, AtomType, Boolean> =
+public fun <StateType, AtomType> determinize(nfa: NFA<StateType, AtomType>): DFA<Int, AtomType, Unit> =
     determinize(
         nfa,
-        nfa.getProductions().keys.fold(mutableSetOf()) { atomset, (_, atom) ->
-            atomset.add(atom)
-            atomset
+        nfa.getProductions().keys.fold(mutableSetOf()) { atoms, (_, atom) ->
+            atoms.add(atom)
+            atoms
         },
     )
 
 private fun <StateType, AtomType> determinize(
     nfa: NFA<StateType, AtomType>,
-    atomset: Iterable<AtomType>,
-): DFA<Int, AtomType, Boolean> {
+    atoms: Iterable<AtomType>,
+): DFA<Int, AtomType, Unit> {
     val startingState: Set<StateType> = nfa.epsilonClosure(setOf(nfa.getStartingState()))
     var createdStates = mutableSetOf(startingState)
     var worklist = ArrayDeque(listOf(startingState))
@@ -26,7 +26,7 @@ private fun <StateType, AtomType> determinize(
         val states = worklist.removeFirst()
 
         dfaProductions.getOrPut(states) { mutableMapOf() }.run {
-            atomset.forEach {
+            atoms.forEach {
                 nfa.getSetEdge(states, it).also { neighbor ->
                     this[it] = neighbor
                     createdStates.add(neighbor) && worklist.add(neighbor)
@@ -36,17 +36,17 @@ private fun <StateType, AtomType> determinize(
     }
 
     val setToInt = createdStates.mapIndexed { index, state -> state to index }.toMap()
-    val acceptingStates =
+    val results =
         createdStates
-            .filter { it.any { nfa.isAccepting(it) } }
+            .filter { it.any { state -> nfa.isAccepting(state) } }
             .map { setToInt[it]!! }
-            .associate { it to true }
+            .associate { it to Unit }
     val productions =
         dfaProductions
             .flatMap { (state, edges) ->
                 edges.map { Pair(setToInt[state]!!, it.key) to setToInt[it.value]!! }
             }.toMap()
-    return SimpleDFA(setToInt[startingState]!!, productions, acceptingStates)
+    return SimpleDFA(setToInt[startingState]!!, productions, results)
 }
 
 private fun <StateType> NFA<StateType, *>.epsilonClosure(states: Collection<StateType>): MutableSet<StateType> {

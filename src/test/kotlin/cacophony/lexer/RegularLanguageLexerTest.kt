@@ -50,7 +50,7 @@ class RegularLanguageLexerTest {
         // given
         val regex = AlgebraicRegex.AtomicRegex('a')
         val mockNFA = SimpleNFA<Char>(0, mapOf(), mapOf(), 0)
-        val mockDFA = SimpleDFA<Int, Char, Boolean>(0, mapOf(), mapOf(0 to true))
+        val mockDFA = SimpleDFA<Int, Char, Unit>(0, mapOf(), mapOf(0 to Unit))
 
         mockkStatic("cacophony.automata.NFAConstructorKt")
         every { buildNFAFromRegex(regex) } returns mockNFA

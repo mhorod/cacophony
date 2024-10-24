@@ -57,7 +57,7 @@ class DeterminizationTest {
                 2,
             )
 
-        val expected = SimpleDFA<Int, Char, Boolean>(1, mapOf(), mapOf(2 to true))
+        val expected = SimpleDFA<Int, Char, Unit>(1, mapOf(), mapOf(2 to Unit))
 
         assertTrue(areEquivalent(determinize(nfa), expected))
     }
@@ -77,7 +77,7 @@ class DeterminizationTest {
                 2,
             )
 
-        val expected = SimpleDFA<Int, Char, Boolean>(1, mapOf(), mapOf(1 to true))
+        val expected = SimpleDFA<Int, Char, Unit>(1, mapOf(), mapOf(1 to Unit))
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())
     }
@@ -96,7 +96,7 @@ class DeterminizationTest {
                 1,
             )
 
-        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), mapOf(1 to true))
+        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), mapOf(1 to Unit))
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())
     }
@@ -123,7 +123,7 @@ class DeterminizationTest {
                 2,
             )
 
-        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), mapOf(1 to true))
+        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), mapOf(1 to Unit))
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())
     }
@@ -180,7 +180,7 @@ class DeterminizationTest {
                     Pair(6, 'a') to 1,
                 ),
                 mapOf(
-                    1 to true,
+                    1 to Unit,
                 ),
             )
         val actual = determinize(nfa)

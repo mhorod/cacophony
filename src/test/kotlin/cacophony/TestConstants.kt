@@ -24,7 +24,7 @@ val DFA_NON_EMPTY =
             Pair(2, 'B') to 2,
         ),
         mapOf(
-            2 to true,
+            2 to Unit,
         ),
     )
 
@@ -39,7 +39,7 @@ val DFA_FIRST_UPPER_CASE =
             Pair(2, 'b') to 2,
         ),
         mapOf(
-            2 to true,
+            2 to Unit,
         ),
     )
 
@@ -54,7 +54,7 @@ val DFA_UPPER_CASE =
             Pair(2, 'B') to 2,
         ),
         mapOf(
-            2 to true,
+            2 to Unit,
         ),
     )
 
@@ -71,6 +71,6 @@ val DFA_SQUARE =
             Pair(2, ']') to 3,
         ),
         mapOf(
-            3 to true,
+            3 to Unit,
         ),
     )

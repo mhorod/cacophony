@@ -92,7 +92,7 @@ private fun <AtomType> buildSimpleNFAFromRegex(regex: AlgebraicRegex<AtomType>):
 fun <AtomType> SimpleNFA<AtomType>.size(): Int = this.getAllStates().size
 
 fun <AtomType> SimpleNFA<AtomType>.offsetStateNumbers(offset: Int): SimpleNFA<AtomType> =
-    SimpleNFA<AtomType>(
+    SimpleNFA(
         this.getStartingState() + offset,
         this
             .getProductions()
