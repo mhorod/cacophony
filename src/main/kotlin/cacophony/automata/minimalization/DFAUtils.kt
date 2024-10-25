@@ -2,6 +2,9 @@ package cacophony.automata.minimalization
 
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
+import cacophony.automata.buildNFAFromRegex
+import cacophony.automata.determinize
+import cacophony.utils.AlgebraicRegex
 
 class DFAPreimagesCalculator<DFAState, AtomType>(
     dfa: DFA<DFAState, AtomType, *>,
@@ -84,4 +87,22 @@ fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.withSta
     )
 }
 
+// TODO: During refactor, move all of this to some utils file outside of minimalization directory.
+
 infix fun <DFAState, AtomType> DFAState.via(label: AtomType): Pair<DFAState, AtomType> = Pair(this, label)
+
+// Some utility functions, to not write whole pipeline each time
+fun <AtomType> buildDFAFromRegex(regex: AlgebraicRegex<AtomType>) = determinize(buildNFAFromRegex(regex)).minimalize().makeIntDfa()
+
+fun buildDFAFromRegex(regex: String) = buildDFAFromRegex(AlgebraicRegex.fromString(regex))
+
+fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.makeIntDfa(): DFA<Int, AtomType, ResultType> {
+    val oldToNew: MutableMap<DFAState, Int> = mutableMapOf()
+    var stateCounter = 0
+    // It is not necessary, but it is nice to have 0 as starting state.
+    oldToNew[getStartingState()] = stateCounter++
+    for (state in getAllStates()) oldToNew.computeIfAbsent(state) { stateCounter++ }
+    val productions = getProductions().map { (key, value) -> oldToNew[key.first]!! via key.second to oldToNew[value]!! }.toMap()
+    val results = getAllStates().mapNotNull { state -> result(state)?.let { res -> oldToNew[state]!! to res } }.toMap()
+    return SimpleDFA(0, productions, results)
+}
