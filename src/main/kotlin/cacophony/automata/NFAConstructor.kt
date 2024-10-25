@@ -3,10 +3,10 @@ package cacophony.automata
 import cacophony.utils.AlgebraicRegex
 import kotlin.collections.emptyMap
 
-fun buildNFAFromRegex(regex: AlgebraicRegex): NFA<Int> = buildSimpleNFAFromRegex(regex)
+fun <AtomType> buildNFAFromRegex(regex: AlgebraicRegex<AtomType>): NFA<Int, AtomType> = buildSimpleNFAFromRegex(regex)
 
 // Implementation relies on the fact that the initial state will always have number 0.
-private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
+private fun <AtomType> buildSimpleNFAFromRegex(regex: AlgebraicRegex<AtomType>): SimpleNFA<AtomType> =
     when (regex) {
         is AlgebraicRegex.AtomicRegex ->
             SimpleNFA(
@@ -18,11 +18,11 @@ private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
 
         is AlgebraicRegex.UnionRegex -> {
             var totalSize = 1
-            val prods: MutableMap<Pair<Int, Char>, List<Int>> = mutableMapOf()
+            val prods: MutableMap<Pair<Int, AtomType>, List<Int>> = mutableMapOf()
             val epsProds: MutableMap<Int, MutableList<Int>> = mutableMapOf()
             val initState = 0
             var finalState = 1
-            val subAutomata: MutableList<SimpleNFA> = mutableListOf()
+            val subAutomata: MutableList<SimpleNFA<AtomType>> = mutableListOf()
             for (sub in regex.internalRegexes) {
                 val subAutomaton = buildSimpleNFAFromRegex(sub)
                 subAutomata.add(subAutomaton)
@@ -45,11 +45,11 @@ private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
         }
 
         is AlgebraicRegex.ConcatenationRegex -> {
-            val prods: MutableMap<Pair<Int, Char>, List<Int>> = mutableMapOf()
+            val prods: MutableMap<Pair<Int, AtomType>, List<Int>> = mutableMapOf()
             val epsProds: MutableMap<Int, MutableList<Int>> = mutableMapOf()
             val initState = 0
             var finalState = 1
-            val subAutomata: MutableList<SimpleNFA> = mutableListOf()
+            val subAutomata: MutableList<SimpleNFA<AtomType>> = mutableListOf()
             for (sub in regex.internalRegexes) {
                 val subAutomaton = buildSimpleNFAFromRegex(sub)
                 subAutomata.add(subAutomaton)
@@ -89,9 +89,9 @@ private fun buildSimpleNFAFromRegex(regex: AlgebraicRegex): SimpleNFA =
         }
     }
 
-fun SimpleNFA.size(): Int = this.getAllStates().size
+fun <AtomType> SimpleNFA<AtomType>.size(): Int = this.getAllStates().size
 
-fun SimpleNFA.offsetStateNumbers(offset: Int): SimpleNFA =
+fun <AtomType> SimpleNFA<AtomType>.offsetStateNumbers(offset: Int): SimpleNFA<AtomType> =
     SimpleNFA(
         this.getStartingState() + offset,
         this

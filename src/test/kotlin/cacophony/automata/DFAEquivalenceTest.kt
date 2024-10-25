@@ -14,7 +14,9 @@ class DFAEquivalenceTest {
                     Pair(42, 'b') to 43,
                     Pair(43, 'c') to 53,
                 ),
-                setOf(53),
+                mapOf(
+                    53 to true,
+                ),
             )
         assertTrue(areEquivalent(dfa, dfa))
     }
@@ -32,7 +34,9 @@ class DFAEquivalenceTest {
                     Pair(2, 'a') to 2,
                     Pair(2, 'b') to 2,
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         val second =
             SimpleDFA(
@@ -43,7 +47,9 @@ class DFAEquivalenceTest {
                     Pair(1, 'a') to 1,
                     Pair(1, 'b') to 1,
                 ),
-                setOf(1),
+                mapOf(
+                    1 to true,
+                ),
             )
         assertTrue(areEquivalent(first, second))
     }
@@ -60,7 +66,9 @@ class DFAEquivalenceTest {
                     Pair(2, 'a') to 2,
                     Pair(2, 'b') to 2,
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         // This DFA accepts all words that contain at least one 'a'
         val second =
@@ -72,7 +80,9 @@ class DFAEquivalenceTest {
                     Pair(1, 'a') to 1,
                     Pair(1, 'b') to 1,
                 ),
-                setOf(1),
+                mapOf(
+                    1 to true,
+                ),
             )
         assertFalse(areEquivalent(first, second))
     }
@@ -89,7 +99,9 @@ class DFAEquivalenceTest {
                     Pair(2, 'a') to 2,
                     Pair(2, 'b') to 2,
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         val second =
             SimpleDFA(
@@ -102,7 +114,10 @@ class DFAEquivalenceTest {
                     Pair(3, 'a') to 3,
                     Pair(3, 'b') to 3,
                 ),
-                setOf(2, 3),
+                mapOf(
+                    2 to true,
+                    3 to true,
+                ),
             )
         assertTrue(areEquivalent(first, second))
     }
@@ -118,7 +133,9 @@ class DFAEquivalenceTest {
                     Pair(2, 'a') to 2,
                     Pair(2, 'b') to 2,
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         val second =
             SimpleDFA(
@@ -131,7 +148,9 @@ class DFAEquivalenceTest {
                     Pair(3, 'a') to 3,
                     Pair(3, 'b') to 3,
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         assertTrue(areEquivalent(first, second))
     }
@@ -147,7 +166,9 @@ class DFAEquivalenceTest {
                     Pair(2, 'a') to 2,
                     Pair(2, 'b') to 2,
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         // This DFA accepts only nonempty sequences of 'a''s
         val second =
@@ -160,7 +181,9 @@ class DFAEquivalenceTest {
                     Pair(3, 'a') to 3,
                     Pair(3, 'b') to 3,
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         assertFalse(areEquivalent(first, second))
     }
@@ -222,7 +245,9 @@ class DFAEquivalenceTest {
                             Pair(15, 'c') to 13,
                         )
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         val small =
             SimpleDFA(
@@ -238,7 +263,9 @@ class DFAEquivalenceTest {
                     Pair(5, 'a') to 6,
                     Pair(6, 'a') to 1,
                 ),
-                setOf(1),
+                mapOf(
+                    1 to true,
+                ),
             )
         assertTrue(areEquivalent(large, small))
     }
@@ -258,7 +285,9 @@ class DFAEquivalenceTest {
                     Pair(4, 'a') to 6,
                     Pair(5, 'a') to 6,
                 ),
-                setOf(6),
+                mapOf(
+                    6 to true,
+                ),
             )
         val multipleAccepting =
             SimpleDFA(
@@ -273,7 +302,12 @@ class DFAEquivalenceTest {
                     Pair(1, 'd') to 8,
                     Pair(8, 'a') to 9,
                 ),
-                setOf(3, 5, 7, 9),
+                mapOf(
+                    3 to true,
+                    5 to true,
+                    7 to true,
+                    9 to true,
+                ),
             )
         assertTrue(areEquivalent(singleAccepting, multipleAccepting))
     }
@@ -290,7 +324,11 @@ class DFAEquivalenceTest {
                     Pair(3, 'a') to 4,
                     Pair(3, 'b') to 5,
                 ),
-                setOf(3, 4, 5),
+                mapOf(
+                    3 to true,
+                    4 to true,
+                    5 to true,
+                ),
             )
         val second =
             SimpleDFA(
@@ -304,7 +342,14 @@ class DFAEquivalenceTest {
                     Pair(5, 'a') to 7,
                     Pair(5, 'b') to 6,
                 ),
-                setOf(2, 3, 5, 6, 7, 8),
+                mapOf(
+                    2 to true,
+                    3 to true,
+                    5 to true,
+                    6 to true,
+                    7 to true,
+                    8 to true,
+                ),
             )
         assertTrue(areEquivalent(first, second))
     }
@@ -318,7 +363,7 @@ class DFAEquivalenceTest {
                     Pair(1, 'a') to 1,
                     Pair(1, 'b') to 1,
                 ),
-                setOf(),
+                mapOf<Int, Boolean>(),
             )
         val unreachableAcceptingStates =
             SimpleDFA(
@@ -331,7 +376,11 @@ class DFAEquivalenceTest {
                     Pair(4, 'a') to 2,
                     Pair(4, 'b') to 3,
                 ),
-                setOf(2, 3, 4),
+                mapOf(
+                    2 to true,
+                    3 to true,
+                    4 to true,
+                ),
             )
         assertTrue(areEquivalent(noAcceptingStates, unreachableAcceptingStates))
     }
@@ -345,7 +394,7 @@ class DFAEquivalenceTest {
                     Pair(1, 'a') to 1,
                     Pair(1, 'b') to 1,
                 ),
-                setOf(),
+                mapOf<Int, Boolean>(),
             )
         val reachableAcceptingStates =
             SimpleDFA(
@@ -354,7 +403,9 @@ class DFAEquivalenceTest {
                     Pair(1, 'a') to 1,
                     Pair(1, 'b') to 2,
                 ),
-                setOf(2),
+                mapOf(
+                    2 to true,
+                ),
             )
         assertFalse(areEquivalent(noAcceptingStates, reachableAcceptingStates))
     }

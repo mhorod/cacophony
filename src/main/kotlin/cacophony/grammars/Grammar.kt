@@ -4,9 +4,7 @@ import cacophony.utils.AlgebraicRegex
 
 data class Production<SymbolType>(
     val lhs: SymbolType,
-    // TODO: Uncomment after #46
-    // val rhs: AlgebraicRegex<SymbolType>,
-    val rhs: AlgebraicRegex,
+    val rhs: AlgebraicRegex<SymbolType>,
 )
 
 data class Grammar<SymbolType>(

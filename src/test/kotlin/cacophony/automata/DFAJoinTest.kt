@@ -2,13 +2,14 @@ package cacophony.automata
 
 import cacophony.automata.minimalization.buildDFAFromRegex
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class DFAJoinTest {
     @Test
-    fun `joining empty list throws`() {
+    fun `joining an empty list throws`() {
         assertThrows<IllegalArgumentException> {
             joinAutomata<Unit, Unit, Unit>(emptyList())
         }
@@ -42,48 +43,40 @@ class DFAJoinTest {
     }
 
     @Test
-    fun `joining single automaton produces equivalent one`() {
-        val prev = buildDFAFromRegex("abc")
-        // Have to do this way, because joinAutomata has different Result type
-        // then a dfa from buildDFAFromRegex (Something? vs. Boolean)
-        val dfa1 = joinAutomata(listOf(prev to Unit))
+    fun `joining single (minimalized) automaton produces equivalent one`() {
+        val dfa1 = buildDFAFromRegex("abc")
         val dfa2 = joinAutomata(listOf(dfa1 to Unit))
-        // TODO: uncomment after merging Jan's PR
-//        assert(areEquivalent(dfa1, dfa2))
+        assert(areEquivalent(dfa1, dfa2))
+    }
+
+    @Test
+    fun `non equivalent input produces non equivalent output`() {
+        val dfa1 = joinAutomata(listOf(buildDFAFromRegex("abc") to Unit))
+        val dfa2 = joinAutomata(listOf(buildDFAFromRegex("aba") to Unit))
+        assertFalse(areEquivalent(dfa1, dfa2))
     }
 
     @Test
     fun `correct results`() {
         val dfa1 = buildDFAFromRegex("aa|aaaa")
-        println(dfa1.getProductions())
         val dfa2 = buildDFAFromRegex("a|aaa")
-        println(dfa2.getProductions())
         val join = joinAutomata(listOf(dfa1 to 1, dfa2 to 2))
         var state = join.getStartingState()
-        println(join.getProductions())
-        println(join.getAllStates())
-        println(state)
         assertNull(join.result(state))
 
         state = join.getProduction(state, 'a')!!
-        println(state)
         assertEquals(2, join.result(state))
 
         state = join.getProduction(state, 'a')!!
-        println(state)
         assertEquals(1, join.result(state))
 
         state = join.getProduction(state, 'a')!!
-        println(state)
         assertEquals(2, join.result(state))
 
         state = join.getProduction(state, 'a')!!
-        println(state)
         assertEquals(1, join.result(state))
 
-        state = join.getProduction(state, 'a')!!
-        println(state)
-        assertNull(join.result(state))
+        assertNull(join.getProduction(state, 'a'))
     }
 
     @Test

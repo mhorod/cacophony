@@ -11,9 +11,9 @@ import org.junit.jupiter.api.assertThrows
 
 class RegexParserTest {
     // Checks _exact_ structure, i.e. returns false for (a|b) and (b|a).
-    private fun algebraicRegexEquals(
-        x: AlgebraicRegex,
-        y: AlgebraicRegex,
+    private fun <AtomType> algebraicRegexEquals(
+        x: AlgebraicRegex<AtomType>,
+        y: AlgebraicRegex<AtomType>,
     ): Boolean {
         when (x) {
             is AtomicRegex ->
@@ -44,7 +44,7 @@ class RegexParserTest {
         return false
     }
 
-    private fun algebraicRegexToString(ar: AlgebraicRegex): String {
+    private fun <AtomType> algebraicRegexToString(ar: AlgebraicRegex<AtomType>): String {
         return when (ar) {
             is AtomicRegex -> ar.symbol.toString()
             is ConcatenationRegex ->
@@ -63,9 +63,9 @@ class RegexParserTest {
         }
     }
 
-    private fun assertEqualAlgebraicRegex(
-        result: AlgebraicRegex,
-        expected: AlgebraicRegex,
+    private fun <AtomType> assertEqualAlgebraicRegex(
+        result: AlgebraicRegex<AtomType>,
+        expected: AlgebraicRegex<AtomType>,
     ) {
         assert(algebraicRegexEquals(result, expected)) {
             println("result: ${algebraicRegexToString(result)}\nexpect: ${algebraicRegexToString(expected)}")
@@ -94,7 +94,7 @@ class RegexParserTest {
     @Test
     fun `simple star`() {
         val result = parseRegex("""a***""")
-        var expected: AlgebraicRegex = AtomicRegex('a')
+        var expected: AlgebraicRegex<Char> = AtomicRegex('a')
         repeat(3) { expected = StarRegex(expected) }
         assertEqualAlgebraicRegex(result, expected)
     }
@@ -102,7 +102,7 @@ class RegexParserTest {
     @Test
     fun `nested parenthesis`() {
         val result = parseRegex("""(((a)))""")
-        val expected: AlgebraicRegex = AtomicRegex('a')
+        val expected: AlgebraicRegex<Char> = AtomicRegex('a')
         assertEqualAlgebraicRegex(result, expected)
     }
 
@@ -112,7 +112,7 @@ class RegexParserTest {
         val s0 = ConcatenationRegex(*"""abc""".map { AtomicRegex(it) }.toTypedArray())
         val s1 = ConcatenationRegex(AtomicRegex('x'), UnionRegex(AtomicRegex('a'), AtomicRegex('b')))
         val s2 = ConcatenationRegex(StarRegex(AtomicRegex('x')), AtomicRegex('a'), StarRegex(AtomicRegex('b')))
-        val expected: AlgebraicRegex = UnionRegex(s0, s1, s2)
+        val expected: AlgebraicRegex<Char> = UnionRegex(s0, s1, s2)
         assertEqualAlgebraicRegex(result, expected)
     }
 
@@ -122,7 +122,7 @@ class RegexParserTest {
         val s0 = ConcatenationRegex(*"""abc""".map { AtomicRegex(it) }.toTypedArray())
         val s1 = ConcatenationRegex(AtomicRegex('x'), UnionRegex(AtomicRegex('a'), AtomicRegex('b')))
         val s2 = ConcatenationRegex(StarRegex(AtomicRegex('x')), AtomicRegex('a'), StarRegex(AtomicRegex('b')))
-        val expected: AlgebraicRegex = UnionRegex(s0, s1, s2)
+        val expected: AlgebraicRegex<Char> = UnionRegex(s0, s1, s2)
         assertEqualAlgebraicRegex(result, expected)
     }
 
@@ -130,7 +130,7 @@ class RegexParserTest {
     fun `actual keywords`() {
         val keywords = arrayOf("""let""", """while""", """do""", """if""", """then""", """else""", """true""", """false""")
         val result = parseRegex(keywords.joinToString("""|"""))
-        val expected: AlgebraicRegex =
+        val expected: AlgebraicRegex<Char> =
             UnionRegex(
                 *keywords.map {
                     ConcatenationRegex(
@@ -148,7 +148,7 @@ class RegexParserTest {
     fun `non special operators`() {
         val operators = """[]&=<>+-!#%"""
         val result = parseRegex(operators.toCharArray().joinToString("""|"""))
-        val expected: AlgebraicRegex = UnionRegex(*operators.map { AtomicRegex(it) }.toTypedArray())
+        val expected: AlgebraicRegex<Char> = UnionRegex(*operators.map { AtomicRegex(it) }.toTypedArray())
         assertEqualAlgebraicRegex(result, expected)
     }
 
@@ -156,7 +156,7 @@ class RegexParserTest {
     fun `special operators`() {
         val operators = """|*\()"""
         val result = parseRegex(operators.toCharArray().joinToString("""|\""", """\"""))
-        val expected: AlgebraicRegex = UnionRegex(*operators.map { AtomicRegex(it) }.toTypedArray())
+        val expected: AlgebraicRegex<Char> = UnionRegex(*operators.map { AtomicRegex(it) }.toTypedArray())
         assertEqualAlgebraicRegex(result, expected)
     }
 
@@ -164,7 +164,7 @@ class RegexParserTest {
     fun `escaped characters`() {
         val characters = """nrt"""
         val result = parseRegex(characters.toCharArray().joinToString("""|\""", """\"""))
-        val expected: AlgebraicRegex = UnionRegex(AtomicRegex('\n'), AtomicRegex('\r'), AtomicRegex('\t'))
+        val expected: AlgebraicRegex<Char> = UnionRegex(AtomicRegex('\n'), AtomicRegex('\r'), AtomicRegex('\t'))
         assertEqualAlgebraicRegex(result, expected)
     }
 
@@ -237,7 +237,7 @@ class RegexParserTest {
     fun `all features`() {
         val regex = """(\na\n)*|(a|(a|b)|(aa*))x\|\**"""
         val result = parseRegex(regex)
-        val expected: AlgebraicRegex =
+        val expected: AlgebraicRegex<Char> =
             UnionRegex(
                 StarRegex(ConcatenationRegex(AtomicRegex('\n'), AtomicRegex('a'), AtomicRegex('\n'))),
                 ConcatenationRegex(
