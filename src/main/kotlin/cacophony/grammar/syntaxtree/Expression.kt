@@ -7,7 +7,8 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
         range: Pair<Location, Location>,
     ) : Expression(range)
 
-    class Type( // should Type also inherit expression? if so, can we do for example "; Bool;" in our language?
+    // should Type also inherit expression? if so, can we do for example "; Bool;" in our language?
+    class Type(
         range: Pair<Location, Location>,
     ) : Expression(range)
 
@@ -37,14 +38,16 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
         ) : Expression(range)
     }
 
-    class NestedExpression( // expression in parenthesis
+    // expression in parenthesis
+    class NestedExpression(
         range: Pair<Location, Location>,
         val expression: Expression,
     ) : Expression(range)
 
-    class SubsequentExpressions( // series of expressions separated by semicolons, returning value of the last one
-        // we agreed that (x; y;) returns Unit - should we create artificial class for empty expression after the last semicolon,
-        // or will we handle it in a different way?
+    // series of expressions separated by semicolons, returning value of the last one
+    // we agreed that (x; y;) returns Unit - should we create artificial class for empty expression after the last semicolon,
+    // or will we handle it in a different way?
+    class SubsequentExpressions(
         range: Pair<Location, Location>,
         vararg val expressions: Expression,
     ) : Expression(range)
