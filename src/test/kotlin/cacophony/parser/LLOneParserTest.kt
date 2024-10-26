@@ -5,6 +5,7 @@ import cacophony.automata.minimalization.via
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.Production
 import cacophony.utils.AlgebraicRegex
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class LLOneParserTest {
