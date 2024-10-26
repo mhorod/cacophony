@@ -2,38 +2,42 @@ package cacophony.grammars
 
 import cacophony.automata.DFA
 
-typealias DFAStateReference<StateType, SymbolType> = Pair<StateType, DFA<StateType, SymbolType, Production<SymbolType>>>
+typealias DFAStateReference<StateType, SymbolType, ResultType> =
+    Pair<StateType, DFA<StateType, SymbolType, ResultType>>
 
-fun <StateType, SymbolType> findNullable(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
-): Collection<DFAStateReference<StateType, SymbolType>> {
+typealias StateToSymbolsMap<StateType, SymbolType, ResultType> =
+    Map<DFAStateReference<StateType, SymbolType, ResultType>, Collection<SymbolType>>
+
+fun <StateType, SymbolType, ResultType> findNullable(
+    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
+): Collection<DFAStateReference<StateType, SymbolType, ResultType>> {
     TODO("Not implemented")
 }
 
-fun <StateType, SymbolType> findFirst(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
-    nullable: Collection<DFAStateReference<StateType, SymbolType>>,
-): Map<DFAStateReference<StateType, SymbolType>, Collection<SymbolType>> {
+fun <StateType, SymbolType, ResultType> findFirst(
+    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
+    nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
+): StateToSymbolsMap<StateType, SymbolType, ResultType> {
     TODO("Not implemented")
 }
 
-fun <StateType, SymbolType> findFollow(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
-    nullable: Collection<DFAStateReference<StateType, SymbolType>>,
-    first: Map<DFAStateReference<StateType, SymbolType>, Collection<SymbolType>>,
-): Map<DFAStateReference<StateType, SymbolType>, Collection<SymbolType>> {
+fun <StateType, SymbolType, ResultType> findFollow(
+    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
+    nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
+    first: StateToSymbolsMap<StateType, SymbolType, ResultType>,
+): StateToSymbolsMap<StateType, SymbolType, ResultType> {
     TODO("Not implemented")
 }
 
 data class AnalyzedGrammar<StateType, SymbolType>(
     val syncSymbolTypes: Collection<SymbolType>,
     val automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
-    val nullable: Collection<DFAStateReference<StateType, SymbolType>>,
-    val first: Map<DFAStateReference<StateType, SymbolType>, Collection<SymbolType>>,
-    val follow: Map<DFAStateReference<StateType, SymbolType>, Collection<SymbolType>>,
+    val nullable: Collection<DFAStateReference<StateType, SymbolType, Production<SymbolType>>>,
+    val first: StateToSymbolsMap<StateType, SymbolType, Production<SymbolType>>,
+    val follow: StateToSymbolsMap<StateType, SymbolType, Production<SymbolType>>,
 ) {
     companion object {
-        fun <StateType, SymbolType> fromAutomata(
+        fun <StateType, SymbolType, ResultType> fromAutomata(
             syncSymbolTypes: Collection<SymbolType>,
             automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
         ): AnalyzedGrammar<StateType, SymbolType> {
