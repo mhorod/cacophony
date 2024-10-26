@@ -78,15 +78,11 @@ class FindFirstImpl<StateType, SymbolType, ResultType>(
                 }
             }
         }
-        println("BEG")
         for (key in firstGraph.keys)
             println(key.toString() + " " + firstGraph[key].toString())
-        println("END")
         val closure = transitiveClosure(firstGraph)
-        println("BEG")
         for (key in closure.keys)
             println(key.toString() + " " + closure[key].toString())
-        println("END")
         firstMap =
             closure.mapNotNull { (key, values) ->
                 val newKey = toState(key) ?: return@mapNotNull null
