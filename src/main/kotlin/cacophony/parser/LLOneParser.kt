@@ -9,7 +9,6 @@ import cacophony.utils.Diagnostics
 class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
     private val nextAction: Map<SymbolType, MutableMap<DFAStateReference<StateType, SymbolType, Production<SymbolType>>, SymbolType?>>,
 ) : Parser<SymbolType> {
-
     companion object {
         // Constructs LLOneParser with computed nextAction map.
         // nextAction gives symbol on the production that we should use next
@@ -27,30 +26,32 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                     val curStateRef = DFAStateReference(curState, dfa)
 
                     enumValues<SymbolType>().forEach { inputSymbol -> // symbol from the input
-                        val acceptableSymbols = mutableListOf<SymbolType>()
+                        val suitableSymbols = mutableListOf<SymbolType>()
                         enumValues<SymbolType>().forEach { prodSymbol -> // symbol in the production
                             val nextState = dfa.getProduction(curState, prodSymbol)
                             if (nextState != null) {
                                 val nextStateRef = DFAStateReference(nextState, dfa)
                                 if (analyzedGrammar.first[nextStateRef]?.contains(inputSymbol) == true) {
-                                    acceptableSymbols.add(prodSymbol)
+                                    suitableSymbols.add(prodSymbol)
                                 } else if (analyzedGrammar.nullable.contains(nextStateRef) and
                                     (analyzedGrammar.follow[nextStateRef]?.contains(inputSymbol) == true)
                                 ) {
-                                    acceptableSymbols.add(prodSymbol)
+                                    suitableSymbols.add(prodSymbol)
                                 }
                             }
                         }
 
-                        if (acceptableSymbols.size > 1) { // too many productions are suitable
+                        if (suitableSymbols.size > 1) { // too many productions are suitable
+                            // TODO: more expressive error
                             throw ParserConstructorErrorException("Sorry, this is not an LL(1) grammar :c")
                         }
-                        if (acceptableSymbols.size == 1) {
-                            nextAction[inputSymbol]!![curStateRef] = acceptableSymbols[0]
+                        if (suitableSymbols.size == 1) {
+                            nextAction[inputSymbol]!![curStateRef] = suitableSymbols[0]
                         } else { // acceptableSymbols.size == 0
                             if (dfa.isAccepting(curState)) {
                                 nextAction[inputSymbol]!![curStateRef] = null
                             } else { // nowhere to go and cannot accept
+                                // TODO: more expressive error
                                 throw ParserConstructorErrorException("Sorry, this is not an LL(1) grammar :c")
                             }
                         }
