@@ -74,12 +74,10 @@ class FindNullableTest {
         assertThat(nullable).containsExactlyInAnyOrder(
             Pair(0, dfaN), // accepting state
             Pair(1, dfaN), // accepting state
-
             Pair(1, dfaA), // accepting state
             Pair(1, dfaB), // accepting state
             Pair(2, dfaA), // accepting state
             Pair(2, dfaB), // accepting state
-
             Pair(0, dfaA), // state with nullable production
             Pair(0, dfaB), // state with nullable production
         )
