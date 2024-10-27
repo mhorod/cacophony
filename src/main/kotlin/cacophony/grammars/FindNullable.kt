@@ -14,24 +14,28 @@ fun <StateType, SymbolType, ResultType> findNullable(
             }.filter { (state, symbol) -> automata[symbol]!!.isAccepting(state) }
             .toMutableList()
     val nullableSymbols = mutableSetOf<SymbolType>()
-    val conditionalNullable = mutableMapOf<SymbolType, MutableSet<Pair<StateType, SymbolType>>>().withDefault { mutableSetOf() }
-    val nullable = mutableSetOf<DFAStateReference<StateType, SymbolType, ResultType>>()
+    val conditionalNullable =
+        with(mutableMapOf<SymbolType, MutableSet<Pair<StateType, SymbolType>>>()) {
+            withDefault { key -> getOrPut(key) { mutableSetOf() } }
+        }
+    val nullable = mutableSetOf<Pair<StateType, SymbolType>>()
     while (toProcess.isNotEmpty()) {
         val (state, symbol) = toProcess.removeLast()
+        if ((state to symbol) in nullable) continue
+        nullable.add(state to symbol)
         val automaton = automata[symbol]!!
         if (state == automaton.getStartingState()) {
             nullableSymbols.add(symbol)
-            nullable.add(state to automaton)
-            nullable.addAll(conditionalNullable[symbol]!!.map { (state, symbol) -> state to automata[symbol]!! })
+            toProcess.addAll(conditionalNullable.getValue(symbol))
         } else {
             for ((transitionSymbol, states) in reversed[symbol]!![state]!!) {
                 if (transitionSymbol in nullableSymbols) {
                     toProcess.addAll(states.map { it to symbol })
                 } else {
-                    conditionalNullable[transitionSymbol]!!.addAll(states.map { it to symbol })
+                    conditionalNullable.getValue(transitionSymbol).addAll(states.map { it to symbol })
                 }
             }
         }
     }
-    return nullable
+    return nullable.map { (state, symbol) -> state to automata[symbol]!! }.toSet()
 }
