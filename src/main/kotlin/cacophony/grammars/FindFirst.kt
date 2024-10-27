@@ -1,7 +1,7 @@
 package cacophony.grammars
 
 import cacophony.automata.DFA
-import cacophony.utils.getTransitiveClosure
+import cacophony.utils.getProperTransitiveClosure
 
 data class GeneralizedSymbol<StateType, SymbolType, ResultType>(
     val state: DFAStateReference<StateType, SymbolType, ResultType>?,
@@ -11,6 +11,10 @@ data class GeneralizedSymbol<StateType, SymbolType, ResultType>(
         if (state == null && symbol == null) {
             throw IllegalArgumentException("State and Symbol cannot both be nulls")
         }
+    }
+
+    override fun toString(): String {
+        return (symbol ?: state).toString()
     }
 }
 
@@ -50,9 +54,9 @@ fun <StateType, SymbolType, ResultType> findFirst(
         }
     }
 
-    return getTransitiveClosure(graph).mapNotNull { (key, values) ->
+    return getProperTransitiveClosure(graph).mapNotNull { (key, values) ->
         val newKey = key.state ?: return@mapNotNull null
-        val newValues = values.mapNotNull { it.symbol }.filter { !automata.containsKey(it) }.toSet()
+        val newValues = values.mapNotNull { it.symbol }.toSet()
         return@mapNotNull Pair(newKey, newValues)
     }.toMap()
 }

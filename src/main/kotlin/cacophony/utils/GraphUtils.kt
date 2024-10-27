@@ -21,11 +21,22 @@ fun <VType> getReachableFrom(
     return reachable
 }
 
-// Returns a transitive closure of directed graph.
+// Returns a transitive closure of a directed graph.
 fun <VType> getTransitiveClosure(graph: Map<VType, Collection<VType>>): Map<VType, Set<VType>> {
     val closure: MutableMap<VType, Set<VType>> = mutableMapOf()
     for (component in getStronglyConnectedComponents(graph)) {
-        val reachable = component.toSet() union component.flatMap { graph[it] ?: emptyList() }.flatMap { closure[it] ?: emptyList() }
+        val reachable = component union component.flatMap { graph[it] ?: emptyList() }.flatMap { closure[it] ?: emptyList() }
+        component.forEach { closure[it] = reachable }
+    }
+    return closure
+}
+
+// Returns a "proper" transitive closure of a directed graph (i.e. ignoring paths of length zero).
+fun <VType> getProperTransitiveClosure(graph: Map<VType, Collection<VType>>): Map<VType, Set<VType>> {
+    val closure: MutableMap<VType, Set<VType>> = mutableMapOf()
+    for (component in getStronglyConnectedComponents(graph)) {
+        val step = component.flatMap { graph[it] ?: emptyList() }
+        val reachable = step union step.flatMap { closure[it] ?: emptyList() }
         component.forEach { closure[it] = reachable }
     }
     return closure
