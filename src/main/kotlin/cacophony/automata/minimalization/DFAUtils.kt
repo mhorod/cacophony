@@ -4,6 +4,7 @@ import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
 import cacophony.automata.buildNFAFromRegex
 import cacophony.automata.determinize
+import cacophony.automata.joinAutomata
 import cacophony.utils.AlgebraicRegex
 
 class DFAPreimagesCalculator<DFAState, AtomType>(
@@ -93,6 +94,11 @@ infix fun <DFAState, AtomType> DFAState.via(label: AtomType): Pair<DFAState, Ato
 
 // Some utility functions, to not write whole pipeline each time
 fun <AtomType> buildDFAFromRegex(regex: AlgebraicRegex<AtomType>) = determinize(buildNFAFromRegex(regex)).minimalize().makeIntDfa()
+
+fun <AtomType, ResulType> buildDFAFromRegex(
+    regex: AlgebraicRegex<AtomType>,
+    result: ResulType,
+) = joinAutomata(listOf(buildDFAFromRegex(regex) to result))
 
 fun buildDFAFromRegex(regex: String) = buildDFAFromRegex(AlgebraicRegex.fromString(regex))
 

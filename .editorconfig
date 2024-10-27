@@ -1,0 +1,5 @@
+root = true
+
+[*{.kt,.kts}]
+ktlint_standard_discouraged-comment-location = disabled
+ktlint_standard_if-else-wrapping = disabled
