@@ -49,7 +49,7 @@ fun <StateType, SymbolType, ResultType> findFirst(
 
     return getTransitiveClosure(graph).mapNotNull { (key, values) ->
         val newKey = key.state ?: return@mapNotNull null
-        val newValues = values.mapNotNull { it.symbol }.toSet()
+        val newValues = values.mapNotNull { it.symbol }.filter { !automata.containsKey(it) }.toSet()
         return@mapNotNull Pair(newKey, newValues)
     }.toMap()
 }
