@@ -1,7 +1,7 @@
 package cacophony.grammars
 
 import cacophony.automata.DFA
-import kotlin.math.min
+import cacophony.utils.getTransitiveClosure
 
 typealias DFAStateReference<StateType, SymbolType, ResultType> =
     Pair<StateType, DFA<StateType, SymbolType, ResultType>>
@@ -80,7 +80,7 @@ class FindFirstImpl<StateType, SymbolType, ResultType>(
         }
         for (key in firstGraph.keys)
             println(key.toString() + " " + firstGraph[key].toString())
-        val closure = transitiveClosure(firstGraph)
+        val closure = getTransitiveClosure(firstGraph)
         for (key in closure.keys)
             println(key.toString() + " " + closure[key].toString())
         firstMap =
@@ -90,49 +90,6 @@ class FindFirstImpl<StateType, SymbolType, ResultType>(
                 return@mapNotNull Pair(newKey, newValues)
             }.toMap()
     }
-}
-
-fun <VType> transitiveClosure(graph: Map<VType, Collection<VType>>): Map<VType, Set<VType>> {
-    val closure: MutableMap<VType, Set<VType>> = mutableMapOf()
-    for (component in findStronglyConnectedComponents(graph)) {
-        val reachable = component.toSet() union component.flatMap { graph[it] ?: emptyList() }.flatMap { closure[it] ?: emptyList() }
-        component.forEach { closure[it] = reachable }
-    }
-    return closure
-}
-
-fun <VType> findStronglyConnectedComponents(graph: Map<VType, Collection<VType>>): List<List<VType>> {
-    val components: MutableList<List<VType>> = mutableListOf()
-    val componentIndex: MutableMap<VType, Int> = mutableMapOf()
-    val sizeMap: MutableMap<VType, Int> = mutableMapOf()
-    val stack: MutableList<VType> = mutableListOf()
-
-    val dfs =
-        DeepRecursiveFunction { v ->
-            var low = stack.size
-            sizeMap[v] = stack.size
-            stack.add(v)
-            for (e in graph[v] ?: emptyList())
-                if (componentIndex[e] == null) {
-                    low = min(low, sizeMap.getOrElse(e) { callRecursive(e) })
-                }
-            if (low == sizeMap[v]) {
-                val component: MutableList<VType> = mutableListOf()
-                while (stack.size > sizeMap[v]!!) {
-                    val u = stack.removeLast()
-                    componentIndex[u] = components.size
-                    component.add(u)
-                }
-                components.add(component)
-            }
-            low
-        }
-
-    graph.keys.forEach { v ->
-        if (sizeMap[v] == null) dfs(v)
-    }
-
-    return components
 }
 
 fun <StateType, SymbolType, ResultType> findFirst(

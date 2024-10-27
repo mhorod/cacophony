@@ -1,13 +1,13 @@
-package cacophony.grammars
+package cacophony.utils
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class TransitiveClosureTest {
+class GraphUtilsTest {
     @Test
     fun transitiveClosureTest() {
         val actual =
-            transitiveClosure(
+            getTransitiveClosure(
                 mapOf(
                     1 to setOf(2, 3),
                     2 to setOf(3, 4),
