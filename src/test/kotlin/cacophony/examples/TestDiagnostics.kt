@@ -1,11 +1,24 @@
 package cacophony.examples
 
+import cacophony.token.Token
 import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 import cacophony.utils.Location
 
 class TestDiagnostics : Diagnostics {
-    class ReportedError(message: String, input: Input, location: Location)
+    open class ReportedError
+
+    class LexerError(
+        message: String,
+        input: Input,
+        location: Location,
+    ) : ReportedError()
+
+    class ParserError<TC : Enum<TC>>(
+        message: String,
+        input: Input,
+        token: Token<TC>,
+    ) : ReportedError()
 
     private val errors: MutableList<ReportedError> = ArrayList()
 
@@ -14,7 +27,15 @@ class TestDiagnostics : Diagnostics {
         input: Input,
         location: Location,
     ) {
-        errors.add(ReportedError(message, input, location))
+        errors.add(LexerError(message, input, location))
+    }
+
+    override fun <TC : Enum<TC>> report(
+        message: String,
+        input: Input,
+        token: Token<TC>,
+    ) {
+        errors.add(ParserError(message, input, token))
     }
 
     fun reportFatal(
@@ -22,10 +43,8 @@ class TestDiagnostics : Diagnostics {
         input: Input,
         location: Location,
     ) {
-        errors.add(ReportedError(message, input, location))
+        errors.add(LexerError(message, input, location))
     }
 
-    fun errors(): List<ReportedError> {
-        return errors
-    }
+    fun errors(): List<ReportedError> = errors
 }
