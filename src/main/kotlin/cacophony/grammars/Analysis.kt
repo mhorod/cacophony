@@ -8,28 +8,7 @@ typealias DFAStateReference<StateType, SymbolType, ResultType> =
     Pair<StateType, DFA<StateType, SymbolType, ResultType>>
 
 typealias StateToSymbolsMap<StateType, SymbolType, ResultType> =
-    Map<DFAStateReference<StateType, SymbolType, ResultType>, Collection<SymbolType>>
-
-fun <StateType, SymbolType, ResultType> findNullable(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
-): Collection<DFAStateReference<StateType, SymbolType, ResultType>> {
-    TODO("Not implemented")
-}
-
-fun <StateType, SymbolType, ResultType> findFirst(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
-    nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
-): StateToSymbolsMap<StateType, SymbolType, ResultType> {
-    TODO("Not implemented")
-}
-
-fun <StateType, SymbolType, ResultType> findFollow(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
-    nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
-    first: StateToSymbolsMap<StateType, SymbolType, ResultType>,
-): StateToSymbolsMap<StateType, SymbolType, ResultType> {
-    TODO("Not implemented")
-}
+    Map<DFAStateReference<StateType, SymbolType, ResultType>, Set<SymbolType>>
 
 data class AnalyzedGrammar<StateType, SymbolType>(
     val syncSymbols: Collection<SymbolType>,
