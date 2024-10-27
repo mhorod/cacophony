@@ -146,6 +146,7 @@ class FindFirstTest {
                     Pair(1, dfaC) to
                             setOf(
                                 'B', // direct production
+                                'a', // direct production
                                 'b', // from Bb with nullable B
                             ),
                     Pair(2, dfaC) to setOf('b'), // direct production
