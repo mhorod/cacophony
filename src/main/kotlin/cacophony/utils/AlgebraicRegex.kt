@@ -27,7 +27,7 @@ sealed class AlgebraicRegex<AtomType> {
 
     infix fun or(rhs: AlgebraicRegex<AtomType>) = UnionRegex(this, rhs)
 
-    infix fun then(rhs: AlgebraicRegex<AtomType>) = ConcatenationRegex(this, rhs)
+    infix fun concat(rhs: AlgebraicRegex<AtomType>) = ConcatenationRegex(this, rhs)
 
     fun star() = StarRegex(this)
 }

@@ -83,4 +83,6 @@ class FindFirstImpl<StateType, SymbolType, ResultType>(
 fun <StateType, SymbolType, ResultType> findFirst(
     automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
     nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
-): Map<DFAStateReference<StateType, SymbolType, ResultType>, Collection<SymbolType>> = FindFirstImpl(automata, nullable).firstMap
+): StateToSymbolsMap<StateType, SymbolType, ResultType> {
+    return FindFirstImpl(automata, nullable).firstMap
+}
