@@ -51,4 +51,8 @@ public data class SimpleDFA<StateType, AtomType, ResultType>(
         state: StateType,
         symbol: AtomType,
     ) = prod[state to symbol]
+
+    override fun equals(other: Any?): Boolean {
+        return this === other
+    }
 }
