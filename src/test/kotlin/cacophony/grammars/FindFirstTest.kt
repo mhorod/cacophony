@@ -12,7 +12,7 @@ class FindFirstTest {
     private fun <StateType, AtomType> productions() = mapOf<Pair<StateType, AtomType>, StateType>()
 
     private fun <StateType, SymbolType, ResultType> stateToSymbols(
-        vararg results: Pair<Pair<StateType, DFA<StateType, SymbolType, ResultType>>, Collection<SymbolType>>,
+        vararg results: Pair<Pair<StateType, DFA<StateType, SymbolType, ResultType>>, Set<SymbolType>>,
     ) = results.associate { it }
 
     @Test
