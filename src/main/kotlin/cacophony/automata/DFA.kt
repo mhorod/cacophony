@@ -24,7 +24,7 @@ interface DFA<DFAState, AtomType, ResultType> {
     fun getProductions(): Map<Pair<DFAState, AtomType>, DFAState>
 }
 
-public data class SimpleDFA<StateType, AtomType, ResultType>(
+public class SimpleDFA<StateType, AtomType, ResultType>(
     private val start: StateType,
     private val prod: Map<Pair<StateType, AtomType>, StateType>,
     private val results: Map<StateType, ResultType>,

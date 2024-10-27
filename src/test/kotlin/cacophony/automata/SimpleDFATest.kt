@@ -1,7 +1,9 @@
 package cacophony.automata
 
+import cacophony.automata.minimalization.via
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -178,5 +180,14 @@ class SimpleDFATest {
         assertEquals(dfa.result(1), "Good")
         assertEquals(dfa.result(2), "Bad")
         assertEquals(dfa.result(3), null)
+    }
+
+    @Test
+    fun `equality operator of SimpleDFA tests for object identity`() {
+        val dfa1 = SimpleDFA(0, mapOf(0 via 'a' to 0), mapOf(0 to "good"))
+        val dfa2 = SimpleDFA(0, mapOf(0 via 'a' to 0), mapOf(0 to "good"))
+
+        assertEquals(dfa1, dfa1)
+        assertNotEquals(dfa1, dfa2)
     }
 }
