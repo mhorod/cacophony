@@ -50,7 +50,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                 }
             }
 
-            var children = mutableListOf<ParseTree<SymbolType>>()
+            val children = mutableListOf<ParseTree<SymbolType>>()
 
             val dfa = automata[symbol]!!
             var state = dfa.getStartingState()
