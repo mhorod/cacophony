@@ -16,6 +16,7 @@ import io.mockk.just
 import io.mockk.runs
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.collections.listOf
@@ -500,6 +501,127 @@ class LLOneParserTest {
             diagnostics.report(
                 eq("Unexpected token RPAREN while parsing A"),
                 eq(Pair(Location(3), Location(4))),
+            )
+        }
+    }
+
+    @Test
+    fun `parser throws on unrecoverable input`() {
+        // A -> B ('+' B)*
+        // B -> C | C '*' B
+        // C -> X | '(' A ')'
+
+        val atob =
+            Production(
+                Symbol.A,
+                Cat(Re.atomic(Symbol.B), Star(Cat(Re.atomic(Symbol.SUM), Re.atomic(Symbol.B)))),
+            )
+        val btoc = Production(Symbol.B, Re.atomic(Symbol.C))
+        val btoprod =
+            Production(
+                Symbol.B,
+                Cat(Re.atomic(Symbol.C), Re.atomic(Symbol.PROD), Re.atomic(Symbol.B)),
+            )
+        val ctox = Production(Symbol.C, Re.atomic(Symbol.X))
+        val ctogroup =
+            Production(
+                Symbol.C,
+                Cat(Re.atomic(Symbol.LPAREN), Re.atomic(Symbol.A), Re.atomic(Symbol.RPAREN)),
+            )
+        val dfaA =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via Symbol.B to 1,
+                    1 via Symbol.SUM to 2,
+                    2 via Symbol.B to 1,
+                ),
+                mapOf(1 to atob),
+            )
+        val dfaB =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via Symbol.C to 1,
+                    1 via Symbol.PROD to 2,
+                    2 via Symbol.B to 3,
+                ),
+                mapOf(3 to btoprod, 1 to btoc),
+            )
+        val dfaC =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via Symbol.X to 1,
+                    0 via Symbol.LPAREN to 2,
+                    2 via Symbol.A to 3,
+                    3 via Symbol.RPAREN to 4,
+                ),
+                mapOf(4 to ctogroup, 1 to ctox),
+            )
+        val automata = mapOf(Symbol.A to dfaA, Symbol.B to dfaB, Symbol.C to dfaC)
+
+        val nextAction =
+            mapOf(
+                Symbol.X to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to Symbol.B,
+                        DFAStateReference(2, dfaA) to Symbol.B,
+                        DFAStateReference(0, dfaB) to Symbol.C,
+                        DFAStateReference(2, dfaB) to Symbol.B,
+                        DFAStateReference(0, dfaC) to Symbol.X,
+                        DFAStateReference(2, dfaC) to Symbol.A,
+                    ),
+                Symbol.SUM to
+                    mapOf(
+                        DFAStateReference(1, dfaA) to Symbol.SUM,
+                    ),
+                Symbol.PROD to
+                    mapOf(
+                        DFAStateReference(1, dfaB) to Symbol.PROD,
+                    ),
+                Symbol.LPAREN to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to Symbol.B,
+                        DFAStateReference(2, dfaA) to Symbol.B,
+                        DFAStateReference(0, dfaB) to Symbol.C,
+                        DFAStateReference(2, dfaB) to Symbol.B,
+                        DFAStateReference(0, dfaC) to Symbol.LPAREN,
+                        DFAStateReference(2, dfaC) to Symbol.A,
+                    ),
+                Symbol.RPAREN to
+                    mapOf(
+                        DFAStateReference(3, dfaC) to Symbol.RPAREN,
+                    ),
+            )
+
+        // x + + x * x
+        val terminals =
+            listOf(
+                Symbol.X,
+                Symbol.SUM,
+                Symbol.SUM,
+                Symbol.X,
+                Symbol.PROD,
+                Symbol.X,
+            ).mapIndexed { idx, symbol -> terminal(symbol, idx) }
+
+        val parser =
+            LLOneParser(
+                nextAction,
+                Symbol.A,
+                automata,
+                listOf(Symbol.RPAREN),
+            )
+
+        assertThatExceptionOfType(ParsingErrorException::class.java).isThrownBy({
+            parser.process(terminals, diagnostics)
+        })
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                eq("Unexpected token SUM while parsing A"),
+                eq(Pair(Location(2), Location(3))),
             )
         }
     }
