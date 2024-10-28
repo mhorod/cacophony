@@ -24,7 +24,7 @@ internal class ExpressionTest {
                 expression1,
                 expression2,
             )
-        assertEquals(expression1, additionExpression.expression1)
-        assertEquals(expression2, additionExpression.expression2)
+        assertEquals(expression1, additionExpression.lhs)
+        assertEquals(expression2, additionExpression.rhs)
     }
 }

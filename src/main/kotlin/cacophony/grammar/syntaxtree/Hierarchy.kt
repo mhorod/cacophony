@@ -1,6 +1,6 @@
-package cacophony.grammar.syntaxtree;
+package cacophony.grammar.syntaxtree
 
-public class Hierarchy { //dont know how to implement it yet
+public class Hierarchy { // dont know how to implement it yet
     // defines priority on grammar productions, which is reverse to the priority of operators
     // for example, grammar on only addition, multiplication and brackets should look like this:
     // S -> S+S | A
@@ -8,8 +8,9 @@ public class Hierarchy { //dont know how to implement it yet
     // B -> B*B | C
     // C -> id | (S)
 
-    //Priority:
+    // Priority:
     // semicolons ; dividing expressions
+    // return statement
     // assignment operators = += *= -= /= %= - they should be right - associative, which is reverse to other operators - how will we handle this?
     // logical operators || &&
     // equality operators == !=
@@ -21,5 +22,5 @@ public class Hierarchy { //dont know how to implement it yet
     // function call or definition
     // statements - ifThen, ifThenElse, WhileDo
     // nested expressions in parentheses ( ) - important syntax, creates new scope and resets priority (grammar should go back to starting state?)
-    // atom expressions - variables, types, control flow keywords like return and break
+    // atom expressions - variables, types, keywords
 }
