@@ -14,6 +14,10 @@ sealed class ParseTree<SymbolType : Enum<SymbolType>>(
             if (other !is Leaf<*>) return false
             return token == other.token
         }
+
+        override fun hashCode() = token.hashCode()
+
+        override fun toString() = "${token.category} $range"
     }
 
     class Branch<SymbolType : Enum<SymbolType>>(
@@ -27,5 +31,13 @@ sealed class ParseTree<SymbolType : Enum<SymbolType>>(
             if (other.children.size != children.size) return false
             return children.zip(other.children).all { (l, r) -> l == r }
         }
+
+        override fun hashCode() = children.fold(0) { hash, child -> 19 * hash + child.hashCode() }
+
+        override fun toString() =
+            "${production.lhs} $range -> (${children.fold("") { acc, tree ->
+                acc + "\n" +
+                    tree.toString()
+            }.prependIndent()}\n)"
     }
 }

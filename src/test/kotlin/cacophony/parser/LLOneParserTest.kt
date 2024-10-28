@@ -23,6 +23,7 @@ import kotlin.collections.mapOf
 
 typealias Re = AlgebraicRegex<LLOneParserTest.Symbol>
 typealias Cat = AlgebraicRegex.ConcatenationRegex<LLOneParserTest.Symbol>
+typealias Star = AlgebraicRegex.StarRegex<LLOneParserTest.Symbol>
 
 class LLOneParserTest {
     enum class Symbol {
@@ -56,9 +57,9 @@ class LLOneParserTest {
 
     @Test
     fun `parser returns correct tree for simple grammar`() {
-//        A -> B
-//        B -> C
-//        C -> X
+        // A -> B
+        // B -> C
+        // C -> X
 
         val input = StringInput("x")
         val atob = Production(Symbol.A, Re.atomic(Symbol.B))
@@ -121,16 +122,15 @@ class LLOneParserTest {
 
     @Test
     fun `parser returns correct tree for arithmetic grammar`() {
-//        A -> B | B + A
-//        B -> C | C * B
-//        C -> X | (A)
+        // A -> B ('+' B)*
+        // B -> C | C '*' B
+        // C -> X | '(' A ')'
 
         val input = StringInput("x")
-        val atob = Production(Symbol.A, Re.atomic(Symbol.B))
-        val atosum =
+        val atob =
             Production(
                 Symbol.A,
-                Cat(Re.atomic(Symbol.B), Re.atomic(Symbol.SUM), Re.atomic(Symbol.A)),
+                Cat(Re.atomic(Symbol.B), Star(Cat(Re.atomic(Symbol.SUM), Re.atomic(Symbol.B)))),
             )
         val btoc = Production(Symbol.B, Re.atomic(Symbol.C))
         val btoprod =
@@ -150,9 +150,9 @@ class LLOneParserTest {
                 mapOf(
                     0 via Symbol.B to 1,
                     1 via Symbol.SUM to 2,
-                    2 via Symbol.A to 3,
+                    2 via Symbol.B to 1,
                 ),
-                mapOf(3 to atosum, 1 to atob),
+                mapOf(1 to atob),
             )
         val dfaB =
             SimpleDFA(
@@ -182,7 +182,7 @@ class LLOneParserTest {
                 Symbol.X to
                     mapOf(
                         DFAStateReference(0, dfaA) to Symbol.B,
-                        DFAStateReference(2, dfaA) to Symbol.A,
+                        DFAStateReference(2, dfaA) to Symbol.B,
                         DFAStateReference(0, dfaB) to Symbol.C,
                         DFAStateReference(2, dfaB) to Symbol.B,
                         DFAStateReference(0, dfaC) to Symbol.X,
@@ -199,7 +199,7 @@ class LLOneParserTest {
                 Symbol.LPAREN to
                     mapOf(
                         DFAStateReference(0, dfaA) to Symbol.B,
-                        DFAStateReference(2, dfaA) to Symbol.A,
+                        DFAStateReference(2, dfaA) to Symbol.B,
                         DFAStateReference(0, dfaB) to Symbol.C,
                         DFAStateReference(2, dfaB) to Symbol.B,
                         DFAStateReference(0, dfaC) to Symbol.LPAREN,
@@ -211,7 +211,7 @@ class LLOneParserTest {
                     ),
             )
 
-        // x + x * (x + x) * x
+        // x + x * (x + x + x) * x
         val terminals =
             listOf(
                 Symbol.X,
@@ -219,6 +219,8 @@ class LLOneParserTest {
                 Symbol.X,
                 Symbol.PROD,
                 Symbol.LPAREN,
+                Symbol.X,
+                Symbol.SUM,
                 Symbol.X,
                 Symbol.SUM,
                 Symbol.X,
@@ -239,8 +241,8 @@ class LLOneParserTest {
         val tree = parser.process(terminals, diagnostics)
         assertThat(tree).isEqualTo(
             ParseTree.Branch(
-                Location(0) to Location(11),
-                atosum,
+                Location(0) to Location(13),
+                atob,
                 listOf(
                     ParseTree.Branch(
                         Location(0) to Location(1),
@@ -255,77 +257,77 @@ class LLOneParserTest {
                     ),
                     terminals[1],
                     ParseTree.Branch(
-                        Location(2) to Location(11),
-                        atob,
+                        Location(2) to Location(13),
+                        btoprod,
                         listOf(
                             ParseTree.Branch(
-                                Location(2) to Location(11),
+                                Location(2) to Location(3),
+                                ctox,
+                                listOf(terminals[2]),
+                            ),
+                            terminals[3],
+                            ParseTree.Branch(
+                                Location(4) to Location(13),
                                 btoprod,
                                 listOf(
                                     ParseTree.Branch(
-                                        Location(2) to Location(3),
-                                        ctox,
-                                        listOf(terminals[2]),
-                                    ),
-                                    terminals[3],
-                                    ParseTree.Branch(
-                                        Location(4) to Location(11),
-                                        btoprod,
+                                        Location(4) to Location(9),
+                                        ctogroup,
                                         listOf(
+                                            terminals[4],
                                             ParseTree.Branch(
-                                                Location(4) to Location(9),
-                                                ctogroup,
+                                                Location(5) to Location(10),
+                                                atob,
                                                 listOf(
-                                                    terminals[4],
                                                     ParseTree.Branch(
-                                                        Location(5) to Location(8),
-                                                        atosum,
+                                                        Location(5) to Location(6),
+                                                        btoc,
                                                         listOf(
                                                             ParseTree.Branch(
                                                                 Location(5) to Location(6),
-                                                                btoc,
-                                                                listOf(
-                                                                    ParseTree.Branch(
-                                                                        Location(5) to Location(6),
-                                                                        ctox,
-                                                                        listOf(terminals[5]),
-                                                                    ),
-                                                                ),
+                                                                ctox,
+                                                                listOf(terminals[5]),
                                                             ),
-                                                            terminals[6],
+                                                        ),
+                                                    ),
+                                                    terminals[6],
+                                                    ParseTree.Branch(
+                                                        Location(7) to Location(8),
+                                                        btoc,
+                                                        listOf(
                                                             ParseTree.Branch(
                                                                 Location(7) to Location(8),
-                                                                atob,
-                                                                listOf(
-                                                                    ParseTree.Branch(
-                                                                        Location(7) to Location(8),
-                                                                        btoc,
-                                                                        listOf(
-                                                                            ParseTree.Branch(
-                                                                                Location(7) to Location(8),
-                                                                                ctox,
-                                                                                listOf(terminals[7]),
-                                                                            ),
-                                                                        ),
-                                                                    ),
-                                                                ),
+                                                                ctox,
+                                                                listOf(terminals[7]),
                                                             ),
                                                         ),
                                                     ),
                                                     terminals[8],
-                                                ),
-                                            ),
-                                            terminals[9],
-                                            ParseTree.Branch(
-                                                Location(10) to Location(11),
-                                                btoc,
-                                                listOf(
                                                     ParseTree.Branch(
-                                                        Location(10) to Location(11),
-                                                        ctox,
-                                                        listOf(terminals[10]),
+                                                        Location(9) to Location(10),
+                                                        btoc,
+                                                        listOf(
+                                                            ParseTree.Branch(
+                                                                Location(9) to Location(10),
+                                                                ctox,
+                                                                listOf(terminals[9]),
+                                                            ),
+                                                        ),
                                                     ),
                                                 ),
+                                            ),
+                                            terminals[10],
+                                        ),
+                                    ),
+                                    terminals[11],
+                                    ParseTree.Branch(
+                                        Location(12) to Location(13),
+                                        btoc,
+                                        listOf(
+                                            ParseTree.Branch(
+                                                Location(12) to Location(13),
+                                                ctox,
+                                                listOf(terminals[12]),
                                             ),
                                         ),
                                     ),
