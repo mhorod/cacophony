@@ -38,16 +38,20 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                 enumValues<SymbolType>().toList().associateWith { mutableMapOf() }
 
             analyzedGrammar.automata.forEach { (dfaLabel, dfa) ->
-                // automaton for the grammar symbol
+                // dfa: automaton for the grammar symbol
+
                 dfa.getAllStates().forEach { curState ->
-                    // dfa state we are currently in
+                    // curState: dfa state we are currently in
+
                     val curStateRef = DFAStateReference(curState, dfa)
 
                     enumValues<SymbolType>().forEach { inputSymbol ->
-                        // symbol from the input
+                        // inputSymbol: symbol from the input
+
                         val suitableSymbols = mutableListOf<SymbolType>()
                         enumValues<SymbolType>().forEach prod@{ prodSymbol ->
-                            // symbol in the production
+                            // prodSymbol: symbol in the production
+
                             dfa.getProduction(curState, prodSymbol) ?: return@prod
 
                             val dfaForProdSymbol = analyzedGrammar.automata[prodSymbol]
