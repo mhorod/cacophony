@@ -1,8 +1,8 @@
 package cacophony.utils
 
-import cacophony.token.Token
-
-class SimpleDiagnostics : Diagnostics {
+class SimpleDiagnostics(
+    private val input: Input,
+) : Diagnostics {
     class ReportedError(
         message: String,
     )
@@ -11,18 +11,16 @@ class SimpleDiagnostics : Diagnostics {
 
     override fun report(
         message: String,
-        input: Input,
         location: Location,
     ) {
         errors.add(ReportedError("${input.locationToString(location)}: $message"))
     }
 
-    override fun <TC : Enum<TC>> report(
+    override fun report(
         message: String,
-        input: Input,
-        token: Token<TC>,
+        range: Pair<Location, Location>,
     ) {
-        errors.add(ReportedError("${input.locationRangeToString(token.rangeFrom, token.rangeTo)}: $message"))
+        errors.add(ReportedError("${input.locationRangeToString(range.first, range.second)}: $message"))
     }
 
     fun getErrors(): List<ReportedError> = errors

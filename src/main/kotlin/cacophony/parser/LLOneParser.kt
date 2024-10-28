@@ -6,7 +6,6 @@ import cacophony.grammars.DFAStateReference
 import cacophony.grammars.ParseTree
 import cacophony.grammars.Production
 import cacophony.utils.Diagnostics
-import cacophony.utils.Input
 import kotlin.collections.mutableListOf
 
 class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
@@ -14,7 +13,6 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
     private val startSymbol: SymbolType,
     private val automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
     private val syncSymbols: Collection<SymbolType>,
-    private val input: Input,
 ) : Parser<SymbolType> {
     companion object {
         fun <StateType, SymbolType : Enum<SymbolType>> fromAnalyzedGrammar(
@@ -35,6 +33,9 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
         fun goToSyncSymbol() {
             while (!syncSymbols.contains(terminal.token.category) && terminalIterator.hasNext()) {
                 terminal = terminalIterator.next()
+            }
+            if (!syncSymbols.contains(terminal.token.category) && !terminalIterator.hasNext()) {
+                eof = true
             }
         }
 
@@ -60,22 +61,22 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                         try {
                             state = nextState
                             children.add(topDownParse(nextSymbol))
-                        } catch (e: ParserError) {
-                            if (dfa.getProduction(state, terminal.token.category) == null) {
+                        } catch (e: ParsingErrorException) {
+                            if (!eof && dfa.getProduction(state, terminal.token.category) == null) {
                                 throw e
-                            }
+                            } else {}
                         }
                     } ?: run {
-                        diagnostics.report("Unexpected token $terminal for $symbol", input, terminal.token)
+                        diagnostics.report("Unexpected token ${terminal.token.category} while parsing $symbol", terminal.range)
                         goToSyncSymbol()
-                        throw ParserError("no edge")
+                        throw ParsingErrorException("Unable to go to desired symbol $nextSymbol from $state in DFA for $symbol")
                     }
                 } ?: break
             } while (!eof)
             if (!dfa.isAccepting(state)) {
-                diagnostics.report("Unexpected token $terminal for $symbol", input, terminal.token)
+                diagnostics.report("Unexpected token ${terminal.token.category} while parsing $symbol", terminal.range)
                 goToSyncSymbol()
-                throw ParserError("State $state in DFA for $symbol is not accepting")
+                throw ParsingErrorException("State $state in DFA for $symbol is not accepting")
             }
 
             val range = Pair(children.first().range.first, children.last().range.second)

@@ -10,7 +10,7 @@ fun main(args: Array<String>) {
     println("Compiling ${args[0]}")
 
     val input = FileInput(args[0])
-    val diagnostics = SimpleDiagnostics()
+    val diagnostics = SimpleDiagnostics(input)
     val tokens = CacophonyLexer().process(input, diagnostics)
     println("Errors: ${diagnostics.getErrors()}")
     println("Tokens: $tokens")

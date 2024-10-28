@@ -10,6 +10,6 @@ interface Parser<SymbolType : Enum<SymbolType>> {
     ): ParseTree<SymbolType>
 }
 
-class ParserError(
+class ParsingErrorException(
     reason: String,
 ) : Exception(reason)
