@@ -30,6 +30,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
     ): ParseTree<SymbolType> {
         val terminalIterator = terminals.iterator()
         var terminal = terminalIterator.next()
+        var eof = false
 
         fun goToSyncSymbol() {
             while (!syncSymbols.contains(terminal.token.category) && terminalIterator.hasNext()) {
@@ -42,6 +43,8 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                 return terminal.also {
                     if (terminalIterator.hasNext()) {
                         terminal = terminalIterator.next()
+                    } else {
+                        eof = true
                     }
                 }
             }
@@ -63,14 +66,14 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                             }
                         }
                     } ?: run {
-                        diagnostics.report("Unexpected token $terminal", input, terminal.token)
+                        diagnostics.report("Unexpected token $terminal for $symbol", input, terminal.token)
                         goToSyncSymbol()
                         throw ParserError("no edge")
                     }
                 } ?: break
-            } while (terminalIterator.hasNext())
+            } while (!eof)
             if (!dfa.isAccepting(state)) {
-                diagnostics.report("Unexpected token $terminal", input, terminal.token)
+                diagnostics.report("Unexpected token $terminal for $symbol", input, terminal.token)
                 goToSyncSymbol()
                 throw ParserError("State $state in DFA for $symbol is not accepting")
             }
