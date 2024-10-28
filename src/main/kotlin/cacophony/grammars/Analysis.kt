@@ -16,7 +16,7 @@ data class AnalyzedGrammar<StateType, SymbolType>(
     val automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
     val nullable: Collection<DFAStateReference<StateType, SymbolType, Production<SymbolType>>>,
     val first: StateToSymbolsMap<StateType, SymbolType, Production<SymbolType>>,
-    val follow: Map<SymbolType, Set<SymbolType>>,
+    val follow: StateToSymbolsMap<StateType, SymbolType, Production<SymbolType>>,
 ) {
     companion object {
         fun <SymbolType> fromGrammar(
@@ -37,7 +37,7 @@ data class AnalyzedGrammar<StateType, SymbolType>(
         ): AnalyzedGrammar<StateType, SymbolType> {
             val nullable = findNullable(automata)
             val first = findFirst(automata, nullable)
-            val follow = findFollow(automata, nullable, first)
+            val follow = findExtendedFollowForStateReferences(automata, nullable, first)
             return AnalyzedGrammar(startSymbol, syncSymbols, automata, nullable, first, follow)
         }
     }

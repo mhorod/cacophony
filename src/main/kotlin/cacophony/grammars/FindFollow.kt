@@ -10,6 +10,18 @@ fun <StateType, SymbolType, ResultType> findFollow(
 ): Map<SymbolType, Set<SymbolType>> =
     getDefaultFollowSetsForRelevantSymbols(automata) + FactContext(automata, nullable, first).followForSymbols
 
+fun <StateType, SymbolType, ResultType> findExtendedFollowForStateReferences(
+    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
+    nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
+    first: StateToSymbolsMap<StateType, SymbolType, ResultType>,
+): StateToSymbolsMap<StateType, SymbolType, ResultType> {
+    val followForSymbols = findFollow(automata, nullable, first)
+    return automata.flatMap { (symbol, automaton) ->
+        val followSet = followForSymbols[symbol]!!
+        automaton.getAllStates().map { Pair(it at automaton, followSet) }
+    }.toMap()
+}
+
 private infix fun <StateType, SymbolType, ResultType> StateType.at(
     automaton: DFA<StateType, SymbolType, ResultType>,
 ): DFAStateReference<StateType, SymbolType, ResultType> = DFAStateReference(this, automaton)
