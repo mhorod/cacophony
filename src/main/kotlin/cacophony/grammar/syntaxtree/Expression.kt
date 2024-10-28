@@ -4,78 +4,43 @@ import cacophony.utils.Location
 
 sealed class Expression(val range: Pair<Location, Location>) { // everything in cacophony is an expression
     // artificial instance, can be useful when calculating values of nested expressions
-    class EmptyExpression(
+    class Empty(
         range: Pair<Location, Location>,
     ) : Expression(range)
 
     class Variable(
         range: Pair<Location, Location>,
+        val identifier: String,
     ) : Expression(range)
 
     // should Type also inherit expression? if so, can we do for example "; Bool;" in our language?
     class Type(
         range: Pair<Location, Location>,
+        val identifier: String,
     ) : Expression(range)
 
     class VariableDeclaration(
         range: Pair<Location, Location>,
-        val keywordLet: Keyword.KeywordLet,
+        val identifier: String,
     ) : Expression(range)
 
     class FunctionArgument(
         range: Pair<Location, Location>,
-        type: Type,
-    ) : Expression(range)
+        val type: Type,
+    )
 
     class VariableTypedDeclaration(
         range: Pair<Location, Location>,
-        variable: VariableDeclaration,
-        type: Type,
+        val variable: VariableDeclaration,
+        val type: Type,
     ) : Expression(range)
 
     class Literal(
         range: Pair<Location, Location>,
     ) : Expression(range)
 
-    class Keyword(
-        range: Pair<Location, Location>,
-    ) : Expression(range) {
-        class KeywordBreak(
-            range: Pair<Location, Location>,
-        ) : Expression(range)
-
-        // it is possible that following keywords are unnecessary, in this case break would be probably moved to statement
-        class KeywordReturn(
-            range: Pair<Location, Location>,
-        ) : Expression(range)
-
-        class KeywordLet(
-            range: Pair<Location, Location>,
-        ) : Expression(range)
-
-        class KeywordIf(
-            range: Pair<Location, Location>,
-        ) : Expression(range)
-
-        class KeywordThen(
-            range: Pair<Location, Location>,
-        ) : Expression(range)
-
-        class KeywordElse(
-            range: Pair<Location, Location>,
-        ) : Expression(range)
-
-        class KeywordWhile(
-            range: Pair<Location, Location>,
-        ) : Expression(range)
-
-        class KeywordDo(
-            range: Pair<Location, Location>,
-        ) : Expression(range)
-    }
-
     // expression in parenthesis
-    class NestedExpression(
+    class ParenthesisGroup(
         range: Pair<Location, Location>,
         val expression: Expression,
     ) : Expression(range)
@@ -84,7 +49,7 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
     // they can maybe be merged with NestedExpression, but I don't know if that would be convenient
     // we agreed that (x; y;) returns Unit - should we create artificial class for empty expression after the last semicolon,
     // or will we handle it in a different way?
-    class SubsequentExpressions(
+    class Subsequent(
         range: Pair<Location, Location>,
         vararg val expressions: Expression,
     ) : Expression(range)
@@ -94,34 +59,30 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
     ) : Expression(range) {
         class IfStatement(
             range: Pair<Location, Location>,
-            val keywordIf: Keyword.KeywordIf,
             val testExpression: Expression,
-            val keywordThen: Keyword.KeywordThen,
             val doExpression: Expression,
         ) : Statement(range)
 
         class IfElseStatement(
             range: Pair<Location, Location>,
-            val keywordIf: Keyword.KeywordIf,
             val testExpression: Expression,
-            val keywordThen: Keyword.KeywordThen,
             val doExpression: Expression,
-            val keywordElse: Keyword.KeywordElse,
             val elseExpression: Expression,
         ) : Statement(range)
 
         class WhileStatement(
             range: Pair<Location, Location>,
-            val keywordWhile: Keyword.KeywordWhile,
             val testExpression: Expression,
-            val keywordDo: Keyword.KeywordDo,
             val doExpression: Expression,
         ) : Statement(range)
 
         class ReturnStatement(
             range: Pair<Location, Location>,
-            val keywordReturn: Keyword.KeywordReturn,
             val value: Expression,
+        ) : Statement(range)
+
+        class BreakStatement(
+            range: Pair<Location, Location>,
         ) : Statement(range)
     }
 
@@ -134,146 +95,146 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
 
     class FunctionCall(
         range: Pair<Location, Location>,
-        val functionName: Variable,
+        val function: Expression,
         vararg val arguments: Variable,
     ) : Expression(range)
 
     sealed class Operator(
         range: Pair<Location, Location>,
     ) : Expression(range) {
-        sealed class UnaryOperator(
+        sealed class Unary(
             range: Pair<Location, Location>,
             val expression: Expression,
         ) : Operator(range) {
-            class NegationOperator(
+            class Negation(
                 range: Pair<Location, Location>,
                 expression: Expression,
-            ) : UnaryOperator(range, expression)
+            ) : Unary(range, expression)
 
-            class UnaryMinusOperator(
+            class UnaryMinus(
                 range: Pair<Location, Location>,
                 expression: Expression,
-            ) : UnaryOperator(range, expression)
+            ) : Unary(range, expression)
         }
 
-        sealed class BinaryOperator(
+        sealed class Binary(
             range: Pair<Location, Location>,
             val lhs: Expression,
             val rhs: Expression,
         ) : Operator(range) {
-            class MultiplicationOperator(
+            class Multiplication(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class DivisionOperator(
+            class Division(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class ModuloOperator(
+            class Modulo(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class AdditionOperator(
+            class Addition(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class SubtractionOperator(
+            class Subtraction(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class LessOperator(
+            class Less(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class GreaterOperator(
+            class Greater(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class LessEqualOperator(
+            class LessEqual(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class GreaterEqualOperator(
+            class GreaterEqual(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class EqualsOperator(
+            class Equals(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class NotEqualsOperator(
+            class NotEquals(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class LogicalAndOperator(
+            class LogicalAnd(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class LogicalOrOperator(
+            class LogicalOr(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class AssignmentOperator(
+            class Assignment(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class AdditionAssignmentOperator(
+            class AdditionAssignment(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class SubtractionAssignmentOperator(
+            class SubtractionAssignment(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class MultiplicationAssignmentOperator(
+            class MultiplicationAssignment(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class DivisionAssignmentOperator(
+            class DivisionAssignment(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
 
-            class ModuloAssignmentOperator(
+            class ModuloAssignment(
                 range: Pair<Location, Location>,
                 lhs: Expression,
                 rhs: Expression,
-            ) : BinaryOperator(range, lhs, rhs)
+            ) : Binary(range, lhs, rhs)
         }
     }
 }
