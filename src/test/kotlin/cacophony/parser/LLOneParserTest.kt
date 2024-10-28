@@ -24,9 +24,9 @@ class LLOneParserTest {
 
     @Test
     fun `constructor doesn't throw on a simple grammar`() {
-//        A -> B
-//        B -> C
-//        C -> X
+        // A -> B
+        // B -> C
+        // C -> X
         val dfaA =
             SimpleDFA(
                 0,
@@ -72,9 +72,9 @@ class LLOneParserTest {
 
     @Test
     fun `constructor throws given ambiguous grammar`() {
-//        A -> B | C
-//        B -> C
-//        C -> X
+        // A -> B | C
+        // B -> C
+        // C -> X
         val dfaA =
             SimpleDFA(
                 0,
@@ -124,8 +124,8 @@ class LLOneParserTest {
 
     @Test
     fun `constructor doesn't throw on a grammar with nonempty follow`() {
-//        A -> Bx
-//        B -> y | eps
+        // A -> Bx
+        // B -> y | ε
         val dfaA =
             SimpleDFA(
                 0,

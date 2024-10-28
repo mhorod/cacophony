@@ -6,6 +6,8 @@ import cacophony.grammars.ParseTree
 import cacophony.grammars.Production
 import cacophony.utils.Diagnostics
 
+class ParserConstructorErrorException(reason: String) : Exception(reason)
+
 class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
     private val nextAction: Map<SymbolType, Map<DFAStateReference<StateType, SymbolType, Production<SymbolType>>, SymbolType?>>,
 ) : Parser<SymbolType> {
@@ -41,10 +43,10 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                             if (dfaForProdSymbol != null) { // nonterminal
                                 val nextState = dfaForProdSymbol.getStartingState()
                                 val nextStateRef = DFAStateReference(nextState, dfaForProdSymbol)
-                                if ((analyzedGrammar.first[nextStateRef]?.contains(inputSymbol) == true) or (prodSymbol == inputSymbol)) {
+                                if (analyzedGrammar.first[nextStateRef]!!.contains(inputSymbol) or (prodSymbol == inputSymbol)) {
                                     suitableSymbols.add(prodSymbol)
                                 } else if (analyzedGrammar.nullable.contains(nextStateRef) and
-                                    (analyzedGrammar.follow[nextStateRef]?.contains(inputSymbol) == true)
+                                    analyzedGrammar.follow[nextStateRef]!!.contains(inputSymbol)
                                 ) {
                                     suitableSymbols.add(prodSymbol)
                                 }
@@ -56,18 +58,15 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                         }
 
                         // Leaving this for the convenience in (very) possible future debugging.
-//                        println("state $curState in $dfaLabel, possibilities for $inputSymbol are $suitableSymbols")
+                        // println("state $curState in $dfaLabel, possibilities for $inputSymbol are $suitableSymbols")
 
-                        if (suitableSymbols.size > 1) { // too many productions are suitable
-                            throw ParserConstructorErrorException(
+                        when (suitableSymbols.size) {
+                            0 -> nextAction[inputSymbol]!![curStateRef] = null
+                            1 -> nextAction[inputSymbol]!![curStateRef] = suitableSymbols[0]
+                            else -> throw ParserConstructorErrorException(
                                 "Not an LL(1) grammar: " +
-                                    "state $curState in dfa $dfaLabel, possible productions for $inputSymbol are $suitableSymbols",
+                                "state $curState in dfa $dfaLabel, possible productions for $inputSymbol are $suitableSymbols"
                             )
-                        }
-                        if (suitableSymbols.size == 1) {
-                            nextAction[inputSymbol]!![curStateRef] = suitableSymbols[0]
-                        } else { // acceptableSymbols.size == 0
-                            nextAction[inputSymbol]!![curStateRef] = null
                         }
                     }
                 }
