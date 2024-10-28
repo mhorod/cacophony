@@ -33,6 +33,7 @@ class FindFollowTest {
                 // direct productions
                 Pair(0, dfaA) to setOf('a'),
                 Pair(1, dfaA) to setOf('b'),
+                Pair(2, dfaA) to emptySet(),
             )
 
         // when
@@ -41,10 +42,10 @@ class FindFollowTest {
         // then
         assertThat(follow)
             .containsExactlyInAnyOrderEntriesOf(
-                stateToSymbols(
-                    Pair(0, dfaA) to emptySet(),
-                    Pair(1, dfaA) to emptySet(),
-                    Pair(2, dfaA) to emptySet(),
+                mapOf(
+                    'A' to setOf(),
+                    'a' to setOf('b'),
+                    'b' to emptySet(),
                 ),
             )
     }
@@ -90,15 +91,12 @@ class FindFollowTest {
         // then
         assertThat(follow)
             .containsExactlyInAnyOrderEntriesOf(
-                stateToSymbols(
-                    // A does not appear in any production
-                    Pair(0, dfaA) to emptySet(),
-                    Pair(1, dfaA) to emptySet(),
-                    Pair(2, dfaA) to emptySet(),
-                    // From A -> Bb everything that appears at the end of B has b in follow set
-                    Pair(0, dfaB) to setOf('b'),
-                    Pair(1, dfaB) to setOf('b'),
-                    Pair(2, dfaB) to setOf('b'),
+                mapOf(
+                    'A' to emptySet(),
+                    'B' to setOf('b'),
+                    'b' to emptySet(),
+                    'c' to setOf('d'),
+                    'd' to setOf('b'),
                 ),
             )
     }
@@ -147,6 +145,7 @@ class FindFollowTest {
                     setOf(
                         'B', // direct production
                         'b', // transitive from B -> b
+                        'c', // transitive from B -> c
                     ),
                 Pair(2, dfaC) to emptySet(), // accepting state
             )
@@ -157,26 +156,13 @@ class FindFollowTest {
         // then
         assertThat(follow)
             .containsExactlyInAnyOrderEntriesOf(
-                stateToSymbols(
-                    // C does not appear in any production
-                    Pair(0, dfaC) to emptySet(),
-                    Pair(1, dfaC) to emptySet(),
-                    Pair(2, dfaC) to emptySet(),
-                    // B appears only at the end of C -> AB
-                    Pair(0, dfaB) to emptySet(),
-                    Pair(1, dfaB) to emptySet(),
-                    Pair(0, dfaA) to
-                        setOf(
-                            'B', // direct production from C -> AB
-                            'b', // transitive from B -> b
-                            'c', // transitive from B -> c
-                        ),
-                    Pair(1, dfaA) to
-                        setOf(
-                            'B', // direct production from C -> AB
-                            'b', // transitive from B -> b
-                            'c', // transitive from B -> c
-                        ),
+                mapOf(
+                    'A' to setOf('B', 'b', 'c'),
+                    'B' to emptySet(),
+                    'C' to emptySet(),
+                    'a' to setOf('B', 'b', 'c'),
+                    'b' to emptySet(),
+                    'c' to emptySet(),
                 ),
             )
     }
@@ -231,31 +217,13 @@ class FindFollowTest {
         // then
         assertThat(follow)
             .containsExactlyInAnyOrderEntriesOf(
-                stateToSymbols(
-                    // D does not appear in any production
-                    Pair(0, dfaD) to emptySet(),
-                    Pair(1, dfaD) to emptySet(),
-                    Pair(2, dfaD) to emptySet(),
-                    Pair(0, dfaC) to
-                        setOf(
-                            'B', // direct production from D -> CB,
-                            'A', // transitive from B -> A
-                            'b', // transitive from B -> Ab with nullable A
-                        ),
-                    Pair(1, dfaC) to
-                        setOf(
-                            'B', // direct production from D -> CB,
-                            'A', // transitive from B -> A
-                            'b', // transitive from B -> Ab with nullable A
-                        ),
-                    // B appears only at the end of D -> CB
-                    Pair(0, dfaB) to emptySet(),
-                    Pair(1, dfaB) to emptySet(),
-                    Pair(2, dfaB) to emptySet(),
-                    Pair(0, dfaA) to
-                        setOf(
-                            'b', // direct production from B -> Ab
-                        ),
+                mapOf(
+                    'A' to setOf('b'),
+                    'B' to setOf(),
+                    'C' to setOf('A', 'B', 'b'),
+                    'D' to setOf(),
+                    'b' to setOf(),
+                    'c' to setOf('A', 'B', 'b'),
                 ),
             )
     }

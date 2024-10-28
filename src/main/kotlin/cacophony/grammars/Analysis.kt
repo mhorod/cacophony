@@ -16,7 +16,7 @@ data class AnalyzedGrammar<StateType, SymbolType>(
     val automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
     val nullable: Collection<DFAStateReference<StateType, SymbolType, Production<SymbolType>>>,
     val first: StateToSymbolsMap<StateType, SymbolType, Production<SymbolType>>,
-    val follow: StateToSymbolsMap<StateType, SymbolType, Production<SymbolType>>,
+    val follow: Map<SymbolType, Set<SymbolType>>,
 ) {
     companion object {
         fun <SymbolType> fromGrammar(
