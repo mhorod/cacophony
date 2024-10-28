@@ -3,7 +3,11 @@ package cacophony.utils
 interface Diagnostics {
     fun report(
         message: String,
-        input: Input,
         location: Location,
+    )
+
+    fun report(
+        message: String,
+        range: Pair<Location, Location>,
     )
 }

@@ -95,7 +95,7 @@ class RegularLanguageLexer<TC : Enum<TC>>(
                     matchNewToken(input)?.let { token ->
                         tokens.add(token)
                     } ?: run {
-                        diagnostics.report("Lexer failure: no valid token found.", input, input.getLocation())
+                        diagnostics.report("Lexer failure: no valid token found.", input.getLocation())
                     }
                     input.next()
                 }

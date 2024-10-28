@@ -1,15 +1,22 @@
 package cacophony.parser
 
+import cacophony.automata.DFA
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.DFAStateReference
 import cacophony.grammars.ParseTree
 import cacophony.grammars.Production
 import cacophony.utils.Diagnostics
+import kotlin.collections.mutableListOf
 
-class ParserConstructorErrorException(reason: String) : Exception(reason)
+class ParserConstructorErrorException(
+    reason: String,
+) : Exception(reason)
 
 class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
     private val nextAction: Map<SymbolType, Map<DFAStateReference<StateType, SymbolType, Production<SymbolType>>, SymbolType?>>,
+    private val startSymbol: SymbolType,
+    private val automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
+    private val syncSymbols: Collection<SymbolType>,
 ) : Parser<SymbolType> {
     companion object {
         // Constructs LLOneParser with computed nextAction map.
@@ -30,13 +37,21 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
             val nextAction: Map<SymbolType, MutableMap<DFAStateReference<StateType, SymbolType, Production<SymbolType>>, SymbolType?>> =
                 enumValues<SymbolType>().toList().associateWith { mutableMapOf() }
 
-            analyzedGrammar.automata.forEach { (dfaLabel, dfa) -> // automaton for the grammar symbol
-                dfa.getAllStates().forEach { curState -> // dfa state we are currently in
+            analyzedGrammar.automata.forEach { (dfaLabel, dfa) ->
+                // dfa: automaton for the grammar symbol
+
+                dfa.getAllStates().forEach { curState ->
+                    // curState: dfa state we are currently in
+
                     val curStateRef = DFAStateReference(curState, dfa)
 
-                    enumValues<SymbolType>().forEach { inputSymbol -> // symbol from the input
+                    enumValues<SymbolType>().forEach { inputSymbol ->
+                        // inputSymbol: symbol from the input
+
                         val suitableSymbols = mutableListOf<SymbolType>()
-                        enumValues<SymbolType>().forEach prod@{ prodSymbol -> // symbol in the production
+                        enumValues<SymbolType>().forEach prod@{ prodSymbol ->
+                            // prodSymbol: symbol in the production
+
                             dfa.getProduction(curState, prodSymbol) ?: return@prod
 
                             val dfaForProdSymbol = analyzedGrammar.automata[prodSymbol]
@@ -73,7 +88,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                 }
             }
 
-            return LLOneParser(nextAction)
+            return LLOneParser(nextAction, analyzedGrammar.startSymbol, analyzedGrammar.automata, analyzedGrammar.syncSymbols)
         }
     }
 
@@ -81,6 +96,63 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
         terminals: List<ParseTree.Leaf<SymbolType>>,
         diagnostics: Diagnostics,
     ): ParseTree<SymbolType> {
-        TODO("Not yet implemented")
+        val terminalIterator = terminals.iterator()
+        var terminal = terminalIterator.next()
+        var eof = false
+
+        fun goToSyncSymbol() {
+            while (!syncSymbols.contains(terminal.token.category) && terminalIterator.hasNext()) {
+                terminal = terminalIterator.next()
+            }
+            if (!syncSymbols.contains(terminal.token.category) && !terminalIterator.hasNext()) {
+                eof = true
+            }
+        }
+
+        fun topDownParse(symbol: SymbolType): ParseTree<SymbolType> {
+            if (symbol == terminal.token.category) {
+                return terminal.also {
+                    if (terminalIterator.hasNext()) {
+                        terminal = terminalIterator.next()
+                    } else {
+                        eof = true
+                    }
+                }
+            }
+
+            val children = mutableListOf<ParseTree<SymbolType>>()
+
+            val dfa = automata[symbol]!!
+            var state = dfa.getStartingState()
+
+            do {
+                nextAction[terminal.token.category]?.get(Pair(state, dfa))?.let { nextSymbol ->
+                    dfa.getProduction(state, nextSymbol)?.let { nextState ->
+                        try {
+                            state = nextState
+                            children.add(topDownParse(nextSymbol))
+                        } catch (e: ParsingErrorException) {
+                            if (!eof && dfa.getProduction(state, terminal.token.category) == null) {
+                                throw e
+                            } else {}
+                        }
+                    } ?: run {
+                        diagnostics.report("Unexpected token ${terminal.token.category} while parsing $symbol", terminal.range)
+                        goToSyncSymbol()
+                        throw ParsingErrorException("Unable to go to desired symbol $nextSymbol from $state in DFA for $symbol")
+                    }
+                } ?: break
+            } while (!eof)
+            if (!dfa.isAccepting(state)) {
+                diagnostics.report("Unexpected token ${terminal.token.category} while parsing $symbol", terminal.range)
+                goToSyncSymbol()
+                throw ParsingErrorException("State $state in DFA for $symbol is not accepting")
+            }
+
+            val range = Pair(children.first().range.first, children.last().range.second)
+            return ParseTree.Branch(range, dfa.result(state)!!, children)
+        }
+
+        return topDownParse(startSymbol)
     }
 }

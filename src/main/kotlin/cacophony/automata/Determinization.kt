@@ -18,9 +18,9 @@ private fun <StateType, AtomType> determinize(
     atoms: Iterable<AtomType>,
 ): DFA<Int, AtomType, Unit> {
     val startingState: Set<StateType> = nfa.epsilonClosure(setOf(nfa.getStartingState()))
-    var createdStates = mutableSetOf(startingState)
-    var worklist = ArrayDeque(listOf(startingState))
-    var dfaProductions = mutableMapOf<Set<StateType>, MutableMap<AtomType, Set<StateType>>>()
+    val createdStates = mutableSetOf(startingState)
+    val worklist = ArrayDeque(listOf(startingState))
+    val dfaProductions = mutableMapOf<Set<StateType>, MutableMap<AtomType, Set<StateType>>>()
 
     while (!worklist.isEmpty()) {
         val states = worklist.removeFirst()
@@ -50,8 +50,8 @@ private fun <StateType, AtomType> determinize(
 }
 
 private fun <StateType> NFA<StateType, *>.epsilonClosure(states: Collection<StateType>): MutableSet<StateType> {
-    var queue = ArrayDeque(states)
-    var visited = states.toMutableSet()
+    val queue = ArrayDeque(states)
+    val visited = states.toMutableSet()
 
     val epsilonProductions = this.getEpsilonProductions()
 

@@ -42,7 +42,7 @@ class RegularLanguageLexerTest {
     @BeforeEach
     fun setUpMocks() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        every { diagnostics.report(any(), any(), any()) } just runs
+        every { diagnostics.report(any(), any<Location>()) } just runs
     }
 
     @Test
@@ -95,7 +95,7 @@ class RegularLanguageLexerTest {
         lexer.process(validInput, diagnostics)
 
         // then
-        verify(exactly = 0) { diagnostics.report(any(), any(), any()) }
+        verify(exactly = 0) { diagnostics.report(any(), any<Location>()) }
     }
 
     @Test
@@ -138,7 +138,6 @@ class RegularLanguageLexerTest {
         verify(exactly = 1) {
             diagnostics.report(
                 eq("Lexer failure: no valid token found."),
-                eq(invalidInput),
                 eq(Location(2)),
             )
         }
@@ -160,6 +159,6 @@ class RegularLanguageLexerTest {
             ),
             tokens,
         )
-        verify(exactly = 0) { diagnostics.report(any(), any(), any()) }
+        verify(exactly = 0) { diagnostics.report(any(), any<Location>()) }
     }
 }

@@ -4,16 +4,32 @@ import cacophony.automata.SimpleDFA
 import cacophony.automata.minimalization.via
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.DFAStateReference
+import cacophony.grammars.ParseTree
 import cacophony.grammars.Production
+import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex
+import cacophony.utils.Diagnostics
+import cacophony.utils.Location
+import io.mockk.MockKAnnotations
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.collections.listOf
+import kotlin.collections.mapOf
 
 typealias ReS = AlgebraicRegex<LLOneParserTest.Symbol>
 typealias CatS = AlgebraicRegex.ConcatenationRegex<LLOneParserTest.Symbol>
 typealias ReSA = AlgebraicRegex<LLOneParserTest.SymbolAryt>
 typealias CatSA = AlgebraicRegex.ConcatenationRegex<LLOneParserTest.SymbolAryt>
+typealias StarSA = AlgebraicRegex.StarRegex<LLOneParserTest.SymbolAryt>
 
 class LLOneParserTest {
     enum class Symbol {
@@ -40,6 +56,20 @@ class LLOneParserTest {
         PROD,
         LPAREN,
         RPAREN,
+    }
+
+    private fun <S : Enum<S>> terminal(
+        symbol: S,
+        loc: Int,
+    ) = ParseTree.Leaf(Token(symbol, "a", Location(loc), Location(loc + 1)))
+
+    @MockK
+    lateinit var diagnostics: Diagnostics
+
+    @BeforeEach
+    fun setUpMocks() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        every { diagnostics.report(any(), any<Pair<Location, Location>>()) } just runs
     }
 
     @Test
@@ -81,7 +111,7 @@ class LLOneParserTest {
                 Pair(1, dfaC) to emptySet(),
             )
 
-        val analyzedGrammar = AnalyzedGrammar(listOf(), automata, nullable, first, follow)
+        val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
 
         assertDoesNotThrow {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
@@ -133,7 +163,7 @@ class LLOneParserTest {
                 Pair(1, dfaC) to emptySet(),
             )
 
-        val analyzedGrammar = AnalyzedGrammar(listOf(), automata, nullable, first, follow)
+        val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
 
         assertThrows(ParserConstructorErrorException::class.java) {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
@@ -185,7 +215,7 @@ class LLOneParserTest {
                 Pair(1, dfaB) to setOf(Symbol.X),
             )
 
-        val analyzedGrammar = AnalyzedGrammar(listOf(), automata, nullable, first, follow)
+        val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
 
         assertDoesNotThrow {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
@@ -246,7 +276,7 @@ class LLOneParserTest {
                 Pair(1, dfaC) to setOf(Symbol.Z),
             )
 
-        val analyzedGrammar = AnalyzedGrammar(listOf(), automata, nullable, first, follow)
+        val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
 
         assertThrows(ParserConstructorErrorException::class.java) {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
@@ -313,7 +343,7 @@ class LLOneParserTest {
                 Pair(2, dfaC) to emptySet(),
             )
 
-        val analyzedGrammar = AnalyzedGrammar(listOf(), automata, nullable, first, follow)
+        val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
 
         assertThrows(ParserConstructorErrorException::class.java) {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
@@ -417,45 +447,615 @@ class LLOneParserTest {
                 Pair(4, dfaC) to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
             )
 
-        val analyzedGrammar = AnalyzedGrammar(listOf(), automata, nullable, first, follow)
+        val analyzedGrammar = AnalyzedGrammar(SymbolAryt.A, listOf(), automata, nullable, first, follow)
 
         assertDoesNotThrow {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
         }
 
-//        The following nextAction for terminals should be generated:
-//        val nextAction =
-//            mapOf(
-//                Symbol.X to
-//                        mapOf(
-//                            DFAStateReference(0, dfaA) to Symbol.B,
-//                            DFAStateReference(2, dfaA) to Symbol.A,
-//                            DFAStateReference(0, dfaB) to Symbol.C,
-//                            DFAStateReference(2, dfaB) to Symbol.B,
-//                            DFAStateReference(0, dfaC) to Symbol.X,
-//                            DFAStateReference(2, dfaC) to Symbol.A,
-//                        ),
-//                Symbol.SUM to
-//                        mapOf(
-//                            DFAStateReference(1, dfaA) to Symbol.SUM,
-//                        ),
-//                Symbol.PROD to
-//                        mapOf(
-//                            DFAStateReference(1, dfaB) to Symbol.PROD,
-//                        ),
-//                Symbol.LPAREN to
-//                        mapOf(
-//                            DFAStateReference(0, dfaA) to Symbol.B,
-//                            DFAStateReference(2, dfaA) to Symbol.A,
-//                            DFAStateReference(0, dfaB) to Symbol.C,
-//                            DFAStateReference(2, dfaB) to Symbol.B,
-//                            DFAStateReference(0, dfaC) to Symbol.LPAREN,
-//                            DFAStateReference(2, dfaC) to Symbol.A,
-//                        ),
-//                Symbol.RPAREN to
-//                        mapOf(
-//                            DFAStateReference(3, dfaC) to Symbol.RPAREN,
-//                        ),
-//            )
+        // The following nextAction for terminals should be generated:
+        // val nextAction =
+        //     mapOf(
+        //         Symbol.X to
+        //                 mapOf(
+        //                     DFAStateReference(0, dfaA) to Symbol.B,
+        //                     DFAStateReference(2, dfaA) to Symbol.A,
+        //                     DFAStateReference(0, dfaB) to Symbol.C,
+        //                     DFAStateReference(2, dfaB) to Symbol.B,
+        //                     DFAStateReference(0, dfaC) to Symbol.X,
+        //                     DFAStateReference(2, dfaC) to Symbol.A,
+        //                 ),
+        //         Symbol.SUM to
+        //                 mapOf(
+        //                     DFAStateReference(1, dfaA) to Symbol.SUM,
+        //                 ),
+        //         Symbol.PROD to
+        //                 mapOf(
+        //                     DFAStateReference(1, dfaB) to Symbol.PROD,
+        //                 ),
+        //         Symbol.LPAREN to
+        //                 mapOf(
+        //                     DFAStateReference(0, dfaA) to Symbol.B,
+        //                     DFAStateReference(2, dfaA) to Symbol.A,
+        //                     DFAStateReference(0, dfaB) to Symbol.C,
+        //                     DFAStateReference(2, dfaB) to Symbol.B,
+        //                     DFAStateReference(0, dfaC) to Symbol.LPAREN,
+        //                     DFAStateReference(2, dfaC) to Symbol.A,
+        //                 ),
+        //         Symbol.RPAREN to
+        //                 mapOf(
+        //                     DFAStateReference(3, dfaC) to Symbol.RPAREN,
+        //                 ),
+        //     )
+    }
+
+    @Test
+    fun `parser returns correct tree for simple grammar`() {
+        // A -> B
+        // B -> C
+        // C -> X
+
+        val atob = Production(Symbol.A, ReS.atomic(Symbol.B))
+        val btoc = Production(Symbol.B, ReS.atomic(Symbol.C))
+        val ctox = Production(Symbol.C, ReS.atomic(Symbol.X))
+        val dfaA =
+            SimpleDFA(
+                0,
+                mapOf(0 via Symbol.B to 1),
+                mapOf(1 to atob),
+            )
+        val dfaB = SimpleDFA(0, mapOf(0 via Symbol.C to 1), mapOf(1 to btoc))
+        val dfaC = SimpleDFA(0, mapOf(0 via Symbol.X to 1), mapOf(1 to ctox))
+        val automata = mapOf(Symbol.A to dfaA, Symbol.B to dfaB, Symbol.C to dfaC)
+
+        val nextAction =
+            mapOf(
+                Symbol.X to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to Symbol.B,
+                        DFAStateReference(0, dfaB) to Symbol.C,
+                        DFAStateReference(0, dfaC) to Symbol.X,
+                    ),
+            )
+
+        val terminals =
+            listOf(
+                terminal(Symbol.X, 0),
+            )
+        val parser =
+            LLOneParser(
+                nextAction,
+                Symbol.A,
+                automata,
+                listOf(),
+            )
+
+        val tree = parser.process(terminals, diagnostics)
+        assertThat(tree).isEqualTo(
+            ParseTree.Branch(
+                Location(0) to Location(1),
+                atob,
+                listOf(
+                    ParseTree.Branch(
+                        Location(0) to Location(1),
+                        btoc,
+                        listOf(
+                            ParseTree.Branch(
+                                Location(0) to Location(1),
+                                ctox,
+                                terminals,
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `parser returns correct tree for arithmetic grammar`() {
+        // A -> B ('+' B)*
+        // B -> C | C '*' B
+        // C -> X | '(' A ')'
+
+        val atob =
+            Production(
+                SymbolAryt.A,
+                CatSA(ReSA.atomic(SymbolAryt.B), StarSA(CatSA(ReSA.atomic(SymbolAryt.SUM), ReSA.atomic(SymbolAryt.B)))),
+            )
+        val btoc = Production(SymbolAryt.B, ReSA.atomic(SymbolAryt.C))
+        val btoprod =
+            Production(
+                SymbolAryt.B,
+                CatSA(ReSA.atomic(SymbolAryt.C), ReSA.atomic(SymbolAryt.PROD), ReSA.atomic(SymbolAryt.B)),
+            )
+        val ctox = Production(SymbolAryt.C, ReSA.atomic(SymbolAryt.X))
+        val ctogroup =
+            Production(
+                SymbolAryt.C,
+                CatSA(ReSA.atomic(SymbolAryt.LPAREN), ReSA.atomic(SymbolAryt.A), ReSA.atomic(SymbolAryt.RPAREN)),
+            )
+        val dfaA =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.B to 1,
+                    1 via SymbolAryt.SUM to 2,
+                    2 via SymbolAryt.B to 1,
+                ),
+                mapOf(1 to atob),
+            )
+        val dfaB =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.C to 1,
+                    1 via SymbolAryt.PROD to 2,
+                    2 via SymbolAryt.B to 3,
+                ),
+                mapOf(3 to btoprod, 1 to btoc),
+            )
+        val dfaC =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.X to 1,
+                    0 via SymbolAryt.LPAREN to 2,
+                    2 via SymbolAryt.A to 3,
+                    3 via SymbolAryt.RPAREN to 4,
+                ),
+                mapOf(4 to ctogroup, 1 to ctox),
+            )
+        val automata = mapOf(SymbolAryt.A to dfaA, SymbolAryt.B to dfaB, SymbolAryt.C to dfaC)
+
+        val nextAction =
+            mapOf(
+                SymbolAryt.X to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to SymbolAryt.B,
+                        DFAStateReference(2, dfaA) to SymbolAryt.B,
+                        DFAStateReference(0, dfaB) to SymbolAryt.C,
+                        DFAStateReference(2, dfaB) to SymbolAryt.B,
+                        DFAStateReference(0, dfaC) to SymbolAryt.X,
+                        DFAStateReference(2, dfaC) to SymbolAryt.A,
+                    ),
+                SymbolAryt.SUM to
+                    mapOf(
+                        DFAStateReference(1, dfaA) to SymbolAryt.SUM,
+                    ),
+                SymbolAryt.PROD to
+                    mapOf(
+                        DFAStateReference(1, dfaB) to SymbolAryt.PROD,
+                    ),
+                SymbolAryt.LPAREN to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to SymbolAryt.B,
+                        DFAStateReference(2, dfaA) to SymbolAryt.B,
+                        DFAStateReference(0, dfaB) to SymbolAryt.C,
+                        DFAStateReference(2, dfaB) to SymbolAryt.B,
+                        DFAStateReference(0, dfaC) to SymbolAryt.LPAREN,
+                        DFAStateReference(2, dfaC) to SymbolAryt.A,
+                    ),
+                SymbolAryt.RPAREN to
+                    mapOf(
+                        DFAStateReference(3, dfaC) to SymbolAryt.RPAREN,
+                    ),
+            )
+
+        // x + x * (x + x + x) * x
+        val terminals =
+            listOf(
+                SymbolAryt.X,
+                SymbolAryt.SUM,
+                SymbolAryt.X,
+                SymbolAryt.PROD,
+                SymbolAryt.LPAREN,
+                SymbolAryt.X,
+                SymbolAryt.SUM,
+                SymbolAryt.X,
+                SymbolAryt.SUM,
+                SymbolAryt.X,
+                SymbolAryt.RPAREN,
+                SymbolAryt.PROD,
+                SymbolAryt.X,
+            ).mapIndexed { idx, symbol -> terminal(symbol, idx) }
+
+        val parser =
+            LLOneParser(
+                nextAction,
+                SymbolAryt.A,
+                automata,
+                listOf(),
+            )
+
+        val tree = parser.process(terminals, diagnostics)
+        assertThat(tree).isEqualTo(
+            ParseTree.Branch(
+                Location(0) to Location(13),
+                atob,
+                listOf(
+                    ParseTree.Branch(
+                        Location(0) to Location(1),
+                        btoc,
+                        listOf(
+                            ParseTree.Branch(
+                                Location(0) to Location(1),
+                                ctox,
+                                listOf(terminals[0]),
+                            ),
+                        ),
+                    ),
+                    terminals[1],
+                    ParseTree.Branch(
+                        Location(2) to Location(13),
+                        btoprod,
+                        listOf(
+                            ParseTree.Branch(
+                                Location(2) to Location(3),
+                                ctox,
+                                listOf(terminals[2]),
+                            ),
+                            terminals[3],
+                            ParseTree.Branch(
+                                Location(4) to Location(13),
+                                btoprod,
+                                listOf(
+                                    ParseTree.Branch(
+                                        Location(4) to Location(9),
+                                        ctogroup,
+                                        listOf(
+                                            terminals[4],
+                                            ParseTree.Branch(
+                                                Location(5) to Location(10),
+                                                atob,
+                                                listOf(
+                                                    ParseTree.Branch(
+                                                        Location(5) to Location(6),
+                                                        btoc,
+                                                        listOf(
+                                                            ParseTree.Branch(
+                                                                Location(5) to Location(6),
+                                                                ctox,
+                                                                listOf(terminals[5]),
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    terminals[6],
+                                                    ParseTree.Branch(
+                                                        Location(7) to Location(8),
+                                                        btoc,
+                                                        listOf(
+                                                            ParseTree.Branch(
+                                                                Location(7) to Location(8),
+                                                                ctox,
+                                                                listOf(terminals[7]),
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    terminals[8],
+                                                    ParseTree.Branch(
+                                                        Location(9) to Location(10),
+                                                        btoc,
+                                                        listOf(
+                                                            ParseTree.Branch(
+                                                                Location(9) to Location(10),
+                                                                ctox,
+                                                                listOf(terminals[9]),
+                                                            ),
+                                                        ),
+                                                    ),
+                                                ),
+                                            ),
+                                            terminals[10],
+                                        ),
+                                    ),
+                                    terminals[11],
+                                    ParseTree.Branch(
+                                        Location(12) to Location(13),
+                                        btoc,
+                                        listOf(
+                                            ParseTree.Branch(
+                                                Location(12) to Location(13),
+                                                ctox,
+                                                listOf(terminals[12]),
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `parser continues on error`() {
+        // A -> B ('+' B)*
+        // B -> C | C '*' B
+        // C -> X | '(' A ')'
+
+        val atob =
+            Production(
+                SymbolAryt.A,
+                CatSA(ReSA.atomic(SymbolAryt.B), StarSA(CatSA(ReSA.atomic(SymbolAryt.SUM), ReSA.atomic(SymbolAryt.B)))),
+            )
+        val btoc = Production(SymbolAryt.B, ReSA.atomic(SymbolAryt.C))
+        val btoprod =
+            Production(
+                SymbolAryt.B,
+                CatSA(ReSA.atomic(SymbolAryt.C), ReSA.atomic(SymbolAryt.PROD), ReSA.atomic(SymbolAryt.B)),
+            )
+        val ctox = Production(SymbolAryt.C, ReSA.atomic(SymbolAryt.X))
+        val ctogroup =
+            Production(
+                SymbolAryt.C,
+                CatSA(ReSA.atomic(SymbolAryt.LPAREN), ReSA.atomic(SymbolAryt.A), ReSA.atomic(SymbolAryt.RPAREN)),
+            )
+        val dfaA =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.B to 1,
+                    1 via SymbolAryt.SUM to 2,
+                    2 via SymbolAryt.B to 1,
+                ),
+                mapOf(1 to atob),
+            )
+        val dfaB =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.C to 1,
+                    1 via SymbolAryt.PROD to 2,
+                    2 via SymbolAryt.B to 3,
+                ),
+                mapOf(3 to btoprod, 1 to btoc),
+            )
+        val dfaC =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.X to 1,
+                    0 via SymbolAryt.LPAREN to 2,
+                    2 via SymbolAryt.A to 3,
+                    3 via SymbolAryt.RPAREN to 4,
+                ),
+                mapOf(4 to ctogroup, 1 to ctox),
+            )
+        val automata = mapOf(SymbolAryt.A to dfaA, SymbolAryt.B to dfaB, SymbolAryt.C to dfaC)
+
+        val nextAction =
+            mapOf(
+                SymbolAryt.X to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to SymbolAryt.B,
+                        DFAStateReference(2, dfaA) to SymbolAryt.B,
+                        DFAStateReference(0, dfaB) to SymbolAryt.C,
+                        DFAStateReference(2, dfaB) to SymbolAryt.B,
+                        DFAStateReference(0, dfaC) to SymbolAryt.X,
+                        DFAStateReference(2, dfaC) to SymbolAryt.A,
+                    ),
+                SymbolAryt.SUM to
+                    mapOf(
+                        DFAStateReference(1, dfaA) to SymbolAryt.SUM,
+                    ),
+                SymbolAryt.PROD to
+                    mapOf(
+                        DFAStateReference(1, dfaB) to SymbolAryt.PROD,
+                    ),
+                SymbolAryt.LPAREN to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to SymbolAryt.B,
+                        DFAStateReference(2, dfaA) to SymbolAryt.B,
+                        DFAStateReference(0, dfaB) to SymbolAryt.C,
+                        DFAStateReference(2, dfaB) to SymbolAryt.B,
+                        DFAStateReference(0, dfaC) to SymbolAryt.LPAREN,
+                        DFAStateReference(2, dfaC) to SymbolAryt.A,
+                    ),
+                SymbolAryt.RPAREN to
+                    mapOf(
+                        DFAStateReference(3, dfaC) to SymbolAryt.RPAREN,
+                    ),
+            )
+
+        // (x +) + x * x
+        // Parses as () + x * x
+        val terminals =
+            listOf(
+                SymbolAryt.LPAREN,
+                SymbolAryt.X,
+                SymbolAryt.SUM,
+                SymbolAryt.RPAREN,
+                SymbolAryt.SUM,
+                SymbolAryt.X,
+                SymbolAryt.PROD,
+                SymbolAryt.X,
+            ).mapIndexed { idx, symbol -> terminal(symbol, idx) }
+
+        val parser =
+            LLOneParser(
+                nextAction,
+                SymbolAryt.A,
+                automata,
+                listOf(SymbolAryt.RPAREN),
+            )
+
+        val tree = parser.process(terminals, diagnostics)
+        assertThat(tree).isEqualTo(
+            ParseTree.Branch(
+                Location(0) to Location(8),
+                atob,
+                listOf(
+                    ParseTree.Branch(
+                        Location(0) to Location(3),
+                        btoc,
+                        listOf(
+                            ParseTree.Branch(
+                                Location(0) to Location(3),
+                                ctogroup,
+                                listOf( // Nothing in between parentheses because of errors
+                                    terminals[0],
+                                    terminals[3],
+                                ),
+                            ),
+                        ),
+                    ),
+                    terminals[4],
+                    ParseTree.Branch(
+                        Location(5) to Location(8),
+                        btoprod,
+                        listOf(
+                            ParseTree.Branch(
+                                Location(5) to Location(6),
+                                ctox,
+                                listOf(terminals[5]),
+                            ),
+                            terminals[6],
+                            ParseTree.Branch(
+                                Location(7) to Location(8),
+                                btoc,
+                                listOf(
+                                    ParseTree.Branch(
+                                        Location(7) to Location(8),
+                                        ctox,
+                                        listOf(terminals[7]),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                eq("Unexpected token RPAREN while parsing A"),
+                eq(Pair(Location(3), Location(4))),
+            )
+        }
+    }
+
+    @Test
+    fun `parser throws on unrecoverable input`() {
+        // A -> B ('+' B)*
+        // B -> C | C '*' B
+        // C -> X | '(' A ')'
+
+        val atob =
+            Production(
+                SymbolAryt.A,
+                CatSA(ReSA.atomic(SymbolAryt.B), StarSA(CatSA(ReSA.atomic(SymbolAryt.SUM), ReSA.atomic(SymbolAryt.B)))),
+            )
+        val btoc = Production(SymbolAryt.B, ReSA.atomic(SymbolAryt.C))
+        val btoprod =
+            Production(
+                SymbolAryt.B,
+                CatSA(ReSA.atomic(SymbolAryt.C), ReSA.atomic(SymbolAryt.PROD), ReSA.atomic(SymbolAryt.B)),
+            )
+        val ctox = Production(SymbolAryt.C, ReSA.atomic(SymbolAryt.X))
+        val ctogroup =
+            Production(
+                SymbolAryt.C,
+                CatSA(ReSA.atomic(SymbolAryt.LPAREN), ReSA.atomic(SymbolAryt.A), ReSA.atomic(SymbolAryt.RPAREN)),
+            )
+        val dfaA =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.B to 1,
+                    1 via SymbolAryt.SUM to 2,
+                    2 via SymbolAryt.B to 1,
+                ),
+                mapOf(1 to atob),
+            )
+        val dfaB =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.C to 1,
+                    1 via SymbolAryt.PROD to 2,
+                    2 via SymbolAryt.B to 3,
+                ),
+                mapOf(3 to btoprod, 1 to btoc),
+            )
+        val dfaC =
+            SimpleDFA(
+                0,
+                mapOf(
+                    0 via SymbolAryt.X to 1,
+                    0 via SymbolAryt.LPAREN to 2,
+                    2 via SymbolAryt.A to 3,
+                    3 via SymbolAryt.RPAREN to 4,
+                ),
+                mapOf(4 to ctogroup, 1 to ctox),
+            )
+        val automata = mapOf(SymbolAryt.A to dfaA, SymbolAryt.B to dfaB, SymbolAryt.C to dfaC)
+
+        val nextAction =
+            mapOf(
+                SymbolAryt.X to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to SymbolAryt.B,
+                        DFAStateReference(2, dfaA) to SymbolAryt.B,
+                        DFAStateReference(0, dfaB) to SymbolAryt.C,
+                        DFAStateReference(2, dfaB) to SymbolAryt.B,
+                        DFAStateReference(0, dfaC) to SymbolAryt.X,
+                        DFAStateReference(2, dfaC) to SymbolAryt.A,
+                    ),
+                SymbolAryt.SUM to
+                    mapOf(
+                        DFAStateReference(1, dfaA) to SymbolAryt.SUM,
+                    ),
+                SymbolAryt.PROD to
+                    mapOf(
+                        DFAStateReference(1, dfaB) to SymbolAryt.PROD,
+                    ),
+                SymbolAryt.LPAREN to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to SymbolAryt.B,
+                        DFAStateReference(2, dfaA) to SymbolAryt.B,
+                        DFAStateReference(0, dfaB) to SymbolAryt.C,
+                        DFAStateReference(2, dfaB) to SymbolAryt.B,
+                        DFAStateReference(0, dfaC) to SymbolAryt.LPAREN,
+                        DFAStateReference(2, dfaC) to SymbolAryt.A,
+                    ),
+                SymbolAryt.RPAREN to
+                    mapOf(
+                        DFAStateReference(3, dfaC) to SymbolAryt.RPAREN,
+                    ),
+            )
+
+        // x + + x * x
+        val terminals =
+            listOf(
+                SymbolAryt.X,
+                SymbolAryt.SUM,
+                SymbolAryt.SUM,
+                SymbolAryt.X,
+                SymbolAryt.PROD,
+                SymbolAryt.X,
+            ).mapIndexed { idx, symbol -> terminal(symbol, idx) }
+
+        val parser =
+            LLOneParser(
+                nextAction,
+                SymbolAryt.A,
+                automata,
+                listOf(SymbolAryt.RPAREN),
+            )
+
+        assertThatExceptionOfType(ParsingErrorException::class.java).isThrownBy({
+            parser.process(terminals, diagnostics)
+        })
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                eq("Unexpected token SUM while parsing A"),
+                eq(Pair(Location(2), Location(3))),
+            )
+        }
     }
 }

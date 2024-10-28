@@ -5,16 +5,32 @@ import cacophony.utils.Input
 import cacophony.utils.Location
 
 class TestDiagnostics : Diagnostics {
-    class ReportedError(message: String, input: Input, location: Location)
+    open class ReportedError
+
+    class LexerError(
+        message: String,
+        location: Location,
+    ) : ReportedError()
+
+    class ParserError(
+        message: String,
+        range: Pair<Location, Location>,
+    ) : ReportedError()
 
     private val errors: MutableList<ReportedError> = ArrayList()
 
     override fun report(
         message: String,
-        input: Input,
         location: Location,
     ) {
-        errors.add(ReportedError(message, input, location))
+        errors.add(LexerError(message, location))
+    }
+
+    override fun report(
+        message: String,
+        range: Pair<Location, Location>,
+    ) {
+        errors.add(ParserError(message, range))
     }
 
     fun reportFatal(
@@ -22,10 +38,8 @@ class TestDiagnostics : Diagnostics {
         input: Input,
         location: Location,
     ) {
-        errors.add(ReportedError(message, input, location))
+        errors.add(LexerError(message, location))
     }
 
-    fun errors(): List<ReportedError> {
-        return errors
-    }
+    fun errors(): List<ReportedError> = errors
 }

@@ -9,3 +9,7 @@ interface Parser<SymbolType : Enum<SymbolType>> {
         diagnostics: Diagnostics,
     ): ParseTree<SymbolType>
 }
+
+class ParsingErrorException(
+    reason: String,
+) : Exception(reason)
