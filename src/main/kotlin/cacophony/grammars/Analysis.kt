@@ -37,7 +37,7 @@ data class AnalyzedGrammar<StateType, SymbolType>(
         ): AnalyzedGrammar<StateType, SymbolType> {
             val nullable = findNullable(automata)
             val first = findFirst(automata, nullable)
-            val follow = findFollow(automata, nullable, first)
+            val follow = findExtendedFollowForStateReferences(automata, nullable, first)
             return AnalyzedGrammar(startSymbol, syncSymbols, automata, nullable, first, follow)
         }
     }
