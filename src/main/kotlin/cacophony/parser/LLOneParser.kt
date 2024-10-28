@@ -45,7 +45,8 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                                 val nextStateRef = DFAStateReference(nextState, dfaForProdSymbol)
                                 if (analyzedGrammar.first[nextStateRef]!!.contains(inputSymbol) or (prodSymbol == inputSymbol)) {
                                     suitableSymbols.add(prodSymbol)
-                                } else if (analyzedGrammar.nullable.contains(nextStateRef) and
+                                }
+                                if (analyzedGrammar.nullable.contains(nextStateRef) and
                                     analyzedGrammar.follow[nextStateRef]!!.contains(inputSymbol)
                                 ) {
                                     suitableSymbols.add(prodSymbol)
@@ -65,7 +66,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                             1 -> nextAction[inputSymbol]!![curStateRef] = suitableSymbols[0]
                             else -> throw ParserConstructorErrorException(
                                 "Not an LL(1) grammar: " +
-                                "state $curState in dfa $dfaLabel, possible productions for $inputSymbol are $suitableSymbols"
+                                    "state $curState in dfa $dfaLabel, possible productions for $inputSymbol are $suitableSymbols",
                             )
                         }
                     }
