@@ -6,6 +6,7 @@ import cacophony.automata.buildNFAFromRegex
 import cacophony.automata.determinize
 import cacophony.automata.joinAutomata
 import cacophony.utils.AlgebraicRegex
+import cacophony.utils.getReachableFrom
 
 class DFAPreimagesCalculator<DFAState, AtomType>(
     dfa: DFA<DFAState, AtomType, *>,
@@ -27,25 +28,6 @@ class DFAPreimagesCalculator<DFAState, AtomType>(
             .flatMap { entry -> entry.value.map { entry.key to it } }
             .groupBy({ it.first }, { it.second })
             .mapValues { it.value.toSet() }
-}
-
-// Returns a set of all elements reachable from a collection of nodes in a directed graph.
-fun <E> getReachableFrom(
-    from: Collection<E>,
-    graph: Map<E, Collection<E>>,
-): Set<E> {
-    val reachable = from.toMutableSet()
-    val workList = from.toMutableList()
-    while (workList.isNotEmpty()) {
-        val u = workList.removeLast()
-        for (v in graph.getOrDefault(u, listOf())) {
-            if (!reachable.contains(v)) {
-                reachable.add(v)
-                workList.add(v)
-            }
-        }
-    }
-    return reachable
 }
 
 // Returns a set of states reachable from starting state.
@@ -81,10 +63,11 @@ fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.withSta
     return SimpleDFA(
         fullDFA.getStartingState(),
         productions,
-        retain.mapNotNull {
-            val result = fullDFA.result(it)
-            if (result != null) it to result else null
-        }.toMap(),
+        retain
+            .mapNotNull {
+                val result = fullDFA.result(it)
+                if (result != null) it to result else null
+            }.toMap(),
     )
 }
 
@@ -112,3 +95,15 @@ fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.makeInt
     val results = getAllStates().mapNotNull { state -> result(state)?.let { res -> oldToNew[state]!! to res } }.toMap()
     return SimpleDFA(0, productions, results)
 }
+
+// Returns map from state to its predecessors per atom on edge.
+fun <StateType, AtomType, ResultType> reverse(dfa: DFA<StateType, AtomType, ResultType>): Map<StateType, Map<AtomType, Set<StateType>>> =
+    dfa
+        .getProductions()
+        .asSequence()
+        .map { (it.value to it.key.second) to it.key.first }
+        .groupBy({ it.first }, { it.second })
+        .map { it.key.first to (it.key.second to it.value.toSet()) }
+        .groupBy({ it.first }, { it.second })
+        .map { it.key to it.value.toMap() }
+        .toMap()
