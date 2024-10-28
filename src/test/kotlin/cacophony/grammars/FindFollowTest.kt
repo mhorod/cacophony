@@ -43,9 +43,9 @@ class FindFollowTest {
         assertThat(follow)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    'A' to setOf(),
-                    'a' to setOf('b'),
-                    'b' to emptySet(),
+                    'A' to emptySet(), // A does not appear in any production
+                    'a' to setOf('b'), // in production A -> ab
+                    'b' to emptySet(), // b only appears at the end of the only production
                 ),
             )
     }
@@ -92,11 +92,11 @@ class FindFollowTest {
         assertThat(follow)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    'A' to emptySet(),
-                    'B' to setOf('b'),
-                    'b' to emptySet(),
-                    'c' to setOf('d'),
-                    'd' to setOf('b'),
+                    'A' to emptySet(), // A does not appear in any production
+                    'B' to setOf('b'), // in production A -> Bb
+                    'b' to emptySet(), // b only appears at the end
+                    'c' to setOf('d'), // in production B -> cd
+                    'd' to setOf('b'), // transitive from B -> cd in A -> Bb -> cdb
                 ),
             )
     }
@@ -157,12 +157,12 @@ class FindFollowTest {
         assertThat(follow)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    'A' to setOf('B', 'b', 'c'),
-                    'B' to emptySet(),
-                    'C' to emptySet(),
-                    'a' to setOf('B', 'b', 'c'),
-                    'b' to emptySet(),
-                    'c' to emptySet(),
+                    'A' to setOf('B', 'b', 'c'), // in C -> AB, and then also applying B -> b or B -> c
+                    'B' to emptySet(), // B only appears at the end
+                    'C' to emptySet(), // C does not appear in any production
+                    'a' to setOf('B', 'b', 'c'), // transitive from A -> a in C -> AB -> aB, and then applying B -> b or B -> c
+                    'b' to emptySet(), // b can only appear from B, which can only appear at the end of a derivation
+                    'c' to emptySet(), // c can only appear from B, which can only appear at the end of a derivation
                 ),
             )
     }
@@ -218,11 +218,20 @@ class FindFollowTest {
         assertThat(follow)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    'A' to setOf('b'),
-                    'B' to setOf(),
+                    'A' to setOf('b'), // in B -> Ab
+                    'B' to setOf(), // B only appears at the end
+
+                    // C is by B in D -> CB
+                    // then by A because CB *-> CAb (from B -> Ab)
+                    // and finally by b in CAb *-> Cb (from A -> ε)
                     'C' to setOf('A', 'B', 'b'),
-                    'D' to setOf(),
+
+                    'D' to setOf(), // D does not appear in any production
+
+                    // b can only appear at the end of something derived from B, which itself only appears at the end
                     'b' to setOf(),
+
+                    // c can only be derived from C -> c, so it has the same followers as C
                     'c' to setOf('A', 'B', 'b'),
                 ),
             )
