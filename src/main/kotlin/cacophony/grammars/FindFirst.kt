@@ -48,7 +48,7 @@ fun <StateType, SymbolType, ResultType> findFirst(
             val to = fromState(Pair(production.value, dfa))
 
             graph[from]!!.add(by)
-            if (nullable.contains(by.state)) {
+            if (by.state in nullable) {
                 graph[from]!!.add(to)
             }
         }
