@@ -220,17 +220,13 @@ class FindFollowTest {
                 mapOf(
                     'A' to setOf('b'), // in B -> Ab
                     'B' to setOf(), // B only appears at the end
-
                     // C is by B in D -> CB
                     // then by A because CB *-> CAb (from B -> Ab)
                     // and finally by b in CAb *-> Cb (from A -> ε)
                     'C' to setOf('A', 'B', 'b'),
-
                     'D' to setOf(), // D does not appear in any production
-
                     // b can only appear at the end of something derived from B, which itself only appears at the end
                     'b' to setOf(),
-
                     // c can only be derived from C -> c, so it has the same followers as C
                     'c' to setOf('A', 'B', 'b'),
                 ),
