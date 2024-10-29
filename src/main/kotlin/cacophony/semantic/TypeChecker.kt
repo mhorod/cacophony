@@ -6,7 +6,7 @@ import cacophony.utils.Diagnostics
 fun checkTypes(
     ast: Expression.Subsequent,
     diagnostics: Diagnostics,
-    nr: NameResolutionResult,
+    resolvedVariables: ResolvedVariables,
 ): TypeCheckingResult {
     TODO()
 }

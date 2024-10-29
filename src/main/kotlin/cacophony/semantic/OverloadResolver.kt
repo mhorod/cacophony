@@ -7,7 +7,6 @@ fun resolveOverloads(
     ast: Expression.Subsequent,
     diagnostics: Diagnostics,
     nr: NameResolutionResult,
-    types: TypeCheckingResult,
 ): ResolvedVariables {
     TODO()
 }
