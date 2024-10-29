@@ -1,5 +1,8 @@
 package cacophony.parser
 
+import cacophony.token.Token
+import cacophony.token.TokenCategorySpecific
+
 enum class CacophonyGrammarSymbol {
     /*****************
      * non-terminals *
@@ -61,4 +64,10 @@ enum class CacophonyGrammarSymbol {
     A,
     B,
     C,
+    ;
+
+    companion object {
+        fun fromLexerToken(lexerToken: Token<TokenCategorySpecific>): Token<CacophonyGrammarSymbol> =
+            Token(CacophonyGrammarSymbol.valueOf(lexerToken.category.name), lexerToken.context, lexerToken.rangeFrom, lexerToken.rangeTo)
+    }
 }

@@ -4,7 +4,6 @@ import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammar
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.LLOneParser
-import cacophony.parser.Utils
 import cacophony.utils.FileInput
 import cacophony.utils.SimpleDiagnostics
 
@@ -20,7 +19,7 @@ fun main(args: Array<String>) {
     val tokens = CacophonyLexer().process(input, diagnostics)
     println("Tokens: $tokens")
 
-    val terminals = tokens.map { token -> ParseTree.Leaf(Utils.lexerTokenToParserToken(token)) }
+    val terminals = tokens.map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
     val analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol> =
         AnalyzedGrammar.fromGrammar(
             emptyList(),
