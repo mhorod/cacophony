@@ -4,7 +4,7 @@ import cacophony.grammar.syntaxtree.Expression
 import cacophony.utils.Diagnostics
 
 fun checkTypes(
-    ast: Expression,
+    ast: Expression.Subsequent,
     diagnostics: Diagnostics,
     nr: NameResolutionResult,
 ): TypeCheckingResult {

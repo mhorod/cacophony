@@ -4,7 +4,7 @@ import cacophony.grammar.syntaxtree.Expression
 import cacophony.utils.Diagnostics
 
 fun analyzeFunctions(
-    ast: Expression,
+    ast: Expression.Subsequent,
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
     types: TypeCheckingResult,

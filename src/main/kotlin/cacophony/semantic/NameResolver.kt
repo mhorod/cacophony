@@ -4,7 +4,7 @@ import cacophony.grammar.syntaxtree.Expression
 import cacophony.utils.Diagnostics
 
 fun resolveNames(
-    ast: Expression,
+    ast: Expression.Subsequent,
     diagnostics: Diagnostics,
 ): NameResolutionResult {
     TODO()

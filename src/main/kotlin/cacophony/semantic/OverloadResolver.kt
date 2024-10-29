@@ -4,10 +4,10 @@ import cacophony.grammar.syntaxtree.Expression
 import cacophony.utils.Diagnostics
 
 fun resolveOverloads(
-    ast: Expression,
+    ast: Expression.Subsequent,
     diagnostics: Diagnostics,
     nr: NameResolutionResult,
-    ty: TypeCheckingResult,
+    types: TypeCheckingResult,
 ): ResolvedVariables {
     TODO()
 }
