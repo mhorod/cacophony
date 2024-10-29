@@ -2,7 +2,9 @@ package cacophony.grammar.syntaxtree
 
 import cacophony.utils.Location
 
-sealed class Expression(val range: Pair<Location, Location>) { // everything in cacophony is an expression
+sealed class Expression(
+    val range: Pair<Location, Location>,
+) { // everything in cacophony is an expression
     // artificial instance, can be useful when calculating values of nested expressions
     class Empty(
         range: Pair<Location, Location>,
@@ -13,10 +15,9 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
         val identifier: String,
     ) : Expression(range)
 
-    // should Type also inherit expression? if so, can we do for example "; Bool;" in our language?
     sealed class Type(
         range: Pair<Location, Location>,
-    ) : Expression(range) {
+    ) {
         class Basic(
             range: Pair<Location, Location>,
             val identifier: String,
@@ -80,10 +81,6 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
         val expression: Expression,
     ) : Expression(range)
 
-    // series of expressions separated by semicolons, returning value of the last one
-    // they can maybe be merged with NestedExpression, but I don't know if that would be convenient
-    // we agreed that (x; y;) returns Unit - should we create artificial class for empty expression after the last semicolon,
-    // or will we handle it in a different way?
     class Subsequent(
         range: Pair<Location, Location>,
         vararg val expressions: Expression,
