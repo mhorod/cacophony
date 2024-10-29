@@ -60,7 +60,8 @@ object RegexStrings {
             TokenCategorySpecific.OPERATOR_LOGICAL_AND to """&&""",
             TokenCategorySpecific.OPERATOR_LOGICAL_NOT to """!""",
             // and the others
-            TokenCategorySpecific.LITERAL to """-\d(\d)*|\d(\d)*|true|false""",
+            TokenCategorySpecific.INT_LITERAL to """-\d(\d)*|\d(\d)*""",
+            TokenCategorySpecific.BOOL_LITERAL to """true|false""",
             TokenCategorySpecific.TYPE_IDENTIFIER to """\u\w*""",
             TokenCategorySpecific.VARIABLE_IDENTIFIER to """(\l|_)\w*""",
             TokenCategorySpecific.WHITESPACE to """(\n|\r|\t| )*""",
