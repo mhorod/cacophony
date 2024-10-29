@@ -45,7 +45,8 @@ enum class TokenCategorySpecific {
     OPERATOR_LOGICAL_NOT,
 
     // and the others
-    LITERAL,
+    INT_LITERAL,
+    BOOL_LITERAL,
     TYPE_IDENTIFIER,
     VARIABLE_IDENTIFIER,
     WHITESPACE,
