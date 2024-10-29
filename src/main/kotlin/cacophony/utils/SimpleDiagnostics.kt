@@ -4,7 +4,7 @@ class SimpleDiagnostics(
     private val input: Input,
 ) : Diagnostics {
     class ReportedError(
-        message: String,
+        val message: String,
     )
 
     private val errors: MutableList<ReportedError> = ArrayList()
