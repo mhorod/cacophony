@@ -8,31 +8,56 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
         range: Pair<Location, Location>,
     ) : Expression(range)
 
-    class Variable(
+    class VariableUse(
         range: Pair<Location, Location>,
         val identifier: String,
     ) : Expression(range)
 
     // should Type also inherit expression? if so, can we do for example "; Bool;" in our language?
-    class Type(
+    sealed class Type(
+        range: Pair<Location, Location>,
+    ) : Expression(range) {
+        class Basic(
+            range: Pair<Location, Location>,
+            val identifier: String,
+        ) : Type(range)
+
+        class Functional(
+            range: Pair<Location, Location>,
+            vararg val argumentsType: Type,
+            val returnType: Type,
+        ) : Type(range)
+    }
+
+    sealed class Definition(
         range: Pair<Location, Location>,
         val identifier: String,
-    ) : Expression(range)
+    ) : Expression(range) {
+        class VariableDeclaration(
+            range: Pair<Location, Location>,
+            identifier: String,
+            val type: Type.Basic?,
+        ) : Definition(range, identifier)
 
-    class VariableDeclaration(
-        range: Pair<Location, Location>,
-        val identifier: String,
-    ) : Expression(range)
+        class FunctionDeclaration(
+            range: Pair<Location, Location>,
+            identifier: String,
+            val type: Type.Functional?,
+            vararg val arguments: FunctionArgument,
+            val returnType: Type,
+        ) : Definition(range, identifier)
 
-    class FunctionArgument(
-        range: Pair<Location, Location>,
-        val type: Type,
-    )
+        class FunctionArgument(
+            range: Pair<Location, Location>,
+            identifier: String,
+            val type: Type,
+        ) : Definition(range, identifier)
+    }
 
-    class VariableTypedDeclaration(
+    class FunctionCall(
         range: Pair<Location, Location>,
-        val variable: VariableDeclaration,
-        val type: Type,
+        val function: Expression,
+        vararg val arguments: Expression,
     ) : Expression(range)
 
     class Literal(
@@ -57,17 +82,11 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
     sealed class Statement(
         range: Pair<Location, Location>,
     ) : Expression(range) {
-        class IfStatement(
-            range: Pair<Location, Location>,
-            val testExpression: Expression,
-            val doExpression: Expression,
-        ) : Statement(range)
-
         class IfElseStatement(
             range: Pair<Location, Location>,
             val testExpression: Expression,
             val doExpression: Expression,
-            val elseExpression: Expression,
+            val elseExpression: Expression?,
         ) : Statement(range)
 
         class WhileStatement(
@@ -86,19 +105,6 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
         ) : Statement(range)
     }
 
-    class FunctionDefinition(
-        range: Pair<Location, Location>,
-        val functionName: VariableDeclaration,
-        vararg val arguments: FunctionArgument,
-        val returnType: Type,
-    ) : Expression(range)
-
-    class FunctionCall(
-        range: Pair<Location, Location>,
-        val function: Expression,
-        vararg val arguments: Variable,
-    ) : Expression(range)
-
     sealed class Operator(
         range: Pair<Location, Location>,
     ) : Expression(range) {
@@ -111,7 +117,7 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
                 expression: Expression,
             ) : Unary(range, expression)
 
-            class UnaryMinus(
+            class Minus(
                 range: Pair<Location, Location>,
                 expression: Expression,
             ) : Unary(range, expression)
