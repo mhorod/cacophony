@@ -60,9 +60,19 @@ sealed class Expression(val range: Pair<Location, Location>) { // everything in 
         vararg val arguments: Expression,
     ) : Expression(range)
 
-    class Literal(
+    sealed class Literal(
         range: Pair<Location, Location>,
-    ) : Expression(range)
+    ) : Expression(range) {
+        class IntLiteral(
+            range: Pair<Location, Location>,
+            val value: Int,
+        ) : Literal(range)
+
+        class BoolLiteral(
+            range: Pair<Location, Location>,
+            val value: Boolean,
+        ) : Literal(range)
+    }
 
     // expression in parenthesis
     class ParenthesisGroup(
