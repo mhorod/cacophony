@@ -1,4 +1,4 @@
-package cacophony.grammar.syntaxtree
+package cacophony.semantic.syntaxtree
 
 import cacophony.utils.Location
 import org.junit.jupiter.api.Assertions.assertEquals

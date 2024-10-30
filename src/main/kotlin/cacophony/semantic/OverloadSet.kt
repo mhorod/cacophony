@@ -1,6 +1,6 @@
 package cacophony.semantic
 
-import cacophony.grammar.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.Definition
 
 interface OverloadSet {
     operator fun get(arity: Int): Definition.FunctionDeclaration?

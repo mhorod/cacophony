@@ -1,4 +1,4 @@
-package cacophony.grammar.syntaxtree
+package cacophony.semantic.syntaxtree
 
 public class Hierarchy { // dont know how to implement it yet
     // defines priority on grammar productions, which is reverse to the priority of operators

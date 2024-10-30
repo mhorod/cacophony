@@ -1,4 +1,4 @@
-package cacophony.grammar.syntaxtree
+package cacophony.semantic.syntaxtree
 
 import cacophony.utils.Location
 
@@ -77,13 +77,8 @@ sealed class Literal(
     ) : Literal(range)
 }
 
-// expression in parenthesis
-class ParenthesisGroup(
-    range: Pair<Location, Location>,
-    val expression: Expression,
-) : Expression(range)
-
-class Subsequent(
+// expression in parentheses and whole program
+class Block(
     range: Pair<Location, Location>,
     val expressions: List<Expression>,
 ) : Expression(range)

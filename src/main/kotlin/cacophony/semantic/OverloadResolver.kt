@@ -1,12 +1,12 @@
 package cacophony.semantic
 
-import cacophony.grammar.syntaxtree.Definition
-import cacophony.grammar.syntaxtree.Subsequent
-import cacophony.grammar.syntaxtree.VariableUse
+import cacophony.semantic.syntaxtree.Block
+import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.VariableUse
 import cacophony.utils.Diagnostics
 
 fun resolveOverloads(
-    ast: Subsequent,
+    ast: Block,
     diagnostics: Diagnostics,
     nr: NameResolutionResult,
 ): ResolvedVariables {

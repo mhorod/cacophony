@@ -1,11 +1,11 @@
 package cacophony.semantic
 
-import cacophony.grammar.syntaxtree.Expression
-import cacophony.grammar.syntaxtree.Subsequent
+import cacophony.semantic.syntaxtree.Block
+import cacophony.semantic.syntaxtree.Expression
 import cacophony.utils.Diagnostics
 
 fun checkTypes(
-    ast: Subsequent,
+    ast: Block,
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
 ): TypeCheckingResult {
