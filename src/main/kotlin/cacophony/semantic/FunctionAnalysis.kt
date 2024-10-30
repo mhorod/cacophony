@@ -1,10 +1,11 @@
 package cacophony.semantic
 
-import cacophony.grammar.syntaxtree.Expression
+import cacophony.grammar.syntaxtree.Definition
+import cacophony.grammar.syntaxtree.Subsequent
 import cacophony.utils.Diagnostics
 
 fun analyzeFunctions(
-    ast: Expression.Subsequent,
+    ast: Subsequent,
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
     types: TypeCheckingResult,
@@ -13,7 +14,7 @@ fun analyzeFunctions(
     TODO()
 }
 
-typealias FunctionAnalysisResult = Map<Expression.Definition.FunctionDeclaration, AnalyzedFunction>
+typealias FunctionAnalysisResult = Map<Definition.FunctionDeclaration, AnalyzedFunction>
 
 class AnalyzedFunction(
     val staticDepth: Int,
@@ -21,7 +22,7 @@ class AnalyzedFunction(
 )
 
 class AnalyzedVariable(
-    val declaration: Expression.Definition.VariableDeclaration,
-    val definedIn: Expression.Definition.FunctionDeclaration,
+    val declaration: Definition.VariableDeclaration,
+    val definedIn: Definition.FunctionDeclaration,
     val readOnly: Boolean,
 )

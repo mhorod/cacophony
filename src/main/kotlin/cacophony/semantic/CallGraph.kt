@@ -1,10 +1,11 @@
 package cacophony.semantic
 
-import cacophony.grammar.syntaxtree.Expression
+import cacophony.grammar.syntaxtree.Definition
+import cacophony.grammar.syntaxtree.Subsequent
 import cacophony.utils.Diagnostics
 
 fun generateCallGraph(
-    ast: Expression.Subsequent,
+    ast: Subsequent,
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
     types: TypeCheckingResult,
@@ -12,4 +13,4 @@ fun generateCallGraph(
     TODO()
 }
 
-typealias CallGraph = Map<Expression.Definition.FunctionDeclaration, Set<Expression.Definition.FunctionDeclaration>>
+typealias CallGraph = Map<Definition.FunctionDeclaration, Set<Definition.FunctionDeclaration>>

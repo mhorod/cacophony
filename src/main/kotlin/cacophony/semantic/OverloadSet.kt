@@ -1,14 +1,14 @@
 package cacophony.semantic
 
-import cacophony.grammar.syntaxtree.Expression
+import cacophony.grammar.syntaxtree.Definition
 
 interface OverloadSet {
-    operator fun get(arity: Int): Expression.Definition.FunctionDeclaration?
+    operator fun get(arity: Int): Definition.FunctionDeclaration?
 
-    fun toMap(): Map<Int, Expression.Definition.FunctionDeclaration>
+    fun toMap(): Map<Int, Definition.FunctionDeclaration>
 
     fun withDeclaration(
         arity: Int,
-        declaration: Expression.Definition.FunctionDeclaration,
+        declaration: Definition.FunctionDeclaration,
     ): OverloadSet
 }
