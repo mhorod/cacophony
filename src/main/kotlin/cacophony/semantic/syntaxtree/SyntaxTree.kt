@@ -2,6 +2,8 @@ package cacophony.semantic.syntaxtree
 
 import cacophony.utils.Location
 
+typealias AST = Block
+
 sealed class Type(
     val range: Pair<Location, Location>,
 ) {

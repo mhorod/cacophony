@@ -1,11 +1,11 @@
 package cacophony.semantic
 
-import cacophony.semantic.syntaxtree.Block
+import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.utils.Diagnostics
 
 fun analyzeFunctions(
-    ast: Block,
+    ast: AST,
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
     types: TypeCheckingResult,
