@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
     val analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol> =
         AnalyzedGrammar.fromGrammar(
             emptyList(),
-            CacophonyGrammar.dummyGrammar1,
+            CacophonyGrammar.grammar,
         )
     val parser = LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
 

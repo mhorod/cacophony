@@ -65,6 +65,21 @@ enum class CacophonyGrammarSymbol {
     A,
     B,
     C,
+    START,
+    SEMICOLON_LEVEL,
+    DECLARATION_LEVEL,
+    DECLARATION_TYPED,
+    DECLARATION_UNTYPED,
+    VARIABLE_DECLARATION,
+    FUNCTION_DECLARATION,
+    FUNCTION_ARGUMENT,
+    TYPE,
+    RETURN_LEVEL,
+    ASSIGNMENT_LEVEL,
+    ASSIGNMENT,
+    ATOM_LEVEL,
+    UNARY_LEVEL,
+    UNARY,
     ;
 
     companion object {
