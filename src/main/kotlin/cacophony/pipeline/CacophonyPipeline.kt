@@ -192,6 +192,8 @@ class CacophonyPipeline(
         return result
     }
 
+    fun process(input: Input): FunctionAnalysisResult = analyzeFunctions(input)
+
     private fun analyzeGrammar(): AnalyzedGrammar<Int, CacophonyGrammarSymbol> {
         val analyzedGrammar =
             try {
