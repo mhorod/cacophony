@@ -9,7 +9,7 @@ class PrintTreeTest {
             val value: String,
             val children: List<TestTree>,
         ) : Tree {
-            override fun stringValue() = value
+            override fun toString() = value
 
             override fun isLeaf() = children.isEmpty()
 
@@ -27,7 +27,7 @@ class PrintTreeTest {
                         "Child1",
                         listOf(
                             TestTree("Grandchild1", emptyList()),
-                            TestTree("Grandchild2", emptyList()),
+                            TestTree("Grandchild2\nis a\nmultiline node", emptyList()),
                             TestTree(
                                 "Grandchild3",
                                 listOf(
@@ -46,14 +46,16 @@ class PrintTreeTest {
             """
             └┬Root
              ├┬Child1
-             │├—Grandchild1
-             │├—Grandchild2
+             │├─Grandchild1
+             │├─Grandchild2
+             ││  is a
+             ││  multiline node
              │└┬Grandchild3
-             │ ├—Greatgrandchild1
-             │ ├—Greatgrandchild2
-             │ └—Greatgrandchild3
-             └—Child2
-            
+             │ ├─Greatgrandchild1
+             │ ├─Greatgrandchild2
+             │ └─Greatgrandchild3
+             └─Child2
+
             """.trimIndent(),
         )
     }

@@ -2,13 +2,16 @@ package cacophony.grammars
 
 import cacophony.token.Token
 import cacophony.utils.Location
+import cacophony.utils.Tree
+import cacophony.utils.TreeLeaf
 
 sealed class ParseTree<SymbolType : Enum<SymbolType>>(
     val range: Pair<Location, Location>,
-) {
+) : Tree {
     class Leaf<SymbolType : Enum<SymbolType>>(
         val token: Token<SymbolType>,
-    ) : ParseTree<SymbolType>(Pair(token.rangeFrom, token.rangeTo)) {
+    ) : ParseTree<SymbolType>(Pair(token.rangeFrom, token.rangeTo)),
+        TreeLeaf {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is Leaf<*>) return false
@@ -34,10 +37,10 @@ sealed class ParseTree<SymbolType : Enum<SymbolType>>(
 
         override fun hashCode() = children.fold(0) { hash, child -> 19 * hash + child.hashCode() }
 
-        override fun toString() =
-            "${production.lhs} $range -> (${children.fold("") { acc, tree ->
-                acc + "\n" +
-                    tree.toString()
-            }.prependIndent()}\n)"
+        override fun toString() = "${production.lhs} $range"
+
+        override fun isLeaf(): Boolean = false
+
+        override fun children() = children
     }
 }

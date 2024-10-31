@@ -4,8 +4,12 @@ interface Tree {
     fun isLeaf(): Boolean
 
     fun children(): List<Tree>
+}
 
-    fun stringValue(): String
+interface TreeLeaf : Tree {
+    override fun isLeaf() = true
+
+    override fun children() = emptyList<Tree>()
 }
 
 class TreePrinter(
@@ -13,29 +17,39 @@ class TreePrinter(
 ) {
     val builder: StringBuilder = builder
 
+    private fun printBlock(
+        block: String,
+        indent: String,
+    ) {
+        builder.append(block.lines().first())
+        builder.append('\n')
+        for (line in block.lines().drop(1)) {
+            builder.append(indent + line)
+            builder.append('\n')
+        }
+    }
+
     private fun printTreeInternal(
         t: Tree,
         indent: String,
         isLastChild: Boolean,
     ) {
-        println("Indent = x${indent}x")
         if (indent.isNotEmpty()) {
             builder.append(indent.dropLast(1))
         }
+        val indent0: String
         if (isLastChild) {
             builder.append('└')
         } else {
             builder.append('├')
         }
         if (t.isLeaf()) {
-            builder.append('—')
-            builder.append(t.stringValue())
-            builder.append('\n')
+            builder.append('─')
+            printBlock(t.toString(), "$indent  ")
         } else {
             builder.append('┬')
-            builder.append(t.stringValue())
-            builder.append('\n')
             var newIndent = "$indent│"
+            printBlock(t.toString(), newIndent)
             for (child in t.children().dropLast(1)) {
                 printTreeInternal(child, newIndent, false)
             }

@@ -6,6 +6,7 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.LLOneParser
 import cacophony.utils.FileInput
 import cacophony.utils.SimpleDiagnostics
+import cacophony.utils.TreePrinter
 
 fun main(args: Array<String>) {
     if (args.size != 1) {
@@ -28,8 +29,9 @@ fun main(args: Array<String>) {
     val parser = LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
 
     try {
-        val parseTree = parser.process(terminals, diagnostics)
         println("Parsing successful!")
+        val parseTree = parser.process(terminals, diagnostics)
+        println(TreePrinter(StringBuilder()).printTree(parseTree))
     } catch (t: Throwable) {
         for (error in diagnostics.getErrors()) {
             println(error.message)
