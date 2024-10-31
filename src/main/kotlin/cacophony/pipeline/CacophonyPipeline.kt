@@ -1,11 +1,9 @@
 package cacophony.pipeline
 
-import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.lexer.CacophonyLexer
-import cacophony.parser.CacophonyGrammar
 import cacophony.parser.CacophonyGrammarSymbol
-import cacophony.parser.LLOneParser
+import cacophony.parser.CacophonyParser
 import cacophony.semantic.CallGraph
 import cacophony.semantic.FunctionAnalysisResult
 import cacophony.semantic.NameResolutionResult
@@ -21,6 +19,9 @@ class CacophonyPipeline(
     private val diagnostics: Diagnostics,
     private val logger: CacophonyLogger? = null,
 ) {
+    // run the full pipeline
+    fun process(input: Input): FunctionAnalysisResult = analyzeFunctions(input)
+
     fun lex(input: Input): List<Token<TokenCategorySpecific>> {
         val tokens =
             try {
@@ -34,12 +35,10 @@ class CacophonyPipeline(
     }
 
     fun parse(input: Input): ParseTree<CacophonyGrammarSymbol> {
-        val tokens = lex(input)
-        val analyzedGrammar = analyzeGrammar()
-        val terminals = tokens.map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
+        val terminals = lex(input).map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
         val parseTree =
             try {
-                LLOneParser.fromAnalyzedGrammar(analyzedGrammar).process(terminals, diagnostics)
+                CacophonyParser().process(terminals, diagnostics)
             } catch (e: Throwable) {
                 logger?.logFailedParsing()
                 throw e
@@ -190,23 +189,5 @@ class CacophonyPipeline(
             }
         logger?.logSuccessfulFunctionAnalysis(result)
         return result
-    }
-
-    fun process(input: Input): FunctionAnalysisResult = analyzeFunctions(input)
-
-    private fun analyzeGrammar(): AnalyzedGrammar<Int, CacophonyGrammarSymbol> {
-        val analyzedGrammar =
-            try {
-                AnalyzedGrammar.fromGrammar(emptyList(), grammar)
-            } catch (e: Throwable) {
-                logger?.logFailedGrammarAnalysis()
-                throw e
-            }
-        logger?.logSuccessfulGrammarAnalysis(analyzedGrammar)
-        return analyzedGrammar
-    }
-
-    companion object {
-        val grammar = CacophonyGrammar.dummyGrammar1 // TODO: change this to the actual grammar
     }
 }
