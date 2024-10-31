@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
     val parser = LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
 
     try {
-        parser.process(terminals, diagnostics)
+        val parseTree = parser.process(terminals, diagnostics)
         println("Parsing successful!")
     } catch (t: Throwable) {
         for (error in diagnostics.getErrors()) {
