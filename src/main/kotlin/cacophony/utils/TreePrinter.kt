@@ -33,7 +33,6 @@ class TreePrinter(
         if (indent.isNotEmpty()) {
             builder.append(indent.dropLast(1))
         }
-        val indent0: String
         if (isLastChild) {
             builder.append('└')
         } else {

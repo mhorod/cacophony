@@ -11,8 +11,6 @@ class PrintTreeTest {
         ) : Tree {
             override fun toString() = value
 
-            override fun isLeaf() = children.isEmpty()
-
             override fun children() = children
         }
     }
