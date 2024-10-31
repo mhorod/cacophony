@@ -18,7 +18,7 @@ class PrintTreeTest {
     }
 
     @Test
-    fun `set of elements reachable from empty set is empty`() {
+    fun `simple test`() {
         val testTree =
             TestTree(
                 "Root",
