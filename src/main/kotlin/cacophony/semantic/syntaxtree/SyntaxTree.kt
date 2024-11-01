@@ -2,15 +2,13 @@ package cacophony.semantic.syntaxtree
 
 import cacophony.utils.Location
 
-sealed interface ASTNode
-
 sealed interface LeafExpression
 
 typealias AST = Block
 
 sealed class Type(
     val range: Pair<Location, Location>,
-) : ASTNode {
+) {
     class Basic(
         range: Pair<Location, Location>,
         val identifier: String,
@@ -26,7 +24,7 @@ sealed class Type(
 // everything in cacophony is an expression
 sealed class Expression(
     val range: Pair<Location, Location>,
-) : ASTNode
+)
 
 // artificial instance, can be useful when calculating values of nested expressions
 class Empty(
