@@ -53,11 +53,10 @@ class CacophonyGrammar {
                             atomic(KEYWORD_RETURN)
                                 concat atomic(STATEMENT_LEVEL)
                         ),
-//                    FUNCTION_CALL produces (
-//                        atomic(VARIABLE_IDENTIFIER) concat
-//                            (atomic(LEFT_BRACKET) concat atomic(RIGHT_BRACKET)) or
-//                            (atomic(LEFT_BRACKET) concat atomic(STATEMENT_LEVEL) concat atomic(RIGHT_BRACKET))
-//                    ),
+                    FUNCTION_CALL produces (
+                        (atomic(LEFT_BRACKET) concat atomic(RIGHT_BRACKET)) or
+                            (atomic(LEFT_BRACKET) concat atomic(STATEMENT_LEVEL) concat atomic(RIGHT_BRACKET))
+                    ),
                     WHILE_CLAUSE produces (
                         atomic(KEYWORD_WHILE) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_DO) concat atomic(STATEMENT_LEVEL)
                     ),
@@ -180,7 +179,7 @@ class CacophonyGrammar {
                         ),
                     UNARY_LEVEL produces
                         (
-                            atomic(ATOM_LEVEL) or
+                            atomic(CALL_LEVEL) or
                                 (
                                     atomic(UNARY) concat
                                         atomic(ATOM_LEVEL)
@@ -195,10 +194,18 @@ class CacophonyGrammar {
                                 )
 
                         ),
+                    CALL_LEVEL produces
+                        (
+                            atomic(ATOM_LEVEL) or
+                                (
+                                    atomic(ATOM_LEVEL) concat
+                                        atomic(FUNCTION_CALL)
+                                )
+
+                        ),
                     ATOM_LEVEL produces
                         (
-                            atomic(FUNCTION_CALL) or
-                                atomic(KEYWORD_BREAK) or
+                            atomic(KEYWORD_BREAK) or
                                 atomic(VARIABLE_IDENTIFIER) or
                                 atomic(BOOL_LITERAL) or
                                 atomic(INT_LITERAL) or

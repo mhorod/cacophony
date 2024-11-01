@@ -78,6 +78,7 @@ enum class CacophonyGrammarSymbol {
     DECLARATION_LEVEL,
     ASSIGNMENT_LEVEL,
     UNARY_LEVEL,
+    CALL_LEVEL,
     ATOM_LEVEL,
     ;
 
