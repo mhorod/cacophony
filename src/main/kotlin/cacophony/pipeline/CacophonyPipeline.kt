@@ -182,7 +182,7 @@ class CacophonyPipeline(
     ): FunctionAnalysisResult {
         val result =
             try {
-                cacophony.semantic.analyzeFunctions(ast, diagnostics, resolvedVariables, types, callGraph)
+                cacophony.semantic.analyzeFunctions(ast, resolvedVariables, callGraph)
             } catch (e: Throwable) {
                 logger?.logFailedFunctionAnalysis()
                 throw e
