@@ -6,6 +6,7 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.LLOneParser
 import cacophony.utils.FileInput
 import cacophony.utils.SimpleDiagnostics
+import cacophony.utils.TreePrinter
 
 fun main(args: Array<String>) {
     if (args.size != 1) {
@@ -17,7 +18,7 @@ fun main(args: Array<String>) {
     val input = FileInput(args[0])
     val diagnostics = SimpleDiagnostics(input)
     val tokens = CacophonyLexer().process(input, diagnostics)
-    println("Tokens: $tokens")
+    println("Tokens: ${tokens.joinToString(separator = "\n")}")
 
     val terminals = tokens.map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
     val analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol> =
@@ -28,9 +29,14 @@ fun main(args: Array<String>) {
     val parser = LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
 
     try {
-        parser.process(terminals, diagnostics)
+        val parseTree = parser.process(terminals, diagnostics)
         println("Parsing successful!")
+        println(TreePrinter(StringBuilder()).printTree(parseTree))
+        for (error in diagnostics.getErrors()) {
+            println(error.message)
+        }
     } catch (t: Throwable) {
+        println("Wyjebało się")
         for (error in diagnostics.getErrors()) {
             println(error.message)
         }

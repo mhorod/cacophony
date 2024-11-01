@@ -4,10 +4,7 @@ import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 
 enum class CacophonyGrammarSymbol {
-    /*****************
-     * non-terminals *
-     *****************/
-
+    // special characters
     LEFT_PARENTHESIS,
     RIGHT_PARENTHESIS,
     LEFT_BRACKET,
@@ -50,36 +47,35 @@ enum class CacophonyGrammarSymbol {
     OPERATOR_LOGICAL_AND,
     OPERATOR_LOGICAL_NOT,
 
-    // and the others
+    // literals others
     INT_LITERAL,
     BOOL_LITERAL,
     TYPE_IDENTIFIER,
     VARIABLE_IDENTIFIER,
-    WHITESPACE,
-    COMMENT,
+    // WHITESPACE,
+    // COMMENT,
 
-    /*****************
-     * non-terminals *
-     *****************/
-
-    A,
-    B,
-    C,
+    // others
     START,
-    SEMICOLON_LEVEL,
-    DECLARATION_LEVEL,
+    FUNCTION_CALL,
+    WHILE_CLAUSE,
+    IF_CLAUSE,
     DECLARATION_TYPED,
     DECLARATION_UNTYPED,
     VARIABLE_DECLARATION,
     FUNCTION_DECLARATION,
     FUNCTION_ARGUMENT,
     TYPE,
-    RETURN_LEVEL,
-    ASSIGNMENT_LEVEL,
     ASSIGNMENT,
-    ATOM_LEVEL,
-    UNARY_LEVEL,
     UNARY,
+
+    // levels
+    RETURN_LEVEL,
+    SEMICOLON_LEVEL,
+    DECLARATION_LEVEL,
+    ASSIGNMENT_LEVEL,
+    UNARY_LEVEL,
+    ATOM_LEVEL,
     ;
 
     companion object {

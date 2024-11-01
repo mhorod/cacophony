@@ -1,199 +1,195 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package cacophony.parser
 
 import cacophony.grammars.Grammar
 import cacophony.grammars.produces
+import cacophony.parser.CacophonyGrammarSymbol.*
 import cacophony.utils.AlgebraicRegex.Companion.atomic
 
 class CacophonyGrammar {
     companion object {
-        val dummyGrammar0: Grammar<CacophonyGrammarSymbol> =
-            Grammar(
-                CacophonyGrammarSymbol.A,
-                listOf(CacophonyGrammarSymbol.A produces atomic(CacophonyGrammarSymbol.VARIABLE_IDENTIFIER)),
-            )
-
-        // the simple parens grammar.
-        val dummyGrammar1: Grammar<CacophonyGrammarSymbol> =
-            Grammar(
-                CacophonyGrammarSymbol.A,
-                listOf(
-                    CacophonyGrammarSymbol.A produces
-                        (
-                            (
-                                atomic(CacophonyGrammarSymbol.LEFT_PARENTHESIS) concat
-                                    atomic(CacophonyGrammarSymbol.A) concat
-                                    atomic(CacophonyGrammarSymbol.RIGHT_PARENTHESIS) concat
-                                    atomic(CacophonyGrammarSymbol.A)
-                            ) or atomic(CacophonyGrammarSymbol.VARIABLE_IDENTIFIER)
-                        ),
-                ),
-            )
         val grammar: Grammar<CacophonyGrammarSymbol> =
             Grammar(
-                CacophonyGrammarSymbol.START,
+                START,
                 listOf(
-                    CacophonyGrammarSymbol.START produces
+                    START produces
                         (
                             (
-                                atomic(CacophonyGrammarSymbol.RETURN_LEVEL) concat
+                                atomic(RETURN_LEVEL) concat
                                     (
-                                        atomic(CacophonyGrammarSymbol.SEMICOLON) concat
-                                            atomic(CacophonyGrammarSymbol.RETURN_LEVEL)
+                                        atomic(SEMICOLON) concat
+                                            atomic(RETURN_LEVEL)
                                     ).star()
                             ) or
                                 (
-                                    atomic(CacophonyGrammarSymbol.RETURN_LEVEL) concat
-                                        atomic(CacophonyGrammarSymbol.SEMICOLON)
+                                    atomic(RETURN_LEVEL) concat
+                                        atomic(SEMICOLON)
                                 ).star()
                         ),
-                    CacophonyGrammarSymbol.RETURN_LEVEL produces
+                    RETURN_LEVEL produces
                         (
-                            atomic(CacophonyGrammarSymbol.DECLARATION_LEVEL) or
+                            atomic(DECLARATION_LEVEL) or
                                 (
-                                    atomic(CacophonyGrammarSymbol.KEYWORD_RETURN)
-                                        concat atomic(CacophonyGrammarSymbol.DECLARATION_LEVEL)
+                                    atomic(KEYWORD_RETURN)
+                                        concat atomic(DECLARATION_LEVEL)
                                 )
                         ),
-                    CacophonyGrammarSymbol.DECLARATION_LEVEL produces
+//                    FUNCTION_CALL produces (
+//                        atomic(VARIABLE_IDENTIFIER) concat
+//                            (atomic(LEFT_BRACKET) concat atomic(RIGHT_BRACKET)) or
+//                            (atomic(LEFT_BRACKET) concat atomic(ASSIGNMENT_LEVEL) concat atomic(RIGHT_BRACKET))
+//                    ),
+                    WHILE_CLAUSE produces (
+                        atomic(KEYWORD_WHILE) concat atomic(ASSIGNMENT_LEVEL) concat atomic(KEYWORD_DO) concat atomic(ASSIGNMENT_LEVEL)
+                    ),
+                    IF_CLAUSE produces (
+                        (atomic(KEYWORD_IF) concat atomic(ASSIGNMENT_LEVEL) concat atomic(KEYWORD_THEN) concat atomic(ASSIGNMENT_LEVEL))
+                            or
+                            (
+                                atomic(KEYWORD_IF) concat atomic(ASSIGNMENT_LEVEL) concat atomic(KEYWORD_THEN) concat
+                                    atomic(ASSIGNMENT_LEVEL) concat
+                                    atomic(KEYWORD_ELSE) concat
+                                    atomic(ASSIGNMENT_LEVEL)
+                            )
+                    ),
+                    DECLARATION_LEVEL produces
                         (
-                            atomic(CacophonyGrammarSymbol.ASSIGNMENT_LEVEL) or
+                            atomic(ASSIGNMENT_LEVEL) or
                                 (
-                                    atomic(CacophonyGrammarSymbol.KEYWORD_LET) concat
-                                        atomic(CacophonyGrammarSymbol.VARIABLE_IDENTIFIER) concat
+                                    atomic(KEYWORD_LET) concat
+                                        atomic(VARIABLE_IDENTIFIER) concat
                                         (
-                                            atomic(CacophonyGrammarSymbol.DECLARATION_TYPED)
+                                            atomic(DECLARATION_TYPED)
                                                 or
-                                                atomic(CacophonyGrammarSymbol.DECLARATION_UNTYPED)
+                                                atomic(DECLARATION_UNTYPED)
                                         )
                                 )
                         ),
-                    CacophonyGrammarSymbol.DECLARATION_TYPED produces
+                    DECLARATION_TYPED produces
                         (
-                            atomic(CacophonyGrammarSymbol.COLON)
+                            atomic(COLON)
                                 concat
-                                atomic(CacophonyGrammarSymbol.TYPE)
-                                concat atomic(CacophonyGrammarSymbol.ASSIGNMENT)
+                                atomic(TYPE)
+                                concat atomic(ASSIGNMENT)
                                 concat (
                                     atomic(
-                                        CacophonyGrammarSymbol.VARIABLE_DECLARATION,
-                                    ) or atomic(CacophonyGrammarSymbol.FUNCTION_DECLARATION)
+                                        VARIABLE_DECLARATION,
+                                    ) or atomic(FUNCTION_DECLARATION)
                                 )
                         ),
-                    CacophonyGrammarSymbol.DECLARATION_UNTYPED produces
+                    DECLARATION_UNTYPED produces
                         (
-                            atomic(CacophonyGrammarSymbol.ASSIGNMENT) concat (
+                            atomic(ASSIGNMENT) concat (
                                 atomic(
-                                    CacophonyGrammarSymbol.VARIABLE_DECLARATION,
-                                ) or atomic(CacophonyGrammarSymbol.FUNCTION_DECLARATION)
+                                    VARIABLE_DECLARATION,
+                                ) or atomic(FUNCTION_DECLARATION)
                             )
 
                         ),
-                    CacophonyGrammarSymbol.VARIABLE_DECLARATION produces
+                    VARIABLE_DECLARATION produces
                         (
-                            atomic(CacophonyGrammarSymbol.ASSIGNMENT_LEVEL)
+                            atomic(ASSIGNMENT_LEVEL)
                         ),
-                    CacophonyGrammarSymbol.FUNCTION_DECLARATION produces
+                    FUNCTION_DECLARATION produces
                         (
-                            (
-                                atomic(CacophonyGrammarSymbol.LEFT_BRACKET)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.RIGHT_BRACKET)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.ARROW)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.TYPE)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.DOUBLE_ARROW)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.RETURN_LEVEL)
-                            ) or (
-                                atomic(CacophonyGrammarSymbol.ASSIGNMENT)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.LEFT_BRACKET)
-                                    concat
-                                    (
-                                        atomic(CacophonyGrammarSymbol.FUNCTION_ARGUMENT) concat
-                                            (
-                                                atomic(CacophonyGrammarSymbol.COMMA) concat
-                                                    atomic(CacophonyGrammarSymbol.FUNCTION_ARGUMENT)
-                                            ).star()
-                                    )
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.RIGHT_BRACKET)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.ARROW)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.TYPE)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.DOUBLE_ARROW)
-                                    concat
-                                    atomic(CacophonyGrammarSymbol.RETURN_LEVEL)
-                            )
-                        ),
-                    CacophonyGrammarSymbol.TYPE produces
-                        (
-                            atomic(CacophonyGrammarSymbol.TYPE_IDENTIFIER) or
+                            atomic(LEFT_BRACKET)
+                                concat
                                 (
-                                    atomic(CacophonyGrammarSymbol.LEFT_BRACKET) concat
+                                    (
+                                        atomic(FUNCTION_ARGUMENT) concat
+                                            (
+                                                atomic(COMMA) concat
+                                                    atomic(FUNCTION_ARGUMENT)
+                                            ).star()
+                                            concat
+                                            atomic(RIGHT_BRACKET)
+                                    )
+                                        or atomic(RIGHT_BRACKET)
+                                )
+                                concat
+                                atomic(ARROW)
+                                concat
+                                atomic(TYPE)
+                                concat
+                                atomic(DOUBLE_ARROW)
+                                concat
+                                (
+                                    atomic(RETURN_LEVEL) or
+                                        (atomic(LEFT_PARENTHESIS) concat atomic(RETURN_LEVEL) concat atomic(RIGHT_PARENTHESIS)) or
+                                        (atomic(LEFT_PARENTHESIS) concat atomic(RIGHT_PARENTHESIS))
+                                )
+                        ),
+                    FUNCTION_ARGUMENT produces (
+                        atomic(VARIABLE_IDENTIFIER) concat atomic(COLON) concat atomic(TYPE)
+                    ),
+                    TYPE produces
+                        (
+                            atomic(TYPE_IDENTIFIER) or
+                                (
+                                    atomic(LEFT_BRACKET) concat
                                         (
-                                            atomic(CacophonyGrammarSymbol.TYPE) concat
+                                            atomic(TYPE) concat
                                                 (
-                                                    atomic(CacophonyGrammarSymbol.COMMA) concat
-                                                        atomic(CacophonyGrammarSymbol.TYPE)
+                                                    atomic(COMMA) concat
+                                                        atomic(TYPE)
                                                 ).star()
                                         ) concat
-                                        atomic(CacophonyGrammarSymbol.RIGHT_BRACKET) concat
-                                        atomic(CacophonyGrammarSymbol.ARROW) concat
-                                        atomic(CacophonyGrammarSymbol.TYPE)
+                                        atomic(RIGHT_BRACKET) concat
+                                        atomic(ARROW) concat
+                                        atomic(TYPE)
                                 ) or
                                 (
-                                    atomic(CacophonyGrammarSymbol.LEFT_BRACKET) concat
-                                        atomic(CacophonyGrammarSymbol.RIGHT_BRACKET) concat
-                                        atomic(CacophonyGrammarSymbol.ARROW) concat
-                                        atomic(CacophonyGrammarSymbol.TYPE)
+                                    atomic(LEFT_BRACKET) concat
+                                        atomic(RIGHT_BRACKET) concat
+                                        atomic(ARROW) concat
+                                        atomic(TYPE)
                                 )
                         ),
-                    CacophonyGrammarSymbol.ASSIGNMENT_LEVEL produces
+                    ASSIGNMENT_LEVEL produces
                         (
-                            atomic(CacophonyGrammarSymbol.UNARY_LEVEL) or
+                            atomic(FUNCTION_CALL) or
+                                atomic(WHILE_CLAUSE) or
+                                atomic(IF_CLAUSE) or
+                                atomic(UNARY_LEVEL) or
                                 (
-                                    atomic(CacophonyGrammarSymbol.UNARY_LEVEL) concat
-                                        atomic(CacophonyGrammarSymbol.ASSIGNMENT) concat
-                                        atomic(CacophonyGrammarSymbol.ASSIGNMENT_LEVEL)
+                                    atomic(UNARY_LEVEL) concat
+                                        atomic(ASSIGNMENT) concat
+                                        atomic(ASSIGNMENT_LEVEL)
                                 )
                         ),
-                    CacophonyGrammarSymbol.ASSIGNMENT produces
+                    ASSIGNMENT produces
                         (
-                            atomic(CacophonyGrammarSymbol.OPERATOR_ASSIGNMENT) or
-                                atomic(CacophonyGrammarSymbol.OPERATOR_ADDITION_ASSIGNMENT) or
-                                atomic(CacophonyGrammarSymbol.OPERATOR_DIVISION_ASSIGNMENT) or
-                                atomic(CacophonyGrammarSymbol.OPERATOR_MODULO_ASSIGNMENT) or
-                                atomic(CacophonyGrammarSymbol.OPERATOR_MULTIPLICATION_ASSIGNMENT) or
-                                atomic(CacophonyGrammarSymbol.OPERATOR_SUBTRACTION_ASSIGNMENT)
+                            atomic(OPERATOR_ASSIGNMENT) or
+                                atomic(OPERATOR_ADDITION_ASSIGNMENT) or
+                                atomic(OPERATOR_DIVISION_ASSIGNMENT) or
+                                atomic(OPERATOR_MODULO_ASSIGNMENT) or
+                                atomic(OPERATOR_MULTIPLICATION_ASSIGNMENT) or
+                                atomic(OPERATOR_SUBTRACTION_ASSIGNMENT)
                         ),
-                    CacophonyGrammarSymbol.UNARY_LEVEL produces
+                    UNARY_LEVEL produces
                         (
-                            atomic(CacophonyGrammarSymbol.ATOM_LEVEL) or
+                            atomic(ATOM_LEVEL) or
                                 (
-                                    atomic(CacophonyGrammarSymbol.UNARY) concat
-                                        atomic(CacophonyGrammarSymbol.ATOM_LEVEL)
+                                    atomic(UNARY) concat
+                                        atomic(ATOM_LEVEL)
                                 )
 
                         ),
-                    CacophonyGrammarSymbol.UNARY produces
+                    UNARY produces
                         (
-                            atomic(CacophonyGrammarSymbol.OPERATOR_SUBTRACTION) or
+                            atomic(OPERATOR_SUBTRACTION) or
                                 (
-                                    atomic(CacophonyGrammarSymbol.OPERATOR_LOGICAL_NOT)
+                                    atomic(OPERATOR_LOGICAL_NOT)
                                 )
 
                         ),
-                    CacophonyGrammarSymbol.ATOM_LEVEL produces
+                    ATOM_LEVEL produces
                         (
-                            atomic(CacophonyGrammarSymbol.KEYWORD_BREAK) or
-                                atomic(CacophonyGrammarSymbol.VARIABLE_IDENTIFIER) or
-                                atomic(CacophonyGrammarSymbol.BOOL_LITERAL) or
-                                atomic(CacophonyGrammarSymbol.INT_LITERAL)
+                            atomic(KEYWORD_BREAK) or
+                                atomic(VARIABLE_IDENTIFIER) or
+                                atomic(BOOL_LITERAL) or
+                                atomic(INT_LITERAL)
                         ),
                 ),
             )
