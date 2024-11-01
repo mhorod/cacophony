@@ -1,6 +1,8 @@
 package cacophony.semantic.syntaxtree
 
 import cacophony.utils.Location
+import cacophony.utils.Tree
+import cacophony.utils.TreeLeaf
 
 typealias AST = Block
 
@@ -22,17 +24,21 @@ sealed class Type(
 // everything in cacophony is an expression
 sealed class Expression(
     val range: Pair<Location, Location>,
-)
+) : Tree
 
 // artificial instance, can be useful when calculating values of nested expressions
 class Empty(
     range: Pair<Location, Location>,
-) : Expression(range)
+) : Expression(range),
+    TreeLeaf
 
 class VariableUse(
     range: Pair<Location, Location>,
     val identifier: String,
-) : Expression(range)
+) : Expression(range),
+    TreeLeaf {
+    override fun toString() = identifier
+}
 
 sealed class Definition(
     range: Pair<Location, Location>,
@@ -43,7 +49,14 @@ sealed class Definition(
         identifier: String,
         val type: Type?,
         val expression: Expression,
-    ) : Definition(range, identifier)
+    ) : Definition(range, identifier),
+        Tree {
+        override fun toString() = "let $identifier${if (type == null) "" else ": $type"} "
+
+        override fun children() = listOf(expression)
+
+        override fun isLeaf() = false
+    }
 
     class FunctionDeclaration(
         range: Pair<Location, Location>,
@@ -52,20 +65,37 @@ sealed class Definition(
         val arguments: List<FunctionArgument>,
         val returnType: Type,
         val body: Expression,
-    ) : Definition(range, identifier)
+    ) : Definition(range, identifier),
+        Tree {
+        override fun toString() = "TODO"
+
+        override fun children() = listOf(body)
+
+        override fun isLeaf() = false
+    }
 
     class FunctionArgument(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type,
-    ) : Definition(range, identifier)
+    ) : Definition(range, identifier),
+        TreeLeaf {
+        override fun toString() = identifier
+    }
 }
 
 class FunctionCall(
     range: Pair<Location, Location>,
     val function: Expression,
     val arguments: List<Expression>,
-) : Expression(range)
+) : Expression(range),
+    Tree {
+    override fun toString() = "FunctionCall"
+
+    override fun children() = listOf(function) + arguments
+
+    override fun isLeaf() = false
+}
 
 sealed class Literal(
     range: Pair<Location, Location>,
@@ -73,19 +103,32 @@ sealed class Literal(
     class IntLiteral(
         range: Pair<Location, Location>,
         val value: Int,
-    ) : Literal(range)
+    ) : Literal(range),
+        TreeLeaf {
+        override fun toString() = value.toString()
+    }
 
     class BoolLiteral(
         range: Pair<Location, Location>,
         val value: Boolean,
-    ) : Literal(range)
+    ) : Literal(range),
+        TreeLeaf {
+        override fun toString() = value.toString()
+    }
 }
 
 // expression in parentheses and whole program
 class Block(
     range: Pair<Location, Location>,
     val expressions: List<Expression>,
-) : Expression(range)
+) : Expression(range),
+    Tree {
+    override fun toString() = "BLOCK"
+
+    override fun children() = expressions
+
+    override fun isLeaf() = false
+}
 
 sealed class Statement(
     range: Pair<Location, Location>,
@@ -95,22 +138,44 @@ sealed class Statement(
         val testExpression: Expression,
         val doExpression: Expression,
         val elseExpression: Expression?,
-    ) : Statement(range)
+    ) : Statement(range),
+        Tree {
+        override fun toString() = "IfElseStmnt"
+
+        override fun children() = listOfNotNull(testExpression, doExpression, elseExpression)
+
+        override fun isLeaf() = false
+    }
 
     class WhileStatement(
         range: Pair<Location, Location>,
         val testExpression: Expression,
         val doExpression: Expression,
-    ) : Statement(range)
+    ) : Statement(range),
+        Tree {
+        override fun toString() = "WhileStmnt"
+
+        override fun children() = listOf(testExpression, doExpression)
+
+        override fun isLeaf() = false
+    }
 
     class ReturnStatement(
         range: Pair<Location, Location>,
         val value: Expression,
-    ) : Statement(range)
+    ) : Statement(range),
+        Tree {
+        override fun toString() = "Return"
+
+        override fun children() = listOf(value)
+
+        override fun isLeaf() = false
+    }
 
     class BreakStatement(
         range: Pair<Location, Location>,
-    ) : Statement(range)
+    ) : Statement(range),
+        TreeLeaf
 }
 
 sealed class OperatorUnary(
@@ -120,12 +185,26 @@ sealed class OperatorUnary(
     class Negation(
         range: Pair<Location, Location>,
         expression: Expression,
-    ) : OperatorUnary(range, expression)
+    ) : OperatorUnary(range, expression),
+        Tree {
+        override fun toString() = "Negation"
+
+        override fun children() = listOf(expression)
+
+        override fun isLeaf() = false
+    }
 
     class Minus(
         range: Pair<Location, Location>,
         expression: Expression,
-    ) : OperatorUnary(range, expression)
+    ) : OperatorUnary(range, expression),
+        Tree {
+        override fun toString() = "Minus"
+
+        override fun children() = listOf(expression)
+
+        override fun isLeaf() = false
+    }
 }
 
 sealed class OperatorBinary(
@@ -133,6 +212,13 @@ sealed class OperatorBinary(
     val lhs: Expression,
     val rhs: Expression,
 ) : Expression(range) {
+    // TODO : do sth smarter
+    override fun toString() = "BinaryOperator"
+
+    override fun children() = listOf(lhs, rhs)
+
+    override fun isLeaf() = false
+
     class Multiplication(
         range: Pair<Location, Location>,
         lhs: Expression,

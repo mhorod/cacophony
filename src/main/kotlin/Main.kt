@@ -4,6 +4,7 @@ import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammar
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.LLOneParser
+import cacophony.semantic.generateAST
 import cacophony.utils.CompileErrorException
 import cacophony.utils.FileInput
 import cacophony.utils.SimpleDiagnostics
@@ -36,6 +37,7 @@ fun main(args: Array<String>) {
         for (error in diagnostics.getErrors()) {
             println(error.message)
         }
+        generateAST(parseTree, diagnostics)
     } catch (t: CompileErrorException) {
         println("Wyjebało się")
         for (error in diagnostics.getErrors()) {
