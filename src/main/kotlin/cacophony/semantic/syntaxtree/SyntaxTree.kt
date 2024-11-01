@@ -152,6 +152,7 @@ sealed class Definition(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type.Basic?,
+        val value: Expression,
     ) : Definition(range, identifier) {
         override fun isEquivalent(other: Expression?): Boolean =
             super.isEquivalent(other) &&
