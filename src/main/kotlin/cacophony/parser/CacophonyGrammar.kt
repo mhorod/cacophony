@@ -44,9 +44,9 @@ class CacophonyGrammar {
                     STATEMENT_LEVEL produces
                         (
                             atomic(DECLARATION_LEVEL) or
-                                atomic(RETURN_STATEMENT) // or
-                            // atomic(WHILE_CLAUSE) // or
-                            // atomic(IF_CLAUSE)
+                                atomic(RETURN_STATEMENT) or
+                                atomic(WHILE_CLAUSE) or
+                                atomic(IF_CLAUSE)
                         ),
                     RETURN_STATEMENT produces
                         (
@@ -58,19 +58,19 @@ class CacophonyGrammar {
 //                            (atomic(LEFT_BRACKET) concat atomic(RIGHT_BRACKET)) or
 //                            (atomic(LEFT_BRACKET) concat atomic(STATEMENT_LEVEL) concat atomic(RIGHT_BRACKET))
 //                    ),
-//                    WHILE_CLAUSE produces (
-//                        atomic(KEYWORD_WHILE) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_DO) concat atomic(STATEMENT_LEVEL)
-//                    ),
-//                    IF_CLAUSE produces (
-//                      (atomic(KEYWORD_IF) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_THEN) concat atomic(STATEMENT_LEVEL))
-//                          or
-//                          (
-//                              atomic(KEYWORD_IF) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_THEN) concat
-//                                  atomic(STATEMENT_LEVEL) concat
-//                                  atomic(KEYWORD_ELSE) concat
-//                                  atomic(STATEMENT_LEVEL)
-//                          )
-//                    ),
+                    WHILE_CLAUSE produces (
+                        atomic(KEYWORD_WHILE) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_DO) concat atomic(STATEMENT_LEVEL)
+                    ),
+                    IF_CLAUSE produces (
+                        (atomic(KEYWORD_IF) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_THEN) concat atomic(STATEMENT_LEVEL))
+                            or
+                            (
+                                atomic(KEYWORD_IF) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_THEN) concat
+                                    atomic(STATEMENT_LEVEL) concat
+                                    atomic(KEYWORD_ELSE) concat
+                                    atomic(STATEMENT_LEVEL)
+                            )
+                    ),
                     DECLARATION_LEVEL produces
                         (
                             atomic(ASSIGNMENT_LEVEL) or
@@ -162,10 +162,7 @@ class CacophonyGrammar {
                         ),
                     ASSIGNMENT_LEVEL produces
                         (
-                            atomic(FUNCTION_CALL) or
-                                atomic(WHILE_CLAUSE) or
-                                atomic(IF_CLAUSE) or
-                                atomic(UNARY_LEVEL) or
+                            atomic(UNARY_LEVEL) or
                                 (
                                     atomic(UNARY_LEVEL) concat
                                         atomic(ASSIGNMENT) concat
@@ -200,7 +197,8 @@ class CacophonyGrammar {
                         ),
                     ATOM_LEVEL produces
                         (
-                            atomic(KEYWORD_BREAK) or
+                            atomic(FUNCTION_CALL) or
+                                atomic(KEYWORD_BREAK) or
                                 atomic(VARIABLE_IDENTIFIER) or
                                 atomic(BOOL_LITERAL) or
                                 atomic(INT_LITERAL) or
