@@ -153,12 +153,7 @@ sealed class Definition(
         identifier: String,
         val type: Type.Basic?,
         val value: Expression,
-    ) : Definition(range, identifier) {
-        override fun isEquivalent(other: Expression?): Boolean =
-            super.isEquivalent(other) &&
-                other is VariableDeclaration &&
-                areEquivalentTypes(type, other.type)
-    }
+    ) : Definition(range, identifier)
 
     class FunctionDeclaration(
         range: Pair<Location, Location>,
@@ -167,15 +162,7 @@ sealed class Definition(
         val arguments: List<FunctionArgument>,
         val returnType: Type,
         val body: Expression,
-    ) : Definition(range, identifier) {
-        override fun isEquivalent(other: Expression?): Boolean =
-            super.isEquivalent(other) &&
-                other is FunctionDeclaration &&
-                areEquivalentTypes(type, other.type) &&
-                areEquivalentExpressions(arguments, other.arguments) &&
-                areEquivalentTypes(returnType, other.returnType) &&
-                areEquivalentExpressions(body, other.body)
-    }
+    ) : Definition(range, identifier)
 
     class FunctionArgument(
         range: Pair<Location, Location>,
