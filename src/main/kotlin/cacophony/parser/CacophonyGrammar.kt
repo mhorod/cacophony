@@ -9,20 +9,6 @@ import cacophony.utils.AlgebraicRegex.Companion.atomic
 
 class CacophonyGrammar {
     companion object {
-        val dummyGrammar1: Grammar<CacophonyGrammarSymbol> =
-            Grammar(
-                CacophonyGrammarSymbol.START,
-                listOf(
-                    CacophonyGrammarSymbol.START produces
-                        (
-                            (
-                                atomic(CacophonyGrammarSymbol.LEFT_PARENTHESIS) concat
-                                    atomic(CacophonyGrammarSymbol.START) concat
-                                    atomic(CacophonyGrammarSymbol.RIGHT_PARENTHESIS)
-                            ) or atomic(CacophonyGrammarSymbol.VARIABLE_IDENTIFIER)
-                        ),
-                ),
-            )
         val grammar: Grammar<CacophonyGrammarSymbol> =
             Grammar(
                 START,

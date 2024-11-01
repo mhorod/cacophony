@@ -1,9 +1,9 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package cacophony.semantic.syntaxtree
 
 import cacophony.utils.Location
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class ExpressionTest {
@@ -43,10 +43,11 @@ internal class ExpressionTest {
     fun `Nullable fields`() {
         val locBegin = Location(1)
         val locEnd = Location(3)
-        var expression = Definition.VariableDeclaration(Pair(locBegin, locEnd), "index", null)
+        val subExpr = Literal.IntLiteral(Pair(locEnd, locEnd), 7)
+        var expression = Definition.VariableDeclaration(Pair(locBegin, locEnd), "index", null, subExpr)
         assertNull(expression.type)
         val typeExpression = Type.Basic(Pair(locBegin, locEnd), "Int")
-        expression = Definition.VariableDeclaration(Pair(locBegin, locEnd), "index", typeExpression)
+        expression = Definition.VariableDeclaration(Pair(locBegin, locEnd), "index", typeExpression, subExpr)
         assertNotNull(expression.type)
     }
 }

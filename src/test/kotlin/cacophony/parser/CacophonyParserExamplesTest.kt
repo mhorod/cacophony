@@ -1,4 +1,4 @@
-package cacophony.lexer
+package cacophony.parser
 
 import cacophony.examples.AssertNoErrors
 import cacophony.examples.ExampleRunner
@@ -8,9 +8,7 @@ import cacophony.examples.loadIncorrectExamples
 import cacophony.examples.runExample
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
-import cacophony.parser.CacophonyGrammar
-import cacophony.parser.CacophonyGrammarSymbol
-import cacophony.parser.LLOneParser
+import cacophony.lexer.CacophonyLexer
 import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 import org.junit.jupiter.params.ParameterizedTest
