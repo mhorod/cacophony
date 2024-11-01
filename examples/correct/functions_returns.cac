@@ -33,7 +33,7 @@ let clean_code = [x: Bool, y: Bool] -> Int => (
     then
         return 5
     else
-        return 6
+        return 6;
     return 7;
 );
 clean_code[false, false]; # `3`

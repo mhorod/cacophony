@@ -30,44 +30,42 @@ class CacophonyGrammar {
                     START produces
                         (
                             (
-                                atomic(STATEMENT_LEVEL) concat
+                                atomic(DECLARATION_LEVEL) concat
                                     (
                                         atomic(SEMICOLON) concat
-                                            atomic(STATEMENT_LEVEL)
+                                            atomic(DECLARATION_LEVEL)
                                     ).star()
                             ) or
                                 (
-                                    atomic(STATEMENT_LEVEL) concat
+                                    atomic(DECLARATION_LEVEL) concat
                                         atomic(SEMICOLON)
                                 ).star()
-                        ),
-                    STATEMENT_LEVEL produces
-                        (
-                            atomic(DECLARATION_LEVEL) or
-                                atomic(RETURN_STATEMENT) or
-                                atomic(WHILE_CLAUSE) or
-                                atomic(IF_CLAUSE)
                         ),
                     RETURN_STATEMENT produces
                         (
                             atomic(KEYWORD_RETURN)
-                                concat atomic(STATEMENT_LEVEL)
+                                concat atomic(DECLARATION_LEVEL)
                         ),
                     FUNCTION_CALL produces (
                         (atomic(LEFT_BRACKET) concat atomic(RIGHT_BRACKET)) or
-                            (atomic(LEFT_BRACKET) concat atomic(STATEMENT_LEVEL) concat atomic(RIGHT_BRACKET))
+                            (
+                                atomic(LEFT_BRACKET) concat
+                                    atomic(DECLARATION_LEVEL) concat
+                                    (atomic(COMMA) concat atomic(DECLARATION_LEVEL)).star() concat
+                                    atomic(RIGHT_BRACKET)
+                            )
                     ),
                     WHILE_CLAUSE produces (
-                        atomic(KEYWORD_WHILE) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_DO) concat atomic(STATEMENT_LEVEL)
+                        atomic(KEYWORD_WHILE) concat atomic(DECLARATION_LEVEL) concat atomic(KEYWORD_DO) concat atomic(DECLARATION_LEVEL)
                     ),
                     IF_CLAUSE produces (
-                        (atomic(KEYWORD_IF) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_THEN) concat atomic(STATEMENT_LEVEL))
+                        (atomic(KEYWORD_IF) concat atomic(DECLARATION_LEVEL) concat atomic(KEYWORD_THEN) concat atomic(DECLARATION_LEVEL))
                             or
                             (
-                                atomic(KEYWORD_IF) concat atomic(STATEMENT_LEVEL) concat atomic(KEYWORD_THEN) concat
-                                    atomic(STATEMENT_LEVEL) concat
+                                atomic(KEYWORD_IF) concat atomic(DECLARATION_LEVEL) concat atomic(KEYWORD_THEN) concat
+                                    atomic(DECLARATION_LEVEL) concat
                                     atomic(KEYWORD_ELSE) concat
-                                    atomic(STATEMENT_LEVEL)
+                                    atomic(DECLARATION_LEVEL)
                             )
                     ),
                     DECLARATION_LEVEL produces
@@ -106,7 +104,7 @@ class CacophonyGrammar {
                         ),
                     VARIABLE_DECLARATION produces
                         (
-                            atomic(STATEMENT_LEVEL)
+                            atomic(DECLARATION_LEVEL)
                         ),
                     FUNCTION_DECLARATION produces
                         (
@@ -131,7 +129,7 @@ class CacophonyGrammar {
                                 concat
                                 atomic(DOUBLE_ARROW)
                                 concat
-                                atomic(STATEMENT_LEVEL)
+                                atomic(DECLARATION_LEVEL)
                         ),
                     FUNCTION_ARGUMENT produces (
                         atomic(VARIABLE_IDENTIFIER) concat atomic(COLON) concat atomic(TYPE)
@@ -161,25 +159,81 @@ class CacophonyGrammar {
                         ),
                     ASSIGNMENT_LEVEL produces
                         (
-                            atomic(UNARY_LEVEL) or
+                            atomic(LOGICAL_OPERATOR_LEVEL) or
                                 (
-                                    atomic(UNARY_LEVEL) concat
-                                        atomic(ASSIGNMENT) concat
+                                    atomic(LOGICAL_OPERATOR_LEVEL) concat
+                                        (
+                                            atomic(OPERATOR_ASSIGNMENT) or
+                                                atomic(OPERATOR_ADDITION_ASSIGNMENT) or
+                                                atomic(OPERATOR_DIVISION_ASSIGNMENT) or
+                                                atomic(OPERATOR_MODULO_ASSIGNMENT) or
+                                                atomic(OPERATOR_MULTIPLICATION_ASSIGNMENT) or
+                                                atomic(OPERATOR_SUBTRACTION_ASSIGNMENT)
+                                        ) concat
                                         atomic(ASSIGNMENT_LEVEL)
                                 )
                         ),
-                    ASSIGNMENT produces
+                    LOGICAL_OPERATOR_LEVEL produces
                         (
-                            atomic(OPERATOR_ASSIGNMENT) or
-                                atomic(OPERATOR_ADDITION_ASSIGNMENT) or
-                                atomic(OPERATOR_DIVISION_ASSIGNMENT) or
-                                atomic(OPERATOR_MODULO_ASSIGNMENT) or
-                                atomic(OPERATOR_MULTIPLICATION_ASSIGNMENT) or
-                                atomic(OPERATOR_SUBTRACTION_ASSIGNMENT)
+                            atomic(COMPARATOR_LEVEL) concat
+                                (
+                                    (
+                                        atomic(OPERATOR_LOGICAL_OR) or
+                                            atomic(OPERATOR_LOGICAL_AND)
+                                    ) concat
+                                        atomic(COMPARATOR_LEVEL)
+                                ).star()
+                        ),
+                    COMPARATOR_LEVEL produces
+                        (
+                            atomic(EQUALITY_LEVEL) concat
+                                (
+                                    (
+                                        atomic(OPERATOR_LESS) or
+                                            atomic(OPERATOR_LESS_EQUAL) or
+                                            atomic(OPERATOR_GREATER) or
+                                            atomic(OPERATOR_GREATER_EQUAL)
+                                    ) concat
+                                        atomic(EQUALITY_LEVEL)
+                                ).star()
+                        ),
+                    EQUALITY_LEVEL produces
+                        (
+                            atomic(ADDITION_LEVEL) concat
+                                (
+                                    (
+                                        atomic(OPERATOR_EQUALS) or
+                                            atomic(OPERATOR_NOT_EQUALS)
+                                    ) concat
+                                        atomic(ADDITION_LEVEL)
+                                ).star()
+                        ),
+                    ADDITION_LEVEL produces
+                        (
+                            atomic(MULTIPLICATION_LEVEL) concat
+                                (
+                                    (
+                                        atomic(OPERATOR_ADDITION) or
+                                            atomic(OPERATOR_SUBTRACTION)
+                                    ) concat
+                                        atomic(MULTIPLICATION_LEVEL)
+                                ).star()
+                        ),
+                    MULTIPLICATION_LEVEL produces
+                        (
+                            atomic(UNARY_LEVEL) concat
+                                (
+                                    (
+                                        atomic(OPERATOR_MULTIPLICATION) or
+                                            atomic(OPERATOR_DIVISION) or
+                                            atomic(OPERATOR_MODULO)
+                                    ) concat
+                                        atomic(UNARY_LEVEL)
+                                ).star()
                         ),
                     UNARY_LEVEL produces
                         (
-                            atomic(CALL_LEVEL) or
+                            atomic(STATEMENT_LEVEL) or
                                 (
                                     atomic(UNARY) concat
                                         atomic(ATOM_LEVEL)
@@ -193,6 +247,13 @@ class CacophonyGrammar {
                                     atomic(OPERATOR_LOGICAL_NOT)
                                 )
 
+                        ),
+                    STATEMENT_LEVEL produces
+                        (
+                            atomic(CALL_LEVEL) or
+                                atomic(RETURN_STATEMENT) or
+                                atomic(WHILE_CLAUSE) or
+                                atomic(IF_CLAUSE)
                         ),
                     CALL_LEVEL produces
                         (
@@ -215,14 +276,14 @@ class CacophonyGrammar {
                         (
                             atomic(LEFT_PARENTHESIS) concat (
                                 (
-                                    atomic(STATEMENT_LEVEL) concat
+                                    atomic(DECLARATION_LEVEL) concat
                                         (
                                             atomic(SEMICOLON) concat
-                                                atomic(STATEMENT_LEVEL)
+                                                atomic(DECLARATION_LEVEL)
                                         ).star()
                                 ) or
                                     (
-                                        atomic(STATEMENT_LEVEL) concat
+                                        atomic(DECLARATION_LEVEL) concat
                                             atomic(SEMICOLON)
                                     ).star()
                             ) concat atomic(RIGHT_PARENTHESIS)
