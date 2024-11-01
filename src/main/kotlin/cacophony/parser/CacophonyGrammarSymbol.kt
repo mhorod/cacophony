@@ -57,7 +57,7 @@ enum class CacophonyGrammarSymbol(
     INT_LITERAL(Literal.IntLiteral::class),
     BOOL_LITERAL(Literal.BoolLiteral::class),
     TYPE_IDENTIFIER(Type.Basic::class),
-    VARIABLE_IDENTIFIER(null),
+    VARIABLE_IDENTIFIER(VariableUse::class),
 
     // others
     START(Block::class),

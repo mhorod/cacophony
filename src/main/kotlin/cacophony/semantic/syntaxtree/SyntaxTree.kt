@@ -12,13 +12,17 @@ sealed class Type(
     class Basic(
         range: Pair<Location, Location>,
         val identifier: String,
-    ) : Type(range)
+    ) : Type(range) {
+        override fun toString() = identifier
+    }
 
     class Functional(
         range: Pair<Location, Location>,
         val argumentsType: List<Type>,
         val returnType: Type,
-    ) : Type(range)
+    ) : Type(range) {
+        override fun toString() = "[${argumentsType.joinToString(", ")}] => $returnType"
+    }
 }
 
 // everything in cacophony is an expression
@@ -67,7 +71,7 @@ sealed class Definition(
         val body: Expression,
     ) : Definition(range, identifier),
         Tree {
-        override fun toString() = "TODO"
+        override fun toString() = "let $identifier: $type = [${arguments.joinToString(", ")}] -> $returnType"
 
         override fun children() = listOf(body)
 
@@ -80,7 +84,7 @@ sealed class Definition(
         val type: Type,
     ) : Definition(range, identifier),
         TreeLeaf {
-        override fun toString() = identifier
+        override fun toString() = "$identifier: $type"
     }
 }
 
