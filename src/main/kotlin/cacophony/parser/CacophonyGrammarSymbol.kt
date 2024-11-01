@@ -70,7 +70,10 @@ enum class CacophonyGrammarSymbol {
     UNARY,
 
     // levels
-    RETURN_LEVEL,
+    BLOCK,
+    STATEMENT_LEVEL,
+    STATEMENT,
+    RETURN_STATEMENT,
     SEMICOLON_LEVEL,
     DECLARATION_LEVEL,
     ASSIGNMENT_LEVEL,

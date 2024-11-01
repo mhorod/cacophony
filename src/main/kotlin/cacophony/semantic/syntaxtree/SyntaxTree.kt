@@ -41,15 +41,17 @@ sealed class Definition(
     class VariableDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
-        val type: Type.Basic?,
+        val type: Type?,
+        val expression: Expression,
     ) : Definition(range, identifier)
 
     class FunctionDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
-        val type: Type.Functional?,
+        val type: Type?,
         val arguments: List<FunctionArgument>,
         val returnType: Type,
+        val body: Expression,
     ) : Definition(range, identifier)
 
     class FunctionArgument(
