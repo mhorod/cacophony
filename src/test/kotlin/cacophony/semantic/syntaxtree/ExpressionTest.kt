@@ -69,10 +69,17 @@ internal class ExpressionTest {
     fun `Nullable fields`() {
         val locBegin = Location(1)
         val locEnd = Location(3)
-        var expression = Definition.VariableDeclaration(Pair(locBegin, locEnd), "index", null)
+        var expression =
+            Definition.VariableDeclaration(Pair(locBegin, locEnd), "index", null, Empty(Pair(locBegin, locEnd)))
         assertNull(expression.type)
         val typeExpression = Type.Basic(Pair(locBegin, locEnd), "Int")
-        expression = Definition.VariableDeclaration(Pair(locBegin, locEnd), "index", typeExpression)
+        expression =
+            Definition.VariableDeclaration(
+                Pair(locBegin, locEnd),
+                "index",
+                typeExpression,
+                Empty(Pair(locBegin, locEnd)),
+            )
         assertNotNull(expression.type)
     }
 
