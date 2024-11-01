@@ -23,13 +23,11 @@ fun generateCallGraph(
     ast: AST,
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
-    types: TypeCheckingResult,
-): CallGraph = getProperTransitiveClosure(CallGraphProvider(diagnostics, resolvedVariables, types).generateDirectCallGraph(ast, null))
+): CallGraph = getProperTransitiveClosure(CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null))
 
 private class CallGraphProvider(
     private val diagnostics: Diagnostics,
     private val resolvedVariables: ResolvedVariables,
-    private val types: TypeCheckingResult,
 ) {
     public fun generateDirectCallGraph(
         node: Expression?,
@@ -72,10 +70,7 @@ private class CallGraphProvider(
         is VariableUse -> {
             when (val decl = resolvedVariables[fn]) {
                 is Definition.FunctionDeclaration ->
-                    currentFn
-                        ?.let {
-                            mapOf(it to setOf(decl))
-                        }.orEmpty()
+                    currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
                 is Definition -> throw FunctionCallError("Cannot call non-function ${decl.identifier}")
                 null -> throw FunctionCallError("Identifier ${fn.identifier} does not exist")
             }
@@ -87,6 +82,6 @@ private class CallGraphProvider(
 private fun <K, V> merge(
     to: MutableMap<K, MutableSet<V>>,
     vararg other: Map<K, Set<V>>,
-) = other.forEach { from -> from.forEach { (k, v) -> to.getOrPut(k) { mutableSetOf() } union v } }.let { to }
+) = other.forEach { from -> from.forEach { (k, v) -> to.getOrPut(k) { mutableSetOf() } += v } }.let { to }
 
 private fun <K, V> merge(vararg maps: Map<K, Set<V>>) = merge(mutableMapOf(), *maps)
