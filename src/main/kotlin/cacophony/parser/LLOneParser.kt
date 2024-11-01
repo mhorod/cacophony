@@ -153,6 +153,10 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
             return ParseTree.Branch(range, dfa.result(state)!!, children)
         }
 
-        return topDownParse(startSymbol)
+        return topDownParse(startSymbol).also {
+            if (!eof) {
+                diagnostics.report("Unable to continue parsing symbol ${terminal.token.category}", terminal.range)
+            }
+        }
     }
 }
