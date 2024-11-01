@@ -152,11 +152,13 @@ sealed class Definition(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type.Basic?,
+        val initExpression: Expression,
     ) : Definition(range, identifier) {
         override fun isEquivalent(other: Expression?): Boolean =
             super.isEquivalent(other) &&
                 other is VariableDeclaration &&
-                areEquivalentTypes(type, other.type)
+                areEquivalentTypes(type, other.type) &&
+                areEquivalentExpressions(initExpression, other.initExpression)
     }
 
     class FunctionDeclaration(
