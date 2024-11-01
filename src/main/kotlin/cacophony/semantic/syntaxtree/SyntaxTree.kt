@@ -4,6 +4,8 @@ import cacophony.utils.Location
 
 sealed interface ASTNode
 
+sealed interface LeafExpression
+
 typealias AST = Block
 
 sealed class Type(
@@ -29,12 +31,14 @@ sealed class Expression(
 // artificial instance, can be useful when calculating values of nested expressions
 class Empty(
     range: Pair<Location, Location>,
-) : Expression(range)
+) : Expression(range),
+    LeafExpression
 
 class VariableUse(
     range: Pair<Location, Location>,
     val identifier: String,
-) : Expression(range)
+) : Expression(range),
+    LeafExpression
 
 sealed class Definition(
     range: Pair<Location, Location>,
@@ -44,7 +48,8 @@ sealed class Definition(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type.Basic?,
-    ) : Definition(range, identifier)
+    ) : Definition(range, identifier),
+        LeafExpression
 
     class FunctionDeclaration(
         range: Pair<Location, Location>,
@@ -59,7 +64,8 @@ sealed class Definition(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type,
-    ) : Definition(range, identifier)
+    ) : Definition(range, identifier),
+        LeafExpression
 }
 
 class FunctionCall(
@@ -70,7 +76,8 @@ class FunctionCall(
 
 sealed class Literal(
     range: Pair<Location, Location>,
-) : Expression(range) {
+) : Expression(range),
+    LeafExpression {
     class IntLiteral(
         range: Pair<Location, Location>,
         val value: Int,
@@ -111,7 +118,8 @@ sealed class Statement(
 
     class BreakStatement(
         range: Pair<Location, Location>,
-    ) : Statement(range)
+    ) : Statement(range),
+        LeafExpression
 }
 
 sealed class OperatorUnary(
