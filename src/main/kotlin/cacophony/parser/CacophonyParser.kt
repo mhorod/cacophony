@@ -3,6 +3,7 @@ package cacophony.parser
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.utils.Diagnostics
+import cacophony.utils.Location
 
 class CacophonyParser : Parser<CacophonyGrammarSymbol> {
     private val innerParser: LLOneParser<Int, CacophonyGrammarSymbol>
@@ -16,7 +17,7 @@ class CacophonyParser : Parser<CacophonyGrammarSymbol> {
         terminals: List<ParseTree.Leaf<CacophonyGrammarSymbol>>,
         diagnostics: Diagnostics,
     ): ParseTree<CacophonyGrammarSymbol> {
-        TODO("Not yet implemented")
+        return terminals[0]
     }
 
     companion object {
