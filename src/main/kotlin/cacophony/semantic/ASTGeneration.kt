@@ -161,10 +161,14 @@ private fun generateASTInternal(
                 val identifier = parseTree.children[0] as ParseTree.Leaf
                 val isDeclarationTyped = parseTree.children[1] as ParseTree.Branch
                 var type: Type? = null
+                val declarationPosition: Int
                 if (getGrammarSymbol(isDeclarationTyped) == DECLARATION_TYPED) {
                     type = constructType(isDeclarationTyped.children[0], diagnostics)
+                    declarationPosition = 2
+                } else {
+                    declarationPosition = 1
                 }
-                var declarationKind = isDeclarationTyped.children[1]
+                var declarationKind = isDeclarationTyped.children[declarationPosition]
                 if (getGrammarSymbol(declarationKind) == FUNCTION_DECLARATION) {
                     declarationKind = declarationKind as ParseTree.Branch
                     val branchesNum = declarationKind.children.size

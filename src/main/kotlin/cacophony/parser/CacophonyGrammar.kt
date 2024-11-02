@@ -71,7 +71,7 @@ class CacophonyGrammar {
                         (
                             atomic(COLON)
                                 concat
-                                atomic(TYPE_IDENTIFIER)
+                                atomic(TYPE)
                                 concat atomic(OPERATOR_ASSIGNMENT)
                                 concat (
                                     atomic(
