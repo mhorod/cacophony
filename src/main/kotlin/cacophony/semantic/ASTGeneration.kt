@@ -10,6 +10,8 @@ import cacophony.semantic.syntaxtree.Type
 import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import cacophony.utils.TreePrinter
+import kotlin.reflect.KClass
+import kotlin.reflect.full.primaryConstructor
 
 private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): CacophonyGrammarSymbol {
     if (parseTree is ParseTree.Leaf) {
@@ -62,6 +64,16 @@ private fun constructType(
     }
 }
 
+fun <T : OperatorBinary> createInstance(
+    kClass: KClass<T>,
+    range: Pair<Location, Location>,
+    lhs: Expression,
+    rhs: Expression,
+): Expression {
+    val constructor = kClass.primaryConstructor
+    return constructor!!.call(range, lhs, rhs)
+}
+
 private fun operatorRegexToAST(
     children: List<ParseTree<CacophonyGrammarSymbol>>,
     diagnostics: Diagnostics,
@@ -75,87 +87,12 @@ private fun operatorRegexToAST(
         val range = Pair(first = children[0].range.first, second = children[childNum - 1].range.second)
         if (operator is ParseTree.Leaf) {
             val symbol = operator.token.category
-            return when (symbol) {
-                OPERATOR_ADDITION ->
-                    OperatorBinary.Addition(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_SUBTRACTION ->
-                    OperatorBinary.Subtraction(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_MULTIPLICATION ->
-                    OperatorBinary.Multiplication(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_DIVISION ->
-                    OperatorBinary.Division(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_MODULO ->
-                    OperatorBinary.Modulo(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_EQUALS ->
-                    OperatorBinary.Equals(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_NOT_EQUALS ->
-                    OperatorBinary.NotEquals(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_GREATER ->
-                    OperatorBinary.Greater(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_GREATER_EQUAL ->
-                    OperatorBinary.GreaterEqual(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_LESS_EQUAL ->
-                    OperatorBinary.LessEqual(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_LESS ->
-                    OperatorBinary.Less(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_LOGICAL_AND ->
-                    OperatorBinary.LogicalAnd(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                OPERATOR_LOGICAL_OR ->
-                    OperatorBinary.LogicalOr(
-                        range,
-                        operatorRegexToAST(newChildren, diagnostics),
-                        generateASTInternal(children[childNum - 1], diagnostics),
-                    )
-                else -> throw IllegalArgumentException("Expected the operator symbol, got: $symbol")
-            }
+            return createInstance(
+                symbol.syntaxTreeClass!! as KClass<OperatorBinary>,
+                range,
+                operatorRegexToAST(newChildren, diagnostics),
+                generateASTInternal(children[childNum - 1], diagnostics),
+            )
         } else {
             throw IllegalArgumentException("Expected the operator symbol, got: $operator")
         }
