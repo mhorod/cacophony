@@ -208,4 +208,45 @@ class CallGraphTest {
             ),
         )
     }
+
+    @Test
+    fun `finds calls in variable declarations`() {
+        // let f = [] -> B => (
+        //    let g = f[];
+        //    g
+        // )
+        val fUse = VariableUse(loc(3, 4), "f")
+        val gUse = VariableUse(loc(3, 4), "g")
+
+        val gDef =
+            Definition.VariableDeclaration(
+                loc(4, 8),
+                "g",
+                null,
+                FunctionCall(loc(8, 9), fUse, listOf()),
+            )
+        val fDef =
+            Definition.FunctionDeclaration(
+                loc(0, 4),
+                "f",
+                null,
+                listOf(),
+                ASTType.Basic(loc(3, 4), "B"),
+                Block(
+                    loc(0, 2),
+                    listOf(gDef, gUse),
+                ),
+            )
+
+        val ast =
+            AST(
+                loc(0, 9),
+                listOf(fDef),
+            )
+        val resolvedVariables = mapOf(fUse to fDef, gUse to gDef)
+
+        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+            mapOf(fDef to setOf(fDef)),
+        )
+    }
 }

@@ -62,7 +62,7 @@ private class CallGraphProvider(
                 )
             is Block ->
                 merge(*node.expressions.map { generateDirectCallGraph(it, currentFn) }.toTypedArray())
-            is LeafExpression -> mutableMapOf() // don't use else branch to prevent this breaking when SyntaxTree is changed
+            is LeafExpression -> mutableMapOf() // don't use else branch to prevent this from breaking when SyntaxTree is changed
             null -> mutableMapOf()
         }
 
