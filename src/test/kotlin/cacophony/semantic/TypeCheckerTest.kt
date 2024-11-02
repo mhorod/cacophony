@@ -43,9 +43,7 @@ class TypeCheckerTest {
         override fun report(
             message: String,
             location: Location,
-        ) {
-            TODO()
-        }
+        ) {}
 
         override fun report(
             message: String,
@@ -949,4 +947,255 @@ class TypeCheckerTest {
         assertNull(diagnostics.msg)
     }
 
+    @Test
+    fun `error - unknown type at variable declaration`() {
+        val varDec = Definition.VariableDeclaration(lc, "x", Type.Basic(lc, "Type"), Empty(lc))
+        val ast = Block(lc, listOf(varDec))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Unknown type", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - unknown type at argument declaration`() {
+        val funDec = Definition.FunctionDeclaration(lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", Type.Basic(lc, "Type"))), testUnit, Empty(lc))
+        val ast = Block(lc, listOf(funDec))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Unknown type", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - mismatch init vs declared`() {
+        val varDec = Definition.VariableDeclaration(lc, "x", testBoolean, intLiteral)
+        val ast = Block(lc, listOf(varDec))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - mismatch body vs return type`() {
+        val funDec = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, booleanLiteral)
+        val ast = Block(lc, listOf(funDec))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - calling non function`() {
+        val body = FunctionCall(lc, intLiteral, emptyList())
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Expected function", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - wrong argument type`() {
+        val funDec = Definition.FunctionDeclaration(lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", testInt)), testUnit, Empty(lc))
+        val funUse = VariableUse(lc, "f")
+        val body = FunctionCall(lc, funUse, listOf(booleanLiteral))
+        val ast = Block(lc, listOf(funDec, body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, mapOf(funUse to funDec))
+        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - assignment to non lvalue reference`() {
+        val body = OperatorBinary.Assignment(lc, Empty(lc), booleanLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Expected lvalue reference", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - mismatch assignment`() {
+        val varDec = Definition.VariableDeclaration(lc, "x", testBoolean, booleanLiteral)
+        val varUse = VariableUse(lc ,"x");
+        val body = OperatorBinary.Assignment(lc, varUse, intLiteral)
+        val ast = Block(lc, listOf(varDec, body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, mapOf(varUse to varDec))
+        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - mismatch equals`() {
+        val body = OperatorBinary.Equals(lc, booleanLiteral, intLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - mismatch not equals`() {
+        val body = OperatorBinary.NotEquals(lc, booleanLiteral, intLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+    }
+
+
+    @Test
+    fun `error - equals on Unit`() {
+        val body = OperatorBinary.Equals(lc, Empty(lc), Empty(lc))
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type Unit does not support == operator", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - not equals on Unit`() {
+        val body = OperatorBinary.NotEquals(lc, Empty(lc), Empty(lc))
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type Unit does not support != operator", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - unary minus on wrong type`() {
+        val body = OperatorUnary.Minus(lc, booleanLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type Boolean does not support unary - operator", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - unary negation on wrong type`() {
+        val body = OperatorUnary.Negation(lc, intLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type Int does not support unary ! operator", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - test in if statement`() {
+        val body = Statement.IfElseStatement(lc, intLiteral, Empty(lc), null)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - mismatch in non empty branches`() {
+        val body = Statement.IfElseStatement(lc, booleanLiteral, intLiteral, booleanLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Could not find common type for Int and Boolean", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - mismatch in empty branches`() {
+        val body = Statement.IfElseStatement(lc, booleanLiteral, intLiteral, null)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Could not find common type for Int and Unit", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - return outside function body`() {
+        val body = Statement.ReturnStatement(lc, Empty(lc))
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Return outside function body", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - return with wrong type`() {
+        val funDec = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, Statement.ReturnStatement(lc, booleanLiteral))
+        val ast = Block(lc, listOf(funDec))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - non Boolean in while test`() {
+        val body = Statement.WhileStatement(lc, Empty(lc), Empty(lc))
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Boolean, found Unit", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - operator assignment on non lvalue`() {
+        val body = OperatorBinary.AdditionAssignment(lc, intLiteral, Literal.IntLiteral(lc, 4))
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Expected lvalue reference", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - operator assignment on wrong type rhs`() {
+        val varDec = Definition.VariableDeclaration(lc, "x", null, intLiteral)
+        val varUse = VariableUse(lc, "x")
+        val body = OperatorBinary.AdditionAssignment(lc, varUse, booleanLiteral)
+        val ast = Block(lc, listOf(varDec, body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, mapOf(varUse to varDec))
+        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - operator assignment on wrong type lhs`() {
+        val varDec = Definition.VariableDeclaration(lc, "x", null, booleanLiteral)
+        val varUse = VariableUse(lc, "x")
+        val body = OperatorBinary.AdditionAssignment(lc, varUse, intLiteral)
+        val ast = Block(lc, listOf(varDec, body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, mapOf(varUse to varDec))
+        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - add on wrong value rhs`() {
+        val body = OperatorBinary.Addition(lc, intLiteral, booleanLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - add on wrong value lhs`() {
+        val body = OperatorBinary.Addition(lc, booleanLiteral, intLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - or on wrong value lhs`() {
+        val body = OperatorBinary.LogicalOr(lc, booleanLiteral, intLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - or on wrong value rhs`() {
+        val body = OperatorBinary.LogicalOr(lc, intLiteral, booleanLiteral)
+        val ast = Block(lc, listOf(body))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+    }
 }
