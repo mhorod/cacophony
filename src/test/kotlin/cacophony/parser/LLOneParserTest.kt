@@ -1058,4 +1058,75 @@ class LLOneParserTest {
             )
         }
     }
+
+    @Test
+    fun `parser reports error when finished before eof`() {
+        // A -> B
+        // B -> C
+        // C -> X
+
+        val atob = Production(Symbol.A, ReS.atomic(Symbol.B))
+        val btoc = Production(Symbol.B, ReS.atomic(Symbol.C))
+        val ctox = Production(Symbol.C, ReS.atomic(Symbol.X))
+        val dfaA =
+            SimpleDFA(
+                0,
+                mapOf(0 via Symbol.B to 1),
+                mapOf(1 to atob),
+            )
+        val dfaB = SimpleDFA(0, mapOf(0 via Symbol.C to 1), mapOf(1 to btoc))
+        val dfaC = SimpleDFA(0, mapOf(0 via Symbol.X to 1), mapOf(1 to ctox))
+        val automata = mapOf(Symbol.A to dfaA, Symbol.B to dfaB, Symbol.C to dfaC)
+
+        val nextAction =
+            mapOf(
+                Symbol.X to
+                    mapOf(
+                        DFAStateReference(0, dfaA) to Symbol.B,
+                        DFAStateReference(0, dfaB) to Symbol.C,
+                        DFAStateReference(0, dfaC) to Symbol.X,
+                    ),
+            )
+
+        val terminals =
+            listOf(
+                terminal(Symbol.X, 0),
+                terminal(Symbol.X, 1),
+            )
+        val parser =
+            LLOneParser(
+                nextAction,
+                Symbol.A,
+                automata,
+                listOf(),
+            )
+
+        val tree = parser.process(terminals, diagnostics)
+        assertThat(tree).isEqualTo(
+            ParseTree.Branch(
+                Location(0) to Location(1),
+                atob,
+                listOf(
+                    ParseTree.Branch(
+                        Location(0) to Location(1),
+                        btoc,
+                        listOf(
+                            ParseTree.Branch(
+                                Location(0) to Location(1),
+                                ctox,
+                                listOf(terminals[0]),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                eq("Unable to continue parsing symbol X"),
+                eq(Pair(Location(1), Location(2))),
+            )
+        }
+    }
 }

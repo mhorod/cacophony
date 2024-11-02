@@ -41,6 +41,7 @@ private class CallGraphProvider(
                     handleDirectFunctionCall(node.function, currentFn),
                     *node.arguments.map { generateDirectCallGraph(it, currentFn) }.toTypedArray(),
                 )
+            is Definition.VariableDeclaration -> generateDirectCallGraph(node.value, currentFn)
             is Statement.IfElseStatement ->
                 merge(
                     generateDirectCallGraph(node.testExpression, currentFn),
