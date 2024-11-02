@@ -64,6 +64,25 @@ private fun constructType(
     }
 }
 
+private fun constructFunctionArgument(
+    parseTree: ParseTree<CacophonyGrammarSymbol>,
+    diagnostics: Diagnostics,
+): Definition.FunctionArgument {
+    val tree = parseTree as ParseTree.Branch
+    assert(parseTree.children.size == 2)
+    val range = parseTree.range
+    val argName = parseTree.children[0]
+    if (argName is ParseTree.Leaf<*>) {
+        return Definition.FunctionArgument(
+            range,
+            argName.token.context,
+            constructType(parseTree.children[1], diagnostics),
+        )
+    } else {
+        throw IllegalArgumentException("Expected argument identifier, got: $argName")
+    }
+}
+
 fun <T : OperatorBinary> createInstance(
     kClass: KClass<T>,
     range: Pair<Location, Location>,
@@ -151,22 +170,10 @@ private fun generateASTInternal(
                     val branchesNum = declarationKind.children.size
                     val returnType = declarationKind.children[branchesNum - 2]
                     val body = declarationKind.children[branchesNum - 1]
-                    val arguments: MutableList<Definition.FunctionArgument> = mutableListOf()
-                    if (branchesNum == 3) { // non-empty function argument list
-                        val args = declarationKind.children[0] as ParseTree.Branch
-                        // function arguments
-                        val argsCount = args.children.size / 2
-                        for (i in 0 until argsCount) {
-                            val argIdentifier = args.children[i * 2] as ParseTree.Leaf
-                            val argType = constructType(args.children[i * 2 + 1], diagnostics)
-                            arguments.add(
-                                Definition.FunctionArgument(
-                                    Pair(argIdentifier.range.first, argType.range.second),
-                                    argIdentifier.token.context,
-                                    argType,
-                                ),
-                            )
-                        }
+                    var arguments: List<Definition.FunctionArgument> = listOf()
+                    if (branchesNum >= 3) {
+                        val unparsedArguments = declarationKind.children.subList(0, branchesNum - 2)
+                        arguments = unparsedArguments.map { constructFunctionArgument(it, diagnostics) } // non-empty function argument list
                     }
                     return Definition.FunctionDeclaration(
                         range,
