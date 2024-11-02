@@ -286,9 +286,9 @@ private fun generateASTInternal(
             }
             UNARY_LEVEL -> {
                 assert(childNum == 2)
-                val operator = parseTree.children[0]
-                if (operator is ParseTree.Leaf) {
-                    val unarySymbol = operator.token.category
+                val unaryOperator = parseTree.children[0]
+                if (unaryOperator is ParseTree.Leaf) {
+                    val unarySymbol = unaryOperator.token.category
                     return when (unarySymbol) {
                         OPERATOR_SUBTRACTION ->
                             OperatorUnary.Minus(
@@ -303,7 +303,7 @@ private fun generateASTInternal(
                         else -> throw IllegalArgumentException("Expected the unary operator: $unarySymbol")
                     }
                 } else {
-                    throw IllegalArgumentException("Expected the operator symbol, got: $operator")
+                    throw IllegalArgumentException("Expected the operator symbol, got: $unaryOperator")
                 }
             }
 
