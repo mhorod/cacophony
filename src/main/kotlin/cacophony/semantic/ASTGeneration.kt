@@ -62,6 +62,106 @@ private fun constructType(
     }
 }
 
+private fun operatorRegexToAST(
+    children: List<ParseTree<CacophonyGrammarSymbol>>,
+    diagnostics: Diagnostics,
+): Expression {
+    val childNum = children.size
+    if (childNum == 1) {
+        return generateASTInternal(children[0], diagnostics)
+    } else {
+        val operator = children[childNum - 2]
+        val newChildren = children.subList(0, childNum - 2)
+        val range = Pair(first = children[0].range.first, second = children[childNum - 1].range.second)
+        if (operator is ParseTree.Leaf) {
+            val symbol = operator.token.category
+            return when (symbol) {
+                OPERATOR_ADDITION ->
+                    OperatorBinary.Addition(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_SUBTRACTION ->
+                    OperatorBinary.Subtraction(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_MULTIPLICATION ->
+                    OperatorBinary.Multiplication(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_DIVISION ->
+                    OperatorBinary.Division(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_MODULO ->
+                    OperatorBinary.Modulo(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_EQUALS ->
+                    OperatorBinary.Equals(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_NOT_EQUALS ->
+                    OperatorBinary.NotEquals(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_GREATER ->
+                    OperatorBinary.Greater(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_GREATER_EQUAL ->
+                    OperatorBinary.GreaterEqual(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_LESS_EQUAL ->
+                    OperatorBinary.LessEqual(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_LESS ->
+                    OperatorBinary.Less(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_LOGICAL_AND ->
+                    OperatorBinary.LogicalAnd(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                OPERATOR_LOGICAL_OR ->
+                    OperatorBinary.LogicalOr(
+                        range,
+                        operatorRegexToAST(newChildren, diagnostics),
+                        generateASTInternal(children[childNum - 1], diagnostics),
+                    )
+                else -> throw IllegalArgumentException("Expected the operator symbol, got: $symbol")
+            }
+        } else {
+            throw IllegalArgumentException("Expected the operator symbol, got: $operator")
+        }
+    }
+}
+
 private fun generateASTInternal(
     parseTree: ParseTree<CacophonyGrammarSymbol>,
     diagnostics: Diagnostics,
@@ -161,11 +261,96 @@ private fun generateASTInternal(
                 val elseExpression = (if (childNum > 2) generateASTInternal(parseTree.children[2], diagnostics) else null)
                 Statement.IfElseStatement(range, testExpression, doExpression, elseExpression)
             }
-            ASSIGNMENT -> {
-                TODO("")
+            ASSIGNMENT_LEVEL -> {
+                assert(childNum == 3)
+                val operator = parseTree.children[1]
+                if (operator is ParseTree.Leaf) {
+                    val assignmentSymbol = operator.token.category
+                    return when (assignmentSymbol) {
+                        OPERATOR_ASSIGNMENT ->
+                            OperatorBinary.Assignment(
+                                range,
+                                generateASTInternal(parseTree.children[0], diagnostics),
+                                generateASTInternal(parseTree.children[2], diagnostics),
+                            )
+                        OPERATOR_SUBTRACTION_ASSIGNMENT ->
+                            OperatorBinary.SubtractionAssignment(
+                                range,
+                                generateASTInternal(parseTree.children[0], diagnostics),
+                                generateASTInternal(parseTree.children[2], diagnostics),
+                            )
+                        OPERATOR_ADDITION_ASSIGNMENT ->
+                            OperatorBinary.AdditionAssignment(
+                                range,
+                                generateASTInternal(parseTree.children[0], diagnostics),
+                                generateASTInternal(parseTree.children[2], diagnostics),
+                            )
+                        OPERATOR_MULTIPLICATION_ASSIGNMENT ->
+                            OperatorBinary.MultiplicationAssignment(
+                                range,
+                                generateASTInternal(parseTree.children[0], diagnostics),
+                                generateASTInternal(parseTree.children[2], diagnostics),
+                            )
+                        OPERATOR_DIVISION_ASSIGNMENT ->
+                            OperatorBinary.DivisionAssignment(
+                                range,
+                                generateASTInternal(parseTree.children[0], diagnostics),
+                                generateASTInternal(parseTree.children[2], diagnostics),
+                            )
+                        OPERATOR_MODULO_ASSIGNMENT ->
+                            OperatorBinary.ModuloAssignment(
+                                range,
+                                generateASTInternal(parseTree.children[0], diagnostics),
+                                generateASTInternal(parseTree.children[2], diagnostics),
+                            )
+
+                        else -> throw IllegalArgumentException("Expected the assignment operator, got: $assignmentSymbol")
+                    }
+                } else {
+                    throw IllegalArgumentException("Expected the operator symbol, got: $operator")
+                }
             }
-            UNARY -> {
-                TODO("")
+            ADDITION_LEVEL -> {
+                assert(childNum >= 3)
+                operatorRegexToAST(parseTree.children, diagnostics)
+            }
+            MULTIPLICATION_LEVEL -> {
+                assert(childNum >= 3)
+                operatorRegexToAST(parseTree.children, diagnostics)
+            }
+            EQUALITY_LEVEL -> {
+                assert(childNum >= 3)
+                operatorRegexToAST(parseTree.children, diagnostics)
+            }
+            COMPARATOR_LEVEL -> {
+                assert(childNum >= 3)
+                operatorRegexToAST(parseTree.children, diagnostics)
+            }
+            LOGICAL_OPERATOR_LEVEL -> {
+                assert(childNum >= 3)
+                operatorRegexToAST(parseTree.children, diagnostics)
+            }
+            UNARY_LEVEL -> {
+                assert(childNum == 2)
+                val operator = parseTree.children[0]
+                if (operator is ParseTree.Leaf) {
+                    val unarySymbol = operator.token.category
+                    return when (unarySymbol) {
+                        OPERATOR_SUBTRACTION ->
+                            OperatorUnary.Minus(
+                                range,
+                                generateASTInternal(parseTree.children[1], diagnostics),
+                            )
+                        OPERATOR_LOGICAL_NOT ->
+                            OperatorUnary.Negation(
+                                range,
+                                generateASTInternal(parseTree.children[1], diagnostics),
+                            )
+                        else -> throw IllegalArgumentException("Expected the unary operator: $unarySymbol")
+                    }
+                } else {
+                    throw IllegalArgumentException("Expected the operator symbol, got: $operator")
+                }
             }
             BLOCK -> {
                 val newChildren = parseTree.children.map { generateASTInternal(it, diagnostics) }
@@ -181,12 +366,12 @@ private fun generateASTInternal(
 fun generateAST(
     parseTree: ParseTree<CacophonyGrammarSymbol>,
     diagnostics: Diagnostics,
-): AST {
+): Expression {
     val prunedTree = pruneParseTree(parseTree, diagnostics)
     println("PRUNED TREE")
     println(TreePrinter(StringBuilder()).printTree(prunedTree!!))
     val ast = generateASTInternal(prunedTree, diagnostics)
     println("AST")
     println(TreePrinter(StringBuilder()).printTree(ast))
-    return Block(Pair(Location(0), Location(0)), listOf())
+    return ast
 }

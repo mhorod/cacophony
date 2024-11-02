@@ -39,7 +39,6 @@ fun main(args: Array<String>) {
         }
         generateAST(parseTree, diagnostics)
     } catch (t: CompileErrorException) {
-        println("Wyjebało się")
         for (error in diagnostics.getErrors()) {
             println(error.message)
         }

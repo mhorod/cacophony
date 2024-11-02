@@ -1,0 +1,52 @@
+let early_return = [] -> Bool => (
+    while true do
+        return true; # an early return from a function is legal
+    false
+);
+early_return[]; # `true`
+
+let with_semicolon = [] -> Int => (return 5;); # the trailing `return` can have a trailing semicolon...
+let without_semicolon = [] -> Int => (return 6); # ...or not
+let without_block = [] -> Int => return 7; # a `return` is a single expression
+
+let voids_in_action = [] -> Bool => (
+    # all these definitions type-check because the type of a `return` expression is `Void` which is a subtype of any type
+    let b: Bool = return true;
+    let i: Int = return true;
+    let u: Unit = return true;
+    let v: Void = return true;
+    false
+);
+
+let nested_return = [] -> Bool => return return return true; # only the rightmost `return` will actually... well... return
+# more generally, the first return to take effect is the first one whose expression is fully evaluated the soonest
+let clean_code = [x: Bool, y: Bool] -> Int => (
+    if
+        return
+            if x then
+                return 1
+            else (
+                while y || return 2 do
+                    return 3;
+                4
+            )
+    then
+        return 5
+    else
+        return 6
+    return 7;
+);
+clean_code[false, false]; # `3`
+clean_code[true, false]; # `1`
+clean_code[false, true]; # `2`
+
+let f = [early: Bool] -> Int => (
+    let g = [] -> Int => (
+        if early then
+            return 1; # returns from `g`, not from `f`
+        20;
+    );
+    let result = g[x];
+    result + 41
+);
+f[early]; # `42`, not `1`
