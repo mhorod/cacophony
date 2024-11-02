@@ -15,17 +15,19 @@ class CacophonyGrammar {
                 listOf(
                     START produces
                         (
-                            (
-                                atomic(DECLARATION_LEVEL) concat
-                                    (
-                                        atomic(SEMICOLON) concat
-                                            atomic(DECLARATION_LEVEL)
-                                    ).star()
-                            ) or
+                            atomic(SEMICOLON).star() concat (
                                 (
                                     atomic(DECLARATION_LEVEL) concat
-                                        atomic(SEMICOLON)
-                                ).star()
+                                        (
+                                            (atomic(SEMICOLON) concat atomic(SEMICOLON).star()) concat
+                                                atomic(DECLARATION_LEVEL)
+                                        ).star()
+                                ) or
+                                    (
+                                        atomic(DECLARATION_LEVEL) concat
+                                            (atomic(SEMICOLON) concat atomic(SEMICOLON).star())
+                                    ).star()
+                            )
                         ),
                     RETURN_STATEMENT produces
                         (
@@ -261,18 +263,21 @@ class CacophonyGrammar {
                     BLOCK produces
                         (
                             atomic(LEFT_PARENTHESIS) concat (
-                                (
-                                    atomic(DECLARATION_LEVEL) concat
-                                        (
-                                            atomic(SEMICOLON) concat
-                                                atomic(DECLARATION_LEVEL)
-                                        ).star()
-                                ) or
+                                atomic(SEMICOLON).star() concat (
                                     (
                                         atomic(DECLARATION_LEVEL) concat
-                                            atomic(SEMICOLON)
-                                    ).star()
+                                            (
+                                                (atomic(SEMICOLON) concat atomic(SEMICOLON).star()) concat
+                                                    atomic(DECLARATION_LEVEL)
+                                            ).star()
+                                    ) or
+                                        (
+                                            atomic(DECLARATION_LEVEL) concat
+                                                (atomic(SEMICOLON) concat atomic(SEMICOLON).star())
+                                        ).star()
+                                )
                             ) concat atomic(RIGHT_PARENTHESIS)
+
                         ),
                 ),
             )

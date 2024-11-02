@@ -34,7 +34,9 @@ sealed class Expression(
 class Empty(
     range: Pair<Location, Location>,
 ) : Expression(range),
-    TreeLeaf
+    TreeLeaf {
+    override fun toString() = "empty"
+}
 
 class VariableUse(
     range: Pair<Location, Location>,
@@ -179,7 +181,9 @@ sealed class Statement(
     class BreakStatement(
         range: Pair<Location, Location>,
     ) : Statement(range),
-        TreeLeaf
+        TreeLeaf {
+        override fun toString() = "Break"
+    }
 }
 
 sealed class OperatorUnary(

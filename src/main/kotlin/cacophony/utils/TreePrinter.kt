@@ -42,7 +42,7 @@ class TreePrinter(
         } else {
             builder.append('├')
         }
-        if (t.isLeaf()) {
+        if (t.isLeaf() || t.children().isEmpty()) {
             builder.append('─')
             printBlock(t.toString(), "$indent  ")
         } else {

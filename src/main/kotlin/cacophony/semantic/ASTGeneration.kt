@@ -35,7 +35,7 @@ private fun pruneParseTree(
         }
     } else if (parseTree is ParseTree.Leaf) {
         val symbol: CacophonyGrammarSymbol = parseTree.token.category
-        if (symbol.syntaxTreeClass == null) {
+        if (symbol.syntaxTreeClass == null && symbol != SEMICOLON) {
             return null
         }
         return parseTree
@@ -137,8 +137,30 @@ private fun generateASTInternal(
         val range = parseTree.range
         val childNum = parseTree.children.size
         return when (symbol) {
-            START -> {
-                val newChildren = parseTree.children.map { generateASTInternal(it, diagnostics) }
+            START, BLOCK -> {
+                val newChildren: MutableList<Expression> = mutableListOf<Expression>()
+                var seekingExpression = true
+                parseTree.children.forEach {
+                    if (it is ParseTree.Leaf && it.token.category == SEMICOLON) {
+                        if (seekingExpression) {
+                            newChildren.add(Empty(Pair(first = it.range.first, second = it.range.first)))
+                        }
+                        seekingExpression = true
+                    } else {
+                        newChildren.add(generateASTInternal(it, diagnostics))
+                        seekingExpression = false
+                    }
+                }
+                if (seekingExpression) {
+                    newChildren.add(
+                        Empty(
+                            Pair(
+                                Location(range.second.value - 1),
+                                Location(range.second.value - 1),
+                            ),
+                        ),
+                    )
+                }
                 Block(range, newChildren)
             }
             // call level is in the pruned tree iff there is an actual function call underneath
@@ -258,23 +280,7 @@ private fun generateASTInternal(
                     throw IllegalArgumentException("Expected the operator symbol, got: $operator")
                 }
             }
-            ADDITION_LEVEL -> {
-                assert(childNum >= 3)
-                operatorRegexToAST(parseTree.children, diagnostics)
-            }
-            MULTIPLICATION_LEVEL -> {
-                assert(childNum >= 3)
-                operatorRegexToAST(parseTree.children, diagnostics)
-            }
-            EQUALITY_LEVEL -> {
-                assert(childNum >= 3)
-                operatorRegexToAST(parseTree.children, diagnostics)
-            }
-            COMPARATOR_LEVEL -> {
-                assert(childNum >= 3)
-                operatorRegexToAST(parseTree.children, diagnostics)
-            }
-            LOGICAL_OPERATOR_LEVEL -> {
+            ADDITION_LEVEL, MULTIPLICATION_LEVEL, EQUALITY_LEVEL, COMPARATOR_LEVEL, LOGICAL_OPERATOR_LEVEL -> {
                 assert(childNum >= 3)
                 operatorRegexToAST(parseTree.children, diagnostics)
             }
@@ -299,10 +305,6 @@ private fun generateASTInternal(
                 } else {
                     throw IllegalArgumentException("Expected the operator symbol, got: $operator")
                 }
-            }
-            BLOCK -> {
-                val newChildren = parseTree.children.map { generateASTInternal(it, diagnostics) }
-                Block(range, newChildren)
             }
 
             else -> throw IllegalArgumentException("Unexpected branch symbol: $symbol")

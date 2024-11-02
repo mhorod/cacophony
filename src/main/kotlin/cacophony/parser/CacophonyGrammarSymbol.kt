@@ -76,6 +76,8 @@ enum class CacophonyGrammarSymbol(
 //    STATEMENT(Expression::class),
     RETURN_STATEMENT(Expression::class),
     BLOCK(Block::class),
+    EMPTY_EXPRESSION(Empty::class),
+    NON_EXISTENT_SYMBOL(null),
 
     // levels
     STATEMENT_LEVEL(null),
