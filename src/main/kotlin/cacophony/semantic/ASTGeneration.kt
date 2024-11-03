@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package cacophony.semantic
 
 import cacophony.grammars.ParseTree
@@ -204,7 +202,7 @@ private fun generateASTInternal(
                     return Definition.FunctionDeclaration(
                         range,
                         identifier.token.context,
-                        type,
+                        type as Type.Functional?,
                         arguments,
                         constructType(returnType, diagnostics),
                         generateASTInternal(body, diagnostics),
@@ -213,7 +211,7 @@ private fun generateASTInternal(
                     return Definition.VariableDeclaration(
                         range,
                         identifier.token.context,
-                        type,
+                        type as Type.Basic?,
                         generateASTInternal(isDeclarationTyped.children.last(), diagnostics),
                     )
                 }
@@ -316,11 +314,11 @@ private fun generateASTInternal(
 fun generateAST(
     parseTree: ParseTree<CacophonyGrammarSymbol>,
     diagnostics: Diagnostics,
-): Expression {
+): AST {
     val prunedTree = pruneParseTree(parseTree, diagnostics)
     println("PRUNED TREE")
     println(TreePrinter(StringBuilder()).printTree(prunedTree!!))
-    val ast = generateASTInternal(prunedTree, diagnostics)
+    val ast = generateASTInternal(prunedTree, diagnostics) as AST
     println("AST")
     println(TreePrinter(StringBuilder()).printTree(ast))
     return ast

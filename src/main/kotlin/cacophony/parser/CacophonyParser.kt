@@ -21,6 +21,6 @@ class CacophonyParser : Parser<CacophonyGrammarSymbol> {
 
     companion object {
         val syncSymbols = setOf<CacophonyGrammarSymbol>()
-        val grammar = CacophonyGrammar.dummyGrammar1 // TODO: change this to the actual grammar
+        val grammar = CacophonyGrammar.grammar
     }
 }
