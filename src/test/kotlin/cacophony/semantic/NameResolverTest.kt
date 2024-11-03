@@ -3,22 +3,17 @@ package cacophony.semantic
 import cacophony.semantic.ResolvedName.Argument
 import cacophony.semantic.ResolvedName.Function
 import cacophony.semantic.ResolvedName.Variable
-import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.Block
+import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
-import cacophony.semantic.syntaxtree.FunctionCall
 import cacophony.semantic.syntaxtree.Literal.BoolLiteral
 import cacophony.semantic.syntaxtree.Literal.IntLiteral
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement.IfElseStatement
 import cacophony.semantic.syntaxtree.Statement.ReturnStatement
 import cacophony.semantic.syntaxtree.Statement.WhileStatement
 import cacophony.semantic.syntaxtree.Type.Basic
 import cacophony.semantic.syntaxtree.Type.Functional
-import cacophony.semantic.syntaxtree.VariableUse
 import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import io.mockk.Called
@@ -37,6 +32,9 @@ import org.junit.jupiter.api.assertThrows
 
 class NameResolverTest {
     val mockRange = Location(0) to Location(0)
+    private val mockValue = Empty(mockRange)
+
+    private fun variableDeclaration(name: String): VariableDeclaration = VariableDeclaration(mockRange, name, null, mockValue)
 
     interface ResolvedNamesAssert {
         fun hasVariable(binding: Pair<VariableUse, VariableDeclaration>): ResolvedNamesAssert
@@ -106,8 +104,8 @@ class NameResolverTest {
                 // b
 
                 // given
-                val aDef = VariableDeclaration(mockRange, "a", null)
-                val bDef = VariableDeclaration(mockRange, "b", null)
+                val aDef = variableDeclaration("a")
+                val bDef = variableDeclaration("b")
                 val aUse = VariableUse(mockRange, "a")
                 val bUse = VariableUse(mockRange, "b")
                 val ast =
@@ -292,8 +290,8 @@ class NameResolverTest {
                 // a
 
                 // given
-                val aDef1 = VariableDeclaration(mockRange, "a", null)
-                val aDef2 = VariableDeclaration(mockRange, "a", null)
+                val aDef1 = variableDeclaration("a")
+                val aDef2 = variableDeclaration("a")
                 val aUse = VariableUse(mockRange, "a")
                 val ast = AST(mockRange, listOf(aDef1, aDef2, aUse))
 
@@ -317,8 +315,8 @@ class NameResolverTest {
                 // a
 
                 // given
-                val aDef1 = VariableDeclaration(mockRange, "a", null)
-                val aDef2 = VariableDeclaration(mockRange, "a", null)
+                val aDef1 = variableDeclaration("a")
+                val aDef2 = variableDeclaration("a")
                 val aUse1 = VariableUse(mockRange, "a")
                 val aUse2 = VariableUse(mockRange, "a")
                 val ast =
@@ -538,7 +536,7 @@ class NameResolverTest {
                 val xUse1 = VariableUse(mockRange, "x")
                 val xUse2 = VariableUse(mockRange, "x")
                 val xDef1 = FunctionArgument(mockRange, "x", Basic(mockRange, "Int"))
-                val xDef2 = VariableDeclaration(mockRange, "x", null)
+                val xDef2 = variableDeclaration("x")
                 val fDef =
                     FunctionDeclaration(
                         mockRange,
@@ -580,7 +578,7 @@ class NameResolverTest {
                 // given
                 val xUse1 = VariableUse(mockRange, "x")
                 val xUse2 = VariableUse(mockRange, "x")
-                val xDef1 = VariableDeclaration(mockRange, "x", null)
+                val xDef1 = variableDeclaration("x")
                 val xDef2 = FunctionArgument(mockRange, "x", Basic(mockRange, "Int"))
                 val fDef =
                     FunctionDeclaration(
@@ -629,7 +627,7 @@ class NameResolverTest {
                         Basic(mockRange, "Bool"),
                         BoolLiteral(mockRange, true),
                     )
-                val fDef2 = VariableDeclaration(mockRange, "f", null)
+                val fDef2 = variableDeclaration("f")
                 val ast =
                     AST(
                         mockRange,
@@ -662,7 +660,7 @@ class NameResolverTest {
                 // given
                 val fUse1 = VariableUse(mockRange, "f")
                 val fUse2 = VariableUse(mockRange, "f")
-                val fDef2 = VariableDeclaration(mockRange, "f", null)
+                val fDef2 = variableDeclaration("f")
                 val fDef1 =
                     FunctionDeclaration(
                         mockRange,
@@ -701,7 +699,7 @@ class NameResolverTest {
                 // given
                 val aUse1 = VariableUse(mockRange, "a")
                 val aUse2 = VariableUse(mockRange, "a")
-                val aDef1 = VariableDeclaration(mockRange, "a", null)
+                val aDef1 = variableDeclaration("a")
                 val aDef2 =
                     FunctionDeclaration(
                         mockRange,
@@ -993,7 +991,7 @@ class NameResolverTest {
                 AST(
                     mockRange,
                     listOf(
-                        VariableDeclaration(mockRange, "a", null),
+                        variableDeclaration("a"),
                         VariableUse(invalidUseRange, "b"),
                     ),
                 )
@@ -1020,7 +1018,7 @@ class NameResolverTest {
                     mockRange,
                     listOf(
                         VariableUse(invalidUseRange, "a"),
-                        VariableDeclaration(mockRange, "a", null),
+                        variableDeclaration("a"),
                     ),
                 )
 
@@ -1045,7 +1043,7 @@ class NameResolverTest {
                 AST(
                     mockRange,
                     listOf(
-                        Block(mockRange, listOf(VariableDeclaration(mockRange, "a", null))),
+                        Block(mockRange, listOf(variableDeclaration("a"))),
                         VariableUse(invalidUseRange, "a"),
                     ),
                 )
@@ -1088,7 +1086,7 @@ class NameResolverTest {
                             mockRange,
                             VariableUse(mockRange, "f"),
                             listOf(
-                                VariableDeclaration(mockRange, "x", null),
+                                variableDeclaration("x"),
                                 VariableUse(invalidUseRange1, "x"),
                             ),
                         ),
@@ -1097,7 +1095,7 @@ class NameResolverTest {
                 )
 
             // when
-            val resolvedNames = resolveNames(ast, diagnostics)
+            resolveNames(ast, diagnostics)
 
             // then
             verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
@@ -1120,7 +1118,7 @@ class NameResolverTest {
                     listOf(
                         IfElseStatement(
                             mockRange,
-                            VariableDeclaration(mockRange, "x", null),
+                            variableDeclaration("x"),
                             VariableUse(invalidUseRange1, "x"),
                             VariableUse(invalidUseRange2, "x"),
                         ),
@@ -1155,7 +1153,7 @@ class NameResolverTest {
                         IfElseStatement(
                             mockRange,
                             BoolLiteral(mockRange, true),
-                            VariableDeclaration(mockRange, "x", null),
+                            variableDeclaration("x"),
                             VariableUse(invalidUseRange1, "x"),
                         ),
                         VariableUse(invalidUseRange2, "x"),
@@ -1188,7 +1186,7 @@ class NameResolverTest {
                             mockRange,
                             BoolLiteral(mockRange, true),
                             BoolLiteral(mockRange, true),
-                            VariableDeclaration(mockRange, "x", null),
+                            variableDeclaration("x"),
                         ),
                         VariableUse(invalidUseRange1, "x"),
                     ),
@@ -1218,7 +1216,7 @@ class NameResolverTest {
                     listOf(
                         WhileStatement(
                             mockRange,
-                            VariableDeclaration(mockRange, "x", null),
+                            variableDeclaration("x"),
                             VariableUse(invalidUseRange1, "x"),
                         ),
                         VariableUse(invalidUseRange2, "x"),
@@ -1250,7 +1248,7 @@ class NameResolverTest {
                         WhileStatement(
                             mockRange,
                             BoolLiteral(mockRange, true),
-                            VariableDeclaration(mockRange, "x", null),
+                            variableDeclaration("x"),
                         ),
                         VariableUse(invalidUseRange1, "x"),
                     ),
@@ -1277,7 +1275,7 @@ class NameResolverTest {
                 AST(
                     mockRange,
                     listOf(
-                        ReturnStatement(mockRange, VariableDeclaration(mockRange, "x", null)),
+                        ReturnStatement(mockRange, variableDeclaration("x")),
                         VariableUse(invalidUseRange1, "x"),
                     ),
                 )
@@ -1303,7 +1301,7 @@ class NameResolverTest {
                 AST(
                     mockRange,
                     listOf(
-                        OperatorUnary.Negation(mockRange, VariableDeclaration(mockRange, "x", null)),
+                        OperatorUnary.Negation(mockRange, variableDeclaration("x")),
                         VariableUse(invalidUseRange1, "x"),
                     ),
                 )
@@ -1332,7 +1330,7 @@ class NameResolverTest {
                     listOf(
                         OperatorBinary.Addition(
                             mockRange,
-                            VariableDeclaration(mockRange, "x", null),
+                            variableDeclaration("x"),
                             VariableUse(invalidUseRange1, "x"),
                         ),
                         VariableUse(invalidUseRange2, "x"),
@@ -1364,7 +1362,7 @@ class NameResolverTest {
                         OperatorBinary.Addition(
                             mockRange,
                             IntLiteral(mockRange, 5),
-                            VariableDeclaration(mockRange, "x", null),
+                            variableDeclaration("x"),
                         ),
                         VariableUse(invalidUseRange1, "x"),
                     ),
