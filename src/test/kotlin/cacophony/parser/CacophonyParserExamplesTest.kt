@@ -30,6 +30,10 @@ class CacophonyParserExamplesTest {
             diagnostics: Diagnostics,
         ): ParseTree<CacophonyGrammarSymbol> {
             val tokens = lexer.process(input, diagnostics)
+
+            println("TOKENS AFTER LEXER:")
+            println(tokens)
+
             val terminals = tokens.map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
             return parser.process(terminals, diagnostics)
         }
