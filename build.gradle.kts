@@ -21,6 +21,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation("io.mockk:mockk:1.13.13")
     testImplementation("org.assertj:assertj-core:3.26.3")
+    implementation(kotlin("reflect"))
 }
 
 kotlin {

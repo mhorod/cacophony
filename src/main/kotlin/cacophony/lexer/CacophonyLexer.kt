@@ -26,7 +26,9 @@ class CacophonyLexer : Lexer<TokenCategorySpecific> {
         return tokens.filter { !isWhitespaceToken(it) }
     }
 
-    private fun isWhitespaceToken(token: Token<TokenCategorySpecific>): Boolean {
-        return token.category == TokenCategorySpecific.WHITESPACE || token.category == TokenCategorySpecific.COMMENT
+    companion object {
+        private fun isWhitespaceToken(token: Token<TokenCategorySpecific>): Boolean {
+            return token.category == TokenCategorySpecific.WHITESPACE || token.category == TokenCategorySpecific.COMMENT
+        }
     }
 }

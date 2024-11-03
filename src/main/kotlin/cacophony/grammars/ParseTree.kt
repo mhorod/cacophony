@@ -39,8 +39,6 @@ sealed class ParseTree<SymbolType : Enum<SymbolType>>(
 
         override fun toString() = "${production.lhs} $range"
 
-        override fun isLeaf(): Boolean = false
-
         override fun children() = children
     }
 }
