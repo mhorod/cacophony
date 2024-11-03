@@ -96,6 +96,10 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
         terminals: List<ParseTree.Leaf<SymbolType>>,
         diagnostics: Diagnostics,
     ): ParseTree<SymbolType> {
+        if (terminals.isEmpty()) {
+            throw ParsingErrorException("Unable to parse empty input.")
+        }
+
         val terminalIterator = terminals.iterator()
         var terminal = terminalIterator.next()
         var eof = false

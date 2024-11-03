@@ -14,13 +14,9 @@ import cacophony.utils.AlgebraicRegex
 import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import cacophony.utils.StringInput
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.MockK
-import io.mockk.just
-import io.mockk.mockkStatic
-import io.mockk.runs
-import io.mockk.verify
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -43,6 +39,11 @@ class RegularLanguageLexerTest {
     fun setUpMocks() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         every { diagnostics.report(any(), any<Location>()) } just runs
+    }
+
+    @AfterEach
+    fun tearDownMocks() {
+        unmockkAll()
     }
 
     @Test
