@@ -23,7 +23,7 @@ fun checkTypes(
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
 ): TypeCheckingResult {
-    val types = mapOf("Boolean" to BuiltinType.BooleanType, "Int" to BuiltinType.IntegerType, "Unit" to BuiltinType.UnitType)
+    val types = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
     val typer = Typer(diagnostics, resolvedVariables, types)
     typer.typeExpression(ast)
     return typer.result
@@ -168,7 +168,7 @@ private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVar
                     }
                     BuiltinType.BooleanType
                 }
-                is Statement.BreakStatement -> BuiltinType.VoidType
+                is Statement.BreakStatement -> TypeExpr.VoidType
                 is Statement.IfElseStatement -> {
                     val trueBranchType = typeExpression(expression.doExpression)
                     val falseBranchType =
@@ -203,7 +203,7 @@ private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVar
                         error.typeMismatchError(functionContext.last(), returnedType, expression.range)
                         return null
                     }
-                    BuiltinType.VoidType
+                    TypeExpr.VoidType
                 }
                 is Statement.WhileStatement -> {
                     typeExpression(expression.doExpression)
@@ -359,17 +359,18 @@ sealed class TypeExpr(val name: String) {
     override fun hashCode(): Int {
         return name.hashCode()
     }
+
+    // TODO: Propagate Void maybe
+    // atm Void is not something you can type in code
+    object VoidType : TypeExpr("Void") // Only for `return` and `break` statement
 }
 
-class BuiltinType private constructor(name: String) : TypeExpr(name) {
-    companion object {
-        val BooleanType = BuiltinType("Boolean")
-        val IntegerType = BuiltinType("Int")
-        val UnitType = BuiltinType("Unit")
+sealed class BuiltinType private constructor(name: String) : TypeExpr(name) {
+    object BooleanType : BuiltinType("Boolean")
 
-        // TODO: Propagate Void maybe
-        val VoidType = BuiltinType("Void") // Only for `return` and `break` statement
-    }
+    object IntegerType : BuiltinType("Int")
+
+    object UnitType : BuiltinType("Unit")
 }
 
 class FunctionType(val args: List<TypeExpr>, val result: TypeExpr) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
@@ -380,6 +381,6 @@ fun isSubtype(
     subtype: TypeExpr,
     type: TypeExpr,
 ): Boolean {
-    if (subtype == BuiltinType.VoidType) return true
+    if (subtype == TypeExpr.VoidType) return true
     return subtype.name == type.name
 }

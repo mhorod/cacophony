@@ -530,7 +530,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(BuiltinType.VoidType, result[body])
+        assertTypeEquals(TypeExpr.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -542,7 +542,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(BuiltinType.VoidType, result[body])
+        assertTypeEquals(TypeExpr.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -557,7 +557,7 @@ class TypeCheckerTest {
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(argUse to argDef))
         assertTypeEquals(BuiltinType.IntegerType, result[argUse])
-        assertTypeEquals(BuiltinType.VoidType, result[body])
+        assertTypeEquals(TypeExpr.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -581,7 +581,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(BuiltinType.VoidType, result[body])
+        assertTypeEquals(TypeExpr.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -604,8 +604,8 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(statement))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(BuiltinType.VoidType, result[statement])
-        assertTypeEquals(BuiltinType.VoidType, result[ast])
+        assertTypeEquals(TypeExpr.VoidType, result[statement])
+        assertTypeEquals(TypeExpr.VoidType, result[ast])
         assertNull(diagnostics.msg)
     }
 
@@ -615,7 +615,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(Statement.IfElseStatement(lc, booleanLiteral, intLiteral, breakStatement)))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(BuiltinType.VoidType, result[breakStatement])
+        assertTypeEquals(TypeExpr.VoidType, result[breakStatement])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -985,7 +985,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(varDef, funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
-        assertTypeEquals(BuiltinType.VoidType, result[res])
+        assertTypeEquals(TypeExpr.VoidType, result[res])
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
