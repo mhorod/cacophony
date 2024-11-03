@@ -15,12 +15,10 @@ class CacophonyParser : Parser<CacophonyGrammarSymbol> {
     override fun process(
         terminals: List<ParseTree.Leaf<CacophonyGrammarSymbol>>,
         diagnostics: Diagnostics,
-    ): ParseTree<CacophonyGrammarSymbol> {
-        TODO("Not yet implemented")
-    }
+    ): ParseTree<CacophonyGrammarSymbol> = innerParser.process(terminals, diagnostics)
 
     companion object {
         val syncSymbols = setOf<CacophonyGrammarSymbol>()
-        val grammar = CacophonyGrammar.dummyGrammar1 // TODO: change this to the actual grammar
+        val grammar = CacophonyGrammar.grammar
     }
 }
