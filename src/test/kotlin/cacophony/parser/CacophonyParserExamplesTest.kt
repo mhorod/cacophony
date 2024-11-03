@@ -49,6 +49,8 @@ class CacophonyParserExamplesTest {
     @ParameterizedTest
     @MethodSource("correctExamples")
     fun `parser parses correct examples without errors`(path: Path) {
+        println("Im here in the test")
+
         runExample(
             path,
             parserRunner,
