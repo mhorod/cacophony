@@ -33,7 +33,7 @@ jobs:
           ls -al
 
       - name: Just run tests
-        run: ./gradlew test
+        run: ./gradlew test --info
 
       - name: Build with Gradle Wrapper
         run: ./gradlew build

@@ -96,6 +96,9 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
         terminals: List<ParseTree.Leaf<SymbolType>>,
         diagnostics: Diagnostics,
     ): ParseTree<SymbolType> {
+        println("PRINTING OUT THE LIST OF TERMINALS")
+        println(terminals)
+
         val terminalIterator = terminals.iterator()
         var terminal = terminalIterator.next()
         var eof = false

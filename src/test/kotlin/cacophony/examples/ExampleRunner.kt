@@ -2,6 +2,7 @@ package cacophony.examples
 
 import cacophony.utils.FileInput
 import cacophony.utils.Input
+import java.io.FileReader
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
@@ -25,8 +26,14 @@ fun runExample(
     val diagnostics = TestDiagnostics()
     val input = FileInput(path.toString())
 
-    println("The file im gonna feed the parser with!!!")
-    println(input)
+    println("PRINTING OUT THE FILE")
+    println(FileReader(path.toString()).readText())
+
+    println("How does it look like in FileInput?")
+    val input2 = FileInput(path.toString())
+    while (input2.peek() !== null) {
+        print(input2.next())
+    }
 
     runner.run(input, diagnostics)
     assertion.check(diagnostics)
