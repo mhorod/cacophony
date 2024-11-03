@@ -7,7 +7,6 @@ import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Type
 import cacophony.utils.Diagnostics
 import cacophony.utils.Location
-import cacophony.utils.TreePrinter
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
@@ -315,11 +314,7 @@ fun generateAST(
     parseTree: ParseTree<CacophonyGrammarSymbol>,
     diagnostics: Diagnostics,
 ): AST {
-    val prunedTree = pruneParseTree(parseTree, diagnostics)
-    println("PRUNED TREE")
-    println(TreePrinter(StringBuilder()).printTree(prunedTree!!))
+    val prunedTree = pruneParseTree(parseTree, diagnostics)!!
     val ast = generateASTInternal(prunedTree, diagnostics) as AST
-    println("AST")
-    println(TreePrinter(StringBuilder()).printTree(ast))
     return ast
 }

@@ -3,9 +3,6 @@ package cacophony.semantic.syntaxtree
 import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.javaField
 
 typealias AST = Block
 
@@ -28,62 +25,6 @@ fun areEquivalentExpressions(
     lhs: List<Expression?>,
     rhs: List<Expression?>,
 ): Boolean = lhs.size == rhs.size && lhs.zip(rhs).all { areEquivalentExpressions(it.first, it.second) }
-
-fun prettyFormat(
-    expression: Expression?,
-    indentSize: Int = 4,
-): String {
-    val builder = StringBuilder()
-    appendRepresentation(expression, builder, 0, " ".repeat(indentSize))
-    return builder.toString()
-}
-
-fun prettyPrint(
-    expression: Expression,
-    indentSize: Int = 4,
-) = print(prettyFormat(expression, indentSize))
-
-private fun appendRepresentation(
-    obj: Any?,
-    builder: StringBuilder,
-    depth: Int,
-    indentSymbol: String,
-) {
-    val externalIndent = indentSymbol.repeat(depth)
-    val internalIndent = indentSymbol.repeat(depth + 1)
-    when (obj) {
-        is List<*> -> {
-            builder.appendLine("[")
-            obj.forEach {
-                builder.append(internalIndent)
-                appendRepresentation(it, builder, depth + 1, indentSymbol)
-            }
-            builder.append(externalIndent)
-            builder.appendLine("]")
-        }
-
-        is Type, is Expression -> {
-            // evil reflection hack to avoid overriding the printing function in every expression variant
-            val cls = obj::class
-            builder.append(obj)
-            builder.appendLine("(")
-            cls.memberProperties.sortedBy { cls.java.declaredFields.indexOf(it.javaField) }.forEach {
-                @Suppress("UNCHECKED_CAST")
-                val property = it as KProperty1<Any, *>
-                builder.append(internalIndent)
-                builder.append(it.name)
-                builder.append(" = ")
-                appendRepresentation(property.get(obj), builder, depth + 1, indentSymbol)
-            }
-            builder.append(externalIndent)
-            builder.appendLine(")")
-        }
-
-        else -> {
-            builder.appendLine(obj)
-        }
-    }
-}
 
 sealed class Type(
     val range: Pair<Location, Location>,
