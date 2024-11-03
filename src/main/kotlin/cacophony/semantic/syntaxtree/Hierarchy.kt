@@ -10,17 +10,18 @@ public class Hierarchy { // dont know how to implement it yet
 
     // Priority:
     // semicolons ; dividing expressions
-    // return statement
-    // assignment operators = += *= -= /= %= - they should be right - associative, which is reverse to other operators - how will we handle this?
-    // logical operators || &&
-    // equality operators == !=
-    // comparison operators < > <= >=
-    // arithmetic operators - +
-    // arithmetic operators * / %
-    // unary operators - !
-    // type declarations :
-    // function call or definition
     // statements - ifThen, ifThenElse, WhileDo
+    // return statement
+    // declarations (typed and untyped)
+    // assignment operators = += *= -= /= %= - they should be right - associative, which is reverse to other operators - how will we handle this?
+    // TODO: logical operators || &&
+    // TODO:equality operators == !=
+    // TODO:comparison operators < > <= >=
+    // TODO:arithmetic operators - +
+    // TODO:arithmetic operators * / %
+
+    // unary operators - !
+    // function call
     // nested expressions in parentheses ( ) - important syntax, creates new scope and resets priority (grammar should go back to starting state?)
     // atom expressions - variables, types, keywords
 }

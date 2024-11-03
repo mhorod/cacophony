@@ -10,7 +10,6 @@ import cacophony.semantic.ResolvedVariables
 import cacophony.semantic.TypeCheckingResult
 import cacophony.semantic.VariableUseType
 import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.prettyPrint
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.TreePrinter
@@ -40,7 +39,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logSuccessfulAstGeneration(ast: AST) {
         println("AST generation successful :D")
         println("AST:")
-        prettyPrint(ast)
+        println(TreePrinter(StringBuilder()).printTree(ast))
     }
 
     override fun logFailedAstGeneration() = println("AST generation failed :(")

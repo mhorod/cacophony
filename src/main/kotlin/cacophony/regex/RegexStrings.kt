@@ -9,7 +9,7 @@ object RegexStrings {
         mapOf(
             TokenCategoryGeneral.PUNCTUATION to """\(|\)|[|]|->|=>|;|:|,""",
             TokenCategoryGeneral.KEYWORD to """let|if|then|else|while|do|break|return""",
-            TokenCategoryGeneral.LITERAL to """-\d(\d)*|\d(\d)*|true|false""",
+            TokenCategoryGeneral.LITERAL to """\d(\d)*|true|false""",
             TokenCategoryGeneral.OPERATOR to """==|!=|=|<|>|<=|>=|+=|-=|+|-|\*|\*=|/|/=|%|%=|&&|\|\||!""",
             TokenCategoryGeneral.TYPE_IDENTIFIER to """\u\w*""",
             TokenCategoryGeneral.VARIABLE_IDENTIFIER to """(\l|_)\w*""",
@@ -60,7 +60,7 @@ object RegexStrings {
             TokenCategorySpecific.OPERATOR_LOGICAL_AND to """&&""",
             TokenCategorySpecific.OPERATOR_LOGICAL_NOT to """!""",
             // and the others
-            TokenCategorySpecific.INT_LITERAL to """-\d(\d)*|\d(\d)*""",
+            TokenCategorySpecific.INT_LITERAL to """\d(\d)*""",
             TokenCategorySpecific.BOOL_LITERAL to """true|false""",
             TokenCategorySpecific.TYPE_IDENTIFIER to """\u\w*""",
             TokenCategorySpecific.VARIABLE_IDENTIFIER to """(\l|_)\w*""",
