@@ -24,6 +24,10 @@ fun runExample(
 ) {
     val diagnostics = TestDiagnostics()
     val input = FileInput(path.toString())
+
+    println("The file im gonna feed the parser with!!!")
+    println(input)
+
     runner.run(input, diagnostics)
     assertion.check(diagnostics)
 }
@@ -39,10 +43,9 @@ fun runExamples(
 fun getPathsMatching(
     root: Path,
     re: Regex,
-): List<Path> {
-    return Files
+): List<Path> =
+    Files
         .walk(root)
         .filter { re.matches(it.toString()) }
         .filter { it.isRegularFile() }
         .toList()
-}
