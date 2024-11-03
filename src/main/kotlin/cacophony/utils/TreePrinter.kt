@@ -1,14 +1,10 @@
 package cacophony.utils
 
 interface Tree {
-    fun isLeaf(): Boolean
-
     fun children(): List<Tree>
 }
 
 interface TreeLeaf : Tree {
-    override fun isLeaf() = true
-
     override fun children() = emptyList<Tree>()
 }
 
@@ -43,7 +39,7 @@ class TreePrinter(
         } else {
             builder.append('├')
         }
-        if (t.isLeaf()) {
+        if (t.children().isEmpty()) {
             builder.append('─')
             printBlock(t.toString(), "$indent  ")
         } else {
