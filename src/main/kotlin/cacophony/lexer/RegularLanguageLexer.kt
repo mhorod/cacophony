@@ -93,8 +93,10 @@ class RegularLanguageLexer<TC : Enum<TC>>(
                 null -> break
                 else -> {
                     matchNewToken(input)?.let { token ->
+                        println("Found new token! $token")
                         tokens.add(token)
                     } ?: run {
+                        println("Lexer failure: no valid token found on " + input.getLocation())
                         diagnostics.report("Lexer failure: no valid token found.", input.getLocation())
                     }
                     input.next()
