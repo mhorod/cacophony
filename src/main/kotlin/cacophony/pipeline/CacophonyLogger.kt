@@ -13,6 +13,7 @@ import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.prettyPrint
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
+import cacophony.utils.TreePrinter
 
 class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbol> {
     override fun logSuccessfulGrammarAnalysis(analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol>) =
@@ -31,7 +32,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logSuccessfulParsing(parseTree: ParseTree<CacophonyGrammarSymbol>) {
         println("Parsing successful :D")
         println("Parse tree:")
-        println(parseTree)
+        println(TreePrinter(StringBuilder()).printTree(parseTree))
     }
 
     override fun logFailedParsing() = println("Parsing failed :(")
