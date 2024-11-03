@@ -17,14 +17,15 @@ import cacophony.utils.Location
 
 typealias TypeCheckingResult = Map<Expression, TypeExpr>
 
+private val builtinTypes = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
+
 // Result contains every variable that could be properly typed
 fun checkTypes(
     ast: AST,
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
 ): TypeCheckingResult {
-    val types = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
-    val typer = Typer(diagnostics, resolvedVariables, types)
+    val typer = Typer(diagnostics, resolvedVariables, builtinTypes)
     typer.typeExpression(ast)
     return typer.result
 }
