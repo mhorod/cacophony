@@ -1,70 +1,97 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package cacophony.parser
 
+import cacophony.semantic.syntaxtree.*
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
+import kotlin.reflect.KClass
 
-enum class CacophonyGrammarSymbol {
-    /*****************
-     * non-terminals *
-     *****************/
-
-    LEFT_PARENTHESIS,
-    RIGHT_PARENTHESIS,
-    LEFT_BRACKET,
-    RIGHT_BRACKET,
-    ARROW,
-    DOUBLE_ARROW,
-    COLON,
-    SEMICOLON,
-    COMMA,
+enum class CacophonyGrammarSymbol(
+    val syntaxTreeClass: KClass<out Any>?,
+) {
+    // special characters
+    LEFT_PARENTHESIS(null),
+    RIGHT_PARENTHESIS(null),
+    LEFT_BRACKET(null),
+    RIGHT_BRACKET(null),
+    ARROW(null),
+    DOUBLE_ARROW(null),
+    COLON(null),
+    SEMICOLON(null),
+    COMMA(null),
 
     // keywords
-    KEYWORD_LET,
-    KEYWORD_IF,
-    KEYWORD_THEN,
-    KEYWORD_ELSE,
-    KEYWORD_WHILE,
-    KEYWORD_DO,
-    KEYWORD_BREAK,
-    KEYWORD_RETURN,
+    KEYWORD_LET(null),
+    KEYWORD_IF(null),
+    KEYWORD_THEN(null),
+    KEYWORD_ELSE(null),
+    KEYWORD_WHILE(null),
+    KEYWORD_DO(null),
+    KEYWORD_BREAK(Statement.BreakStatement::class),
+    KEYWORD_RETURN(Statement.ReturnStatement::class),
 
     // operators
-    OPERATOR_EQUALS,
-    OPERATOR_NOT_EQUALS,
-    OPERATOR_ASSIGNMENT,
-    OPERATOR_LESS,
-    OPERATOR_GREATER,
-    OPERATOR_LESS_EQUAL,
-    OPERATOR_GREATER_EQUAL,
-    OPERATOR_ADDITION,
-    OPERATOR_SUBTRACTION,
-    OPERATOR_ADDITION_ASSIGNMENT,
-    OPERATOR_SUBTRACTION_ASSIGNMENT,
-    OPERATOR_MULTIPLICATION,
-    OPERATOR_DIVISION,
-    OPERATOR_MODULO,
-    OPERATOR_MULTIPLICATION_ASSIGNMENT,
-    OPERATOR_DIVISION_ASSIGNMENT,
-    OPERATOR_MODULO_ASSIGNMENT,
-    OPERATOR_LOGICAL_OR,
-    OPERATOR_LOGICAL_AND,
-    OPERATOR_LOGICAL_NOT,
+    OPERATOR_EQUALS(OperatorBinary.Equals::class),
+    OPERATOR_NOT_EQUALS(OperatorBinary.NotEquals::class),
+    OPERATOR_ASSIGNMENT(OperatorBinary.Assignment::class),
+    OPERATOR_LESS(OperatorBinary.Less::class),
+    OPERATOR_GREATER(OperatorBinary.Greater::class),
+    OPERATOR_LESS_EQUAL(OperatorBinary.LessEqual::class),
+    OPERATOR_GREATER_EQUAL(OperatorBinary.GreaterEqual::class),
+    OPERATOR_ADDITION(OperatorBinary.Addition::class),
+    OPERATOR_SUBTRACTION(OperatorBinary.Subtraction::class),
+    OPERATOR_ADDITION_ASSIGNMENT(OperatorBinary.AdditionAssignment::class),
+    OPERATOR_SUBTRACTION_ASSIGNMENT(OperatorBinary.SubtractionAssignment::class),
+    OPERATOR_MULTIPLICATION(OperatorBinary.Multiplication::class),
+    OPERATOR_DIVISION(OperatorBinary.Division::class),
+    OPERATOR_MODULO(OperatorBinary.Modulo::class),
+    OPERATOR_MULTIPLICATION_ASSIGNMENT(OperatorBinary.MultiplicationAssignment::class),
+    OPERATOR_DIVISION_ASSIGNMENT(OperatorBinary.DivisionAssignment::class),
+    OPERATOR_MODULO_ASSIGNMENT(OperatorBinary.ModuloAssignment::class),
+    OPERATOR_LOGICAL_OR(OperatorBinary.LogicalOr::class),
+    OPERATOR_LOGICAL_AND(OperatorBinary.LogicalAnd::class),
+    OPERATOR_LOGICAL_NOT(OperatorUnary.Negation::class),
 
-    // and the others
-    INT_LITERAL,
-    BOOL_LITERAL,
-    TYPE_IDENTIFIER,
-    VARIABLE_IDENTIFIER,
-    WHITESPACE,
-    COMMENT,
+    // literals
+    INT_LITERAL(Literal.IntLiteral::class),
+    BOOL_LITERAL(Literal.BoolLiteral::class),
+    TYPE_IDENTIFIER(Type.Basic::class),
+    VARIABLE_IDENTIFIER(VariableUse::class),
 
-    /*****************
-     * non-terminals *
-     *****************/
+    // others
+    START(Block::class),
+    FUNCTION_CALL(FunctionCall::class),
+    WHILE_CLAUSE(Statement.WhileStatement::class),
+    IF_CLAUSE(Statement.IfElseStatement::class),
+    DECLARATION_TYPED(Definition::class),
+    DECLARATION_UNTYPED(Definition::class),
+    VARIABLE_DECLARATION(Definition.VariableDeclaration::class),
+    FUNCTION_DECLARATION(Definition.FunctionDeclaration::class),
+    FUNCTION_ARGUMENT(Definition.FunctionArgument::class),
+    TYPE(Type::class),
+    ASSIGNMENT(OperatorBinary::class),
+    UNARY(OperatorUnary::class),
 
-    A,
-    B,
-    C,
+//    STATEMENT(Expression::class),
+    RETURN_STATEMENT(Expression::class),
+    BLOCK(Block::class),
+    EMPTY_EXPRESSION(Empty::class),
+    NON_EXISTENT_SYMBOL(null),
+
+    // levels
+    STATEMENT_LEVEL(null),
+    SEMICOLON_LEVEL(null),
+    DECLARATION_LEVEL(null),
+    ASSIGNMENT_LEVEL(null),
+    LOGICAL_OPERATOR_LEVEL(null),
+    COMPARATOR_LEVEL(null),
+    EQUALITY_LEVEL(null),
+    ADDITION_LEVEL(null),
+    MULTIPLICATION_LEVEL(null),
+    UNARY_LEVEL(null),
+    CALL_LEVEL(null),
+    ATOM_LEVEL(null),
     ;
 
     companion object {

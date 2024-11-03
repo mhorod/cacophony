@@ -5,17 +5,19 @@ import cacophony.utils.Input
 import cacophony.utils.Location
 
 class TestDiagnostics : Diagnostics {
-    open class ReportedError
+    open class ReportedError(
+        open val message: String,
+    )
 
     class LexerError(
         message: String,
         location: Location,
-    ) : ReportedError()
+    ) : ReportedError(message)
 
     class ParserError(
         message: String,
         range: Pair<Location, Location>,
-    ) : ReportedError()
+    ) : ReportedError(message)
 
     private val errors: MutableList<ReportedError> = ArrayList()
 

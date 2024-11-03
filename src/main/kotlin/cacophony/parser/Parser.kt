@@ -1,6 +1,7 @@
 package cacophony.parser
 
 import cacophony.grammars.ParseTree
+import cacophony.utils.CompileErrorException
 import cacophony.utils.Diagnostics
 
 interface Parser<SymbolType : Enum<SymbolType>> {
@@ -12,4 +13,4 @@ interface Parser<SymbolType : Enum<SymbolType>> {
 
 class ParsingErrorException(
     reason: String,
-) : Exception(reason)
+) : CompileErrorException(reason)
