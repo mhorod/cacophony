@@ -23,12 +23,15 @@ class CacophonyLexer : Lexer<TokenCategorySpecific> {
         diagnostics: Diagnostics,
     ): List<Token<TokenCategorySpecific>> {
         val tokens = innerLexer.process(input, diagnostics)
+
+        println("TOKENS AFTER INNER LEXER")
+        println(tokens)
+
         return tokens.filter { !isWhitespaceToken(it) }
     }
 
     companion object {
-        private fun isWhitespaceToken(token: Token<TokenCategorySpecific>): Boolean {
-            return token.category == TokenCategorySpecific.WHITESPACE || token.category == TokenCategorySpecific.COMMENT
-        }
+        private fun isWhitespaceToken(token: Token<TokenCategorySpecific>): Boolean =
+            token.category == TokenCategorySpecific.WHITESPACE || token.category == TokenCategorySpecific.COMMENT
     }
 }
