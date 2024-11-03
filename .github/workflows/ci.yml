@@ -24,6 +24,14 @@ jobs:
         with:
           gradle-version: "8.10"
 
+      - name: ls
+        run: | 
+          ls -al
+          cd examples
+          ls -al
+          cd correct
+          ls -al
+
       - name: Just run tests
         run: ./gradlew test
 
