@@ -29,10 +29,11 @@ fun checkTypes(
     return typer.result
 }
 
-private class Typer(val diagnostics: Diagnostics, val resolvedVariables: ResolvedVariables, val types: Map<String, TypeExpr>) {
+private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVariables, val types: Map<String, TypeExpr>) {
     val result: MutableMap<Expression, TypeExpr> = mutableMapOf()
     val typedVariables: MutableMap<Definition, TypeExpr> = mutableMapOf()
     val functionContext = ArrayDeque<TypeExpr>()
+    val error = ErrorHandler(diagnostics)
 
     fun typeExpression(expression: Expression): TypeExpr? {
         val expressionType: TypeExpr? =
@@ -46,56 +47,38 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
                     }
                 }
                 is Definition.VariableDeclaration -> {
-                    val initType = typeExpression(expression.initExpression) ?: return null
-                    val variableType =
-                        if (expression.type != null) {
-                            val declaredType = translateType(expression.type)
-                            if (declaredType == null) {
-                                diagnostics.report("Unknown type", expression.type.range)
-                                return null
-                            }
-                            if (!isSubtype(initType, declaredType)) {
-                                typeMismatchError(declaredType, initType, expression.range)
-                                return null
-                            }
-                            declaredType
-                        } else {
-                            initType
-                        }
+                    val deducedType = typeExpression(expression.initExpression) ?: return null
+                    val variableType = initializedType(expression.type, deducedType, expression.initExpression.range) ?: return null
                     typedVariables[expression] = variableType
                     BuiltinType.UnitType
                 }
                 is Definition.FunctionArgument -> {
-                    val argType = translateType(expression.type)
-                    if (argType == null) {
-                        diagnostics.report("Unknown type", expression.type.range)
-                        return null
-                    }
+                    val argType = translateType(expression.type) ?: return null
                     typedVariables[expression] = argType
                     argType
                 }
-                // TODO: check with type if exists
                 is Definition.FunctionDeclaration -> {
                     // does not type anything inside if argument or result types are incorrect
                     val argsType = parseArgs(expression.arguments) ?: return null
                     val returnType = translateType(expression.returnType) ?: return null
-                    val functionType = FunctionType(argsType, returnType)
+                    val deducedType = FunctionType(argsType, returnType)
+                    val functionType = initializedType(expression.type, deducedType, expression.range) ?: return null
                     typedVariables[expression] = functionType
                     functionContext.addLast(returnType)
                     val bodyType = typeExpression(expression.body) ?: return null
                     functionContext.removeLast()
                     if (!isSubtype(bodyType, returnType)) {
-                        typeMismatchError(returnType, bodyType, expression.body.range)
+                        error.typeMismatchError(returnType, bodyType, expression.body.range)
                         return null
                     }
                     BuiltinType.UnitType
                 }
                 is Empty -> BuiltinType.UnitType
-                // TODO: parse args first to report errors there as well
                 is FunctionCall -> {
+                    val argsTypes = expression.arguments.map { typeExpression(it) }
                     val functionType = typeExpression(expression.function) ?: return null
                     if (functionType !is FunctionType) {
-                        diagnostics.report("Expected function", expression.function.range)
+                        error.expectedFunction(expression.function.range)
                         return null
                     }
                     if (functionType.args.size != expression.arguments.size) {
@@ -103,12 +86,11 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
                             "Arity of function resolved in previous step does not match",
                         )
                     }
-                    val argsTypes = expression.arguments.map { typeExpression(it) }
                     (argsTypes zip functionType.args).mapIndexed { ind, (deduced, required) ->
                         if (deduced == null) {
                             false
                         } else if (!isSubtype(deduced, required)) {
-                            typeMismatchError(required, deduced, expression.arguments[ind].range)
+                            error.typeMismatchError(required, deduced, expression.arguments[ind].range)
                             false
                         } else {
                             true
@@ -129,48 +111,37 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
                 is OperatorBinary.DivisionAssignment -> typeOperatorAssignment(expression)
                 is OperatorBinary.ModuloAssignment -> typeOperatorAssignment(expression)
                 is OperatorBinary.Assignment -> {
-                    // TODO: remove code duplication with `typeOperatorAssignment()` method
-                    val lhsType =
-                        if (expression.lhs is VariableUse) {
-                            // this is only type of `l-value reference` we have atm
-                            typeExpression(expression.lhs)
-                        } else {
-                            diagnostics.report("Expected lvalue reference", expression.lhs.range)
-                            null
-                        }
-                    val rhsType = typeExpression(expression.rhs)
-                    if (lhsType == null || rhsType == null) return null
+                    val (lhsType, rhsType) = typeBinary(expression) ?: return null
+                    if (expression.lhs !is VariableUse) {
+                        error.expectedLvalue(expression.lhs.range)
+                        return null
+                    }
                     if (!isSubtype(rhsType, lhsType)) {
-                        typeMismatchError(lhsType, rhsType, expression.rhs.range)
+                        error.typeMismatchError(lhsType, rhsType, expression.rhs.range)
                         return null
                     }
                     lhsType
                 }
                 is OperatorBinary.Equals -> {
-                    val lhsType = typeExpression(expression.lhs)
-                    val rhsType = typeExpression(expression.rhs)
-                    if (lhsType == null || rhsType == null) return null
+                    val (lhsType, rhsType) = typeBinary(expression) ?: return null
                     if (lhsType != rhsType) {
-                        typeMismatchError(lhsType, rhsType, expression.range)
+                        error.typeMismatchError(lhsType, rhsType, expression.range)
                         return null
                     }
                     if (lhsType != BuiltinType.IntegerType && lhsType != BuiltinType.BooleanType) {
-                        diagnostics.report("Type $lhsType does not support == operator", expression.range)
+                        error.operationNotSupportedOn("== operator", lhsType, expression.range)
                         return null
                     }
                     BuiltinType.BooleanType
                 }
                 is OperatorBinary.NotEquals -> {
-                    // TODO: remove code duplication with above
-                    val lhsType = typeExpression(expression.lhs)
-                    val rhsType = typeExpression(expression.rhs)
-                    if (lhsType == null || rhsType == null) return null
+                    val (lhsType, rhsType) = typeBinary(expression) ?: return null
                     if (lhsType != rhsType) {
-                        typeMismatchError(lhsType, rhsType, expression.range)
+                        error.typeMismatchError(lhsType, rhsType, expression.range)
                         return null
                     }
                     if (lhsType != BuiltinType.IntegerType && lhsType != BuiltinType.BooleanType) {
-                        diagnostics.report("Type $lhsType does not support != operator", expression.range)
+                        error.operationNotSupportedOn("!= operator", lhsType, expression.range)
                         return null
                     }
                     BuiltinType.BooleanType
@@ -184,7 +155,7 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
                 is OperatorUnary.Minus -> {
                     val innerType = typeExpression(expression.expression) ?: return null
                     if (!isSubtype(innerType, BuiltinType.IntegerType)) {
-                        diagnostics.report("Type $innerType does not support unary - operator", expression.expression.range)
+                        error.operationNotSupportedOn("unary - operator", innerType, expression.expression.range)
                         return null
                     }
                     BuiltinType.IntegerType
@@ -192,18 +163,17 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
                 is OperatorUnary.Negation -> {
                     val innerType = typeExpression(expression.expression) ?: return null
                     if (!isSubtype(innerType, BuiltinType.BooleanType)) {
-                        diagnostics.report("Type $innerType does not support unary ! operator", expression.expression.range)
+                        error.operationNotSupportedOn("unary ! operator", innerType, expression.expression.range)
                         return null
                     }
                     BuiltinType.BooleanType
                 }
-                // TODO: who should check if break is inside loop?
-                is Statement.BreakStatement -> BuiltinType.UnitType
-                // TODO: for now `if expr then expr` is equivalent with `if expr then expr else ()`
+                is Statement.BreakStatement -> BuiltinType.VoidType
                 is Statement.IfElseStatement -> {
                     val trueBranchType = typeExpression(expression.doExpression)
                     val falseBranchType =
                         if (expression.elseExpression == null) {
+                            // if non-existent, the else branch has the Unit type
                             BuiltinType.UnitType
                         } else {
                             typeExpression(expression.elseExpression)
@@ -211,7 +181,7 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
                     val conditionType = typeExpression(expression.testExpression)
                     if (conditionType == null || trueBranchType == null || falseBranchType == null) return null
                     if (!isSubtype(conditionType, BuiltinType.BooleanType)) {
-                        typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
+                        error.typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
                         return null
                     }
                     if (isSubtype(trueBranchType, falseBranchType)) {
@@ -219,18 +189,18 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
                     } else if (isSubtype(falseBranchType, trueBranchType)) {
                         trueBranchType
                     } else {
-                        diagnostics.report("Could not find common type for $trueBranchType and $falseBranchType", expression.range)
+                        error.noCommonType(trueBranchType, falseBranchType, expression.range)
                         return null
                     }
                 }
                 is Statement.ReturnStatement -> {
                     val returnedType = typeExpression(expression.value) ?: return null
                     if (functionContext.isEmpty()) {
-                        diagnostics.report("Return outside function body", expression.range)
+                        error.returnOutsideFunction(expression.range)
                         return null
                     }
                     if (!isSubtype(returnedType, functionContext.last())) {
-                        typeMismatchError(functionContext.last(), returnedType, expression.range)
+                        error.typeMismatchError(functionContext.last(), returnedType, expression.range)
                         return null
                     }
                     BuiltinType.VoidType
@@ -239,7 +209,7 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
                     typeExpression(expression.doExpression)
                     val conditionType = typeExpression(expression.testExpression) ?: return null
                     if (!isSubtype(conditionType, BuiltinType.BooleanType)) {
-                        typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
+                        error.typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
                         return null
                     }
                     BuiltinType.UnitType
@@ -250,12 +220,22 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
         return expressionType
     }
 
-    private fun typeMismatchError(
-        expected: TypeExpr,
-        found: TypeExpr,
+    // returns type of x in constructions `let x (: type) = expr`
+    private fun initializedType(
+        type: Type?,
+        deducedType: TypeExpr,
         range: Pair<Location, Location>,
-    ) {
-        diagnostics.report("Type mismatch: expected $expected, found $found", range)
+    ): TypeExpr? {
+        return if (type != null) {
+            val declaredType = translateType(type) ?: return null
+            if (!isSubtype(deducedType, declaredType)) {
+                error.typeMismatchError(declaredType, deducedType, range)
+                return null
+            }
+            declaredType
+        } else {
+            deducedType
+        }
     }
 
     private fun parseArgs(arguments: List<Definition.FunctionArgument>): List<TypeExpr>? =
@@ -263,61 +243,121 @@ private class Typer(val diagnostics: Diagnostics, val resolvedVariables: Resolve
 
     private fun translateType(type: Type): TypeExpr? {
         return when (type) {
-            is Type.Basic -> types[type.identifier]
-            is Type.Functional ->
+            is Type.Basic ->
+                types[type.identifier] ?: run {
+                    error.unknownType(type.range)
+                    null
+                }
+            is Type.Functional -> {
+                val args = type.argumentsType.map { translateType(it) }
+                val ret = translateType(type.returnType)
                 FunctionType(
-                    type.argumentsType.map { translateType(it) ?: return null },
-                    translateType(type.returnType) ?: return null,
+                    args.map { it ?: return null },
+                    ret ?: return null,
                 )
+            }
         }
+    }
+
+    private fun typeBinary(expression: OperatorBinary): Pair<TypeExpr, TypeExpr>? {
+        val lhsType = typeExpression(expression.lhs)
+        val rhsType = typeExpression(expression.rhs)
+        if (lhsType == null || rhsType == null) return null
+        return lhsType to rhsType
     }
 
     // Handles +=, -=, etc.
     private fun typeOperatorAssignment(expression: OperatorBinary): TypeExpr? {
-        val lhsType =
-            if (expression.lhs is VariableUse) {
-                // this is only type of `l-value reference` we have atm
-                typeExpression(expression.lhs)
-            } else {
-                diagnostics.report("Expected lvalue reference", expression.lhs.range)
-                null
-            }
-        val rhsType = typeExpression(expression.rhs)
-        if (lhsType == null || rhsType == null) return null
+        val (lhsType, rhsType) = typeBinary(expression) ?: return null
+        if (expression.lhs !is VariableUse) {
+            error.expectedLvalue(expression.lhs.range)
+            return null
+        }
         if (!isSubtype(lhsType, BuiltinType.IntegerType)) {
-            typeMismatchError(BuiltinType.IntegerType, lhsType, expression.lhs.range)
+            error.typeMismatchError(BuiltinType.IntegerType, lhsType, expression.lhs.range)
             return null
         }
         if (!isSubtype(rhsType, BuiltinType.IntegerType)) {
-            typeMismatchError(BuiltinType.IntegerType, rhsType, expression.rhs.range)
+            error.typeMismatchError(BuiltinType.IntegerType, rhsType, expression.rhs.range)
             return null
         }
         return BuiltinType.IntegerType
     }
 
+    // handles +, -, etc.
     private fun typeOperatorBinary(
         expression: OperatorBinary,
         type: TypeExpr,
         result: TypeExpr,
     ): TypeExpr? {
-        val lhsType = typeExpression(expression.lhs)
-        val rhsType = typeExpression(expression.rhs)
-        if (lhsType == null || rhsType == null) return null
+        val (lhsType, rhsType) = typeBinary(expression) ?: return null
         if (!isSubtype(lhsType, type)) {
-            typeMismatchError(type, lhsType, expression.lhs.range)
+            error.typeMismatchError(type, lhsType, expression.lhs.range)
             return null
         }
         if (!isSubtype(rhsType, type)) {
-            typeMismatchError(type, rhsType, expression.lhs.range)
+            error.typeMismatchError(type, rhsType, expression.lhs.range)
             return null
         }
         return result
     }
 }
 
+// class responsible for the interaction with Diagnostics
+private class ErrorHandler(val diagnostics: Diagnostics) {
+    fun typeMismatchError(
+        expected: TypeExpr,
+        found: TypeExpr,
+        range: Pair<Location, Location>,
+    ) {
+        diagnostics.report("Type mismatch: expected $expected, found $found", range)
+    }
+
+    fun unknownType(range: Pair<Location, Location>) {
+        diagnostics.report("Unknown type", range)
+    }
+
+    fun expectedFunction(range: Pair<Location, Location>) {
+        diagnostics.report("Expected function", range)
+    }
+
+    fun expectedLvalue(range: Pair<Location, Location>) {
+        diagnostics.report("Expected lvalue reference", range)
+    }
+
+    fun operationNotSupportedOn(
+        operation: String,
+        type: TypeExpr,
+        range: Pair<Location, Location>,
+    ) {
+        diagnostics.report("Type $type does not support $operation", range)
+    }
+
+    fun noCommonType(
+        type1: TypeExpr,
+        type2: TypeExpr,
+        range: Pair<Location, Location>,
+    ) {
+        diagnostics.report("Could not find common type for $type1 and $type2", range)
+    }
+
+    fun returnOutsideFunction(range: Pair<Location, Location>) {
+        diagnostics.report("Return outside function body", range)
+    }
+}
+
 sealed class TypeExpr(val name: String) {
     override fun toString(): String {
         return name
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is TypeExpr) return false
+        return name == other.name
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
     }
 }
 
@@ -328,11 +368,11 @@ class BuiltinType private constructor(name: String) : TypeExpr(name) {
         val UnitType = BuiltinType("Unit")
 
         // TODO: Propagate Void maybe
-        val VoidType = BuiltinType("Void") // Only for return statement
+        val VoidType = BuiltinType("Void") // Only for `return` and `break` statement
     }
 }
 
-data class FunctionType(val args: List<TypeExpr>, val result: TypeExpr) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
+class FunctionType(val args: List<TypeExpr>, val result: TypeExpr) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
 
 class UserDefinedType(name: String) : TypeExpr(name)
 
