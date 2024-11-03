@@ -22,6 +22,13 @@ class CacophonyLexer : Lexer<TokenCategorySpecific> {
         input: Input,
         diagnostics: Diagnostics,
     ): List<Token<TokenCategorySpecific>> {
+        val initLocation = input.getLocation()
+        println("FILE RIGHT BEFORE INNER LEXER")
+        while (input.peek() !== null) {
+            print(input.next())
+        }
+        input.setLocation(initLocation)
+
         val tokens = innerLexer.process(input, diagnostics)
 
         println("TOKENS AFTER INNER LEXER")
