@@ -21,11 +21,22 @@ fun <VType> getReachableFrom(
     return reachable
 }
 
+fun <VType> reverseGraph(graph: Map<VType, Collection<VType>>): Map<VType, Set<VType>> {
+    val reversed: MutableMap<VType, MutableSet<VType>> = mutableMapOf()
+    for ((u, vs) in graph) {
+        for (v in vs) {
+            reversed.getOrPut(v) { mutableSetOf() }.add(u)
+        }
+    }
+    return reversed
+}
+
 // Returns a transitive closure of a directed graph.
 fun <VType> getTransitiveClosure(graph: Map<VType, Collection<VType>>): Map<VType, Set<VType>> {
     val closure: MutableMap<VType, Set<VType>> = mutableMapOf()
     for (component in getStronglyConnectedComponents(graph)) {
-        val reachable = component union component.flatMap { graph[it] ?: emptyList() }.flatMap { closure[it] ?: emptyList() }
+        val reachable =
+            component union component.flatMap { graph[it] ?: emptyList() }.flatMap { closure[it] ?: emptyList() }
         component.forEach { closure[it] = reachable }
     }
     return closure

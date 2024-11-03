@@ -47,8 +47,8 @@ private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVar
                     }
                 }
                 is Definition.VariableDeclaration -> {
-                    val deducedType = typeExpression(expression.initExpression) ?: return null
-                    val variableType = initializedType(expression.type, deducedType, expression.initExpression.range) ?: return null
+                    val deducedType = typeExpression(expression.value) ?: return null
+                    val variableType = initializedType(expression.type, deducedType, expression.value.range) ?: return null
                     typedVariables[expression] = variableType
                     BuiltinType.UnitType
                 }

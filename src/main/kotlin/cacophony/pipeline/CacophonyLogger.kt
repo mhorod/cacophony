@@ -8,10 +8,12 @@ import cacophony.semantic.FunctionAnalysisResult
 import cacophony.semantic.NameResolutionResult
 import cacophony.semantic.ResolvedVariables
 import cacophony.semantic.TypeCheckingResult
+import cacophony.semantic.VariableUseType
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.prettyPrint
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
+import cacophony.utils.TreePrinter
 
 class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbol> {
     override fun logSuccessfulGrammarAnalysis(analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol>) =
@@ -30,7 +32,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logSuccessfulParsing(parseTree: ParseTree<CacophonyGrammarSymbol>) {
         println("Parsing successful :D")
         println("Parse tree:")
-        println(parseTree)
+        println(TreePrinter(StringBuilder()).printTree(parseTree))
     }
 
     override fun logFailedParsing() = println("Parsing failed :(")
@@ -85,7 +87,13 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
         result.forEach { (function, analysis) ->
             println("  $function (${function.identifier}/${function.arguments.size}) at static depth ${analysis.staticDepth}:")
             analysis.variables.forEach { variable ->
-                val usage = if (variable.readOnly) "r-" else "rw"
+                val usage =
+                    when (variable.useType) {
+                        VariableUseType.UNUSED -> "--"
+                        VariableUseType.READ -> "r-"
+                        VariableUseType.WRITE -> "-w"
+                        VariableUseType.READ_WRITE -> "rw"
+                    }
                 val from =
                     "${variable.definedIn} (${variable.definedIn.identifier}/${variable.definedIn.arguments.size})"
                 println("    [$usage] ${variable.declaration} (${variable.declaration.identifier}) from $from")
