@@ -23,6 +23,9 @@ jobs:
         with:
           gradle-version: "8.10"
 
+      - name: Just run tests
+        run: ./gradlew test
+
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
