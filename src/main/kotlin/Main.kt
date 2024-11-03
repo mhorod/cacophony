@@ -14,8 +14,7 @@ fun main(args: Array<String>) {
     val diagnostics = SimpleDiagnostics(input)
 
     try {
-        parser.process(terminals, diagnostics)
-        println("Parsing successful!")
+        CacophonyPipeline(diagnostics, CacophonyLogger()).process(input)
     } catch (t: Throwable) {
         for (error in diagnostics.getErrors()) {
             println(error.message)
