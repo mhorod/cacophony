@@ -2,10 +2,7 @@ package cacophony.parser
 
 import cacophony.automata.SimpleDFA
 import cacophony.automata.minimalization.via
-import cacophony.grammars.AnalyzedGrammar
-import cacophony.grammars.DFAStateReference
-import cacophony.grammars.ParseTree
-import cacophony.grammars.Production
+import cacophony.grammars.*
 import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex
 import cacophony.utils.Diagnostics
@@ -487,6 +484,14 @@ class LLOneParserTest {
         //                     DFAStateReference(3, dfaC) to Symbol.RPAREN,
         //                 ),
         //     )
+    }
+
+    @Test
+    fun `parser throws if input is empty`() {
+        val parser = LLOneParser<Int, Symbol>(mapOf(), Symbol.A, mapOf(), listOf())
+        assertThrows(ParsingErrorException::class.java) {
+            parser.process(listOf(), diagnostics)
+        }
     }
 
     @Test
