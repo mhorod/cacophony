@@ -11,7 +11,6 @@ import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.VariableUse
 import cacophony.utils.Diagnostics
-import cacophony.utils.getProperTransitiveClosure
 import kotlin.collections.mutableMapOf
 
 typealias CallGraph = Map<Definition.FunctionDeclaration, Set<Definition.FunctionDeclaration>>
@@ -24,7 +23,7 @@ fun generateCallGraph(
     ast: AST,
     diagnostics: Diagnostics,
     resolvedVariables: ResolvedVariables,
-): CallGraph = getProperTransitiveClosure(CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null))
+): CallGraph = CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null)
 
 private class CallGraphProvider(
     private val diagnostics: Diagnostics,

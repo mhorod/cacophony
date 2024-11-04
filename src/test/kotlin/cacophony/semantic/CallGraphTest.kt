@@ -58,7 +58,6 @@ class CallGraphTest {
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
             mapOf(
-                fDef to setOf(),
                 gDef to setOf(fDef),
             ),
         )
@@ -113,7 +112,6 @@ class CallGraphTest {
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
             mapOf(
-                fDef to setOf(),
                 gDef to setOf(fDef),
             ),
         )
@@ -148,7 +146,7 @@ class CallGraphTest {
     }
 
     @Test
-    fun `finds indirect calls through closure`() {
+    fun `does not find indirect calls`() {
         // let f = [] -> B => (
         //    let g = [] -> B => f[];
         //    g[]
@@ -202,9 +200,9 @@ class CallGraphTest {
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
             mapOf(
-                fDef to setOf(fDef, gDef),
-                gDef to setOf(fDef, gDef),
-                hDef to setOf(fDef, gDef),
+                fDef to setOf(gDef),
+                gDef to setOf(fDef),
+                hDef to setOf(fDef),
             ),
         )
     }
