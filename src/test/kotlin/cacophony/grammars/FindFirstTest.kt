@@ -32,7 +32,7 @@ class FindFirstTest {
         // then
         assertThat(first)
             .containsExactlyInAnyOrderEntriesOf(
-                stateToSymbols(Pair(0, dfaA) to emptySet()),
+                stateToSymbols(0 via dfaA to emptySet()),
             )
     }
 
@@ -57,9 +57,9 @@ class FindFirstTest {
         assertThat(first)
             .containsExactlyInAnyOrderEntriesOf(
                 stateToSymbols(
-                    Pair(0, dfaA) to setOf('a'),
-                    Pair(1, dfaA) to setOf('b'),
-                    Pair(2, dfaA) to emptySet(),
+                    0 via dfaA to setOf('a'),
+                    1 via dfaA to setOf('b'),
+                    2 via dfaA to emptySet(),
                 ),
             )
     }
@@ -84,20 +84,24 @@ class FindFirstTest {
         assertThat(first)
             .containsExactlyInAnyOrderEntriesOf(
                 stateToSymbols(
-                    Pair(0, dfaA) to setOf('a'), // from 0 via a to 1
-                    Pair(1, dfaA) to emptySet(), // accepting state
-                    Pair(0, dfaB) to
+                    0 via dfaA to setOf('a'), // from 0 via a to 1
+                    1 via dfaA to emptySet(), // accepting state
+                    0 via dfaB to
                         setOf(
-                            'A', 'b', // direct productions
+                            'A',
+                            'b', // direct productions
                             'a', // transitive production from A
                         ),
-                    Pair(1, dfaB) to emptySet(), // accepting state
-                    Pair(0, dfaC) to
+                    1 via dfaB to emptySet(), // accepting state
+                    0 via dfaC to
                         setOf(
-                            'B', 'c', // direct productions
-                            'A', 'a', 'b', // transitive productions from B
+                            'B',
+                            'c', // direct productions
+                            'A',
+                            'a',
+                            'b', // transitive productions from B
                         ),
-                    Pair(1, dfaC) to emptySet(),
+                    1 via dfaC to emptySet(),
                 ),
             )
     }
@@ -133,9 +137,9 @@ class FindFirstTest {
         assertThat(first)
             .containsExactlyInAnyOrderEntriesOf(
                 stateToSymbols(
-                    Pair(0, dfaA) to emptySet(), // accepting state
-                    Pair(0, dfaB) to emptySet(), // accepting state
-                    Pair(0, dfaC) to
+                    0 via dfaA to emptySet(), // accepting state
+                    0 via dfaB to emptySet(), // accepting state
+                    0 via dfaC to
                         setOf(
                             'c', // direct production
                             'A', // direct production
@@ -143,14 +147,14 @@ class FindFirstTest {
                             'a', // from Aa with nullable A
                             'b', // from ABb with nullable A and B
                         ),
-                    Pair(1, dfaC) to
+                    1 via dfaC to
                         setOf(
                             'B', // direct production
                             'a', // direct production
                             'b', // from Bb with nullable B
                         ),
-                    Pair(2, dfaC) to setOf('b'), // direct production
-                    Pair(3, dfaC) to emptySet(), // accepting state
+                    2 via dfaC to setOf('b'), // direct production
+                    3 via dfaC to emptySet(), // accepting state
                 ),
             )
     }
@@ -173,22 +177,22 @@ class FindFirstTest {
         assertThat(first)
             .containsExactlyInAnyOrderEntriesOf(
                 stateToSymbols(
-                    Pair(0, dfaA) to
+                    0 via dfaA to
                         setOf(
                             'B', // direct production
                             'b', // direct production
                             'A', // from B
                             'a', // from B
                         ),
-                    Pair(1, dfaA) to emptySet(), // accepting state
-                    Pair(0, dfaB) to
+                    1 via dfaA to emptySet(), // accepting state
+                    0 via dfaB to
                         setOf(
                             'A', // direct production
                             'a', // direct production
                             'B', // from A
                             'b', // from A
                         ),
-                    Pair(1, dfaB) to emptySet(), // accepting state
+                    1 via dfaB to emptySet(), // accepting state
                 ),
             )
     }

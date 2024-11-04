@@ -1,5 +1,6 @@
 package cacophony.automata
 
+import cacophony.automata.minimalization.via
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -11,8 +12,8 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 42,
                 mapOf(
-                    Pair(42, 'b') to 43,
-                    Pair(43, 'c') to 53,
+                    42 via 'b' to 43,
+                    43 via 'c' to 53,
                 ),
                 mapOf(
                     53 to true,
@@ -29,10 +30,10 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 1,
-                    Pair(1, 'b') to 2,
-                    Pair(2, 'a') to 2,
-                    Pair(2, 'b') to 2,
+                    1 via 'a' to 1,
+                    1 via 'b' to 2,
+                    2 via 'a' to 2,
+                    2 via 'b' to 2,
                 ),
                 mapOf(
                     2 to true,
@@ -42,10 +43,10 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 2,
                 mapOf(
-                    Pair(2, 'a') to 2,
-                    Pair(2, 'b') to 1,
-                    Pair(1, 'a') to 1,
-                    Pair(1, 'b') to 1,
+                    2 via 'a' to 2,
+                    2 via 'b' to 1,
+                    1 via 'a' to 1,
+                    1 via 'b' to 1,
                 ),
                 mapOf(
                     1 to true,
@@ -61,10 +62,10 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 1,
-                    Pair(1, 'b') to 2,
-                    Pair(2, 'a') to 2,
-                    Pair(2, 'b') to 2,
+                    1 via 'a' to 1,
+                    1 via 'b' to 2,
+                    2 via 'a' to 2,
+                    2 via 'b' to 2,
                 ),
                 mapOf(
                     2 to true,
@@ -75,10 +76,10 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 2,
                 mapOf(
-                    Pair(2, 'a') to 1,
-                    Pair(2, 'b') to 2,
-                    Pair(1, 'a') to 1,
-                    Pair(1, 'b') to 1,
+                    2 via 'a' to 1,
+                    2 via 'b' to 2,
+                    1 via 'a' to 1,
+                    1 via 'b' to 1,
                 ),
                 mapOf(
                     1 to true,
@@ -94,10 +95,10 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(1, 'b') to 2,
-                    Pair(2, 'a') to 2,
-                    Pair(2, 'b') to 2,
+                    1 via 'a' to 2,
+                    1 via 'b' to 2,
+                    2 via 'a' to 2,
+                    2 via 'b' to 2,
                 ),
                 mapOf(
                     2 to true,
@@ -107,12 +108,12 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(1, 'b') to 3,
-                    Pair(2, 'a') to 2,
-                    Pair(2, 'b') to 2,
-                    Pair(3, 'a') to 3,
-                    Pair(3, 'b') to 3,
+                    1 via 'a' to 2,
+                    1 via 'b' to 3,
+                    2 via 'a' to 2,
+                    2 via 'b' to 2,
+                    3 via 'a' to 3,
+                    3 via 'b' to 3,
                 ),
                 mapOf(
                     2 to true,
@@ -129,9 +130,9 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(2, 'a') to 2,
-                    Pair(2, 'b') to 2,
+                    1 via 'a' to 2,
+                    2 via 'a' to 2,
+                    2 via 'b' to 2,
                 ),
                 mapOf(
                     2 to true,
@@ -141,12 +142,12 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(1, 'b') to 3,
-                    Pair(2, 'a') to 2,
-                    Pair(2, 'b') to 2,
-                    Pair(3, 'a') to 3,
-                    Pair(3, 'b') to 3,
+                    1 via 'a' to 2,
+                    1 via 'b' to 3,
+                    2 via 'a' to 2,
+                    2 via 'b' to 2,
+                    3 via 'a' to 3,
+                    3 via 'b' to 3,
                 ),
                 mapOf(
                     2 to true,
@@ -162,9 +163,9 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(2, 'a') to 2,
-                    Pair(2, 'b') to 2,
+                    1 via 'a' to 2,
+                    2 via 'a' to 2,
+                    2 via 'b' to 2,
                 ),
                 mapOf(
                     2 to true,
@@ -175,11 +176,11 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(1, 'b') to 3,
-                    Pair(2, 'a') to 2,
-                    Pair(3, 'a') to 3,
-                    Pair(3, 'b') to 3,
+                    1 via 'a' to 2,
+                    1 via 'b' to 3,
+                    2 via 'a' to 2,
+                    3 via 'a' to 3,
+                    3 via 'b' to 3,
                 ),
                 mapOf(
                     2 to true,
@@ -196,53 +197,53 @@ class DFAEquivalenceTest {
                 2,
                 (
                     mapOf(
-                        Pair(1, 'a') to 4,
-                        Pair(1, 'b') to 12,
-                        Pair(1, 'c') to 5,
-                        Pair(2, 'a') to 10,
-                        Pair(2, 'b') to 1,
-                        Pair(2, 'c') to 9,
-                        Pair(3, 'a') to 7,
-                        Pair(3, 'b') to 13,
-                        Pair(3, 'c') to 13,
-                        Pair(4, 'a') to 11,
-                        Pair(4, 'b') to 14,
-                        Pair(4, 'c') to 14,
-                        Pair(5, 'a') to 3,
-                        Pair(5, 'b') to 7,
-                        Pair(5, 'c') to 13,
-                        Pair(6, 'a') to 7,
-                        Pair(6, 'b') to 15,
-                        Pair(6, 'c') to 15,
-                        Pair(7, 'a') to 2,
-                        Pair(7, 'b') to 8,
-                        Pair(7, 'c') to 8,
-                        Pair(8, 'a') to 8,
-                        Pair(8, 'b') to 8,
-                        Pair(8, 'c') to 8,
-                        Pair(9, 'a') to 6,
-                        Pair(9, 'b') to 15,
-                        Pair(9, 'c') to 15,
+                        1 via 'a' to 4,
+                        1 via 'b' to 12,
+                        1 via 'c' to 5,
+                        2 via 'a' to 10,
+                        2 via 'b' to 1,
+                        2 via 'c' to 9,
+                        3 via 'a' to 7,
+                        3 via 'b' to 13,
+                        3 via 'c' to 13,
+                        4 via 'a' to 11,
+                        4 via 'b' to 14,
+                        4 via 'c' to 14,
+                        5 via 'a' to 3,
+                        5 via 'b' to 7,
+                        5 via 'c' to 13,
+                        6 via 'a' to 7,
+                        6 via 'b' to 15,
+                        6 via 'c' to 15,
+                        7 via 'a' to 2,
+                        7 via 'b' to 8,
+                        7 via 'c' to 8,
+                        8 via 'a' to 8,
+                        8 via 'b' to 8,
+                        8 via 'c' to 8,
+                        9 via 'a' to 6,
+                        9 via 'b' to 15,
+                        9 via 'c' to 15,
                     ) +
                         mapOf(
-                            Pair(10, 'a') to 10,
-                            Pair(10, 'b') to 10,
-                            Pair(10, 'c') to 10,
-                            Pair(11, 'a') to 7,
-                            Pair(11, 'b') to 12,
-                            Pair(11, 'c') to 12,
-                            Pair(12, 'a') to 12,
-                            Pair(12, 'b') to 12,
-                            Pair(12, 'c') to 12,
-                            Pair(13, 'a') to 13,
-                            Pair(13, 'b') to 13,
-                            Pair(13, 'c') to 13,
-                            Pair(14, 'a') to 13,
-                            Pair(14, 'b') to 13,
-                            Pair(14, 'c') to 13,
-                            Pair(15, 'a') to 13,
-                            Pair(15, 'b') to 13,
-                            Pair(15, 'c') to 13,
+                            10 via 'a' to 10,
+                            10 via 'b' to 10,
+                            10 via 'c' to 10,
+                            11 via 'a' to 7,
+                            11 via 'b' to 12,
+                            11 via 'c' to 12,
+                            12 via 'a' to 12,
+                            12 via 'b' to 12,
+                            12 via 'c' to 12,
+                            13 via 'a' to 13,
+                            13 via 'b' to 13,
+                            13 via 'c' to 13,
+                            14 via 'a' to 13,
+                            14 via 'b' to 13,
+                            14 via 'c' to 13,
+                            15 via 'a' to 13,
+                            15 via 'b' to 13,
+                            15 via 'c' to 13,
                         )
                 ),
                 mapOf(
@@ -253,15 +254,15 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'b') to 2,
-                    Pair(1, 'c') to 4,
-                    Pair(2, 'a') to 4,
-                    Pair(2, 'c') to 3,
-                    Pair(3, 'a') to 5,
-                    Pair(3, 'b') to 6,
-                    Pair(4, 'a') to 5,
-                    Pair(5, 'a') to 6,
-                    Pair(6, 'a') to 1,
+                    1 via 'b' to 2,
+                    1 via 'c' to 4,
+                    2 via 'a' to 4,
+                    2 via 'c' to 3,
+                    3 via 'a' to 5,
+                    3 via 'b' to 6,
+                    4 via 'a' to 5,
+                    5 via 'a' to 6,
+                    6 via 'a' to 1,
                 ),
                 mapOf(
                     1 to true,
@@ -276,14 +277,14 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(1, 'b') to 3,
-                    Pair(1, 'c') to 4,
-                    Pair(1, 'd') to 5,
-                    Pair(2, 'a') to 6,
-                    Pair(3, 'a') to 6,
-                    Pair(4, 'a') to 6,
-                    Pair(5, 'a') to 6,
+                    1 via 'a' to 2,
+                    1 via 'b' to 3,
+                    1 via 'c' to 4,
+                    1 via 'd' to 5,
+                    2 via 'a' to 6,
+                    3 via 'a' to 6,
+                    4 via 'a' to 6,
+                    5 via 'a' to 6,
                 ),
                 mapOf(
                     6 to true,
@@ -293,14 +294,14 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(2, 'a') to 3,
-                    Pair(1, 'b') to 4,
-                    Pair(4, 'a') to 5,
-                    Pair(1, 'c') to 6,
-                    Pair(6, 'a') to 7,
-                    Pair(1, 'd') to 8,
-                    Pair(8, 'a') to 9,
+                    1 via 'a' to 2,
+                    2 via 'a' to 3,
+                    1 via 'b' to 4,
+                    4 via 'a' to 5,
+                    1 via 'c' to 6,
+                    6 via 'a' to 7,
+                    1 via 'd' to 8,
+                    8 via 'a' to 9,
                 ),
                 mapOf(
                     3 to true,
@@ -318,11 +319,11 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 3,
-                    Pair(1, 'b') to 2,
-                    Pair(2, 'a') to 3,
-                    Pair(3, 'a') to 4,
-                    Pair(3, 'b') to 5,
+                    1 via 'a' to 3,
+                    1 via 'b' to 2,
+                    2 via 'a' to 3,
+                    3 via 'a' to 4,
+                    3 via 'b' to 5,
                 ),
                 mapOf(
                     3 to true,
@@ -334,13 +335,13 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(1, 'b') to 4,
-                    Pair(2, 'a') to 3,
-                    Pair(2, 'b') to 8,
-                    Pair(4, 'a') to 5,
-                    Pair(5, 'a') to 7,
-                    Pair(5, 'b') to 6,
+                    1 via 'a' to 2,
+                    1 via 'b' to 4,
+                    2 via 'a' to 3,
+                    2 via 'b' to 8,
+                    4 via 'a' to 5,
+                    5 via 'a' to 7,
+                    5 via 'b' to 6,
                 ),
                 mapOf(
                     2 to true,
@@ -360,8 +361,8 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 1,
-                    Pair(1, 'b') to 1,
+                    1 via 'a' to 1,
+                    1 via 'b' to 1,
                 ),
                 mapOf<Int, Boolean>(),
             )
@@ -369,12 +370,12 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 1,
-                    Pair(1, 'b') to 1,
-                    Pair(2, 'a') to 1,
-                    Pair(3, 'b') to 1,
-                    Pair(4, 'a') to 2,
-                    Pair(4, 'b') to 3,
+                    1 via 'a' to 1,
+                    1 via 'b' to 1,
+                    2 via 'a' to 1,
+                    3 via 'b' to 1,
+                    4 via 'a' to 2,
+                    4 via 'b' to 3,
                 ),
                 mapOf(
                     2 to true,
@@ -391,8 +392,8 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 1,
-                    Pair(1, 'b') to 1,
+                    1 via 'a' to 1,
+                    1 via 'b' to 1,
                 ),
                 mapOf<Int, Boolean>(),
             )
@@ -400,8 +401,8 @@ class DFAEquivalenceTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 1,
-                    Pair(1, 'b') to 2,
+                    1 via 'a' to 1,
+                    1 via 'b' to 2,
                 ),
                 mapOf(
                     2 to true,

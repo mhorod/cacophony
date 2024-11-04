@@ -1,5 +1,6 @@
 package cacophony.automata
 
+import cacophony.automata.minimalization.via
 import kotlin.collections.mutableMapOf
 import kotlin.collections.mutableSetOf
 import kotlin.collections.setOf
@@ -44,7 +45,7 @@ private fun <StateType, AtomType> determinize(
     val productions =
         dfaProductions
             .flatMap { (state, edges) ->
-                edges.map { Pair(setToInt[state]!!, it.key) to setToInt[it.value]!! }
+                edges.map { setToInt[state]!! via it.key to setToInt[it.value]!! }
             }.toMap()
     return SimpleDFA(setToInt[startingState]!!, productions, results)
 }

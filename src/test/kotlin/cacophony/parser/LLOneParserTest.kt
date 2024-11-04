@@ -91,21 +91,21 @@ class LLOneParserTest {
             )
         val first =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to setOf(Symbol.B, Symbol.C, Symbol.X),
-                Pair(1, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(Symbol.C, Symbol.X),
-                Pair(1, dfaB) to emptySet(),
-                Pair(0, dfaC) to setOf(Symbol.X),
-                Pair(1, dfaC) to emptySet(),
+                0 via dfaA to setOf(Symbol.B, Symbol.C, Symbol.X),
+                1 via dfaA to emptySet(),
+                0 via dfaB to setOf(Symbol.C, Symbol.X),
+                1 via dfaB to emptySet(),
+                0 via dfaC to setOf(Symbol.X),
+                1 via dfaC to emptySet(),
             )
         val follow =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to emptySet(),
-                Pair(1, dfaA) to emptySet(),
-                Pair(0, dfaB) to emptySet(),
-                Pair(1, dfaB) to emptySet(),
-                Pair(0, dfaC) to emptySet(),
-                Pair(1, dfaC) to emptySet(),
+                0 via dfaA to emptySet(),
+                1 via dfaA to emptySet(),
+                0 via dfaB to emptySet(),
+                1 via dfaB to emptySet(),
+                0 via dfaC to emptySet(),
+                1 via dfaC to emptySet(),
             )
 
         val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
@@ -141,23 +141,23 @@ class LLOneParserTest {
             )
         val first =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to setOf(Symbol.B, Symbol.C, Symbol.X),
-                Pair(1, dfaA) to emptySet(),
-                Pair(2, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(Symbol.C, Symbol.X),
-                Pair(1, dfaB) to emptySet(),
-                Pair(0, dfaC) to setOf(Symbol.X),
-                Pair(1, dfaC) to emptySet(),
+                0 via dfaA to setOf(Symbol.B, Symbol.C, Symbol.X),
+                1 via dfaA to emptySet(),
+                2 via dfaA to emptySet(),
+                0 via dfaB to setOf(Symbol.C, Symbol.X),
+                1 via dfaB to emptySet(),
+                0 via dfaC to setOf(Symbol.X),
+                1 via dfaC to emptySet(),
             )
         val follow =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to emptySet(),
-                Pair(1, dfaA) to emptySet(),
-                Pair(2, dfaA) to emptySet(),
-                Pair(0, dfaB) to emptySet(),
-                Pair(1, dfaB) to emptySet(),
-                Pair(0, dfaC) to emptySet(),
-                Pair(1, dfaC) to emptySet(),
+                0 via dfaA to emptySet(),
+                1 via dfaA to emptySet(),
+                2 via dfaA to emptySet(),
+                0 via dfaB to emptySet(),
+                1 via dfaB to emptySet(),
+                0 via dfaC to emptySet(),
+                1 via dfaC to emptySet(),
             )
 
         val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
@@ -197,19 +197,19 @@ class LLOneParserTest {
             )
         val first =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to setOf(Symbol.X, Symbol.Y),
-                Pair(1, dfaA) to setOf(Symbol.X),
-                Pair(2, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(Symbol.Y),
-                Pair(1, dfaB) to emptySet(),
+                0 via dfaA to setOf(Symbol.X, Symbol.Y),
+                1 via dfaA to setOf(Symbol.X),
+                2 via dfaA to emptySet(),
+                0 via dfaB to setOf(Symbol.Y),
+                1 via dfaB to emptySet(),
             )
         val follow =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to emptySet(),
-                Pair(1, dfaA) to emptySet(),
-                Pair(2, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(Symbol.X),
-                Pair(1, dfaB) to setOf(Symbol.X),
+                0 via dfaA to emptySet(),
+                1 via dfaA to emptySet(),
+                2 via dfaA to emptySet(),
+                0 via dfaB to setOf(Symbol.X),
+                1 via dfaB to setOf(Symbol.X),
             )
 
         val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
@@ -250,27 +250,27 @@ class LLOneParserTest {
             )
         val first =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to setOf(Symbol.B, Symbol.C, Symbol.X),
-                Pair(1, dfaA) to setOf(Symbol.Y),
-                Pair(2, dfaA) to emptySet(),
-                Pair(3, dfaA) to setOf(Symbol.Z),
-                Pair(4, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(Symbol.X),
-                Pair(1, dfaB) to emptySet(),
-                Pair(0, dfaC) to setOf(Symbol.X),
-                Pair(1, dfaC) to emptySet(),
+                0 via dfaA to setOf(Symbol.B, Symbol.C, Symbol.X),
+                1 via dfaA to setOf(Symbol.Y),
+                2 via dfaA to emptySet(),
+                3 via dfaA to setOf(Symbol.Z),
+                4 via dfaA to emptySet(),
+                0 via dfaB to setOf(Symbol.X),
+                1 via dfaB to emptySet(),
+                0 via dfaC to setOf(Symbol.X),
+                1 via dfaC to emptySet(),
             )
         val follow =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to emptySet(),
-                Pair(1, dfaA) to emptySet(),
-                Pair(2, dfaA) to emptySet(),
-                Pair(3, dfaA) to emptySet(),
-                Pair(4, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(Symbol.Y),
-                Pair(1, dfaB) to setOf(Symbol.Y),
-                Pair(0, dfaC) to setOf(Symbol.Z),
-                Pair(1, dfaC) to setOf(Symbol.Z),
+                0 via dfaA to emptySet(),
+                1 via dfaA to emptySet(),
+                2 via dfaA to emptySet(),
+                3 via dfaA to emptySet(),
+                4 via dfaA to emptySet(),
+                0 via dfaB to setOf(Symbol.Y),
+                1 via dfaB to setOf(Symbol.Y),
+                0 via dfaC to setOf(Symbol.Z),
+                1 via dfaC to setOf(Symbol.Z),
             )
 
         val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
@@ -317,27 +317,27 @@ class LLOneParserTest {
             )
         val first =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to setOf(Symbol.B, Symbol.X),
-                Pair(1, dfaA) to setOf(Symbol.C, Symbol.X),
-                Pair(2, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(Symbol.X),
-                Pair(1, dfaB) to setOf(Symbol.Y),
-                Pair(2, dfaB) to emptySet(),
-                Pair(0, dfaC) to setOf(Symbol.X),
-                Pair(1, dfaC) to setOf(Symbol.Z),
-                Pair(2, dfaC) to emptySet(),
+                0 via dfaA to setOf(Symbol.B, Symbol.X),
+                1 via dfaA to setOf(Symbol.C, Symbol.X),
+                2 via dfaA to emptySet(),
+                0 via dfaB to setOf(Symbol.X),
+                1 via dfaB to setOf(Symbol.Y),
+                2 via dfaB to emptySet(),
+                0 via dfaC to setOf(Symbol.X),
+                1 via dfaC to setOf(Symbol.Z),
+                2 via dfaC to emptySet(),
             )
         val follow =
             mapOf<DFAStateReference<Int, Symbol, Production<Symbol>>, Set<Symbol>>(
-                Pair(0, dfaA) to emptySet(),
-                Pair(1, dfaA) to emptySet(),
-                Pair(2, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(Symbol.C, Symbol.X),
-                Pair(1, dfaB) to setOf(Symbol.C, Symbol.X),
-                Pair(2, dfaB) to setOf(Symbol.C, Symbol.X),
-                Pair(0, dfaC) to emptySet(),
-                Pair(1, dfaC) to emptySet(),
-                Pair(2, dfaC) to emptySet(),
+                0 via dfaA to emptySet(),
+                1 via dfaA to emptySet(),
+                2 via dfaA to emptySet(),
+                0 via dfaB to setOf(Symbol.C, Symbol.X),
+                1 via dfaB to setOf(Symbol.C, Symbol.X),
+                2 via dfaB to setOf(Symbol.C, Symbol.X),
+                0 via dfaC to emptySet(),
+                1 via dfaC to emptySet(),
+                2 via dfaC to emptySet(),
             )
 
         val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
@@ -413,35 +413,35 @@ class LLOneParserTest {
             )
         val first =
             mapOf<DFAStateReference<Int, SymbolAryt, Production<SymbolAryt>>, Set<SymbolAryt>>(
-                Pair(0, dfaA) to setOf(SymbolAryt.B, SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
-                Pair(1, dfaA) to setOf(SymbolAryt.SUM),
-                Pair(2, dfaA) to setOf(SymbolAryt.A, SymbolAryt.B, SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
-                Pair(3, dfaA) to emptySet(),
-                Pair(0, dfaB) to setOf(SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
-                Pair(1, dfaB) to setOf(SymbolAryt.PROD),
-                Pair(2, dfaB) to setOf(SymbolAryt.B, SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
-                Pair(3, dfaB) to emptySet(),
-                Pair(0, dfaC) to setOf(SymbolAryt.X, SymbolAryt.LPAREN),
-                Pair(1, dfaC) to setOf(),
-                Pair(2, dfaC) to setOf(SymbolAryt.A, SymbolAryt.B, SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
-                Pair(3, dfaC) to setOf(SymbolAryt.RPAREN),
-                Pair(4, dfaC) to emptySet(),
+                0 via dfaA to setOf(SymbolAryt.B, SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
+                1 via dfaA to setOf(SymbolAryt.SUM),
+                2 via dfaA to setOf(SymbolAryt.A, SymbolAryt.B, SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
+                3 via dfaA to emptySet(),
+                0 via dfaB to setOf(SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
+                1 via dfaB to setOf(SymbolAryt.PROD),
+                2 via dfaB to setOf(SymbolAryt.B, SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
+                3 via dfaB to emptySet(),
+                0 via dfaC to setOf(SymbolAryt.X, SymbolAryt.LPAREN),
+                1 via dfaC to setOf(),
+                2 via dfaC to setOf(SymbolAryt.A, SymbolAryt.B, SymbolAryt.C, SymbolAryt.X, SymbolAryt.LPAREN),
+                3 via dfaC to setOf(SymbolAryt.RPAREN),
+                4 via dfaC to emptySet(),
             )
         val follow =
             mapOf<DFAStateReference<Int, SymbolAryt, Production<SymbolAryt>>, Set<SymbolAryt>>(
-                Pair(0, dfaA) to setOf(SymbolAryt.RPAREN),
-                Pair(1, dfaA) to setOf(SymbolAryt.RPAREN),
-                Pair(2, dfaA) to setOf(SymbolAryt.RPAREN),
-                Pair(3, dfaA) to setOf(SymbolAryt.RPAREN),
-                Pair(0, dfaB) to setOf(SymbolAryt.SUM, SymbolAryt.RPAREN),
-                Pair(1, dfaB) to setOf(SymbolAryt.SUM, SymbolAryt.RPAREN),
-                Pair(2, dfaB) to setOf(SymbolAryt.SUM, SymbolAryt.RPAREN),
-                Pair(3, dfaB) to setOf(SymbolAryt.SUM, SymbolAryt.RPAREN),
-                Pair(0, dfaC) to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
-                Pair(1, dfaC) to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
-                Pair(2, dfaC) to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
-                Pair(3, dfaC) to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
-                Pair(4, dfaC) to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
+                0 via dfaA to setOf(SymbolAryt.RPAREN),
+                1 via dfaA to setOf(SymbolAryt.RPAREN),
+                2 via dfaA to setOf(SymbolAryt.RPAREN),
+                3 via dfaA to setOf(SymbolAryt.RPAREN),
+                0 via dfaB to setOf(SymbolAryt.SUM, SymbolAryt.RPAREN),
+                1 via dfaB to setOf(SymbolAryt.SUM, SymbolAryt.RPAREN),
+                2 via dfaB to setOf(SymbolAryt.SUM, SymbolAryt.RPAREN),
+                3 via dfaB to setOf(SymbolAryt.SUM, SymbolAryt.RPAREN),
+                0 via dfaC to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
+                1 via dfaC to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
+                2 via dfaC to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
+                3 via dfaC to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
+                4 via dfaC to setOf(SymbolAryt.PROD, SymbolAryt.SUM, SymbolAryt.RPAREN),
             )
 
         val analyzedGrammar = AnalyzedGrammar(SymbolAryt.A, listOf(), automata, nullable, first, follow)

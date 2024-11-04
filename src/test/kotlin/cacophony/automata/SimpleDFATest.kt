@@ -15,9 +15,9 @@ class SimpleDFATest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(3, 'b') to 100,
-                    Pair(0, 'a') to 1,
+                    1 via 'a' to 2,
+                    3 via 'b' to 100,
+                    0 via 'a' to 1,
                 ),
                 mapOf(
                     -1 to true,
@@ -34,9 +34,9 @@ class SimpleDFATest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to 2,
-                    Pair(3, 'b') to 100,
-                    Pair(0, 'a') to 1,
+                    1 via 'a' to 2,
+                    3 via 'b' to 100,
+                    0 via 'a' to 1,
                 ),
                 mapOf(
                     -1 to true,
@@ -51,9 +51,9 @@ class SimpleDFATest {
     fun `productions are unchanged`() {
         val productions =
             mapOf(
-                Pair(1, 'a') to 2,
-                Pair(3, 'b') to 100,
-                Pair(0, 'a') to 1,
+                1 via 'a' to 2,
+                3 via 'b' to 100,
+                0 via 'a' to 1,
             )
         val dfa =
             SimpleDFA(
@@ -72,9 +72,9 @@ class SimpleDFATest {
     fun `singular production matches definition in productions map`() {
         val productions =
             mapOf(
-                Pair(1, 'a') to 2,
-                Pair(3, 'b') to 100,
-                Pair(0, 'a') to 1,
+                1 via 'a' to 2,
+                3 via 'b' to 100,
+                0 via 'a' to 1,
             )
         val dfa =
             SimpleDFA(
@@ -95,9 +95,9 @@ class SimpleDFATest {
     fun `nonexistent production returns null`() {
         val productions =
             mapOf(
-                Pair(1, 'a') to 2,
-                Pair(3, 'b') to 100,
-                Pair(0, 'a') to 1,
+                1 via 'a' to 2,
+                3 via 'b' to 100,
+                0 via 'a' to 1,
             )
         val dfa =
             SimpleDFA(
@@ -119,9 +119,9 @@ class SimpleDFATest {
     fun `exactly the provided accepting states are accepting`() {
         val productions =
             mapOf(
-                Pair(1, 'a') to 2,
-                Pair(3, 'b') to 100,
-                Pair(0, 'a') to 1,
+                1 via 'a' to 2,
+                3 via 'b' to 100,
+                0 via 'a' to 1,
             )
         val dfa =
             SimpleDFA(
@@ -148,9 +148,9 @@ class SimpleDFATest {
             SimpleDFA(
                 0,
                 mapOf(
-                    Pair(0, 'a') to 1,
-                    Pair(1, 'a') to 2,
-                    Pair(2, 'a') to 3,
+                    0 via 'a' to 1,
+                    1 via 'a' to 2,
+                    2 via 'a' to 3,
                 ),
                 mapOf(
                     1 to "Good",
@@ -168,9 +168,9 @@ class SimpleDFATest {
             SimpleDFA(
                 0,
                 mapOf(
-                    Pair(0, 'a') to 1,
-                    Pair(1, 'a') to 2,
-                    Pair(2, 'a') to 3,
+                    0 via 'a' to 1,
+                    1 via 'a' to 2,
+                    2 via 'a' to 3,
                 ),
                 mapOf(
                     1 to "Good",

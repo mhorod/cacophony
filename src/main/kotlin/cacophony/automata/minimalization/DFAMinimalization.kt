@@ -65,10 +65,11 @@ private fun <DFAState, AtomType, ResultType> minimalizeImpl(
         }
 
     val newResults =
-        allNewStates.mapNotNull {
-            val result = dfa.result(it.originalStates[0])
-            if (result != null) it to result else null
-        }.toMap()
+        allNewStates
+            .mapNotNull {
+                val result = dfa.result(it.originalStates[0])
+                if (result != null) it to result else null
+            }.toMap()
     val newStartingState = toNewState[dfa.getStartingState()]!!
     val newProductions =
         dfa
@@ -77,7 +78,7 @@ private fun <DFAState, AtomType, ResultType> minimalizeImpl(
                 val (from, symbol) = kv
                 val newFrom = toNewState[from]!!
                 val newResult = toNewState[result]!!
-                return@map Pair(Pair(newFrom, symbol), newResult)
+                return@map (newFrom via symbol to newResult)
             }.toMap()
 
     return SimpleDFA(

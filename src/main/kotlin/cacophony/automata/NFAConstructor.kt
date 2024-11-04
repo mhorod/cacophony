@@ -1,5 +1,6 @@
 package cacophony.automata
 
+import cacophony.automata.minimalization.via
 import cacophony.utils.AlgebraicRegex
 import kotlin.collections.emptyMap
 
@@ -11,7 +12,7 @@ private fun <AtomType> buildSimpleNFAFromRegex(regex: AlgebraicRegex<AtomType>):
         is AlgebraicRegex.AtomicRegex ->
             SimpleNFA(
                 0,
-                mapOf(Pair(0, regex.symbol) to listOf(1)),
+                mapOf(0 via regex.symbol to listOf(1)),
                 emptyMap(),
                 1,
             )

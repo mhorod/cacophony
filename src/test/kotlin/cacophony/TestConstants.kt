@@ -1,6 +1,7 @@
 package cacophony
 
 import cacophony.automata.SimpleDFA
+import cacophony.automata.minimalization.via
 
 enum class MockCategory {
     NON_EMPTY,
@@ -14,14 +15,14 @@ val DFA_NON_EMPTY =
     SimpleDFA(
         1,
         mapOf(
-            Pair(1, 'a') to 2,
-            Pair(1, 'b') to 2,
-            Pair(1, 'A') to 2,
-            Pair(1, 'B') to 2,
-            Pair(2, 'a') to 2,
-            Pair(2, 'b') to 2,
-            Pair(2, 'A') to 2,
-            Pair(2, 'B') to 2,
+            1 via 'a' to 2,
+            1 via 'b' to 2,
+            1 via 'A' to 2,
+            1 via 'B' to 2,
+            2 via 'a' to 2,
+            2 via 'b' to 2,
+            2 via 'A' to 2,
+            2 via 'B' to 2,
         ),
         mapOf(
             2 to Unit,
@@ -33,10 +34,10 @@ val DFA_FIRST_UPPER_CASE =
     SimpleDFA(
         1,
         mapOf(
-            Pair(1, 'A') to 2,
-            Pair(1, 'B') to 2,
-            Pair(2, 'a') to 2,
-            Pair(2, 'b') to 2,
+            1 via 'A' to 2,
+            1 via 'B' to 2,
+            2 via 'a' to 2,
+            2 via 'b' to 2,
         ),
         mapOf(
             2 to Unit,
@@ -48,10 +49,10 @@ val DFA_UPPER_CASE =
     SimpleDFA(
         1,
         mapOf(
-            Pair(1, 'A') to 2,
-            Pair(1, 'B') to 2,
-            Pair(2, 'A') to 2,
-            Pair(2, 'B') to 2,
+            1 via 'A' to 2,
+            1 via 'B' to 2,
+            2 via 'A' to 2,
+            2 via 'B' to 2,
         ),
         mapOf(
             2 to Unit,
@@ -63,12 +64,12 @@ val DFA_SQUARE =
     SimpleDFA(
         1,
         mapOf(
-            Pair(1, '[') to 2,
-            Pair(2, 'a') to 2,
-            Pair(2, 'b') to 2,
-            Pair(2, 'A') to 2,
-            Pair(2, 'B') to 2,
-            Pair(2, ']') to 3,
+            1 via '[' to 2,
+            2 via 'a' to 2,
+            2 via 'b' to 2,
+            2 via 'A' to 2,
+            2 via 'B' to 2,
+            2 via ']' to 3,
         ),
         mapOf(
             3 to Unit,
