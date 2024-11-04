@@ -1,15 +1,11 @@
 package cacophony.semantic
 
-import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.Statement
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Diagnostics
+
+class OverloadResolutionError(
+    reason: String,
+) : Exception(reason)
 
 fun resolveOverloads(
     ast: AST,
@@ -28,15 +24,26 @@ fun resolveOverloads(
                     when (val resName = nr[expr.function]!!) {
                         is ResolvedName.Function -> {
                             when (val overload = resName.def[expr.arguments.size]) {
-                                null -> diagnostics.report("Cannot find an appropriate function declaration", expr.range)
+                                null -> throw OverloadResolutionError(
+                                    "Cannot find an appropriate function declaration: " +
+                                        "${expr.function.identifier} at ${expr.range}",
+                                )
                                 else -> resolvedVariables[expr.function] = overload
                             }
                         }
-                        is ResolvedName.Argument -> diagnostics.report("Cannot use function argument as a function", expr.function.range)
-                        is ResolvedName.Variable -> diagnostics.report("Cannot use variable as a function", expr.function.range)
+                        is ResolvedName.Argument -> throw OverloadResolutionError(
+                            "Cannot use function argument as a function: " +
+                                "${expr.function.identifier} at ${expr.function.range}",
+                        )
+                        is ResolvedName.Variable -> throw OverloadResolutionError(
+                            "Cannot use variable as a function: " +
+                                "${expr.function.identifier} at ${expr.function.range}",
+                        )
                     }
                 } else {
-                    diagnostics.report("Function has to be a simple expression", expr.function.range)
+                    throw OverloadResolutionError(
+                        "Function has to be a simple expression: at ${expr.function.range}",
+                    )
                 }
                 expr.arguments.forEach { resolveOverloadsRec(it) }
             }
@@ -68,7 +75,7 @@ fun resolveOverloads(
                 resolveOverloadsRec(expr.lhs)
                 resolveOverloadsRec(expr.rhs)
             }
-            else -> {}
+            is LeafExpression -> {} // don't use else branch to prevent this from breaking when SyntaxTree is changed
         }
     }
 

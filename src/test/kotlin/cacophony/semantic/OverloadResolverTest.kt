@@ -14,10 +14,10 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class OverloadResolverTest {
     @MockK
@@ -50,12 +50,6 @@ class OverloadResolverTest {
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(func to def),
         )
-        verify(exactly = 0) {
-            diagnostics.report(
-                any(),
-                eq(Pair(Location(0), Location(0))),
-            )
-        }
     }
 
     @Test
@@ -81,12 +75,6 @@ class OverloadResolverTest {
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(func to def1),
         )
-        verify(exactly = 0) {
-            diagnostics.report(
-                any(),
-                eq(Pair(Location(0), Location(0))),
-            )
-        }
     }
 
     @Test
@@ -107,14 +95,7 @@ class OverloadResolverTest {
         every { overloadSet[2] } returns def2
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
-        resolveOverloads(ast, diagnostics, nr)
-
-        verify(exactly = 1) {
-            diagnostics.report(
-                "Cannot find an appropriate function declaration",
-                eq(Pair(Location(1), Location(2))),
-            )
-        }
+        assertThrows<OverloadResolutionError> { resolveOverloads(ast, diagnostics, nr) }
     }
 
     @Test
@@ -133,13 +114,6 @@ class OverloadResolverTest {
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(variable to def),
         )
-
-        verify(exactly = 0) {
-            diagnostics.report(
-                any(),
-                eq(Pair(Location(1), Location(2))),
-            )
-        }
     }
 
     @Test
@@ -158,13 +132,6 @@ class OverloadResolverTest {
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(variable to def),
         )
-
-        verify(exactly = 0) {
-            diagnostics.report(
-                any(),
-                eq(Pair(Location(1), Location(2))),
-            )
-        }
     }
 
     @Test
@@ -183,14 +150,7 @@ class OverloadResolverTest {
         every { overloadSet[1] } returns def
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
-        resolveOverloads(ast, diagnostics, nr)
-
-        verify(exactly = 1) {
-            diagnostics.report(
-                "Function has to be a simple expression",
-                eq(Pair(Location(1), Location(2))),
-            )
-        }
+        assertThrows<OverloadResolutionError> { resolveOverloads(ast, diagnostics, nr) }
     }
 
     @Test
@@ -206,14 +166,7 @@ class OverloadResolverTest {
         val def = mockk<Definition.VariableDeclaration>()
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Variable(def))
 
-        resolveOverloads(ast, diagnostics, nr)
-
-        verify(exactly = 1) {
-            diagnostics.report(
-                "Cannot use variable as a function",
-                eq(Pair(Location(1), Location(2))),
-            )
-        }
+        assertThrows<OverloadResolutionError> { resolveOverloads(ast, diagnostics, nr) }
     }
 
     @Test
@@ -229,14 +182,7 @@ class OverloadResolverTest {
         val def = mockk<Definition.FunctionArgument>()
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Argument(def))
 
-        resolveOverloads(ast, diagnostics, nr)
-
-        verify(exactly = 1) {
-            diagnostics.report(
-                "Cannot use function argument as a function",
-                eq(Pair(Location(1), Location(2))),
-            )
-        }
+        assertThrows<OverloadResolutionError> { resolveOverloads(ast, diagnostics, nr) }
     }
 
     @Test
@@ -256,12 +202,5 @@ class OverloadResolverTest {
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(variable to def),
         )
-
-        verify(exactly = 0) {
-            diagnostics.report(
-                any(),
-                eq(Pair(Location(1), Location(2))),
-            )
-        }
     }
 }
