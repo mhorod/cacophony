@@ -134,7 +134,7 @@ class NameResolverTest {
                 val aDef = variableDeclaration("a")
                 val aUse = VariableUse(mockRange, "a")
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(aDef, VariableDeclaration(mockRange, "b", null, aUse)),
                     )
