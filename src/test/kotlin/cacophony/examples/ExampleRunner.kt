@@ -1,12 +1,9 @@
 package cacophony.examples
 
-import cacophony.grammars.ParseTree
-import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.semantic.syntaxtree.AST
 import cacophony.utils.FileInput
 import cacophony.utils.Input
 import cacophony.utils.TreePrinter
-import java.lang.Exception
 import java.lang.StringBuilder
 import java.nio.file.Files
 import java.nio.file.Path
@@ -21,10 +18,10 @@ data class ExampleResult(
     override fun toString(): String {
         val treePrinter = TreePrinter(StringBuilder())
         return "ExampleResult(\n" +
-                "AST=${if (AST != null) treePrinter.printTree(AST) else ""}, \n" +
-                "diagnostics=${diagnostics.errors()}, \n" +
-                "exceptionMessage=$exceptionMessage\n" +
-                ")"
+            "AST=${if (AST != null) treePrinter.printTree(AST) else ""}, \n" +
+            "diagnostics=${diagnostics.errors()}, \n" +
+            "exceptionMessage=$exceptionMessage\n" +
+            ")"
     }
 }
 

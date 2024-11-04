@@ -50,7 +50,7 @@ class CallGraphTest {
             )
 
         val ast =
-            AST(
+            Block(
                 loc(0, 9),
                 listOf(fDef, gDef),
             )
@@ -104,7 +104,7 @@ class CallGraphTest {
             )
 
         val ast =
-            AST(
+            Block(
                 loc(0, 9),
                 listOf(fDef, gDef),
             )
@@ -132,7 +132,7 @@ class CallGraphTest {
             )
 
         val ast =
-            AST(
+            Block(
                 loc(0, 9),
                 listOf(fDef),
             )
@@ -192,7 +192,7 @@ class CallGraphTest {
             )
 
         val ast =
-            AST(
+            Block(
                 loc(0, 9),
                 listOf(fDef, hDef),
             )
@@ -237,7 +237,7 @@ class CallGraphTest {
             )
 
         val ast =
-            AST(
+            Block(
                 loc(0, 9),
                 listOf(fDef),
             )
