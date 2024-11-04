@@ -9,10 +9,8 @@ interface TreeLeaf : Tree {
 }
 
 class TreePrinter(
-    builder: StringBuilder,
+    private val builder: StringBuilder = StringBuilder(),
 ) {
-    val builder: StringBuilder = builder
-
     private fun printBlock(
         block: String,
         indent: String,

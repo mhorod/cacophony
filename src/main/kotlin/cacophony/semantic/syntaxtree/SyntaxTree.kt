@@ -4,7 +4,7 @@ import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
 
-typealias AST = Block
+typealias AST = Expression
 
 fun areEquivalentTypes(
     lhs: Type?,

@@ -1,6 +1,5 @@
 package cacophony.semantic
 
-import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Empty
@@ -48,7 +47,7 @@ fun block(vararg expressions: Expression) = Block(mockRange(), expressions.toLis
 
 fun call(variableUse: VariableUse) = FunctionCall(mockRange(), variableUse, emptyList())
 
-fun astOf(vararg expressions: Expression) = AST(mockRange(), expressions.toList())
+fun astOf(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 
 fun callGraph(vararg calls: Pair<Definition.FunctionDeclaration, Definition.FunctionDeclaration>): CallGraph =
     calls.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }

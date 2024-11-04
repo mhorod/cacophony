@@ -6,6 +6,7 @@ import cacophony.utils.AlgebraicRegex.ConcatenationRegex
 import cacophony.utils.AlgebraicRegex.StarRegex
 import cacophony.utils.AlgebraicRegex.UnionRegex
 
+// This is not CompileException intentionally.
 class RegexSyntaxError(reason: String) : Exception(reason)
 
 internal sealed class RegexType : Cloneable {

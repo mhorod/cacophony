@@ -12,12 +12,10 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
 private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): CacophonyGrammarSymbol {
-    if (parseTree is ParseTree.Leaf) {
-        return parseTree.token.category
-    } else if (parseTree is ParseTree.Branch) {
-        return parseTree.production.lhs
+    return when (parseTree) {
+        is ParseTree.Leaf -> parseTree.token.category
+        is ParseTree.Branch -> parseTree.production.lhs
     }
-    throw Exception("Parse tree must be either Leaf or Branch")
 }
 
 private fun pruneParseTree(

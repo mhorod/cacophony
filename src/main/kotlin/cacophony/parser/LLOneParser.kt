@@ -8,6 +8,7 @@ import cacophony.grammars.Production
 import cacophony.utils.Diagnostics
 import kotlin.collections.mutableListOf
 
+// This is not CompileException intentionally.
 class ParserConstructorError(
     reason: String,
 ) : Exception(reason)

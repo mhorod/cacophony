@@ -17,16 +17,23 @@ import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 class CacophonyPipeline(
-    private val diagnostics: Diagnostics,
-    private val logger: CacophonyLogger? = null,
+    val diagnostics: Diagnostics,
+    val logger: CacophonyLogger? = null,
+    private val lexer: CacophonyLexer = cachedLexer,
+    private val parser: CacophonyParser = cachedParser,
 ) {
+    companion object {
+        private val cachedLexer = CacophonyLexer()
+        private val cachedParser = CacophonyParser()
+    }
+
     // run the full pipeline
     fun process(input: Input): FunctionAnalysisResult = analyzeFunctions(input)
 
     fun lex(input: Input): List<Token<TokenCategorySpecific>> {
         val tokens =
             try {
-                CacophonyLexer().process(input, diagnostics)
+                lexer.process(input, diagnostics)
             } catch (e: CompileException) {
                 logger?.logFailedLexing()
                 throw e
@@ -39,7 +46,7 @@ class CacophonyPipeline(
         val terminals = lex(input).map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
         val parseTree =
             try {
-                CacophonyParser().process(terminals, diagnostics)
+                parser.process(terminals, diagnostics)
             } catch (e: CompileException) {
                 logger?.logFailedParsing()
                 throw e
