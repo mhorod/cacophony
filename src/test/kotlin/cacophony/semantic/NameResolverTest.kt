@@ -126,6 +126,30 @@ class NameResolverTest {
             }
 
             @Test
+            fun `variable is visible in variable declaration value`() {
+                // let a = 5
+                // let b = a
+
+                // given
+                val aDef = variableDeclaration("a")
+                val aUse = VariableUse(mockRange, "a")
+                val ast =
+                    AST(
+                        mockRange,
+                        listOf(aDef, VariableDeclaration(mockRange, "b", null, aUse)),
+                    )
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasVariable(aUse to aDef)
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
             fun `arguments in single block`() {
                 // let f = [x: Bool, y: Int] -> Int => (
                 //     x;

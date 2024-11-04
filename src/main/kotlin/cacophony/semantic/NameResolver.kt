@@ -160,6 +160,7 @@ fun resolveNames(
             }
             is VariableDeclaration -> {
                 symbolsTable.define(node.identifier, node)
+                traverseAst(node.value, true)
             }
             is FunctionDeclaration -> {
                 symbolsTable.define(node.identifier, node)
