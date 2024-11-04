@@ -3,7 +3,6 @@ package cacophony.parser
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.utils.Diagnostics
-import cacophony.utils.Location
 
 class CacophonyParser : Parser<CacophonyGrammarSymbol> {
     private val innerParser: LLOneParser<Int, CacophonyGrammarSymbol>

@@ -273,8 +273,9 @@ sealed class Statement(
         range: Pair<Location, Location>,
     ) : Statement(range),
         TreeLeaf {
-        override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is BreakStatement
         override fun toString() = "Break"
+
+        override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is BreakStatement
     }
 }
 
