@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.karumi.kotlinsnapshot:plugin:2.3.0")
+    }
+}
+
+apply(plugin = "com.karumi.kotlin-snapshot")
+
 plugins {
     kotlin("jvm") version "2.0.20"
     application

@@ -1,0 +1,82 @@
+{
+  "__class__": "ExampleResult",
+  "AST": {
+    "__class__": "Block",
+    "expressions": [
+      {
+        "__class__": "LogicalOr",
+        "lhs": {
+          "__class__": "IntLiteral",
+          "value": 4,
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 47
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 47
+            }
+          }
+        },
+        "rhs": {
+          "__class__": "IntLiteral",
+          "value": 5,
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 50
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 50
+            }
+          }
+        },
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 47
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 50
+          }
+        }
+      },
+      {
+        "__class__": "Empty",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 50
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 50
+          }
+        }
+      }
+    ],
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 47
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 51
+      }
+    }
+  },
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": []
+  },
+  "exceptionMessage": ""
+}

@@ -1,0 +1,52 @@
+{
+  "__class__": "ExampleResult",
+  "AST": {
+    "__class__": "Block",
+    "expressions": [
+      {
+        "__class__": "BreakStatement",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 0
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 4
+          }
+        }
+      },
+      {
+        "__class__": "Empty",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 4
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 4
+          }
+        }
+      }
+    ],
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 0
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 5
+      }
+    }
+  },
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": []
+  },
+  "exceptionMessage": ""
+}

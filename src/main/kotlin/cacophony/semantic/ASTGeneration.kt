@@ -236,6 +236,11 @@ private fun generateASTInternal(
                 val elseExpression = (if (childNum > 2) generateASTInternal(parseTree.children[2], diagnostics) else null)
                 Statement.IfElseStatement(range, testExpression, doExpression, elseExpression)
             }
+            RETURN_STATEMENT -> {
+                assert(childNum == 1)
+                val expression = generateASTInternal(parseTree.children[0], diagnostics)
+                Statement.ReturnStatement(range, expression)
+            }
             ASSIGNMENT_LEVEL -> {
                 assert(childNum == 3)
                 val operator = parseTree.children[1]

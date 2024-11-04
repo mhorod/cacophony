@@ -1,0 +1,173 @@
+{
+  "__class__": "ExampleResult",
+  "AST": {
+    "__class__": "Block",
+    "expressions": [
+      {
+        "__class__": "FunctionDeclaration",
+        "arguments": [],
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Unit",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 17
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 20
+            }
+          }
+        },
+        "body": {
+          "__class__": "Block",
+          "expressions": [
+            {
+              "__class__": "Empty",
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 25
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 25
+                }
+              }
+            }
+          ],
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 25
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 26
+            }
+          }
+        },
+        "identifier": "work",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 0
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 26
+          }
+        }
+      },
+      {
+        "__class__": "WhileStatement",
+        "testExpression": {
+          "__class__": "Block",
+          "expressions": [
+            {
+              "__class__": "Empty",
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 35
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 35
+                }
+              }
+            }
+          ],
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 35
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 36
+            }
+          }
+        },
+        "doExpression": {
+          "__class__": "FunctionCall",
+          "function": {
+            "__class__": "VariableUse",
+            "identifier": "work",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 44
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 47
+              }
+            }
+          },
+          "arguments": [],
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 44
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 49
+            }
+          }
+        },
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 29
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 49
+          }
+        }
+      },
+      {
+        "__class__": "Empty",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 49
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 49
+          }
+        }
+      }
+    ],
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 0
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 50
+      }
+    }
+  },
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": []
+  },
+  "exceptionMessage": ""
+}

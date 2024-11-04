@@ -1,0 +1,112 @@
+{
+  "__class__": "ExampleResult",
+  "AST": {
+    "__class__": "Block",
+    "expressions": [
+      {
+        "__class__": "VariableDeclaration",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 75
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 77
+            }
+          }
+        },
+        "value": {
+          "__class__": "LogicalOr",
+          "lhs": {
+            "__class__": "BoolLiteral",
+            "value": true,
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 81
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 84
+              }
+            }
+          },
+          "rhs": {
+            "__class__": "BoolLiteral",
+            "value": false,
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 87
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 91
+              }
+            }
+          },
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 81
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 91
+            }
+          }
+        },
+        "identifier": "a",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 68
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 91
+          }
+        }
+      },
+      {
+        "__class__": "Empty",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 91
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 91
+          }
+        }
+      }
+    ],
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 68
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 92
+      }
+    }
+  },
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": []
+  },
+  "exceptionMessage": ""
+}

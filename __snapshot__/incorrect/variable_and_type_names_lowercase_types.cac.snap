@@ -1,0 +1,13 @@
+{
+  "__class__": "ExampleResult",
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": [
+      {
+        "__class__": "ParserError",
+        "message": "Unexpected token VARIABLE_IDENTIFIER while parsing DECLARATION_TYPED"
+      }
+    ]
+  },
+  "exceptionMessage": "java.lang.IndexOutOfBoundsException: Index 1 out of bounds for length 1"
+}

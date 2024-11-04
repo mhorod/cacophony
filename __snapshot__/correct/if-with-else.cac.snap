@@ -1,0 +1,97 @@
+{
+  "__class__": "ExampleResult",
+  "AST": {
+    "__class__": "Block",
+    "expressions": [
+      {
+        "__class__": "IfElseStatement",
+        "testExpression": {
+          "__class__": "BoolLiteral",
+          "value": true,
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 3
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 6
+            }
+          }
+        },
+        "doExpression": {
+          "__class__": "BoolLiteral",
+          "value": false,
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 15
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 19
+            }
+          }
+        },
+        "elseExpression": {
+          "__class__": "BoolLiteral",
+          "value": true,
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 29
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 32
+            }
+          }
+        },
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 0
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 32
+          }
+        }
+      },
+      {
+        "__class__": "Empty",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 32
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 32
+          }
+        }
+      }
+    ],
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 0
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 33
+      }
+    }
+  },
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": []
+  },
+  "exceptionMessage": ""
+}
