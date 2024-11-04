@@ -1,6 +1,5 @@
 package cacophony.semantic
 
-import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Expression

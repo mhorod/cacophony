@@ -31,7 +31,7 @@ class ExamplesTest {
     @MethodSource("examples")
     fun `pipeline produces correct errors and AST`(path: Path) {
         var prefix: String = if (path.startsWith("examples/correct")) "correct" else "incorrect"
-        val exampleResult = 
+        val exampleResult =
             runExample(
                 path,
                 lexerRunner,
