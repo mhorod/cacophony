@@ -4,7 +4,7 @@ import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
 
-typealias AST = Block
+typealias AST = Expression
 
 fun areEquivalentTypes(
     lhs: Type?,
@@ -274,6 +274,7 @@ sealed class Statement(
     ) : Statement(range),
         TreeLeaf {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is BreakStatement
+        override fun toString() = "Break"
     }
 }
 

@@ -75,7 +75,7 @@ private class StaticFunctionsRelationsVisitor {
     private val functionStack = ArrayDeque<Definition.FunctionDeclaration>()
 
     fun visit(ast: AST) {
-        ast.expressions.forEach { visitExpression(it) }
+        visitExpression(ast)
     }
 
     fun getRelations(): Map<Definition.FunctionDeclaration, StaticFunctionRelations> =

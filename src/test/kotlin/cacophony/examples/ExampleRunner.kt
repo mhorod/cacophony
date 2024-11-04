@@ -1,13 +1,32 @@
 package cacophony.examples
 
+import cacophony.grammars.ParseTree
+import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.semantic.syntaxtree.AST
 import cacophony.utils.FileInput
 import cacophony.utils.Input
+import cacophony.utils.TreePrinter
+import java.lang.Exception
+import java.lang.StringBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 
-data class ExampleResult(val AST: AST, val diagnostics: TestDiagnostics )
+data class ExampleResult(
+    val AST: AST?,
+    val diagnostics: TestDiagnostics,
+    val exceptionMessage: String,
+) {
+    // Although it's not used, it may be helpful during tests debugging.
+    override fun toString(): String {
+        val treePrinter = TreePrinter(StringBuilder())
+        return "ExampleResult(\n" +
+                "AST=${if (AST != null) treePrinter.printTree(AST) else ""}, \n" +
+                "diagnostics=${diagnostics.errors()}, \n" +
+                "exceptionMessage=$exceptionMessage\n" +
+                ")"
+    }
+}
 
 interface ExampleRunner {
     fun run(

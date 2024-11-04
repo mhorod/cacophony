@@ -1,0 +1,28 @@
+{
+  "__class__": "ExampleResult",
+  "AST": {
+    "__class__": "BoolLiteral",
+    "value": true,
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 25
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 28
+      }
+    }
+  },
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": [
+      {
+        "__class__": "ParserError",
+        "message": "Unable to continue parsing symbol VARIABLE_IDENTIFIER"
+      }
+    ]
+  },
+  "exceptionMessage": ""
+}

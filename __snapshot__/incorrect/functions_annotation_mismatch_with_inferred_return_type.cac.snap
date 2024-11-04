@@ -1,0 +1,13 @@
+{
+  "__class__": "ExampleResult",
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": [
+      {
+        "__class__": "ParserError",
+        "message": "Unexpected token DOUBLE_ARROW while parsing FUNCTION_DECLARATION"
+      }
+    ]
+  },
+  "exceptionMessage": "java.lang.IndexOutOfBoundsException: Index 2 out of bounds for length 2"
+}
