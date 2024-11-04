@@ -1406,7 +1406,7 @@ class NameResolverTest {
                 )
 
             // when & then
-            assertThrows<NameResolutionErrorException> { resolveNames(ast, diagnostics) }
+            assertThrows<NameResolutionException> { resolveNames(ast, diagnostics) }
         }
     }
 }

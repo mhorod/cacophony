@@ -12,7 +12,7 @@ fun parseRegex(str: String): AlgebraicRegex<Char> {
         if (specialCharacter) {
             val specialRegex =
                 getSpecialCharacterRegex(c)
-                    ?: throw RegexSyntaxErrorException("Invalid escaped character '$c' at position ${it - 1}")
+                    ?: throw RegexSyntaxError("Invalid escaped character '$c' at position ${it - 1}")
             if (it > 1 && (regex[it - 2] !in "(|" || lastEscaped == it - 2)) parser.pushOperation(ConcatOperator)
             parser.pushRegex(specialRegex)
             specialCharacter = false
@@ -45,7 +45,7 @@ private class RegexParser {
         try {
             operator.addToStack(this)
         } catch (e: NoSuchElementException) {
-            throw RegexSyntaxErrorException("Mismatched operators or parenthesis")
+            throw RegexSyntaxError("Mismatched operators or parenthesis")
         }
     }
 
@@ -58,7 +58,7 @@ private class RegexParser {
     }
 
     fun finalize(): RegexType {
-        if (resultStack.size != 1 || operatorStack.isNotEmpty()) throw RegexSyntaxErrorException("Mismatched operators or parenthesis")
+        if (resultStack.size != 1 || operatorStack.isNotEmpty()) throw RegexSyntaxError("Mismatched operators or parenthesis")
         return resultStack.removeLast()
     }
 
@@ -71,7 +71,7 @@ private class RegexParser {
                 }
             }
         } catch (e: NoSuchElementException) {
-            throw RegexSyntaxErrorException("Mismatched operators or parenthesis")
+            throw RegexSyntaxError("Mismatched operators or parenthesis")
         }
     }
 }

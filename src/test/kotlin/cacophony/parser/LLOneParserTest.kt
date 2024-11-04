@@ -162,7 +162,7 @@ class LLOneParserTest {
 
         val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
 
-        assertThrows(ParserConstructorErrorException::class.java) {
+        assertThrows(ParserConstructorError::class.java) {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
         }
     }
@@ -275,7 +275,7 @@ class LLOneParserTest {
 
         val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
 
-        assertThrows(ParserConstructorErrorException::class.java) {
+        assertThrows(ParserConstructorError::class.java) {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
         }
     }
@@ -342,7 +342,7 @@ class LLOneParserTest {
 
         val analyzedGrammar = AnalyzedGrammar(Symbol.A, listOf(), automata, nullable, first, follow)
 
-        assertThrows(ParserConstructorErrorException::class.java) {
+        assertThrows(ParserConstructorError::class.java) {
             LLOneParser.fromAnalyzedGrammar(analyzedGrammar)
         }
     }
@@ -489,7 +489,7 @@ class LLOneParserTest {
     @Test
     fun `parser throws if input is empty`() {
         val parser = LLOneParser<Int, Symbol>(mapOf(), Symbol.A, mapOf(), listOf())
-        assertThrows(ParsingErrorException::class.java) {
+        assertThrows(ParsingException::class.java) {
             parser.process(listOf(), diagnostics)
         }
     }
@@ -1052,7 +1052,7 @@ class LLOneParserTest {
                 listOf(SymbolAryt.RPAREN),
             )
 
-        assertThatExceptionOfType(ParsingErrorException::class.java).isThrownBy({
+        assertThatExceptionOfType(ParsingException::class.java).isThrownBy({
             parser.process(terminals, diagnostics)
         })
 

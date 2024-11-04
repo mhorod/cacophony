@@ -5,6 +5,7 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyGrammarSymbol.*
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Type
+import cacophony.utils.CompileException
 import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import kotlin.reflect.KClass
@@ -124,7 +125,16 @@ private fun generateASTInternal(
         val context = parseTree.token.context
         return when (symbol) {
             VARIABLE_IDENTIFIER -> VariableUse(parseTree.range, context)
-            INT_LITERAL -> Literal.IntLiteral(parseTree.range, context.toInt())
+            INT_LITERAL ->
+                Literal.IntLiteral(
+                    parseTree.range,
+                    try {
+                        context.toInt()
+                    } catch (e: NumberFormatException) {
+                        diagnostics.report("Value $context is out of range", parseTree.range)
+                        throw CompileException("Value $context is out of range")
+                    },
+                )
             BOOL_LITERAL -> Literal.BoolLiteral(parseTree.range, context.toBoolean())
             KEYWORD_BREAK -> Statement.BreakStatement(parseTree.range)
             else -> throw IllegalArgumentException("Unexpected leaf symbol: $symbol")

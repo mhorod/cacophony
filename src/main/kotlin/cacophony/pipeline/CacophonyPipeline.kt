@@ -12,6 +12,7 @@ import cacophony.semantic.TypeCheckingResult
 import cacophony.semantic.syntaxtree.AST
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
+import cacophony.utils.CompileException
 import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
@@ -26,7 +27,7 @@ class CacophonyPipeline(
         val tokens =
             try {
                 CacophonyLexer().process(input, diagnostics)
-            } catch (e: Throwable) {
+            } catch (e: CompileException) {
                 logger?.logFailedLexing()
                 throw e
             }
@@ -39,7 +40,7 @@ class CacophonyPipeline(
         val parseTree =
             try {
                 CacophonyParser().process(terminals, diagnostics)
-            } catch (e: Throwable) {
+            } catch (e: CompileException) {
                 logger?.logFailedParsing()
                 throw e
             }
@@ -52,7 +53,7 @@ class CacophonyPipeline(
         val ast =
             try {
                 cacophony.semantic.generateAST(parseTree, diagnostics)
-            } catch (e: Throwable) {
+            } catch (e: CompileException) {
                 logger?.logFailedAstGeneration()
                 throw e
             }
@@ -66,7 +67,7 @@ class CacophonyPipeline(
         val result =
             try {
                 cacophony.semantic.resolveNames(ast, diagnostics)
-            } catch (e: Throwable) {
+            } catch (e: CompileException) {
                 logger?.logFailedNameResolution()
                 throw e
             }
@@ -88,7 +89,7 @@ class CacophonyPipeline(
         val result =
             try {
                 cacophony.semantic.resolveOverloads(ast, diagnostics, nr)
-            } catch (e: Throwable) {
+            } catch (e: CompileException) {
                 logger?.logFailedOverloadResolution()
                 throw e
             }
@@ -110,7 +111,7 @@ class CacophonyPipeline(
         val types =
             try {
                 cacophony.semantic.checkTypes(ast, diagnostics, resolvedVariables)
-            } catch (e: Throwable) {
+            } catch (e: CompileException) {
                 logger?.logFailedTypeChecking()
                 throw e
             }
@@ -142,7 +143,7 @@ class CacophonyPipeline(
         val callGraph =
             try {
                 cacophony.semantic.generateCallGraph(ast, diagnostics, resolvedVariables, types)
-            } catch (e: Throwable) {
+            } catch (e: CompileException) {
                 logger?.logFailedCallGraphGeneration()
                 throw e
             }
@@ -183,7 +184,7 @@ class CacophonyPipeline(
         val result =
             try {
                 cacophony.semantic.analyzeFunctions(ast, resolvedVariables, callGraph)
-            } catch (e: Throwable) {
+            } catch (e: CompileException) {
                 logger?.logFailedFunctionAnalysis()
                 throw e
             }
