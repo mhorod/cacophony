@@ -1,0 +1,13 @@
+{
+  "__class__": "ExampleResult",
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": [
+      {
+        "__class__": "ParserError",
+        "message": "Unexpected token KEYWORD_WHILE while parsing DECLARATION_LEVEL"
+      }
+    ]
+  },
+  "exceptionMessage": "java.util.NoSuchElementException: List is empty."
+}

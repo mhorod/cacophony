@@ -5,18 +5,17 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyGrammarSymbol.*
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Type
+import cacophony.utils.CompileException
 import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
 private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): CacophonyGrammarSymbol {
-    if (parseTree is ParseTree.Leaf) {
-        return parseTree.token.category
-    } else if (parseTree is ParseTree.Branch) {
-        return parseTree.production.lhs
+    return when (parseTree) {
+        is ParseTree.Leaf -> parseTree.token.category
+        is ParseTree.Branch -> parseTree.production.lhs
     }
-    throw Exception("Parse tree must be either Leaf or Branch")
 }
 
 private fun pruneParseTree(
@@ -124,7 +123,16 @@ private fun generateASTInternal(
         val context = parseTree.token.context
         return when (symbol) {
             VARIABLE_IDENTIFIER -> VariableUse(parseTree.range, context)
-            INT_LITERAL -> Literal.IntLiteral(parseTree.range, context.toInt())
+            INT_LITERAL ->
+                Literal.IntLiteral(
+                    parseTree.range,
+                    try {
+                        context.toInt()
+                    } catch (e: NumberFormatException) {
+                        diagnostics.report("Value $context is out of range", parseTree.range)
+                        throw CompileException("Value $context is out of range")
+                    },
+                )
             BOOL_LITERAL -> Literal.BoolLiteral(parseTree.range, context.toBoolean())
             KEYWORD_BREAK -> Statement.BreakStatement(parseTree.range)
             else -> throw IllegalArgumentException("Unexpected leaf symbol: $symbol")
@@ -227,6 +235,11 @@ private fun generateASTInternal(
                 val doExpression = generateASTInternal(parseTree.children[1], diagnostics)
                 val elseExpression = (if (childNum > 2) generateASTInternal(parseTree.children[2], diagnostics) else null)
                 Statement.IfElseStatement(range, testExpression, doExpression, elseExpression)
+            }
+            RETURN_STATEMENT -> {
+                assert(childNum == 1)
+                val expression = generateASTInternal(parseTree.children[0], diagnostics)
+                Statement.ReturnStatement(range, expression)
             }
             ASSIGNMENT_LEVEL -> {
                 assert(childNum == 3)

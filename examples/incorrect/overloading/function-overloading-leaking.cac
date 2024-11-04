@@ -1,7 +1,7 @@
 # leaking overload from inside scope
 let f = [] -> Bool => true;
 (
-    let f = [Int: x] -> Int => x;
+    let f = [x: Int] -> Int => x;
     # ok
     f[];
     # ok

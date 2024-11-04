@@ -1,39 +1,51 @@
 package cacophony.examples
 
+import cacophony.semantic.syntaxtree.AST
 import cacophony.utils.FileInput
 import cacophony.utils.Input
+import cacophony.utils.TreePrinter
+import java.lang.StringBuilder
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
+
+data class ExampleResult(
+    val AST: AST?,
+    val diagnostics: TestDiagnostics,
+    val exceptionMessage: String,
+) {
+    // Although it's not used, it may be helpful during tests debugging.
+    override fun toString(): String {
+        val treePrinter = TreePrinter(StringBuilder())
+        return "ExampleResult(\n" +
+            "AST=${if (AST != null) treePrinter.printTree(AST) else ""}, \n" +
+            "diagnostics=${diagnostics.errors()}, \n" +
+            "exceptionMessage=$exceptionMessage\n" +
+            ")"
+    }
+}
 
 interface ExampleRunner {
     fun run(
         input: Input,
         diagnostics: TestDiagnostics,
-    )
-}
-
-interface DiagnosticsAssertion {
-    fun check(diagnostics: TestDiagnostics)
+    ): ExampleResult
 }
 
 fun runExample(
     path: Path,
     runner: ExampleRunner,
-    assertion: DiagnosticsAssertion,
-) {
+): ExampleResult {
     val diagnostics = TestDiagnostics()
     val input = FileInput(path.toString())
-    runner.run(input, diagnostics)
-    assertion.check(diagnostics)
+    return runner.run(input, diagnostics)
 }
 
 fun runExamples(
     paths: List<Path>,
     runner: ExampleRunner,
-    assertion: DiagnosticsAssertion,
 ) {
-    paths.forEach { runExample(it, runner, assertion) }
+    paths.forEach { runExample(it, runner) }
 }
 
 fun getPathsMatching(

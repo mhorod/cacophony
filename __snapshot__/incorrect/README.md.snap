@@ -1,0 +1,13 @@
+{
+  "__class__": "ExampleResult",
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": [
+      {
+        "__class__": "LexerError",
+        "message": "Lexer failure: no valid token found."
+      }
+    ]
+  },
+  "exceptionMessage": "java.util.NoSuchElementException: List is empty."
+}

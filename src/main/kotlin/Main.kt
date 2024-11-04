@@ -1,5 +1,6 @@
 import cacophony.pipeline.CacophonyLogger
 import cacophony.pipeline.CacophonyPipeline
+import cacophony.utils.CompileException
 import cacophony.utils.FileInput
 import cacophony.utils.SimpleDiagnostics
 
@@ -15,7 +16,7 @@ fun main(args: Array<String>) {
 
     try {
         CacophonyPipeline(diagnostics, CacophonyLogger()).process(input)
-    } catch (t: Throwable) {
+    } catch (t: CompileException) {
         for (error in diagnostics.getErrors()) {
             println(error.message)
         }

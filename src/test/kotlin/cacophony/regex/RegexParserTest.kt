@@ -74,7 +74,7 @@ class RegexParserTest {
 
     @Test
     fun `empty regex throws`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex("""""") }
+        assertThrows<RegexSyntaxError> { parseRegex("""""") }
     }
 
     @Test
@@ -170,38 +170,38 @@ class RegexParserTest {
 
     @Test
     fun `do not recognize empty word`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex("abc|()|def") }
+        assertThrows<RegexSyntaxError> { parseRegex("abc|()|def") }
     }
 
     @Test
     fun `do not recognize empty word here either`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex("abc|x()z|def") }
+        assertThrows<RegexSyntaxError> { parseRegex("abc|x()z|def") }
     }
 
     @Test
     fun `mismatched right parenthesis`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex("abc|x(z|d))ef") }
+        assertThrows<RegexSyntaxError> { parseRegex("abc|x(z|d))ef") }
     }
 
     @Test
     fun `mismatched left parenthesis`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex("abc|x(((z|d))ef") }
+        assertThrows<RegexSyntaxError> { parseRegex("abc|x(((z|d))ef") }
     }
 
     @Test
     fun `wrong escaped character`() {
-        val exception = assertThrows<RegexSyntaxErrorException> { parseRegex("""abc|\yx(z|d)ef""") }
+        val exception = assertThrows<RegexSyntaxError> { parseRegex("""abc|\yx(z|d)ef""") }
         assertEquals("Invalid escaped character 'y' at position 5", exception.message)
     }
 
     @Test
     fun `too many operators`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex("abc|x|") }
+        assertThrows<RegexSyntaxError> { parseRegex("abc|x|") }
     }
 
     @Test
     fun `empty space`() {
-        assertThrows<RegexSyntaxErrorException> { parseRegex("abc||xyz|a") }
+        assertThrows<RegexSyntaxError> { parseRegex("abc||xyz|a") }
     }
 
     @Test

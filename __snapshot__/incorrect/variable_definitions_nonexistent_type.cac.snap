@@ -1,0 +1,83 @@
+{
+  "__class__": "ExampleResult",
+  "AST": {
+    "__class__": "Block",
+    "expressions": [
+      {
+        "__class__": "VariableDeclaration",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Car",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 44
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 46
+            }
+          }
+        },
+        "value": {
+          "__class__": "IntLiteral",
+          "value": 2,
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 50
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 50
+            }
+          }
+        },
+        "identifier": "car",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 35
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 50
+          }
+        }
+      },
+      {
+        "__class__": "Empty",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 50
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 50
+          }
+        }
+      }
+    ],
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 35
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 51
+      }
+    }
+  },
+  "diagnostics": {
+    "__class__": "TestDiagnostics",
+    "errors": []
+  },
+  "exceptionMessage": ""
+}

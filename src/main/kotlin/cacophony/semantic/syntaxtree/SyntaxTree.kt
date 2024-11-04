@@ -6,7 +6,7 @@ import cacophony.utils.TreeLeaf
 
 sealed interface LeafExpression
 
-typealias AST = Block
+typealias AST = Expression
 
 fun areEquivalentTypes(
     lhs: Type?,
@@ -280,6 +280,8 @@ sealed class Statement(
     ) : Statement(range),
         LeafExpression,
         TreeLeaf {
+        override fun toString() = "Break"
+
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is BreakStatement
     }
 }
