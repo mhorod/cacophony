@@ -130,26 +130,16 @@ class CacophonyPipeline(
 
     fun generateCallGraph(ast: AST): CallGraph {
         val resolvedVariables = resolveOverloads(ast)
-        val types = checkTypes(ast, resolvedVariables)
-        return generateCallGraph(ast, resolvedVariables, types)
+        return generateCallGraph(ast, resolvedVariables)
     }
 
     fun generateCallGraph(
         ast: AST,
         resolvedVariables: ResolvedVariables,
-    ): CallGraph {
-        val types = checkTypes(ast, resolvedVariables)
-        return generateCallGraph(ast, resolvedVariables, types)
-    }
-
-    fun generateCallGraph(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-        types: TypeCheckingResult,
     ): CallGraph {
         val callGraph =
             try {
-                cacophony.semantic.generateCallGraph(ast, diagnostics, resolvedVariables, types)
+                cacophony.semantic.generateCallGraph(ast, diagnostics, resolvedVariables)
             } catch (e: CompileException) {
                 logger?.logFailedCallGraphGeneration()
                 throw e
@@ -178,7 +168,7 @@ class CacophonyPipeline(
         resolvedVariables: ResolvedVariables,
         types: TypeCheckingResult,
     ): FunctionAnalysisResult {
-        val callGraph = generateCallGraph(ast, resolvedVariables, types)
+        val callGraph = generateCallGraph(ast, resolvedVariables)
         return analyzeFunctions(ast, resolvedVariables, types, callGraph)
     }
 
