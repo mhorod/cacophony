@@ -4,6 +4,8 @@ import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
 
+sealed interface LeafExpression
+
 typealias AST = Expression
 
 fun areEquivalentTypes(
@@ -73,6 +75,7 @@ sealed class Expression(
 class Empty(
     range: Pair<Location, Location>,
 ) : Expression(range),
+    LeafExpression,
     TreeLeaf {
     override fun toString() = "empty"
 
@@ -83,6 +86,7 @@ class VariableUse(
     range: Pair<Location, Location>,
     val identifier: String,
 ) : Expression(range),
+    LeafExpression,
     TreeLeaf {
     override fun toString() = identifier
 
@@ -145,6 +149,7 @@ sealed class Definition(
         identifier: String,
         val type: Type,
     ) : Definition(range, identifier),
+        LeafExpression,
         TreeLeaf {
         override fun toString() = "$identifier: $type"
 
@@ -174,7 +179,8 @@ class FunctionCall(
 
 sealed class Literal(
     range: Pair<Location, Location>,
-) : Expression(range) {
+) : Expression(range),
+    LeafExpression {
     override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Literal
 
     class IntLiteral(
@@ -272,6 +278,7 @@ sealed class Statement(
     class BreakStatement(
         range: Pair<Location, Location>,
     ) : Statement(range),
+        LeafExpression,
         TreeLeaf {
         override fun toString() = "Break"
 
