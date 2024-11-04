@@ -65,6 +65,12 @@ class ASTGenerationTests {
         return diagnostics
     }
 
+    private fun basicType(value: String) = Type.Basic(anyLocation(), value)
+
+    private fun literal(value: Int) = Literal.IntLiteral(anyLocation(), value)
+
+    private fun literal(value: Boolean) = Literal.BoolLiteral(anyLocation(), value)
+
     @Test
     fun `too big int literal`() {
         val diagnostics = computeFailDiagnostics("111111111111111111111111")
@@ -102,7 +108,7 @@ class ASTGenerationTests {
     }
 
     @Test
-    fun `bool literal in blocks`() {
+    fun `bool literals in blocks`() {
         val actual = computeAST("(false; ();;); true")
         val expected =
             Block(
@@ -111,10 +117,7 @@ class ASTGenerationTests {
                     Block( // false; ();;
                         anyLocation(),
                         listOf(
-                            Literal.BoolLiteral(
-                                anyLocation(),
-                                false,
-                            ),
+                            literal(false),
                             Block(
                                 anyLocation(),
                                 listOf(
@@ -125,10 +128,7 @@ class ASTGenerationTests {
                             Empty(anyLocation()),
                         ),
                     ),
-                    Literal.BoolLiteral(
-                        anyLocation(),
-                        true,
-                    ),
+                    literal(true),
                 ),
             )
         assertEquivalentAST(expected, actual)
@@ -174,24 +174,12 @@ class ASTGenerationTests {
                     Definition.VariableDeclaration(
                         anyLocation(),
                         "x",
-                        Type.Basic(
-                            anyLocation(),
-                            "Bool",
-                        ),
+                        basicType("Bool"),
                         Statement.IfElseStatement(
                             anyLocation(),
-                            Literal.BoolLiteral(
-                                anyLocation(),
-                                false,
-                            ),
-                            Literal.BoolLiteral(
-                                anyLocation(),
-                                true,
-                            ),
-                            Literal.BoolLiteral(
-                                anyLocation(),
-                                false,
-                            ),
+                            literal(false),
+                            literal(true),
+                            literal(false),
                         ),
                     ),
                     Empty(anyLocation()),
@@ -212,16 +200,10 @@ class ASTGenerationTests {
                     Definition.FunctionArgument(
                         anyLocation(),
                         "x",
-                        Type.Basic(
-                            anyLocation(),
-                            "Int",
-                        ),
+                        basicType("Int"),
                     ),
                 ),
-                Type.Basic(
-                    anyLocation(),
-                    "Int",
-                ),
+                basicType("Int"),
                 FunctionCall(
                     anyLocation(),
                     VariableUse(
@@ -256,33 +238,18 @@ class ASTGenerationTests {
                 anyLocation(),
                 OperatorBinary.Addition(
                     anyLocation(),
-                    Literal.IntLiteral(
-                        anyLocation(),
-                        1,
-                    ),
+                    literal(1),
                     OperatorBinary.Multiplication(
                         anyLocation(),
                         OperatorBinary.Division(
                             anyLocation(),
-                            Literal.IntLiteral(
-                                anyLocation(),
-                                2,
-                            ),
-                            Literal.IntLiteral(
-                                anyLocation(),
-                                3,
-                            ),
+                            literal(2),
+                            literal(3),
                         ),
-                        Literal.IntLiteral(
-                            anyLocation(),
-                            4,
-                        ),
+                        literal(4),
                     ),
                 ),
-                Literal.IntLiteral(
-                    anyLocation(),
-                    5,
-                ),
+                literal(5),
             )
         assertEquivalentAST(expected, actual)
     }
@@ -298,21 +265,12 @@ class ASTGenerationTests {
                     listOf(
                         OperatorBinary.Addition(
                             anyLocation(),
-                            Literal.IntLiteral(
-                                anyLocation(),
-                                1,
-                            ),
-                            Literal.IntLiteral(
-                                anyLocation(),
-                                2,
-                            ),
+                            literal(1),
+                            literal(2),
                         ),
                     ),
                 ),
-                Literal.IntLiteral(
-                    anyLocation(),
-                    3,
-                ),
+                literal(3),
             )
         assertEquivalentAST(expected, actual)
     }
@@ -346,6 +304,190 @@ class ASTGenerationTests {
     }
 
     @Test
+    fun `addition operator`() {
+        val actual = computeAST("let x = 1; x += x + x")
+        val xUse =
+            VariableUse(
+                anyLocation(),
+                "x",
+            )
+        val expected =
+            Block(
+                anyLocation(),
+                listOf(
+                    Definition.VariableDeclaration(
+                        anyLocation(),
+                        "x",
+                        null,
+                        literal(1),
+                    ),
+                    OperatorBinary.AdditionAssignment(
+                        anyLocation(),
+                        xUse,
+                        OperatorBinary.Addition(
+                            anyLocation(),
+                            xUse,
+                            xUse,
+                        ),
+                    ),
+                ),
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
+    fun `subtraction operator`() {
+        val actual = computeAST("let x = 1; x -= x - x")
+        val xUse =
+            VariableUse(
+                anyLocation(),
+                "x",
+            )
+        val expected =
+            Block(
+                anyLocation(),
+                listOf(
+                    Definition.VariableDeclaration(
+                        anyLocation(),
+                        "x",
+                        null,
+                        literal(1),
+                    ),
+                    OperatorBinary.SubtractionAssignment(
+                        anyLocation(),
+                        xUse,
+                        OperatorBinary.Subtraction(
+                            anyLocation(),
+                            xUse,
+                            xUse,
+                        ),
+                    ),
+                ),
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
+    fun `multiplication operator`() {
+        val actual = computeAST("let x = 1; x *= x * x")
+        val xUse =
+            VariableUse(
+                anyLocation(),
+                "x",
+            )
+        val expected =
+            Block(
+                anyLocation(),
+                listOf(
+                    Definition.VariableDeclaration(
+                        anyLocation(),
+                        "x",
+                        null,
+                        literal(1),
+                    ),
+                    OperatorBinary.MultiplicationAssignment(
+                        anyLocation(),
+                        xUse,
+                        OperatorBinary.Multiplication(
+                            anyLocation(),
+                            xUse,
+                            xUse,
+                        ),
+                    ),
+                ),
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
+    fun `division operator`() {
+        val actual = computeAST("let x = 1; x /= x / x")
+        val xUse =
+            VariableUse(
+                anyLocation(),
+                "x",
+            )
+        val expected =
+            Block(
+                anyLocation(),
+                listOf(
+                    Definition.VariableDeclaration(
+                        anyLocation(),
+                        "x",
+                        null,
+                        literal(1),
+                    ),
+                    OperatorBinary.DivisionAssignment(
+                        anyLocation(),
+                        xUse,
+                        OperatorBinary.Division(
+                            anyLocation(),
+                            xUse,
+                            xUse,
+                        ),
+                    ),
+                ),
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
+    fun `modulo operator`() {
+        val actual = computeAST("let x = 1; x %= x % x")
+        val xUse =
+            VariableUse(
+                anyLocation(),
+                "x",
+            )
+        val expected =
+            Block(
+                anyLocation(),
+                listOf(
+                    Definition.VariableDeclaration(
+                        anyLocation(),
+                        "x",
+                        null,
+                        literal(1),
+                    ),
+                    OperatorBinary.ModuloAssignment(
+                        anyLocation(),
+                        xUse,
+                        OperatorBinary.Modulo(
+                            anyLocation(),
+                            xUse,
+                            xUse,
+                        ),
+                    ),
+                ),
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
+    fun `logical operators`() {
+        val actual = computeAST("!(true && false) || true")
+        val expected =
+            OperatorBinary.LogicalOr(
+                anyLocation(),
+                OperatorUnary.Negation(
+                    anyLocation(),
+                    Block(
+                        anyLocation(),
+                        listOf(
+                            OperatorBinary.LogicalAnd(
+                                anyLocation(),
+                                literal(true),
+                                literal(false),
+                            ),
+                        ),
+                    ),
+                ),
+                literal(true),
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
     fun `while loops 1`() {
         val actual = computeAST("while (true) do break;")
         val expected =
@@ -357,10 +499,7 @@ class ASTGenerationTests {
                         Block(
                             anyLocation(),
                             listOf(
-                                Literal.BoolLiteral(
-                                    anyLocation(),
-                                    true,
-                                ),
+                                literal(true),
                             ),
                         ),
                         Statement.BreakStatement(anyLocation()),
@@ -380,10 +519,7 @@ class ASTGenerationTests {
                 listOf(
                     Statement.WhileStatement(
                         anyLocation(),
-                        Literal.BoolLiteral(
-                            anyLocation(),
-                            true,
-                        ),
+                        literal(true),
                         Block(
                             anyLocation(),
                             listOf(
@@ -393,6 +529,64 @@ class ASTGenerationTests {
                         ),
                     ),
                     Empty(anyLocation()),
+                ),
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
+    fun `if statement`() {
+        val actual = computeAST("if true then false")
+        val expected =
+            Statement.IfElseStatement(
+                anyLocation(),
+                literal(true),
+                literal(false),
+                null,
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
+    fun `if else expression`() {
+        val actual = computeAST("let x = if false then 1 else 2")
+        val expected =
+            Definition.VariableDeclaration(
+                anyLocation(),
+                "x",
+                null,
+                Statement.IfElseStatement(
+                    anyLocation(),
+                    literal(false),
+                    literal(1),
+                    literal(2),
+                ),
+            )
+        assertEquivalentAST(expected, actual)
+    }
+
+    @Test
+    fun `return statement`() {
+        val actual = computeAST("let f = [x: Int] -> Int => return x")
+        val expected =
+            Definition.FunctionDeclaration(
+                anyLocation(),
+                "f",
+                null,
+                listOf(
+                    Definition.FunctionArgument(
+                        anyLocation(),
+                        "x",
+                        basicType("Int"),
+                    ),
+                ),
+                basicType("Int"),
+                Statement.ReturnStatement(
+                    anyLocation(),
+                    VariableUse(
+                        anyLocation(),
+                        "x",
+                    ),
                 ),
             )
         assertEquivalentAST(expected, actual)
