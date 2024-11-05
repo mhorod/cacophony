@@ -273,7 +273,8 @@ private fun generateASTInternal(
                 val operatorKind = parseTree.children[0]
                 if (operatorKind is ParseTree.Leaf) {
                     val unarySymbol = operatorKind.token.category
-                    if (unarySymbol == OPERATOR_SUBTRACTION) { // we have to consider it individually because of the collision with binary minus
+                    // we have to consider it individually because of the collision with binary minus
+                    if (unarySymbol == OPERATOR_SUBTRACTION) {
                         return OperatorUnary.Minus(range, generateASTInternal(parseTree.children[1], diagnostics))
                     }
                     return createInstanceUnary(
