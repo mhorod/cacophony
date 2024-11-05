@@ -304,4 +304,81 @@ class FunctionAnalysisTest {
                 ),
             )
     }
+
+    @Test
+    fun `should find uses of function argument`() {
+        // given
+        // f[a] => a
+        val argA = arg("a")
+        val varAUse = variableUse("a")
+        val funF = functionDeclaration("f", listOf(argA), varAUse)
+
+        val ast = astOf(funF)
+
+        // when
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(varAUse to argA),
+                callGraph(),
+            )
+
+        // then
+        assertThat(result).containsExactlyInAnyOrderEntriesOf(
+            mapOf(
+                funF to
+                    AnalyzedFunction(
+                        null,
+                        setOf(AnalyzedVariable(argA, funF, VariableUseType.READ)),
+                        0,
+                    ),
+            ),
+        )
+    }
+
+    @Test
+    fun `should find uses of parent function argument`() {
+        // given
+        // f[a] => (g => (a; b = ()))
+        val argA = arg("a")
+        val argB = arg("b")
+        val varAUse = variableUse("a")
+        val varBUse = variableUse("b")
+        val funG = functionDeclaration("g", block(varAUse, variableWrite(varBUse)))
+        val funF = functionDeclaration("f", listOf(argA, argB), funG)
+
+        val ast = astOf(funF)
+
+        // when
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(varAUse to argA, varBUse to argB),
+                callGraph(),
+            )
+
+        // then
+        assertThat(result).containsExactlyInAnyOrderEntriesOf(
+            mapOf(
+                funF to
+                    AnalyzedFunction(
+                        null,
+                        setOf(
+                            AnalyzedVariable(argA, funF, VariableUseType.UNUSED),
+                            AnalyzedVariable(argB, funF, VariableUseType.UNUSED),
+                        ),
+                        0,
+                    ),
+                funG to
+                    AnalyzedFunction(
+                        ParentLink(funF, true),
+                        setOf(
+                            AnalyzedVariable(argA, funF, VariableUseType.READ),
+                            AnalyzedVariable(argB, funF, VariableUseType.WRITE),
+                        ),
+                        1,
+                    ),
+            ),
+        )
+    }
 }
