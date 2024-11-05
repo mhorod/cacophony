@@ -130,7 +130,7 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator
 
-    sealed class Lesser(
+    sealed class Less(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
@@ -140,7 +140,7 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator
 
-    sealed class LesserEqual(
+    sealed class LessEqual(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
