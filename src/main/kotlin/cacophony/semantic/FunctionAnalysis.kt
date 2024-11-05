@@ -16,6 +16,7 @@ data class AnalyzedFunction(
     val parentLink: ParentLink?,
     val variables: Set<AnalyzedVariable>,
     val staticDepth: Int,
+    val variablesUsedInNestedFunctions: Set<Definition>,
 )
 
 data class AnalyzedVariable(
@@ -32,12 +33,34 @@ fun analyzeFunctions(
     val relations = findStaticFunctionRelations(ast)
     val variableDeclarationFunctions = getVariableDeclarationFunctions(relations)
     val argumentFunctions = getArgumentFunctions(relations)
-    val analyzedVariables = analyzedVariables(relations, resolvedVariables, variableDeclarationFunctions, argumentFunctions)
+    val analyzedVariables =
+        analyzedVariables(relations, resolvedVariables, variableDeclarationFunctions, argumentFunctions)
     val functionsUsingParentLinks = functionsUsingParentLinks(relations, analyzedVariables, callGraph)
+    val variablesUsedInNestedFunctions = variablesUsedInNestedFunctions(analyzedVariables)
 
     return relations.mapValues { (function, staticRelations) ->
-        makeAnalyzedFunction(function, staticRelations, analyzedVariables, functionsUsingParentLinks)
+        makeAnalyzedFunction(
+            function,
+            staticRelations,
+            analyzedVariables,
+            functionsUsingParentLinks,
+            variablesUsedInNestedFunctions[function] ?: emptySet(),
+        )
     }
+}
+
+fun variablesUsedInNestedFunctions(
+    analyzedVariables: Map<Definition.FunctionDeclaration, Set<AnalyzedVariable>>,
+): Map<Definition.FunctionDeclaration, Set<Definition>> {
+    val result = mutableMapOf<Definition.FunctionDeclaration, MutableSet<Definition>>()
+    analyzedVariables.forEach { function, variables ->
+        variables.forEach { variable ->
+            if (variable.definedIn != function) {
+                result.getOrPut(variable.definedIn) { mutableSetOf() }.add(variable.declaration)
+            }
+        }
+    }
+    return result
 }
 
 fun getArgumentFunctions(
@@ -55,12 +78,13 @@ fun makeAnalyzedFunction(
     staticRelations: StaticFunctionRelations,
     analyzedVariables: Map<Definition.FunctionDeclaration, Set<AnalyzedVariable>>,
     functionsUsingParentLinks: Set<Definition.FunctionDeclaration>,
+    variablesUsedInNestedFunctions: Set<Definition>,
 ): AnalyzedFunction {
     val parentLink = staticRelations.parent?.let { ParentLink(it, function in functionsUsingParentLinks) }
     val variables =
         analyzedVariables[function]
             ?: throw IllegalStateException("Analyzed function is missing variable information")
-    return AnalyzedFunction(parentLink, variables, staticRelations.staticDepth)
+    return AnalyzedFunction(parentLink, variables, staticRelations.staticDepth, variablesUsedInNestedFunctions)
 }
 
 fun makeAnalyzedVariable(
