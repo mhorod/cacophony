@@ -12,6 +12,8 @@ import cacophony.utils.Location
 
 fun mockRange() = Pair(Location(0), Location(0))
 
+fun unitType() = Type.Basic(mockRange(), "Unit")
+
 fun functionDeclaration(
     identifier: String,
     body: Expression,
@@ -20,7 +22,22 @@ fun functionDeclaration(
     identifier,
     null,
     emptyList(),
-    Type.Basic(mockRange(), "Unit"),
+    unitType(),
+    body,
+)
+
+fun arg(identifier: String) = Definition.FunctionArgument(mockRange(), identifier, unitType())
+
+fun functionDeclaration(
+    identifier: String,
+    arguments: List<Definition.FunctionArgument>,
+    body: Expression,
+) = Definition.FunctionDeclaration(
+    mockRange(),
+    identifier,
+    null,
+    arguments,
+    unitType(),
     body,
 )
 

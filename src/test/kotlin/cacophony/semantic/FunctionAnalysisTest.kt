@@ -24,6 +24,7 @@ class FunctionAnalysisTest {
                             null,
                             emptySet(),
                             0,
+                            emptySet(),
                         ),
                 ),
             )
@@ -49,6 +50,7 @@ class FunctionAnalysisTest {
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.UNUSED)),
                             0,
+                            emptySet(),
                         ),
                 ),
             )
@@ -75,6 +77,7 @@ class FunctionAnalysisTest {
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
                             0,
+                            emptySet(),
                         ),
                 ),
             )
@@ -102,6 +105,7 @@ class FunctionAnalysisTest {
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.WRITE)),
                             0,
+                            emptySet(),
                         ),
                 ),
             )
@@ -130,6 +134,7 @@ class FunctionAnalysisTest {
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ_WRITE)),
                             0,
+                            emptySet(),
                         ),
                 ),
             )
@@ -157,12 +162,14 @@ class FunctionAnalysisTest {
                             null,
                             emptySet(),
                             0,
+                            emptySet(),
                         ),
                     funG to
                         AnalyzedFunction(
                             ParentLink(funF, false),
                             emptySet(),
                             1,
+                            emptySet(),
                         ),
                 ),
             )
@@ -191,12 +198,14 @@ class FunctionAnalysisTest {
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.UNUSED)),
                             0,
+                            setOf(varA),
                         ),
                     funG to
                         AnalyzedFunction(
                             ParentLink(funF, true),
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
                             1,
+                            emptySet(),
                         ),
                 ),
             )
@@ -234,36 +243,42 @@ class FunctionAnalysisTest {
                             null,
                             setOf(AnalyzedVariable(varA, funFoo, VariableUseType.UNUSED)),
                             0,
+                            setOf(varA),
                         ),
                     funG to
                         AnalyzedFunction(
                             ParentLink(funFoo, true),
                             emptySet(),
                             1,
+                            emptySet(),
                         ),
                     funH to
                         AnalyzedFunction(
                             ParentLink(funG, true),
                             setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
                             2,
+                            emptySet(),
                         ),
                     funJ to
                         AnalyzedFunction(
                             ParentLink(funI, false),
                             emptySet(),
                             2,
+                            emptySet(),
                         ),
                     funI to
                         AnalyzedFunction(
                             ParentLink(funFoo, true),
                             emptySet(),
                             1,
+                            emptySet(),
                         ),
                     funMain to
                         AnalyzedFunction(
                             null,
                             emptySet(),
                             0,
+                            emptySet(),
                         ),
                 ),
             )
@@ -294,14 +309,96 @@ class FunctionAnalysisTest {
                             null,
                             setOf(AnalyzedVariable(fooVarA, funFoo, VariableUseType.READ)),
                             0,
+                            emptySet(),
                         ),
                     funBar to
                         AnalyzedFunction(
                             ParentLink(funFoo, false),
                             setOf(AnalyzedVariable(barVarA, funBar, VariableUseType.WRITE)),
                             1,
+                            emptySet(),
                         ),
                 ),
             )
+    }
+
+    @Test
+    fun `should find uses of function argument`() {
+        // given
+        // f[a] => a
+        val argA = arg("a")
+        val varAUse = variableUse("a")
+        val funF = functionDeclaration("f", listOf(argA), varAUse)
+
+        val ast = astOf(funF)
+
+        // when
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(varAUse to argA),
+                callGraph(),
+            )
+
+        // then
+        assertThat(result).containsExactlyInAnyOrderEntriesOf(
+            mapOf(
+                funF to
+                    AnalyzedFunction(
+                        null,
+                        setOf(AnalyzedVariable(argA, funF, VariableUseType.READ)),
+                        0,
+                        emptySet(),
+                    ),
+            ),
+        )
+    }
+
+    @Test
+    fun `should find uses of parent function argument`() {
+        // given
+        // f[a, b] => (g => (a; b = ()))
+        val argA = arg("a")
+        val argB = arg("b")
+        val varAUse = variableUse("a")
+        val varBUse = variableUse("b")
+        val funG = functionDeclaration("g", block(varAUse, variableWrite(varBUse)))
+        val funF = functionDeclaration("f", listOf(argA, argB), funG)
+
+        val ast = astOf(funF)
+
+        // when
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(varAUse to argA, varBUse to argB),
+                callGraph(),
+            )
+
+        // then
+        assertThat(result).containsExactlyInAnyOrderEntriesOf(
+            mapOf(
+                funF to
+                    AnalyzedFunction(
+                        null,
+                        setOf(
+                            AnalyzedVariable(argA, funF, VariableUseType.UNUSED),
+                            AnalyzedVariable(argB, funF, VariableUseType.UNUSED),
+                        ),
+                        0,
+                        setOf(argA, argB),
+                    ),
+                funG to
+                    AnalyzedFunction(
+                        ParentLink(funF, true),
+                        setOf(
+                            AnalyzedVariable(argA, funF, VariableUseType.READ),
+                            AnalyzedVariable(argB, funF, VariableUseType.WRITE),
+                        ),
+                        1,
+                        emptySet(),
+                    ),
+            ),
+        )
     }
 }
