@@ -295,13 +295,13 @@ sealed class OperatorUnary(
             other is OperatorUnary &&
             areEquivalentExpressions(expression, other.expression)
 
+    override fun toString() = this::class.simpleName!!
+
     class Negation(
         range: Pair<Location, Location>,
         expression: Expression,
     ) : OperatorUnary(range, expression),
         Tree {
-        override fun toString() = "Negation"
-
         override fun children() = listOf(expression)
 
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Negation
@@ -312,8 +312,6 @@ sealed class OperatorUnary(
         expression: Expression,
     ) : OperatorUnary(range, expression),
         Tree {
-        override fun toString() = "Unary minus"
-
         override fun children() = listOf(expression)
 
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Minus
