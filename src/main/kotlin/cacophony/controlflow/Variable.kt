@@ -10,8 +10,8 @@ class SourceVariable(
 
 sealed class Register() : Variable()
 
-data object VirtualRegister : Register()
+class VirtualRegister : Register()
 
-data object FixedRegister : Register() {
+class FixedRegister : Register() {
     // TODO
 }
