@@ -1,21 +1,23 @@
 package cacophony.controlflow
 
+class CFGLabel
+
 sealed class CFGVertex(
     val tree: CFGNode,
 ) {
-    abstract fun dependents(): List<CFGVertex>
+    abstract fun dependents(): List<CFGLabel>
 
     sealed class Conditional(
         tree: CFGNode.LogicalOperator,
-        val trueDestination: CFGVertex,
-        val falseDestination: CFGVertex,
+        val trueDestination: CFGLabel,
+        val falseDestination: CFGLabel,
     ) : CFGVertex(tree) {
         override fun dependents() = listOf(trueDestination, falseDestination)
     }
 
     sealed class Jump(
         tree: CFGNode.Unconditional,
-        val destination: CFGVertex,
+        val destination: CFGLabel,
     ) : CFGVertex(tree) {
         override fun dependents() = listOf(destination)
     }
@@ -23,7 +25,7 @@ sealed class CFGVertex(
     sealed class Final(
         tree: CFGNode.Unconditional,
     ) : CFGVertex(tree) {
-        override fun dependents() = emptyList<CFGVertex>()
+        override fun dependents() = emptyList<CFGLabel>()
     }
 }
 
