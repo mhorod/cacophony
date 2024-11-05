@@ -1,11 +1,11 @@
 package cacophony.controlflow
 
-typealias CFGFragment = Map<CFGLabel, CFGRootNode>
+typealias CFGFragment = Map<CFGLabel, CFGVertex>
 
 interface CFGFragmentBuilder {
     fun add(
         label: CFGLabel,
-        tree: CFGRootNode,
+        tree: CFGVertex,
     )
 
     fun getCFGFragment(): CFGFragment

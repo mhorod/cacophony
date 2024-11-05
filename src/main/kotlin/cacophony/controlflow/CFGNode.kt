@@ -2,7 +2,7 @@ package cacophony.controlflow
 
 class CFGLabel
 
-sealed interface CFGRootNode
+sealed interface CFGVertex
 
 sealed interface CFGLeafNode
 
