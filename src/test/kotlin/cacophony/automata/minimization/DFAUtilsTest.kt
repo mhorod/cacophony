@@ -1,9 +1,6 @@
 package cacophony.automata.minimization
 
-import cacophony.automata.DFA
-import cacophony.automata.SimpleDFA
-import cacophony.automata.areEquivalent
-import cacophony.automata.createDFAEquivalenceHelper
+import cacophony.automata.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -11,7 +8,7 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.math.ceil
 import kotlin.random.Random
 
-class DFAMinimizationTest {
+class DFAUtilsTest {
     @Test
     fun `DFA accepting empty word and aa is not changed`() {
         val dfa =

@@ -2,7 +2,7 @@ package cacophony.grammars
 
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
-import cacophony.automata.minimization.via
+import cacophony.automata.via
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

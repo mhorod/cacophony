@@ -2,6 +2,7 @@ package cacophony.automata.minimization
 
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
+import cacophony.automata.via
 
 private fun <E> PartitionRefinement<E>.smallerSet(
     a: PartitionId,

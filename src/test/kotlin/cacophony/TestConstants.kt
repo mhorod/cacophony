@@ -1,7 +1,7 @@
 package cacophony
 
 import cacophony.automata.SimpleDFA
-import cacophony.automata.minimization.via
+import cacophony.automata.via
 
 enum class MockCategory {
     NON_EMPTY,

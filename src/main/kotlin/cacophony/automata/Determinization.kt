@@ -1,6 +1,5 @@
 package cacophony.automata
 
-import cacophony.automata.minimization.via
 import kotlin.collections.mutableMapOf
 import kotlin.collections.mutableSetOf
 import kotlin.collections.setOf

@@ -1,7 +1,7 @@
 package cacophony.parser
 
 import cacophony.automata.SimpleDFA
-import cacophony.automata.minimization.via
+import cacophony.automata.via
 import cacophony.grammars.*
 import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex

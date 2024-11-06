@@ -1,7 +1,7 @@
 package cacophony.grammars
 
 import cacophony.automata.DFA
-import cacophony.automata.minimization.reverse
+import cacophony.automata.reverse
 
 fun <StateType, SymbolType, ResultType> findNullable(
     automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,

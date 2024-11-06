@@ -1,8 +1,8 @@
 package cacophony.grammars
 
 import cacophony.automata.DFA
+import cacophony.automata.buildDFAFromRegex
 import cacophony.automata.joinAutomata
-import cacophony.automata.minimization.buildDFAFromRegex
 
 typealias DFAStateReference<StateType, SymbolType, ResultType> =
     Pair<StateType, DFA<StateType, SymbolType, ResultType>>

@@ -1,8 +1,6 @@
 package cacophony.automata
 
-import cacophony.automata.minimization.makeIntDfa
 import cacophony.automata.minimization.minimize
-import cacophony.automata.minimization.via
 
 // Joins given list of the automata into a single DFA with accepting states marked
 // with a Result corresponding to the source DFAs.
