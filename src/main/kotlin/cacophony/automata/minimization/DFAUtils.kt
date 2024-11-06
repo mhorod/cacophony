@@ -1,4 +1,4 @@
-package cacophony.automata.minimalization
+package cacophony.automata.minimization
 
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
@@ -71,12 +71,12 @@ fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.withSta
     )
 }
 
-// TODO: During refactor, move all of this to some utils file outside of minimalization directory.
+// TODO: During refactor, move all of this to some utils file outside of minimization directory.
 
 infix fun <DFAState, AtomType> DFAState.via(label: AtomType): Pair<DFAState, AtomType> = Pair(this, label)
 
 // Some utility functions, to not write whole pipeline each time
-fun <AtomType> buildDFAFromRegex(regex: AlgebraicRegex<AtomType>) = determinize(buildNFAFromRegex(regex)).minimalize().makeIntDfa()
+fun <AtomType> buildDFAFromRegex(regex: AlgebraicRegex<AtomType>) = determinize(buildNFAFromRegex(regex)).minimize().makeIntDfa()
 
 fun <AtomType, ResulType> buildDFAFromRegex(
     regex: AlgebraicRegex<AtomType>,

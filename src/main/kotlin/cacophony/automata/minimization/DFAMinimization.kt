@@ -1,4 +1,4 @@
-package cacophony.automata.minimalization
+package cacophony.automata.minimization
 
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
@@ -18,16 +18,16 @@ class ContractedDFAState<DFAState>(
     override fun toString(): String = "ContractedDFAState(originalStates=$originalStates)"
 }
 
-// Returns a minimalized copy of this DFA, with dead/unreachable states removed.
+// Returns a minimized copy of this DFA, with dead/unreachable states removed.
 // Throws IllegalArgumentException if DFA is invalid (i.e. it does not accept any word).
-fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.minimalize():
+fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.minimize():
     DFA<ContractedDFAState<DFAState>, AtomType, ResultType> =
-    minimalizeImpl(
+    minimizeImpl(
         withAliveReachableStates(),
     )
 
-// minimalize() helper function. Assumes dfa contains only alive and reachable states.
-private fun <DFAState, AtomType, ResultType> minimalizeImpl(
+// minimize() helper function. Assumes dfa contains only alive and reachable states.
+private fun <DFAState, AtomType, ResultType> minimizeImpl(
     dfa: DFA<DFAState, AtomType, ResultType>,
 ): DFA<ContractedDFAState<DFAState>, AtomType, ResultType> {
     val preimagesCalculator = DFAPreimagesCalculator(dfa)

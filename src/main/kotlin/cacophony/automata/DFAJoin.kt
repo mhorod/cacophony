@@ -1,8 +1,8 @@
 package cacophony.automata
 
-import cacophony.automata.minimalization.makeIntDfa
-import cacophony.automata.minimalization.minimalize
-import cacophony.automata.minimalization.via
+import cacophony.automata.minimization.makeIntDfa
+import cacophony.automata.minimization.minimize
+import cacophony.automata.minimization.via
 
 // Joins given list of the automata into a single DFA with accepting states marked
 // with a Result corresponding to the source DFAs.
@@ -55,5 +55,5 @@ fun <StateType, AtomType, ResultType> joinAutomata(
         }
     }
 
-    return SimpleDFA(0, productions, results).minimalize().makeIntDfa()
+    return SimpleDFA(0, productions, results).minimize().makeIntDfa()
 }

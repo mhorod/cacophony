@@ -1,6 +1,6 @@
 package cacophony.automata
 
-import cacophony.automata.minimalization.buildDFAFromRegex
+import cacophony.automata.minimization.buildDFAFromRegex
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -43,7 +43,7 @@ class DFAJoinTest {
     }
 
     @Test
-    fun `joining single (minimalized) automaton produces equivalent one`() {
+    fun `joining single (minimized) automaton produces equivalent one`() {
         val dfa1 = buildDFAFromRegex("abc")
         val dfa2 = joinAutomata(listOf(dfa1 to Unit))
         assert(areEquivalent(dfa1, dfa2))

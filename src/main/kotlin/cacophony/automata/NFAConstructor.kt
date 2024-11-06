@@ -1,6 +1,6 @@
 package cacophony.automata
 
-import cacophony.automata.minimalization.via
+import cacophony.automata.minimization.via
 import cacophony.utils.AlgebraicRegex
 import kotlin.collections.emptyMap
 

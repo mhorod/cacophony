@@ -3,7 +3,7 @@ package cacophony.grammars
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
 import cacophony.automata.areEquivalent
-import cacophony.automata.minimalization.via
+import cacophony.automata.minimization.via
 import cacophony.grammars.AnalyzedGrammar.Companion.buildAutomata
 import cacophony.utils.AlgebraicRegex
 import org.assertj.core.api.Assertions.assertThat

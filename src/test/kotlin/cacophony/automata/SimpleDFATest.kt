@@ -1,6 +1,6 @@
 package cacophony.automata
 
-import cacophony.automata.minimalization.via
+import cacophony.automata.minimization.via
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
