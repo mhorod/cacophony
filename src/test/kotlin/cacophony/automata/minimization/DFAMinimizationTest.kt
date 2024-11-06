@@ -8,7 +8,7 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.math.ceil
 import kotlin.random.Random
 
-class DFAUtilsTest {
+class DFAMinimizationTest {
     @Test
     fun `DFA accepting empty word and aa is not changed`() {
         val dfa =
