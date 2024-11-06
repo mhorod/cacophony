@@ -1,8 +1,12 @@
 package cacophony.controlflow
 
 import cacophony.semantic.AnalyzedFunction
+import cacophony.semantic.syntaxtree.Definition
 
-class FunctionHandler(val function: AnalyzedFunction) {
+class FunctionHandler(
+    val function: Definition.FunctionDeclaration,
+    val analyzedFunction: AnalyzedFunction,
+) {
     sealed class VariableAllocation() {
         data class Reg(val register: VirtualRegister)
 
