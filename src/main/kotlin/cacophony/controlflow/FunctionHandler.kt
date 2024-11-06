@@ -8,7 +8,7 @@ class FunctionHandler(
     val analyzedFunction: AnalyzedFunction,
 ) {
     sealed class VariableAllocation() {
-        data class Reg(val register: VirtualRegister)
+        data class Reg(val register: Register)
 
         data class Stack(val offset: Int)
     }

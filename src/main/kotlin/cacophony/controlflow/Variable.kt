@@ -8,10 +8,10 @@ class SourceVariable(
     val definition: Definition,
 ) : Variable()
 
-sealed class Register() : Variable()
+sealed class Register() : Variable() {
+    class Virtual
 
-class VirtualRegister : Register()
-
-class FixedRegister : Register() {
-    // TODO
+    class Fixed {
+        // TODO
+    }
 }
