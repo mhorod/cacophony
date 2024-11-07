@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package cacophony.parser
 
 import cacophony.grammars.Grammar

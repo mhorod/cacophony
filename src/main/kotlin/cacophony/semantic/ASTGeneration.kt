@@ -4,19 +4,17 @@ import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyGrammarSymbol.*
 import cacophony.semantic.syntaxtree.*
-import cacophony.semantic.syntaxtree.Type
+import cacophony.utils.CompileException
 import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
 private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): CacophonyGrammarSymbol {
-    if (parseTree is ParseTree.Leaf) {
-        return parseTree.token.category
-    } else if (parseTree is ParseTree.Branch) {
-        return parseTree.production.lhs
+    return when (parseTree) {
+        is ParseTree.Leaf -> parseTree.token.category
+        is ParseTree.Branch -> parseTree.production.lhs
     }
-    throw Exception("Parse tree must be either Leaf or Branch")
 }
 
 private fun pruneParseTree(
@@ -80,7 +78,7 @@ private fun constructFunctionArgument(
     }
 }
 
-fun <T : OperatorBinary> createInstance(
+fun <T : OperatorBinary> createInstanceBinary(
     kClass: KClass<T>,
     range: Pair<Location, Location>,
     lhs: Expression,
@@ -88,6 +86,15 @@ fun <T : OperatorBinary> createInstance(
 ): Expression {
     val constructor = kClass.primaryConstructor
     return constructor!!.call(range, lhs, rhs)
+}
+
+fun <T : OperatorUnary> createInstanceUnary(
+    kClass: KClass<T>,
+    range: Pair<Location, Location>,
+    subExpression: Expression,
+): Expression {
+    val constructor = kClass.primaryConstructor
+    return constructor!!.call(range, subExpression)
 }
 
 private fun operatorRegexToAST(
@@ -98,19 +105,19 @@ private fun operatorRegexToAST(
     if (childNum == 1) {
         return generateASTInternal(children[0], diagnostics)
     } else {
-        val operator = children[childNum - 2]
+        val operatorKind = children[childNum - 2]
         val newChildren = children.subList(0, childNum - 2)
         val range = Pair(first = children[0].range.first, second = children[childNum - 1].range.second)
-        if (operator is ParseTree.Leaf) {
-            val symbol = operator.token.category
-            return createInstance(
+        if (operatorKind is ParseTree.Leaf) {
+            val symbol = operatorKind.token.category
+            return createInstanceBinary(
                 symbol.syntaxTreeClass!! as KClass<OperatorBinary>,
                 range,
                 operatorRegexToAST(newChildren, diagnostics),
                 generateASTInternal(children[childNum - 1], diagnostics),
             )
         } else {
-            throw IllegalArgumentException("Expected the operator symbol, got: $operator")
+            throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
         }
     }
 }
@@ -124,7 +131,16 @@ private fun generateASTInternal(
         val context = parseTree.token.context
         return when (symbol) {
             VARIABLE_IDENTIFIER -> VariableUse(parseTree.range, context)
-            INT_LITERAL -> Literal.IntLiteral(parseTree.range, context.toInt())
+            INT_LITERAL ->
+                Literal.IntLiteral(
+                    parseTree.range,
+                    try {
+                        context.toInt()
+                    } catch (e: NumberFormatException) {
+                        diagnostics.report("Value $context is out of range", parseTree.range)
+                        throw CompileException("Value $context is out of range")
+                    },
+                )
             BOOL_LITERAL -> Literal.BoolLiteral(parseTree.range, context.toBoolean())
             KEYWORD_BREAK -> Statement.BreakStatement(parseTree.range)
             else -> throw IllegalArgumentException("Unexpected leaf symbol: $symbol")
@@ -228,53 +244,24 @@ private fun generateASTInternal(
                 val elseExpression = (if (childNum > 2) generateASTInternal(parseTree.children[2], diagnostics) else null)
                 Statement.IfElseStatement(range, testExpression, doExpression, elseExpression)
             }
+            RETURN_STATEMENT -> {
+                assert(childNum == 1)
+                val expression = generateASTInternal(parseTree.children[0], diagnostics)
+                Statement.ReturnStatement(range, expression)
+            }
             ASSIGNMENT_LEVEL -> {
                 assert(childNum == 3)
-                val operator = parseTree.children[1]
-                if (operator is ParseTree.Leaf) {
-                    val assignmentSymbol = operator.token.category
-                    return when (assignmentSymbol) {
-                        OPERATOR_ASSIGNMENT ->
-                            OperatorBinary.Assignment(
-                                range,
-                                generateASTInternal(parseTree.children[0], diagnostics),
-                                generateASTInternal(parseTree.children[2], diagnostics),
-                            )
-                        OPERATOR_SUBTRACTION_ASSIGNMENT ->
-                            OperatorBinary.SubtractionAssignment(
-                                range,
-                                generateASTInternal(parseTree.children[0], diagnostics),
-                                generateASTInternal(parseTree.children[2], diagnostics),
-                            )
-                        OPERATOR_ADDITION_ASSIGNMENT ->
-                            OperatorBinary.AdditionAssignment(
-                                range,
-                                generateASTInternal(parseTree.children[0], diagnostics),
-                                generateASTInternal(parseTree.children[2], diagnostics),
-                            )
-                        OPERATOR_MULTIPLICATION_ASSIGNMENT ->
-                            OperatorBinary.MultiplicationAssignment(
-                                range,
-                                generateASTInternal(parseTree.children[0], diagnostics),
-                                generateASTInternal(parseTree.children[2], diagnostics),
-                            )
-                        OPERATOR_DIVISION_ASSIGNMENT ->
-                            OperatorBinary.DivisionAssignment(
-                                range,
-                                generateASTInternal(parseTree.children[0], diagnostics),
-                                generateASTInternal(parseTree.children[2], diagnostics),
-                            )
-                        OPERATOR_MODULO_ASSIGNMENT ->
-                            OperatorBinary.ModuloAssignment(
-                                range,
-                                generateASTInternal(parseTree.children[0], diagnostics),
-                                generateASTInternal(parseTree.children[2], diagnostics),
-                            )
-
-                        else -> throw IllegalArgumentException("Expected the assignment operator, got: $assignmentSymbol")
-                    }
+                val operatorKind = parseTree.children[1]
+                if (operatorKind is ParseTree.Leaf) {
+                    val assignmentSymbol = operatorKind.token.category
+                    return createInstanceBinary(
+                        assignmentSymbol.syntaxTreeClass!! as KClass<OperatorBinary>,
+                        range,
+                        generateASTInternal(parseTree.children[0], diagnostics),
+                        generateASTInternal(parseTree.children[2], diagnostics),
+                    )
                 } else {
-                    throw IllegalArgumentException("Expected the operator symbol, got: $operator")
+                    throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
                 }
             }
             ADDITION_LEVEL, MULTIPLICATION_LEVEL, EQUALITY_LEVEL, COMPARATOR_LEVEL, LOGICAL_OPERATOR_LEVEL -> {
@@ -283,24 +270,20 @@ private fun generateASTInternal(
             }
             UNARY_LEVEL -> {
                 assert(childNum == 2)
-                val unaryOperator = parseTree.children[0]
-                if (unaryOperator is ParseTree.Leaf) {
-                    val unarySymbol = unaryOperator.token.category
-                    return when (unarySymbol) {
-                        OPERATOR_SUBTRACTION ->
-                            OperatorUnary.Minus(
-                                range,
-                                generateASTInternal(parseTree.children[1], diagnostics),
-                            )
-                        OPERATOR_LOGICAL_NOT ->
-                            OperatorUnary.Negation(
-                                range,
-                                generateASTInternal(parseTree.children[1], diagnostics),
-                            )
-                        else -> throw IllegalArgumentException("Expected the unary operator: $unarySymbol")
+                val operatorKind = parseTree.children[0]
+                if (operatorKind is ParseTree.Leaf) {
+                    val unarySymbol = operatorKind.token.category
+                    // we have to consider it individually because of the collision with binary minus
+                    if (unarySymbol == OPERATOR_SUBTRACTION) {
+                        return OperatorUnary.Minus(range, generateASTInternal(parseTree.children[1], diagnostics))
                     }
+                    return createInstanceUnary(
+                        unarySymbol.syntaxTreeClass!! as KClass<OperatorUnary>,
+                        range,
+                        generateASTInternal(parseTree.children[1], diagnostics),
+                    )
                 } else {
-                    throw IllegalArgumentException("Expected the operator symbol, got: $unaryOperator")
+                    throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
                 }
             }
 

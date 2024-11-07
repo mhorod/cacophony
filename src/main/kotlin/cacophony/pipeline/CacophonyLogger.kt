@@ -85,6 +85,8 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
         println("Function analysis successful :D")
         result.forEach { (function, analysis) ->
             println("  $function (${function.identifier}/${function.arguments.size}) at static depth ${analysis.staticDepth}:")
+            println("    Parent link: ${analysis.parentLink}")
+            println("    Used variables: ${analysis.variables.size}")
             analysis.variables.forEach { variable ->
                 val usage =
                     when (variable.useType) {
@@ -95,7 +97,9 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
                     }
                 val from =
                     "${variable.definedIn} (${variable.definedIn.identifier}/${variable.definedIn.arguments.size})"
-                println("    [$usage] ${variable.declaration} (${variable.declaration.identifier}) from $from")
+                println("      [$usage] ${variable.declaration} (${variable.declaration.identifier}) from $from")
+                println("    Variables used in nested functions: ${analysis.variablesUsedInNestedFunctions.size}")
+                analysis.variablesUsedInNestedFunctions.forEach { println("      $it") }
             }
         }
     }

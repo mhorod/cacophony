@@ -5,11 +5,12 @@ import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 import cacophony.semantic.syntaxtree.Type
+import cacophony.utils.CompileException
 import cacophony.utils.Diagnostics
 
-class NameResolutionErrorException(
+class NameResolutionException(
     reason: String,
-) : Exception(reason)
+) : CompileException(reason)
 
 sealed interface ResolvedName {
     class Variable(
@@ -160,6 +161,7 @@ fun resolveNames(
             }
             is VariableDeclaration -> {
                 symbolsTable.define(node.identifier, node)
+                traverseAst(node.value, true)
             }
             is FunctionDeclaration -> {
                 symbolsTable.define(node.identifier, node)
@@ -172,7 +174,7 @@ fun resolveNames(
             }
             is FunctionArgument -> {
                 if (node.type is Type.Functional) {
-                    throw NameResolutionErrorException(
+                    throw NameResolutionException(
                         "Illegal functional argument: ${node.identifier} at position ${node.range}",
                     )
                 }

@@ -109,7 +109,7 @@ class NameResolverTest {
                 val aUse = VariableUse(mockRange, "a")
                 val bUse = VariableUse(mockRange, "b")
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(aDef, bDef, aUse, bUse),
                     )
@@ -121,6 +121,30 @@ class NameResolverTest {
                 assertThatResolvedNames(resolvedNames)
                     .hasVariable(aUse to aDef)
                     .hasVariable(bUse to bDef)
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `variable is visible in variable declaration value`() {
+                // let a = 5
+                // let b = a
+
+                // given
+                val aDef = variableDeclaration("a")
+                val aUse = VariableUse(mockRange, "a")
+                val ast =
+                    Block(
+                        mockRange,
+                        listOf(aDef, VariableDeclaration(mockRange, "b", null, aUse)),
+                    )
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasVariable(aUse to aDef)
                     .andNothingElse()
                 verify { diagnostics wasNot Called }
             }
@@ -138,7 +162,7 @@ class NameResolverTest {
                 val xUse = VariableUse(mockRange, "x")
                 val yUse = VariableUse(mockRange, "y")
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(
                             FunctionDeclaration(
@@ -198,7 +222,7 @@ class NameResolverTest {
                 val fUse = VariableUse(mockRange, "f")
                 val gUse = VariableUse(mockRange, "g")
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(fDef, gDef, gUse, fUse),
                     )
@@ -231,7 +255,7 @@ class NameResolverTest {
                         BoolLiteral(mockRange, true),
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(
                             fDef,
@@ -268,7 +292,7 @@ class NameResolverTest {
                             listOf(),
                         ),
                     )
-                val ast = AST(mockRange, listOf(fDef))
+                val ast = Block(mockRange, listOf(fDef))
 
                 // when
                 val resolvedNames = resolveNames(ast, diagnostics)
@@ -293,7 +317,7 @@ class NameResolverTest {
                 val aDef1 = variableDeclaration("a")
                 val aDef2 = variableDeclaration("a")
                 val aUse = VariableUse(mockRange, "a")
-                val ast = AST(mockRange, listOf(aDef1, aDef2, aUse))
+                val ast = Block(mockRange, listOf(aDef1, aDef2, aUse))
 
                 // when
                 val resolvedNames = resolveNames(ast, diagnostics)
@@ -320,7 +344,7 @@ class NameResolverTest {
                 val aUse1 = VariableUse(mockRange, "a")
                 val aUse2 = VariableUse(mockRange, "a")
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(
                             aDef1,
@@ -366,7 +390,7 @@ class NameResolverTest {
                         Basic(mockRange, "Bool"),
                         BoolLiteral(mockRange, true),
                     )
-                val ast = AST(mockRange, listOf(fDef1, fDef2, fUse))
+                val ast = Block(mockRange, listOf(fDef1, fDef2, fUse))
 
                 // when
                 val resolvedNames = resolveNames(ast, diagnostics)
@@ -409,7 +433,7 @@ class NameResolverTest {
                         IntLiteral(mockRange, 0),
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(
                             fDef1,
@@ -459,7 +483,7 @@ class NameResolverTest {
                         Block(mockRange, listOf(fDef2, fUse1)),
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(fDef1, fUse2),
                     )
@@ -506,7 +530,7 @@ class NameResolverTest {
                         Block(mockRange, listOf(gDef, xUse2)),
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(fDef),
                     )
@@ -553,7 +577,7 @@ class NameResolverTest {
                         ),
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(fDef),
                     )
@@ -590,7 +614,7 @@ class NameResolverTest {
                         xUse1,
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(xDef1, fDef, xUse2),
                     )
@@ -629,7 +653,7 @@ class NameResolverTest {
                     )
                 val fDef2 = variableDeclaration("f")
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(
                             fDef1,
@@ -671,7 +695,7 @@ class NameResolverTest {
                         Block(mockRange, listOf(fDef2, fUse1)),
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(fDef1, fUse2),
                     )
@@ -710,7 +734,7 @@ class NameResolverTest {
                         BoolLiteral(mockRange, true),
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(
                             aDef1,
@@ -750,7 +774,7 @@ class NameResolverTest {
                     )
                 val fDef2 = FunctionArgument(mockRange, "f", Basic(mockRange, "Int"))
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(
                             fDef1,
@@ -796,7 +820,7 @@ class NameResolverTest {
                         fUse1,
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(fDef1, fUse2),
                     )
@@ -836,7 +860,7 @@ class NameResolverTest {
                         BoolLiteral(mockRange, true),
                     )
                 val ast =
-                    AST(
+                    Block(
                         mockRange,
                         listOf(
                             FunctionDeclaration(
@@ -897,7 +921,7 @@ class NameResolverTest {
                     Basic(mockRange, "Bool"),
                     BoolLiteral(mockRange, false),
                 )
-            val ast = AST(mockRange, listOf(fDef1, fDef2, fUse))
+            val ast = Block(mockRange, listOf(fDef1, fDef2, fUse))
 
             // when
             val resolvedNames = resolveNames(ast, diagnostics)
@@ -950,7 +974,7 @@ class NameResolverTest {
                     IntLiteral(mockRange, 1),
                 )
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         fDef1,
@@ -988,7 +1012,7 @@ class NameResolverTest {
             // given
             val invalidUseRange = Location(10) to Location(10)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         variableDeclaration("a"),
@@ -1014,7 +1038,7 @@ class NameResolverTest {
             // given
             val invalidUseRange = Location(1) to Location(5)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         VariableUse(invalidUseRange, "a"),
@@ -1040,7 +1064,7 @@ class NameResolverTest {
             // given
             val invalidUseRange = Location(2) to Location(5)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         Block(mockRange, listOf(variableDeclaration("a"))),
@@ -1068,7 +1092,7 @@ class NameResolverTest {
             val invalidUseRange1 = Location(2) to Location(5)
             val invalidUseRange2 = Location(6) to Location(13)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         FunctionDeclaration(
@@ -1113,7 +1137,7 @@ class NameResolverTest {
             val invalidUseRange2 = Location(6) to Location(13)
             val invalidUseRange3 = Location(16) to Location(31)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         IfElseStatement(
@@ -1147,7 +1171,7 @@ class NameResolverTest {
             val invalidUseRange1 = Location(2) to Location(5)
             val invalidUseRange2 = Location(6) to Location(13)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         IfElseStatement(
@@ -1179,7 +1203,7 @@ class NameResolverTest {
             // given
             val invalidUseRange1 = Location(2) to Location(5)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         IfElseStatement(
@@ -1211,7 +1235,7 @@ class NameResolverTest {
             val invalidUseRange1 = Location(2) to Location(5)
             val invalidUseRange2 = Location(6) to Location(13)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         WhileStatement(
@@ -1242,7 +1266,7 @@ class NameResolverTest {
             // given
             val invalidUseRange1 = Location(2) to Location(5)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         WhileStatement(
@@ -1272,7 +1296,7 @@ class NameResolverTest {
             // given
             val invalidUseRange1 = Location(2) to Location(5)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         ReturnStatement(mockRange, variableDeclaration("x")),
@@ -1298,7 +1322,7 @@ class NameResolverTest {
             // given
             val invalidUseRange1 = Location(2) to Location(5)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         OperatorUnary.Negation(mockRange, variableDeclaration("x")),
@@ -1325,7 +1349,7 @@ class NameResolverTest {
             val invalidUseRange1 = Location(2) to Location(5)
             val invalidUseRange2 = Location(7) to Location(15)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         OperatorBinary.Addition(
@@ -1356,7 +1380,7 @@ class NameResolverTest {
             // given
             val invalidUseRange1 = Location(2) to Location(5)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         OperatorBinary.Addition(
@@ -1385,7 +1409,7 @@ class NameResolverTest {
             // given
             val functionalArgumentRange = Location(9) to Location(20)
             val ast =
-                AST(
+                Block(
                     mockRange,
                     listOf(
                         FunctionDeclaration(
@@ -1406,7 +1430,7 @@ class NameResolverTest {
                 )
 
             // when & then
-            assertThrows<NameResolutionErrorException> { resolveNames(ast, diagnostics) }
+            assertThrows<NameResolutionException> { resolveNames(ast, diagnostics) }
         }
     }
 }

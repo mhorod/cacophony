@@ -27,7 +27,7 @@ enum class CacophonyGrammarSymbol(
     KEYWORD_WHILE(null),
     KEYWORD_DO(null),
     KEYWORD_BREAK(Statement.BreakStatement::class),
-    KEYWORD_RETURN(Statement.ReturnStatement::class),
+    KEYWORD_RETURN(null),
 
     // operators
     OPERATOR_EQUALS(OperatorBinary.Equals::class),
@@ -72,7 +72,7 @@ enum class CacophonyGrammarSymbol(
     UNARY(OperatorUnary::class),
 
 //    STATEMENT(Expression::class),
-    RETURN_STATEMENT(Expression::class),
+    RETURN_STATEMENT(Statement.ReturnStatement::class),
     BLOCK(Block::class),
     EMPTY_EXPRESSION(Empty::class),
     NON_EXISTENT_SYMBOL(null),

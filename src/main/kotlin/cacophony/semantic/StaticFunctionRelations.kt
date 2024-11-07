@@ -74,9 +74,7 @@ private class StaticFunctionsRelationsVisitor {
     private val relations = mutableMapOf<Definition.FunctionDeclaration, MutableStaticFunctionRelations>()
     private val functionStack = ArrayDeque<Definition.FunctionDeclaration>()
 
-    fun visit(ast: AST) {
-        ast.expressions.forEach { visitExpression(it) }
-    }
+    fun visit(ast: AST) = visitExpression(ast)
 
     fun getRelations(): Map<Definition.FunctionDeclaration, StaticFunctionRelations> =
         relations.mapValues { it.value.toStaticFunctionRelations() }

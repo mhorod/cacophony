@@ -1,6 +1,5 @@
 package cacophony.semantic
 
-import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Empty
@@ -13,6 +12,8 @@ import cacophony.utils.Location
 
 fun mockRange() = Pair(Location(0), Location(0))
 
+fun unitType() = Type.Basic(mockRange(), "Unit")
+
 fun functionDeclaration(
     identifier: String,
     body: Expression,
@@ -21,7 +22,22 @@ fun functionDeclaration(
     identifier,
     null,
     emptyList(),
-    Type.Basic(mockRange(), "Unit"),
+    unitType(),
+    body,
+)
+
+fun arg(identifier: String) = Definition.FunctionArgument(mockRange(), identifier, unitType())
+
+fun functionDeclaration(
+    identifier: String,
+    arguments: List<Definition.FunctionArgument>,
+    body: Expression,
+) = Definition.FunctionDeclaration(
+    mockRange(),
+    identifier,
+    null,
+    arguments,
+    unitType(),
     body,
 )
 
@@ -48,7 +64,7 @@ fun block(vararg expressions: Expression) = Block(mockRange(), expressions.toLis
 
 fun call(variableUse: VariableUse) = FunctionCall(mockRange(), variableUse, emptyList())
 
-fun astOf(vararg expressions: Expression) = AST(mockRange(), expressions.toList())
+fun astOf(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 
 fun callGraph(vararg calls: Pair<Definition.FunctionDeclaration, Definition.FunctionDeclaration>): CallGraph =
     calls.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }

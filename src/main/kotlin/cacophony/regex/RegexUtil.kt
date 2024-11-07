@@ -6,7 +6,8 @@ import cacophony.utils.AlgebraicRegex.ConcatenationRegex
 import cacophony.utils.AlgebraicRegex.StarRegex
 import cacophony.utils.AlgebraicRegex.UnionRegex
 
-class RegexSyntaxErrorException(reason: String) : Exception(reason)
+// This is not CompileException intentionally.
+class RegexSyntaxError(reason: String) : Exception(reason)
 
 internal sealed class RegexType : Cloneable {
     public abstract override fun clone(): RegexType

@@ -8,7 +8,8 @@ import cacophony.grammars.Production
 import cacophony.utils.Diagnostics
 import kotlin.collections.mutableListOf
 
-class ParserConstructorErrorException(
+// This is not CompileException intentionally.
+class ParserConstructorError(
     reason: String,
 ) : Exception(reason)
 
@@ -79,7 +80,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                         when (suitableSymbols.size) {
                             0 -> nextAction[inputSymbol]!![curStateRef] = null
                             1 -> nextAction[inputSymbol]!![curStateRef] = suitableSymbols[0]
-                            else -> throw ParserConstructorErrorException(
+                            else -> throw ParserConstructorError(
                                 "Not an LL(1) grammar: " +
                                     "state $curState in dfa $dfaLabel, possible productions for $inputSymbol are $suitableSymbols",
                             )
@@ -97,7 +98,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
         diagnostics: Diagnostics,
     ): ParseTree<SymbolType> {
         if (terminals.isEmpty()) {
-            throw ParsingErrorException("Unable to parse empty input.")
+            throw ParsingException("Unable to parse empty input.")
         }
 
         val terminalIterator = terminals.iterator()
@@ -135,7 +136,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                         try {
                             state = nextState
                             children.add(topDownParse(nextSymbol))
-                        } catch (e: ParsingErrorException) {
+                        } catch (e: ParsingException) {
                             if (!eof && dfa.getProduction(state, terminal.token.category) == null) {
                                 throw e
                             } else {}
@@ -143,14 +144,14 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                     } ?: run {
                         diagnostics.report("Unexpected token ${terminal.token.category} while parsing $symbol", terminal.range)
                         goToSyncSymbol()
-                        throw ParsingErrorException("Unable to go to desired symbol $nextSymbol from $state in DFA for $symbol")
+                        throw ParsingException("Unable to go to desired symbol $nextSymbol from $state in DFA for $symbol")
                     }
                 } ?: break
             } while (!eof)
             if (!dfa.isAccepting(state)) {
                 diagnostics.report("Unexpected token ${terminal.token.category} while parsing $symbol", terminal.range)
                 goToSyncSymbol()
-                throw ParsingErrorException("State $state in DFA for $symbol is not accepting")
+                throw ParsingException("State $state in DFA for $symbol is not accepting")
             }
 
             val range = Pair(children.first().range.first, children.last().range.second)
