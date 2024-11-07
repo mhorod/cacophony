@@ -151,3 +151,4 @@ sealed interface CFGNode {
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
+}
