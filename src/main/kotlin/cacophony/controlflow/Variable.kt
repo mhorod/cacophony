@@ -2,13 +2,13 @@ package cacophony.controlflow
 
 import cacophony.semantic.syntaxtree.Definition
 
-sealed class Variable
+sealed interface Variable
 
 class SourceVariable(
     val definition: Definition,
-) : Variable()
+) : Variable
 
-sealed class Register() : Variable() {
+sealed class Register() : Variable {
     class Virtual
 
     class Fixed {
