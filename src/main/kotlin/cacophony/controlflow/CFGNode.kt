@@ -44,12 +44,12 @@ sealed interface CFGNode {
         Unconditional,
         Leaf
 
-    // NOTE: Push may be unncessary since it can be done via Assignment + MemoryAccess
+    // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
     sealed class Push(
         val value: CFGNode,
     ) : Unconditional
 
-    // NOTE: Pop may be unncessary since it can be done via Assignment
+    // NOTE: Pop may be unnecessary since it can be done via Assignment
     sealed class Pop :
         Unconditional,
         Leaf
@@ -105,18 +105,6 @@ sealed interface CFGNode {
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
-
-    sealed interface BitwiseOperator : Unconditional
-
-    sealed class BitwiseAnd(
-        val lhs: CFGNode,
-        val rhs: CFGNode,
-    ) : BitwiseOperator
-
-    sealed class BitwiseOr(
-        val lhs: CFGNode,
-        val rhs: CFGNode,
-    ) : BitwiseOperator
 
     sealed interface LogicalOperator : CFGNode
 
