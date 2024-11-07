@@ -27,7 +27,7 @@ class FunctionHandler(
         TODO("Not yet implemented")
     }
 
-    fun getVariableAllocation(variable: SourceVariable): VariableAllocation {
+    fun getVariableAllocation(variable: RealVariable): VariableAllocation {
         TODO("Not yet implemented")
     }
 
