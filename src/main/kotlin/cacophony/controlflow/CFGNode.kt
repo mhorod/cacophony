@@ -34,6 +34,8 @@ sealed interface CFGNode {
 
     sealed interface Leaf : CFGNode
 
+    sealed interface LValue : CFGNode
+
     sealed class Return :
         Unconditional,
         Leaf
@@ -42,19 +44,31 @@ sealed interface CFGNode {
         Unconditional,
         Leaf
 
+    // NOTE: Push may be unncessary since it can be done via Assignment + MemoryAccess
+    sealed class Push(
+        val value: CFGNode,
+    ) : Unconditional
+
+    // NOTE: Pop may be unncessary since it can be done via Assignment
+    sealed class Pop :
+        Unconditional,
+        Leaf
+
     sealed class Assignment(
-        val regvar: String, // TODO: make Register
+        val destination: LValue, // TODO: make Register
         val value: CFGNode,
     ) : Unconditional
 
     sealed class VariableUse(
         val regvar: String, // TODO: make Register
     ) : Unconditional,
-        Leaf
+        Leaf,
+        LValue
 
     sealed class MemoryAccess(
         val destination: CFGNode,
-    ) : Unconditional
+    ) : Unconditional,
+        LValue
 
     sealed class Constant(
         val value: Int,
@@ -62,7 +76,7 @@ sealed interface CFGNode {
         Leaf
 
     sealed class Sequence(
-        vararg val nodes: CFGNode,
+        val nodes: List<CFGNode>,
     ) : Unconditional
 
     sealed interface ArithmeticOperator : Unconditional
