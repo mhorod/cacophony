@@ -2,32 +2,32 @@ package cacophony.utils
 
 import cacophony.regex.parseRegex
 
-sealed class AlgebraicRegex<AtomType> {
-    class AtomicRegex<AtomType>(
-        val symbol: AtomType,
-    ) : AlgebraicRegex<AtomType>()
+sealed class AlgebraicRegex<AtomT> {
+    class AtomicRegex<AtomT>(
+        val symbol: AtomT,
+    ) : AlgebraicRegex<AtomT>()
 
-    class UnionRegex<AtomType>(
-        vararg val internalRegexes: AlgebraicRegex<AtomType>,
-    ) : AlgebraicRegex<AtomType>()
+    class UnionRegex<AtomT>(
+        vararg val internalRegexes: AlgebraicRegex<AtomT>,
+    ) : AlgebraicRegex<AtomT>()
 
-    class ConcatenationRegex<AtomType>(
-        vararg val internalRegexes: AlgebraicRegex<AtomType>,
-    ) : AlgebraicRegex<AtomType>()
+    class ConcatenationRegex<AtomT>(
+        vararg val internalRegexes: AlgebraicRegex<AtomT>,
+    ) : AlgebraicRegex<AtomT>()
 
-    class StarRegex<AtomType>(
-        val internalRegex: AlgebraicRegex<AtomType>,
-    ) : AlgebraicRegex<AtomType>()
+    class StarRegex<AtomT>(
+        val internalRegex: AlgebraicRegex<AtomT>,
+    ) : AlgebraicRegex<AtomT>()
 
     companion object {
         fun fromString(regex: String): AlgebraicRegex<Char> = parseRegex(regex)
 
-        fun <AtomType> atomic(atom: AtomType) = AtomicRegex(atom)
+        fun <AtomT> atomic(atom: AtomT) = AtomicRegex(atom)
     }
 
-    infix fun or(rhs: AlgebraicRegex<AtomType>) = UnionRegex(this, rhs)
+    infix fun or(rhs: AlgebraicRegex<AtomT>) = UnionRegex(this, rhs)
 
-    infix fun concat(rhs: AlgebraicRegex<AtomType>) = ConcatenationRegex(this, rhs)
+    infix fun concat(rhs: AlgebraicRegex<AtomT>) = ConcatenationRegex(this, rhs)
 
     fun star() = StarRegex(this)
 }

@@ -21,16 +21,15 @@ class ContractedDFAState<DFAState>(
 
 // Returns a minimized copy of this DFA, with dead/unreachable states removed.
 // Throws IllegalArgumentException if DFA is invalid (i.e. it does not accept any word).
-fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.minimize():
-    DFA<ContractedDFAState<DFAState>, AtomType, ResultType> =
+fun <DFAState, AtomT, ResultT> DFA<DFAState, AtomT, ResultT>.minimize(): DFA<ContractedDFAState<DFAState>, AtomT, ResultT> =
     minimizeImpl(
         withAliveReachableStates(),
     )
 
 // minimize() helper function. Assumes dfa contains only alive and reachable states.
-private fun <DFAState, AtomType, ResultType> minimizeImpl(
-    dfa: DFA<DFAState, AtomType, ResultType>,
-): DFA<ContractedDFAState<DFAState>, AtomType, ResultType> {
+private fun <DFAState, AtomT, ResultT> minimizeImpl(
+    dfa: DFA<DFAState, AtomT, ResultT>,
+): DFA<ContractedDFAState<DFAState>, AtomT, ResultT> {
     val preimagesCalculator = DFAPreimagesCalculator(dfa)
 
     val refineStructure = PartitionRefinement(dfa.getAllStates())
@@ -44,7 +43,7 @@ private fun <DFAState, AtomType, ResultType> minimizeImpl(
 
     while (queue.isNotEmpty()) {
         val partitionId = queue.first().also { queue.remove(it) }
-        val preimages: Map<AtomType, Set<DFAState>> = preimagesCalculator.getPreimages(refineStructure.getElements(partitionId))
+        val preimages: Map<AtomT, Set<DFAState>> = preimagesCalculator.getPreimages(refineStructure.getElements(partitionId))
 
         for (preimageClass in preimages.values) {
             for ((oldId, newId) in refineStructure.refine(preimageClass)) {

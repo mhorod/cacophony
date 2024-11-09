@@ -5,12 +5,12 @@ import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
 
-sealed class ParseTree<SymbolType : Enum<SymbolType>>(
+sealed class ParseTree<SymbolT : Enum<SymbolT>>(
     val range: Pair<Location, Location>,
 ) : Tree {
-    class Leaf<SymbolType : Enum<SymbolType>>(
-        val token: Token<SymbolType>,
-    ) : ParseTree<SymbolType>(Pair(token.rangeFrom, token.rangeTo)),
+    class Leaf<SymbolT : Enum<SymbolT>>(
+        val token: Token<SymbolT>,
+    ) : ParseTree<SymbolT>(Pair(token.rangeFrom, token.rangeTo)),
         TreeLeaf {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -23,11 +23,11 @@ sealed class ParseTree<SymbolType : Enum<SymbolType>>(
         override fun toString() = "${token.category} $range"
     }
 
-    class Branch<SymbolType : Enum<SymbolType>>(
+    class Branch<SymbolT : Enum<SymbolT>>(
         range: Pair<Location, Location>,
-        val production: Production<SymbolType>,
-        val children: List<ParseTree<SymbolType>>,
-    ) : ParseTree<SymbolType>(range) {
+        val production: Production<SymbolT>,
+        val children: List<ParseTree<SymbolT>>,
+    ) : ParseTree<SymbolT>(range) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is Branch<*>) return false

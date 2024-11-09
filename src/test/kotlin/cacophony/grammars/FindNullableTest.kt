@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 class FindNullableTest {
     private fun <T> results(vararg results: T) = results.associateWith { }
 
-    private fun <StateType, AtomType> productions() = mapOf<Pair<StateType, AtomType>, StateType>()
+    private fun <StateT, AtomT> productions() = mapOf<Pair<StateT, AtomT>, StateT>()
 
     @Test
     fun `findNullable finds accepting states`() {

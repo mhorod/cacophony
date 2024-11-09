@@ -4,11 +4,11 @@ import cacophony.grammars.ParseTree
 import cacophony.utils.CompileException
 import cacophony.utils.Diagnostics
 
-interface Parser<SymbolType : Enum<SymbolType>> {
+interface Parser<SymbolT : Enum<SymbolT>> {
     fun process(
-        terminals: List<ParseTree.Leaf<SymbolType>>,
+        terminals: List<ParseTree.Leaf<SymbolT>>,
         diagnostics: Diagnostics,
-    ): ParseTree<SymbolType>
+    ): ParseTree<SymbolT>
 }
 
 class ParsingException(

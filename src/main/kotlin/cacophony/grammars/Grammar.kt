@@ -2,14 +2,14 @@ package cacophony.grammars
 
 import cacophony.utils.AlgebraicRegex
 
-data class Production<SymbolType>(
-    val lhs: SymbolType,
-    val rhs: AlgebraicRegex<SymbolType>,
+data class Production<SymbolT>(
+    val lhs: SymbolT,
+    val rhs: AlgebraicRegex<SymbolT>,
 )
 
-infix fun <SymbolType> SymbolType.produces(regex: AlgebraicRegex<SymbolType>) = Production(this, regex)
+infix fun <SymbolT> SymbolT.produces(regex: AlgebraicRegex<SymbolT>) = Production(this, regex)
 
-data class Grammar<SymbolType>(
-    val start: SymbolType,
-    val productions: Collection<Production<SymbolType>>,
+data class Grammar<SymbolT>(
+    val start: SymbolT,
+    val productions: Collection<Production<SymbolT>>,
 )

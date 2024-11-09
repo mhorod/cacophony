@@ -4,10 +4,10 @@ import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
 import cacophony.utils.getReachableFrom
 
-class DFAPreimagesCalculator<DFAState, AtomType>(
-    dfa: DFA<DFAState, AtomType, *>,
+class DFAPreimagesCalculator<DFAState, AtomT>(
+    dfa: DFA<DFAState, AtomT, *>,
 ) {
-    private val cache: Map<DFAState, Map<AtomType, Set<DFAState>>> =
+    private val cache: Map<DFAState, Map<AtomT, Set<DFAState>>> =
         dfa
             .getProductions()
             .entries
@@ -17,7 +17,7 @@ class DFAPreimagesCalculator<DFAState, AtomType>(
             }
 
     // getPreimages(S)[c] is a set of all states t, such that a production (t, c, element from S) exists.
-    fun getPreimages(states: Set<DFAState>): Map<AtomType, Set<DFAState>> =
+    fun getPreimages(states: Set<DFAState>): Map<AtomT, Set<DFAState>> =
         states
             .mapNotNull { state -> cache[state]?.let { state to it } }
             .flatMap { it.second.entries }
@@ -39,16 +39,14 @@ fun <DFAState> DFA<DFAState, *, *>.getAliveStates(): Set<DFAState> {
 }
 
 // Returns a copy of this DFA with only alive and reachable states.
-fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.withAliveReachableStates(): DFA<DFAState, AtomType, ResultType> =
+fun <DFAState, AtomT, ResultT> DFA<DFAState, AtomT, ResultT>.withAliveReachableStates(): DFA<DFAState, AtomT, ResultT> =
     withStates(
         getAliveStates() intersect getReachableStates(),
     )
 
 // Returns a copy of this DFA with all states not belonging to retain set removed.
 // IllegalArgumentException iff retain does not contain starting state
-fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.withStates(
-    retain: Set<DFAState>,
-): DFA<DFAState, AtomType, ResultType> {
+fun <DFAState, AtomT, ResultT> DFA<DFAState, AtomT, ResultT>.withStates(retain: Set<DFAState>): DFA<DFAState, AtomT, ResultT> {
     if (!retain.contains(getStartingState())) {
         throw IllegalArgumentException("Cannot remove starting state")
     }

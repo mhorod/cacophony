@@ -38,7 +38,7 @@ fun parseRegex(str: String): AlgebraicRegex<Char> {
 }
 
 private class RegexParser {
-    val resultStack = ArrayDeque<RegexType>()
+    val resultStack = ArrayDeque<RegexT>()
     val operatorStack = ArrayDeque<Operator>()
 
     fun pushOperation(operator: Operator) {
@@ -53,11 +53,11 @@ private class RegexParser {
         resultStack.add(Atom(c))
     }
 
-    fun pushRegex(c: RegexType) {
+    fun pushRegex(c: RegexT) {
         resultStack.add(c)
     }
 
-    fun finalize(): RegexType {
+    fun finalize(): RegexT {
         if (resultStack.size != 1 || operatorStack.isNotEmpty()) throw RegexSyntaxError("Mismatched operators or parenthesis")
         return resultStack.removeLast()
     }
@@ -76,7 +76,9 @@ private class RegexParser {
     }
 }
 
-private sealed class Operator(val priority: Int) {
+private sealed class Operator(
+    val priority: Int,
+) {
     open fun addToStack(parser: RegexParser) {
         val stack = parser.operatorStack
         while (true) {
@@ -100,9 +102,7 @@ private data object LeftParenthesis : Operator(0) {
     }
 
     // Should never be reached, as LeftParenthesis has the lowest priority
-    override fun applyToResult(parser: RegexParser) {
-        throw IllegalStateException("Internal RegexParser invariant violated")
-    }
+    override fun applyToResult(parser: RegexParser): Unit = throw IllegalStateException("Internal RegexParser invariant violated")
 }
 
 private data object StarOperator : Operator(3) {
@@ -111,7 +111,9 @@ private data object StarOperator : Operator(3) {
     }
 }
 
-private sealed class InfixOperator(priority: Int) : Operator(priority) {
+private sealed class InfixOperator(
+    priority: Int,
+) : Operator(priority) {
     override fun applyToResult(parser: RegexParser) {
         val stack = parser.resultStack
         val x = stack.removeLast()
@@ -120,15 +122,15 @@ private sealed class InfixOperator(priority: Int) : Operator(priority) {
     }
 
     abstract fun merge(
-        x: RegexType,
-        y: RegexType,
-    ): RegexType
+        x: RegexT,
+        y: RegexT,
+    ): RegexT
 }
 
 private data object UnionOperator : InfixOperator(1) {
     override fun merge(
-        x: RegexType,
-        y: RegexType,
+        x: RegexT,
+        y: RegexT,
     ) = if (x is Union) {
         x.summands.add(y)
         x
@@ -143,8 +145,8 @@ private data object UnionOperator : InfixOperator(1) {
 
 private data object ConcatOperator : InfixOperator(2) {
     override fun merge(
-        x: RegexType,
-        y: RegexType,
+        x: RegexT,
+        y: RegexT,
     ) = if (x is Concat) {
         x.factors.add(y)
         x

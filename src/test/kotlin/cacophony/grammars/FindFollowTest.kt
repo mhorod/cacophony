@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test
 class FindFollowTest {
     private fun <T> results(vararg results: T) = results.associateWith { }
 
-    private fun <StateType, AtomType> productions() = mapOf<Pair<StateType, AtomType>, StateType>()
+    private fun <StateT, AtomT> productions() = mapOf<Pair<StateT, AtomT>, StateT>()
 
-    private fun <StateType, SymbolType, ResultType> stateToSymbols(
-        vararg results: Pair<Pair<StateType, DFA<StateType, SymbolType, ResultType>>, Set<SymbolType>>,
+    private fun <StateT, SymbolT, ResultT> stateToSymbols(
+        vararg results: Pair<Pair<StateT, DFA<StateT, SymbolT, ResultT>>, Set<SymbolT>>,
     ) = results.associate { it }
 
     @Test

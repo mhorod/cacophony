@@ -3,19 +3,14 @@ package cacophony.automata
 import cacophony.automata.minimization.minimize
 import cacophony.utils.AlgebraicRegex
 
-infix fun <DFAState, AtomType> DFAState.via(label: AtomType): Pair<DFAState, AtomType> = Pair(this, label)
+infix fun <DFAState, AtomT> DFAState.via(label: AtomT): Pair<DFAState, AtomT> = Pair(this, label)
 
 // Some utility functions, to not write whole pipeline each time
-fun <AtomType> buildDFAFromRegex(regex: AlgebraicRegex<AtomType>) = determinize(buildNFAFromRegex(regex)).minimize().makeIntDfa()
-
-fun <AtomType, ResulType> buildDFAFromRegex(
-    regex: AlgebraicRegex<AtomType>,
-    result: ResulType,
-) = joinAutomata(listOf(buildDFAFromRegex(regex) to result))
+fun <AtomT> buildDFAFromRegex(regex: AlgebraicRegex<AtomT>) = determinize(buildNFAFromRegex(regex)).minimize().makeIntDfa()
 
 fun buildDFAFromRegex(regex: String) = buildDFAFromRegex(AlgebraicRegex.fromString(regex))
 
-fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.makeIntDfa(): DFA<Int, AtomType, ResultType> {
+fun <DFAState, AtomT, ResultT> DFA<DFAState, AtomT, ResultT>.makeIntDfa(): DFA<Int, AtomT, ResultT> {
     val oldToNew: MutableMap<DFAState, Int> = mutableMapOf()
     var stateCounter = 0
     // It is not necessary, but it is nice to have 0 as starting state.
@@ -27,7 +22,7 @@ fun <DFAState, AtomType, ResultType> DFA<DFAState, AtomType, ResultType>.makeInt
 }
 
 // Returns map from state to its predecessors per atom on edge.
-fun <StateType, AtomType, ResultType> reverse(dfa: DFA<StateType, AtomType, ResultType>): Map<StateType, Map<AtomType, Set<StateType>>> =
+fun <StateT, AtomT, ResultT> reverse(dfa: DFA<StateT, AtomT, ResultT>): Map<StateT, Map<AtomT, Set<StateT>>> =
     dfa
         .getProductions()
         .asSequence()

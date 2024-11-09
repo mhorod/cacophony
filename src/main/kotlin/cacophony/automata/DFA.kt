@@ -1,6 +1,6 @@
 package cacophony.automata
 
-interface DFA<DFAState, AtomType, ResultType> {
+interface DFA<DFAState, AtomT, ResultT> {
     // Returns starting state
     fun getStartingState(): DFAState
 
@@ -8,7 +8,7 @@ interface DFA<DFAState, AtomType, ResultType> {
     fun isAccepting(state: DFAState): Boolean
 
     // Returns specific result
-    fun result(state: DFAState): ResultType?
+    fun result(state: DFAState): ResultT?
 
     // Returns all DFA states
     fun getAllStates(): List<DFAState>
@@ -16,19 +16,19 @@ interface DFA<DFAState, AtomType, ResultType> {
     // Returns state produced from provided state and symbol, or null if it doesn't exist.
     fun getProduction(
         state: DFAState,
-        symbol: AtomType,
+        symbol: AtomT,
     ): DFAState?
 
     // Returns all productions.
     // Returned value is map accepting current state and symbol, and returning new state, which may not exist.
-    fun getProductions(): Map<Pair<DFAState, AtomType>, DFAState>
+    fun getProductions(): Map<Pair<DFAState, AtomT>, DFAState>
 }
 
-class SimpleDFA<StateType, AtomType, ResultType>(
-    private val start: StateType,
-    private val prod: Map<Pair<StateType, AtomType>, StateType>,
-    private val results: Map<StateType, ResultType>,
-) : DFA<StateType, AtomType, ResultType> {
+class SimpleDFA<StateT, AtomT, ResultT>(
+    private val start: StateT,
+    private val prod: Map<Pair<StateT, AtomT>, StateT>,
+    private val results: Map<StateT, ResultT>,
+) : DFA<StateT, AtomT, ResultT> {
     val all =
         (
             prod.keys
@@ -37,18 +37,18 @@ class SimpleDFA<StateType, AtomType, ResultType>(
                 .toSet() union setOf(start) union results.keys.toSet() union prod.values.toSet()
         ).toList()
 
-    public override fun getStartingState() = start
+    override fun getStartingState() = start
 
-    public override fun isAccepting(state: StateType) = state in results
+    override fun isAccepting(state: StateT) = state in results
 
-    public override fun result(state: StateType) = results[state]
+    override fun result(state: StateT) = results[state]
 
-    public override fun getAllStates() = all
+    override fun getAllStates() = all
 
-    public override fun getProductions() = prod
+    override fun getProductions() = prod
 
-    public override fun getProduction(
-        state: StateType,
-        symbol: AtomType,
+    override fun getProduction(
+        state: StateT,
+        symbol: AtomT,
     ) = prod[state to symbol]
 }
