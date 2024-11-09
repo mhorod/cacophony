@@ -16,11 +16,39 @@ class FunctionHandler(
     fun generateCall(
         arguments: List<CFGNode>,
         result: Register?,
+        respectStackAlignment: Boolean = false,
     ): CFGFragment {
         val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
         val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.Virtual()) }
 
         val nodes: MutableList<CFGNode> = mutableListOf()
+
+        if (respectStackAlignment) {
+            // we push two copies of RSP to the stack and either leave them both there,
+            // or remove one of them via RSP assignment
+            for (i in 0..2) {
+                nodes.add(CFGNode.Push(CFGNode.VariableUse(Register.Fixed(X64Register.RSP))))
+            }
+
+            // in an ideal world we would do something like "and rsp, ~15" or similar; for now this will do
+            // at the very least split the computation of (RSP + stackArguments.size % 2 * 8) % 16
+            // into two cases depending on the parity of stackArguments.size
+            nodes.add(
+                CFGNode.Assignment(
+                    Register.Fixed(X64Register.RSP),
+                    CFGNode.Addition(
+                        CFGNode.VariableUse(Register.Fixed(X64Register.RSP)),
+                        CFGNode.Modulo(
+                            CFGNode.Addition(
+                                CFGNode.VariableUse(Register.Fixed(X64Register.RSP)),
+                                CFGNode.Constant(stackArguments.size % 2 * 8),
+                            ),
+                            CFGNode.Constant(16),
+                        ),
+                    ),
+                ),
+            )
+        }
 
         // in what order should we evaluate arguments? gcc uses reversed order
         for ((argument, register) in registerArguments) {
@@ -47,6 +75,13 @@ class FunctionHandler(
                     ),
                 ),
             )
+        }
+
+        if (respectStackAlignment) {
+            // we could remove the operations from previous `if (stackArguments.isNotEmpty())` block
+            // via MemoryAccess, but for now the semantics are a bit unclear + it would introduce
+            // a few ifs, which we do not need at this point
+            nodes.add(CFGNode.Pop(Register.Fixed(X64Register.RSP)))
         }
 
         if (result != null) {
