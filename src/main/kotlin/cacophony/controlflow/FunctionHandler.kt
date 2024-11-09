@@ -13,6 +13,7 @@ class FunctionHandler(
         data class Stack(val offset: Int)
     }
 
+    // TODO discuss this
     private fun getIdentifier(): String {
         return function.identifier + function.arguments.size.toString()
     }
@@ -21,31 +22,36 @@ class FunctionHandler(
         arguments: List<CFGNode>,
         result: Register?,
     ): CFGFragment {
-        val registerArguments = arguments.take(REGISTER_ARGUMENT_ORDER.size)
-        val registerDestinations = REGISTER_ARGUMENT_ORDER.take(registerArguments.size)
-
-        val stackArguments = arguments.drop(REGISTER_ARGUMENT_ORDER.size)
-        val stackVirtualRegisters = stackArguments.map { Register.Virtual() }
+        val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
+        val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.Virtual()) }
 
         val nodes: MutableList<CFGNode> = mutableListOf()
 
         // in what order should we evaluate arguments? gcc uses reversed order
-        for ((argument, register) in registerArguments.zip(registerDestinations)) {
+        for ((argument, register) in registerArguments) {
             nodes.add(CFGNode.Assignment(Register.Fixed(register), argument))
         }
-        for ((argument, register) in stackArguments.zip(stackVirtualRegisters)) {
+        for ((argument, register) in stackArguments) {
             nodes.add(CFGNode.Assignment(register, argument))
         }
 
-        // possible optimization for later: skip last push/pop
-        for (register in stackVirtualRegisters.reversed()) {
-            nodes.add(CFGNode.Pop(register))
+        // is this indirection necessary?
+        for ((_, register) in stackArguments.reversed()) {
+            nodes.add(CFGNode.Push(CFGNode.VariableUse(register)))
         }
+
         nodes.add(CFGNode.Call(getIdentifier()))
 
-        // possible optimization for later: change to "add rsp, 8*stackArgumentCount"
-        for (argument in stackArguments) {
-            nodes.add(CFGNode.Pop())
+        if (stackArguments.isNotEmpty()) {
+            nodes.add(
+                CFGNode.Assignment(
+                    Register.Fixed(X64Register.RSP),
+                    CFGNode.Addition(
+                        CFGNode.VariableUse(Register.Fixed(X64Register.RSP)),
+                        CFGNode.Constant(8 * stackArguments.size),
+                    ),
+                ),
+            )
         }
 
         if (result != null) {

@@ -51,9 +51,8 @@ sealed interface CFGNode {
     ) : Unconditional
 
     // NOTE: Pop may be unnecessary since it can be done via Assignment
-    class Pop(
-        val regvar: Register? = null,
-    ) : Unconditional,
+    class Pop :
+        Unconditional,
         Leaf
 
     class Assignment(
