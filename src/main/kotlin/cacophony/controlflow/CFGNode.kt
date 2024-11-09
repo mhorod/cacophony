@@ -112,16 +112,6 @@ sealed interface CFGNode {
         val value: CFGNode,
     ) : LogicalOperator
 
-    sealed class LogicalAnd(
-        val lhs: CFGNode,
-        val rhs: CFGNode,
-    ) : LogicalOperator
-
-    sealed class LogicalOr(
-        val lhs: CFGNode,
-        val rhs: CFGNode,
-    ) : LogicalOperator
-
     sealed class Equals(
         val lhs: CFGNode,
         val rhs: CFGNode,
