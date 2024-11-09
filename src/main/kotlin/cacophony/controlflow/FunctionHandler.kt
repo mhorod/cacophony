@@ -13,11 +13,47 @@ class FunctionHandler(
         data class Stack(val offset: Int)
     }
 
+    private fun getIdentifier(): String {
+        return function.identifier + function.arguments.size.toString()
+    }
+
     fun generateCall(
         arguments: List<CFGNode>,
         result: Register?,
     ): CFGFragment {
-        TODO("Not yet implemented")
+        val registerArguments = arguments.take(REGISTER_ARGUMENT_ORDER.size)
+        val registerDestinations = REGISTER_ARGUMENT_ORDER.take(registerArguments.size)
+
+        val stackArguments = arguments.drop(REGISTER_ARGUMENT_ORDER.size)
+        val stackVirtualRegisters = stackArguments.map { Register.Virtual() }
+
+        val nodes: MutableList<CFGNode> = mutableListOf()
+
+        // in what order should we evaluate arguments? gcc uses reversed order
+        for ((argument, register) in registerArguments.zip(registerDestinations)) {
+            nodes.add(CFGNode.Assignment(Register.Fixed(register), argument))
+        }
+        for ((argument, register) in stackArguments.zip(stackVirtualRegisters)) {
+            nodes.add(CFGNode.Assignment(register, argument))
+        }
+
+        // possible optimization for later: skip last push/pop
+        for (register in stackVirtualRegisters.reversed()) {
+            nodes.add(CFGNode.Pop(register))
+        }
+        nodes.add(CFGNode.Call(getIdentifier()))
+
+        // possible optimization for later: change to "add rsp, 8*stackArgumentCount"
+        for (argument in stackArguments) {
+            nodes.add(CFGNode.Pop())
+        }
+
+        if (result != null) {
+            nodes.add(CFGNode.Assignment(result, CFGNode.VariableUse(Register.Fixed(X64Register.RAX))))
+        }
+
+        // should this be a sequence?
+        return mapOf(CFGLabel() to CFGVertex.Final(CFGNode.Sequence(nodes)))
     }
 
     fun generateVariableAccess(

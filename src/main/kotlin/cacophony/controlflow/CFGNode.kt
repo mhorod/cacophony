@@ -40,8 +40,9 @@ sealed interface CFGNode {
         Unconditional,
         Leaf
 
-    class Call :
-        Unconditional,
+    class Call(
+        val identifier: String,
+    ) : Unconditional,
         Leaf
 
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
@@ -50,8 +51,9 @@ sealed interface CFGNode {
     ) : Unconditional
 
     // NOTE: Pop may be unnecessary since it can be done via Assignment
-    class Pop :
-        Unconditional,
+    class Pop(
+        val regvar: Register? = null,
+    ) : Unconditional,
         Leaf
 
     class Assignment(

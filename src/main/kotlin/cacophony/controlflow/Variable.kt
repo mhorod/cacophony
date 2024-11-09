@@ -12,10 +12,8 @@ class SourceVariable(
 
 class StackVariable() : RealVariable
 
-sealed class Register() : Variable {
-    class Virtual
+sealed class Register : Variable {
+    class Virtual : Register()
 
-    class Fixed {
-        // TODO
-    }
+    class Fixed(val hardwareRegister: X64Register) : Register()
 }
