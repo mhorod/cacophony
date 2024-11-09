@@ -55,12 +55,12 @@ sealed interface CFGNode {
         Leaf
 
     sealed class Assignment(
-        val destination: LValue, // TODO: make Register
+        val destination: Register,
         val value: CFGNode,
     ) : Unconditional
 
     sealed class VariableUse(
-        val regvar: String, // TODO: make Register
+        val regvar: Register,
     ) : Unconditional,
         Leaf,
         LValue
