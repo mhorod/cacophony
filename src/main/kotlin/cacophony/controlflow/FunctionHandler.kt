@@ -26,8 +26,10 @@ class FunctionHandler(
         if (respectStackAlignment) {
             // we push two copies of RSP to the stack and either leave them both there,
             // or remove one of them via RSP assignment
+            val oldRSP = Register.Virtual()
+            nodes.add(CFGNode.Assignment(oldRSP, CFGNode.VariableUse(Register.Fixed(X64Register.RSP))))
             for (i in 0..2) {
-                nodes.add(CFGNode.Push(CFGNode.VariableUse(Register.Fixed(X64Register.RSP))))
+                nodes.add(CFGNode.Push(CFGNode.VariableUse(oldRSP)))
             }
 
             // in an ideal world we would do something like "and rsp, ~15" or similar; for now this will do
