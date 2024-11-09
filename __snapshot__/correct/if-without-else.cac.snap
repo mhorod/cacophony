@@ -21,8 +21,23 @@
           }
         },
         "doExpression": {
-          "__class__": "BoolLiteral",
-          "value": true,
+          "__class__": "Block",
+          "expressions": [
+            {
+              "__class__": "Empty",
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 16
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 16
+                }
+              }
+            }
+          ],
           "range": {
             "__class__": "Pair",
             "first": {
@@ -31,7 +46,7 @@
             },
             "second": {
               "__class__": "Location",
-              "value": 19
+              "value": 17
             }
           }
         },
@@ -43,7 +58,7 @@
           },
           "second": {
             "__class__": "Location",
-            "value": 19
+            "value": 17
           }
         }
       },
@@ -53,11 +68,11 @@
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 19
+            "value": 17
           },
           "second": {
             "__class__": "Location",
-            "value": 19
+            "value": 17
           }
         }
       }
@@ -70,7 +85,7 @@
       },
       "second": {
         "__class__": "Location",
-        "value": 20
+        "value": 18
       }
     }
   },

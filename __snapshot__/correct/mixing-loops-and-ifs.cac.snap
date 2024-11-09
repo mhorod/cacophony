@@ -492,66 +492,96 @@
                   }
                 },
                 "doExpression": {
-                  "__class__": "Assignment",
-                  "lhs": {
-                    "__class__": "VariableUse",
-                    "identifier": "ans",
-                    "range": {
-                      "__class__": "Pair",
-                      "first": {
-                        "__class__": "Location",
-                        "value": 238
+                  "__class__": "Block",
+                  "expressions": [
+                    {
+                      "__class__": "Assignment",
+                      "lhs": {
+                        "__class__": "VariableUse",
+                        "identifier": "ans",
+                        "range": {
+                          "__class__": "Pair",
+                          "first": {
+                            "__class__": "Location",
+                            "value": 239
+                          },
+                          "second": {
+                            "__class__": "Location",
+                            "value": 241
+                          }
+                        }
                       },
-                      "second": {
-                        "__class__": "Location",
-                        "value": 240
-                      }
-                    }
-                  },
-                  "rhs": {
-                    "__class__": "Addition",
-                    "lhs": {
-                      "__class__": "VariableUse",
-                      "identifier": "ans",
+                      "rhs": {
+                        "__class__": "Addition",
+                        "lhs": {
+                          "__class__": "VariableUse",
+                          "identifier": "ans",
+                          "range": {
+                            "__class__": "Pair",
+                            "first": {
+                              "__class__": "Location",
+                              "value": 245
+                            },
+                            "second": {
+                              "__class__": "Location",
+                              "value": 247
+                            }
+                          }
+                        },
+                        "rhs": {
+                          "__class__": "IntLiteral",
+                          "value": 1,
+                          "range": {
+                            "__class__": "Pair",
+                            "first": {
+                              "__class__": "Location",
+                              "value": 251
+                            },
+                            "second": {
+                              "__class__": "Location",
+                              "value": 251
+                            }
+                          }
+                        },
+                        "range": {
+                          "__class__": "Pair",
+                          "first": {
+                            "__class__": "Location",
+                            "value": 245
+                          },
+                          "second": {
+                            "__class__": "Location",
+                            "value": 251
+                          }
+                        }
+                      },
                       "range": {
                         "__class__": "Pair",
                         "first": {
                           "__class__": "Location",
-                          "value": 244
+                          "value": 239
                         },
                         "second": {
                           "__class__": "Location",
-                          "value": 246
+                          "value": 251
                         }
                       }
                     },
-                    "rhs": {
-                      "__class__": "IntLiteral",
-                      "value": 1,
+                    {
+                      "__class__": "Empty",
                       "range": {
                         "__class__": "Pair",
                         "first": {
                           "__class__": "Location",
-                          "value": 250
+                          "value": 252
                         },
                         "second": {
                           "__class__": "Location",
-                          "value": 250
+                          "value": 252
                         }
                       }
-                    },
-                    "range": {
-                      "__class__": "Pair",
-                      "first": {
-                        "__class__": "Location",
-                        "value": 244
-                      },
-                      "second": {
-                        "__class__": "Location",
-                        "value": 250
-                      }
                     }
-                  },
+                  ],
                   "range": {
                     "__class__": "Pair",
                     "first": {
@@ -560,7 +590,7 @@
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 250
+                      "value": 253
                     }
                   }
                 },
@@ -583,11 +613,11 @@
                                   "__class__": "Pair",
                                   "first": {
                                     "__class__": "Location",
-                                    "value": 264
+                                    "value": 267
                                   },
                                   "second": {
                                     "__class__": "Location",
-                                    "value": 264
+                                    "value": 267
                                   }
                                 }
                               },
@@ -598,11 +628,11 @@
                                   "__class__": "Pair",
                                   "first": {
                                     "__class__": "Location",
-                                    "value": 268
+                                    "value": 271
                                   },
                                   "second": {
                                     "__class__": "Location",
-                                    "value": 268
+                                    "value": 271
                                   }
                                 }
                               },
@@ -610,11 +640,11 @@
                                 "__class__": "Pair",
                                 "first": {
                                   "__class__": "Location",
-                                  "value": 264
+                                  "value": 267
                                 },
                                 "second": {
                                   "__class__": "Location",
-                                  "value": 268
+                                  "value": 271
                                 }
                               }
                             }
@@ -623,11 +653,11 @@
                             "__class__": "Pair",
                             "first": {
                               "__class__": "Location",
-                              "value": 263
+                              "value": 266
                             },
                             "second": {
                               "__class__": "Location",
-                              "value": 269
+                              "value": 272
                             }
                           }
                         },
@@ -638,11 +668,11 @@
                             "__class__": "Pair",
                             "first": {
                               "__class__": "Location",
-                              "value": 273
+                              "value": 276
                             },
                             "second": {
                               "__class__": "Location",
-                              "value": 273
+                              "value": 276
                             }
                           }
                         },
@@ -650,11 +680,11 @@
                           "__class__": "Pair",
                           "first": {
                             "__class__": "Location",
-                            "value": 263
+                            "value": 266
                           },
                           "second": {
                             "__class__": "Location",
-                            "value": 273
+                            "value": 276
                           }
                         }
                       },
@@ -664,11 +694,11 @@
                           "__class__": "Pair",
                           "first": {
                             "__class__": "Location",
-                            "value": 280
+                            "value": 283
                           },
                           "second": {
                             "__class__": "Location",
-                            "value": 284
+                            "value": 287
                           }
                         }
                       },
@@ -676,11 +706,11 @@
                         "__class__": "Pair",
                         "first": {
                           "__class__": "Location",
-                          "value": 260
+                          "value": 263
                         },
                         "second": {
                           "__class__": "Location",
-                          "value": 284
+                          "value": 287
                         }
                       }
                     }
@@ -689,11 +719,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 259
+                      "value": 262
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 285
+                      "value": 288
                     }
                   }
                 },
@@ -705,7 +735,7 @@
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 285
+                    "value": 288
                   }
                 }
               },
@@ -717,7 +747,7 @@
                 },
                 "second": {
                   "__class__": "Location",
-                  "value": 285
+                  "value": 288
                 }
               }
             },
@@ -730,11 +760,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 289
+                    "value": 292
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 289
+                    "value": 292
                   }
                 }
               },
@@ -747,11 +777,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 293
+                      "value": 296
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 293
+                      "value": 296
                     }
                   }
                 },
@@ -762,11 +792,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 297
+                      "value": 300
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 297
+                      "value": 300
                     }
                   }
                 },
@@ -774,11 +804,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 293
+                    "value": 296
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 297
+                    "value": 300
                   }
                 }
               },
@@ -786,11 +816,11 @@
                 "__class__": "Pair",
                 "first": {
                   "__class__": "Location",
-                  "value": 289
+                  "value": 292
                 },
                 "second": {
                   "__class__": "Location",
-                  "value": 297
+                  "value": 300
                 }
               }
             },
@@ -800,11 +830,11 @@
                 "__class__": "Pair",
                 "first": {
                   "__class__": "Location",
-                  "value": 299
+                  "value": 302
                 },
                 "second": {
                   "__class__": "Location",
-                  "value": 299
+                  "value": 302
                 }
               }
             }
@@ -817,7 +847,7 @@
             },
             "second": {
               "__class__": "Location",
-              "value": 300
+              "value": 303
             }
           }
         },
@@ -829,7 +859,7 @@
           },
           "second": {
             "__class__": "Location",
-            "value": 300
+            "value": 303
           }
         }
       },
@@ -842,11 +872,11 @@
             "__class__": "Pair",
             "first": {
               "__class__": "Location",
-              "value": 401
+              "value": 404
             },
             "second": {
               "__class__": "Location",
-              "value": 403
+              "value": 406
             }
           }
         },
@@ -857,11 +887,11 @@
             "__class__": "Pair",
             "first": {
               "__class__": "Location",
-              "value": 407
+              "value": 410
             },
             "second": {
               "__class__": "Location",
-              "value": 407
+              "value": 410
             }
           }
         },
@@ -870,11 +900,11 @@
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 394
+            "value": 397
           },
           "second": {
             "__class__": "Location",
-            "value": 407
+            "value": 410
           }
         }
       },
@@ -892,11 +922,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 414
+                    "value": 417
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 414
+                    "value": 417
                   }
                 }
               },
@@ -907,11 +937,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 418
+                    "value": 421
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 419
+                    "value": 422
                   }
                 }
               },
@@ -919,11 +949,11 @@
                 "__class__": "Pair",
                 "first": {
                   "__class__": "Location",
-                  "value": 414
+                  "value": 417
                 },
                 "second": {
                   "__class__": "Location",
-                  "value": 419
+                  "value": 422
                 }
               }
             }
@@ -932,11 +962,11 @@
             "__class__": "Pair",
             "first": {
               "__class__": "Location",
-              "value": 413
+              "value": 416
             },
             "second": {
               "__class__": "Location",
-              "value": 420
+              "value": 423
             }
           }
         },
@@ -954,11 +984,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 435
+                      "value": 438
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 435
+                      "value": 438
                     }
                   }
                 },
@@ -969,11 +999,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 439
+                      "value": 442
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 440
+                      "value": 443
                     }
                   }
                 },
@@ -981,11 +1011,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 435
+                    "value": 438
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 440
+                    "value": 443
                   }
                 }
               }
@@ -994,11 +1024,11 @@
               "__class__": "Pair",
               "first": {
                 "__class__": "Location",
-                "value": 434
+                "value": 437
               },
               "second": {
                 "__class__": "Location",
-                "value": 441
+                "value": 444
               }
             }
           },
@@ -1014,11 +1044,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 449
+                      "value": 452
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 449
+                      "value": 452
                     }
                   }
                 },
@@ -1034,11 +1064,11 @@
                           "__class__": "Pair",
                           "first": {
                             "__class__": "Location",
-                            "value": 454
+                            "value": 457
                           },
                           "second": {
                             "__class__": "Location",
-                            "value": 454
+                            "value": 457
                           }
                         }
                       },
@@ -1049,11 +1079,11 @@
                           "__class__": "Pair",
                           "first": {
                             "__class__": "Location",
-                            "value": 458
+                            "value": 461
                           },
                           "second": {
                             "__class__": "Location",
-                            "value": 458
+                            "value": 461
                           }
                         }
                       },
@@ -1061,11 +1091,11 @@
                         "__class__": "Pair",
                         "first": {
                           "__class__": "Location",
-                          "value": 454
+                          "value": 457
                         },
                         "second": {
                           "__class__": "Location",
-                          "value": 458
+                          "value": 461
                         }
                       }
                     }
@@ -1074,11 +1104,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 453
+                      "value": 456
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 459
+                      "value": 462
                     }
                   }
                 },
@@ -1086,11 +1116,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 449
+                    "value": 452
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 459
+                    "value": 462
                   }
                 }
               }
@@ -1099,11 +1129,11 @@
               "__class__": "Pair",
               "first": {
                 "__class__": "Location",
-                "value": 448
+                "value": 451
               },
               "second": {
                 "__class__": "Location",
-                "value": 460
+                "value": 463
               }
             }
           },
@@ -1111,11 +1141,11 @@
             "__class__": "Pair",
             "first": {
               "__class__": "Location",
-              "value": 428
+              "value": 431
             },
             "second": {
               "__class__": "Location",
-              "value": 460
+              "value": 463
             }
           }
         },
@@ -1133,11 +1163,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 476
+                      "value": 479
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 476
+                      "value": 479
                     }
                   }
                 },
@@ -1148,11 +1178,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 480
+                      "value": 483
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 481
+                      "value": 484
                     }
                   }
                 },
@@ -1160,11 +1190,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 476
+                    "value": 479
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 481
+                    "value": 484
                   }
                 }
               }
@@ -1173,11 +1203,11 @@
               "__class__": "Pair",
               "first": {
                 "__class__": "Location",
-                "value": 475
+                "value": 478
               },
               "second": {
                 "__class__": "Location",
-                "value": 482
+                "value": 485
               }
             }
           },
@@ -1193,11 +1223,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 490
+                      "value": 493
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 490
+                      "value": 493
                     }
                   }
                 },
@@ -1213,11 +1243,11 @@
                           "__class__": "Pair",
                           "first": {
                             "__class__": "Location",
-                            "value": 495
+                            "value": 498
                           },
                           "second": {
                             "__class__": "Location",
-                            "value": 495
+                            "value": 498
                           }
                         }
                       },
@@ -1228,11 +1258,11 @@
                           "__class__": "Pair",
                           "first": {
                             "__class__": "Location",
-                            "value": 499
+                            "value": 502
                           },
                           "second": {
                             "__class__": "Location",
-                            "value": 499
+                            "value": 502
                           }
                         }
                       },
@@ -1240,11 +1270,11 @@
                         "__class__": "Pair",
                         "first": {
                           "__class__": "Location",
-                          "value": 495
+                          "value": 498
                         },
                         "second": {
                           "__class__": "Location",
-                          "value": 499
+                          "value": 502
                         }
                       }
                     }
@@ -1253,11 +1283,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 494
+                      "value": 497
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 500
+                      "value": 503
                     }
                   }
                 },
@@ -1265,11 +1295,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 490
+                    "value": 493
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 500
+                    "value": 503
                   }
                 }
               }
@@ -1278,11 +1308,11 @@
               "__class__": "Pair",
               "first": {
                 "__class__": "Location",
-                "value": 489
+                "value": 492
               },
               "second": {
                 "__class__": "Location",
-                "value": 501
+                "value": 504
               }
             }
           },
@@ -1290,11 +1320,11 @@
             "__class__": "Pair",
             "first": {
               "__class__": "Location",
-              "value": 469
+              "value": 472
             },
             "second": {
               "__class__": "Location",
-              "value": 501
+              "value": 504
             }
           }
         },
@@ -1302,11 +1332,11 @@
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 410
+            "value": 413
           },
           "second": {
             "__class__": "Location",
-            "value": 501
+            "value": 504
           }
         }
       },
@@ -1316,11 +1346,11 @@
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 501
+            "value": 504
           },
           "second": {
             "__class__": "Location",
-            "value": 501
+            "value": 504
           }
         }
       }
@@ -1333,7 +1363,7 @@
       },
       "second": {
         "__class__": "Location",
-        "value": 502
+        "value": 505
       }
     }
   },

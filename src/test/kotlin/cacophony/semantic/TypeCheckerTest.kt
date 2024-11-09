@@ -31,8 +31,8 @@ class TypeCheckerTest {
     @Test
     fun `function type string representation`() {
         val functionType = FunctionType(listOf(BuiltinType.BooleanType, BuiltinType.IntegerType), BuiltinType.UnitType)
-        assertEquals("[Boolean, Int] -> Unit", functionType.toString())
-        assertEquals("[Boolean, Int] -> Unit", functionType.name)
+        assertEquals("[Bool, Int] -> Unit", functionType.toString())
+        assertEquals("[Bool, Int] -> Unit", functionType.name)
     }
 
     private val lc = Pair(Location(0), Location(0))
@@ -65,7 +65,7 @@ class TypeCheckerTest {
 
     private val testUnit = Type.Basic(lc, "Unit")
     private val testInt = Type.Basic(lc, "Int")
-    private val testBoolean = Type.Basic(lc, "Boolean")
+    private val testBoolean = Type.Basic(lc, "Bool")
     private val intLiteral = Literal.IntLiteral(lc, 7)
     private val booleanLiteral = Literal.BoolLiteral(lc, true)
 
@@ -276,10 +276,10 @@ class TypeCheckerTest {
     }
 
     @Test
-    fun `ok - function declaration - (Int, Boolean) to Int with type`() {
+    fun `ok - function declaration - (Int, Bool) to Int with type`() {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt)
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(Type.Basic(lc, "Int"), Type.Basic(lc, "Boolean")), Type.Basic(lc, "Int")), listOf(arg1, arg2), testInt, intLiteral)
+        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(testInt, testBoolean), testInt), listOf(arg1, arg2), testInt, intLiteral)
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
@@ -530,9 +530,21 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(TypeExpr.VoidType, result[body])
+        assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
+    }
+
+    @Test
+    fun `ok - Void propagates`() {
+        val body = Block(lc, listOf(Statement.ReturnStatement(lc, Empty(lc)), Empty(lc)))
+        val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testUnit, body)
+        val ast = Block(lc, listOf(funDef))
+        val diagnostics = getDiagnostic()
+        val result = checkTypes(ast, diagnostics, emptyMap())
+        assertNull(diagnostics.msg)
+        assertTypeEquals(BuiltinType.VoidType, result[body])
+        assertTypeEquals(BuiltinType.UnitType, result[ast])
     }
 
     @Test
@@ -542,7 +554,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(TypeExpr.VoidType, result[body])
+        assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -557,7 +569,7 @@ class TypeCheckerTest {
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(argUse to argDef))
         assertTypeEquals(BuiltinType.IntegerType, result[argUse])
-        assertTypeEquals(TypeExpr.VoidType, result[body])
+        assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -581,7 +593,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(TypeExpr.VoidType, result[body])
+        assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -604,8 +616,8 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(statement))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(TypeExpr.VoidType, result[statement])
-        assertTypeEquals(TypeExpr.VoidType, result[ast])
+        assertTypeEquals(BuiltinType.VoidType, result[statement])
+        assertTypeEquals(BuiltinType.VoidType, result[ast])
         assertNull(diagnostics.msg)
     }
 
@@ -615,7 +627,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(Statement.IfElseStatement(lc, booleanLiteral, intLiteral, breakStatement)))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(TypeExpr.VoidType, result[breakStatement])
+        assertTypeEquals(BuiltinType.VoidType, result[breakStatement])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
         assertNull(diagnostics.msg)
     }
@@ -985,7 +997,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(varDef, funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
-        assertTypeEquals(TypeExpr.VoidType, result[res])
+        assertTypeEquals(BuiltinType.VoidType, result[res])
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
@@ -1014,11 +1026,11 @@ class TypeCheckerTest {
     fun `error - function declaration type mismatch - types`() {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt)
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(Type.Basic(lc, "Boolean"), Type.Basic(lc, "Int")), Type.Basic(lc, "Int")), listOf(arg1, arg2), testInt, intLiteral)
+        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(testBoolean, testInt), testInt), listOf(arg1, arg2), testInt, intLiteral)
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected [Boolean, Int] -> Int, found [Int, Boolean] -> Int", diagnostics.msg)
+        assertEquals("Type mismatch: expected [Bool, Int] -> Int, found [Int, Bool] -> Int", diagnostics.msg)
     }
 
     @Test
@@ -1036,7 +1048,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(varDec))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
     }
 
     @Test
@@ -1045,7 +1057,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDec))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
     }
 
     @Test
@@ -1065,7 +1077,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDec, body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, mapOf(funUse to funDec))
-        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
     }
 
     @Test
@@ -1085,7 +1097,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(varDec, body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
-        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
     }
 
     @Test
@@ -1094,7 +1106,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
     }
 
     @Test
@@ -1103,7 +1115,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
     }
 
 
@@ -1131,7 +1143,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type Boolean does not support unary - operator", diagnostics.msg)
+        assertEquals("Type Bool does not support unary - operator", diagnostics.msg)
     }
 
     @Test
@@ -1149,7 +1161,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
     }
 
     @Test
@@ -1158,7 +1170,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Could not find common type for Int and Boolean", diagnostics.msg)
+        assertEquals("Could not find common type for Int and Bool", diagnostics.msg)
     }
 
     @Test
@@ -1185,16 +1197,16 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(funDec))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
     }
 
     @Test
-    fun `error - non Boolean in while test`() {
+    fun `error - non Bool in while test`() {
         val body = Statement.WhileStatement(lc, Empty(lc), Empty(lc))
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Boolean, found Unit", diagnostics.msg)
+        assertEquals("Type mismatch: expected Bool, found Unit", diagnostics.msg)
     }
 
     @Test
@@ -1214,7 +1226,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(varDec, body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
-        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
     }
 
     @Test
@@ -1225,7 +1237,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(varDec, body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
-        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
     }
 
     @Test
@@ -1234,7 +1246,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
     }
 
     @Test
@@ -1243,7 +1255,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Int, found Boolean", diagnostics.msg)
+        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
     }
 
     @Test
@@ -1252,7 +1264,7 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
     }
 
     @Test
@@ -1261,6 +1273,6 @@ class TypeCheckerTest {
         val ast = Block(lc, listOf(body))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
+        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
     }
 }

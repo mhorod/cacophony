@@ -44,9 +44,9 @@ let f = [early: Bool] -> Int => (
     let g = [] -> Int => (
         if early then
             return 1; # returns from `g`, not from `f`
-        20;
+        20
     );
-    let result = g[x];
+    let result = g[];
     result + 41
 );
-f[early]; # `42`, not `1`
+f[true]; # `42`, not `1`

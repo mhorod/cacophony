@@ -1520,20 +1520,6 @@
                         "value": 1485
                       }
                     }
-                  },
-                  {
-                    "__class__": "Empty",
-                    "range": {
-                      "__class__": "Pair",
-                      "first": {
-                        "__class__": "Location",
-                        "value": 1491
-                      },
-                      "second": {
-                        "__class__": "Location",
-                        "value": 1491
-                      }
-                    }
                   }
                 ],
                 "range": {
@@ -1544,7 +1530,7 @@
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 1492
+                    "value": 1491
                   }
                 }
               },
@@ -1557,7 +1543,7 @@
                 },
                 "second": {
                   "__class__": "Location",
-                  "value": 1492
+                  "value": 1491
                 }
               }
             },
@@ -1572,40 +1558,24 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 1512
+                      "value": 1511
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 1512
+                      "value": 1511
                     }
                   }
                 },
-                "arguments": [
-                  {
-                    "__class__": "VariableUse",
-                    "identifier": "x",
-                    "range": {
-                      "__class__": "Pair",
-                      "first": {
-                        "__class__": "Location",
-                        "value": 1514
-                      },
-                      "second": {
-                        "__class__": "Location",
-                        "value": 1514
-                      }
-                    }
-                  }
-                ],
+                "arguments": [],
                 "range": {
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 1512
+                    "value": 1511
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 1515
+                    "value": 1513
                   }
                 }
               },
@@ -1614,11 +1584,11 @@
                 "__class__": "Pair",
                 "first": {
                   "__class__": "Location",
-                  "value": 1499
+                  "value": 1498
                 },
                 "second": {
                   "__class__": "Location",
-                  "value": 1515
+                  "value": 1513
                 }
               }
             },
@@ -1631,11 +1601,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 1522
+                    "value": 1520
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 1527
+                    "value": 1525
                   }
                 }
               },
@@ -1646,11 +1616,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 1531
+                    "value": 1529
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 1532
+                    "value": 1530
                   }
                 }
               },
@@ -1658,11 +1628,11 @@
                 "__class__": "Pair",
                 "first": {
                   "__class__": "Location",
-                  "value": 1522
+                  "value": 1520
                 },
                 "second": {
                   "__class__": "Location",
-                  "value": 1532
+                  "value": 1530
                 }
               }
             }
@@ -1675,7 +1645,7 @@
             },
             "second": {
               "__class__": "Location",
-              "value": 1534
+              "value": 1532
             }
           }
         },
@@ -1688,7 +1658,7 @@
           },
           "second": {
             "__class__": "Location",
-            "value": 1534
+            "value": 1532
           }
         }
       },
@@ -1701,27 +1671,27 @@
             "__class__": "Pair",
             "first": {
               "__class__": "Location",
-              "value": 1537
+              "value": 1535
             },
             "second": {
               "__class__": "Location",
-              "value": 1537
+              "value": 1535
             }
           }
         },
         "arguments": [
           {
-            "__class__": "VariableUse",
-            "identifier": "early",
+            "__class__": "BoolLiteral",
+            "value": true,
             "range": {
               "__class__": "Pair",
               "first": {
                 "__class__": "Location",
-                "value": 1539
+                "value": 1537
               },
               "second": {
                 "__class__": "Location",
-                "value": 1543
+                "value": 1540
               }
             }
           }
@@ -1730,11 +1700,11 @@
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 1537
+            "value": 1535
           },
           "second": {
             "__class__": "Location",
-            "value": 1544
+            "value": 1541
           }
         }
       },
@@ -1744,11 +1714,11 @@
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 1544
+            "value": 1541
           },
           "second": {
             "__class__": "Location",
-            "value": 1544
+            "value": 1541
           }
         }
       }
@@ -1761,7 +1731,7 @@
       },
       "second": {
         "__class__": "Location",
-        "value": 1545
+        "value": 1542
       }
     }
   },
