@@ -20,7 +20,10 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unable to continue parsing symbol OPERATOR_LOGICAL_NOT"
+        "message": {
+          "__class__": "UnableToContinueParsing",
+          "symbolName": "OPERATOR_LOGICAL_NOT"
+        }
       }
     ]
   },

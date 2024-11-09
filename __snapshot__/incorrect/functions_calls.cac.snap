@@ -201,7 +201,10 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unable to continue parsing symbol INT_LITERAL"
+        "message": {
+          "__class__": "UnableToContinueParsing",
+          "symbolName": "INT_LITERAL"
+        }
       }
     ]
   },

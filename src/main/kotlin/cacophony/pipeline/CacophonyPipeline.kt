@@ -1,5 +1,6 @@
 package cacophony.pipeline
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammarSymbol
@@ -13,7 +14,6 @@ import cacophony.semantic.syntaxtree.AST
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
-import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 class CacophonyPipeline(

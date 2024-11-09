@@ -5,7 +5,11 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token INT_LITERAL while parsing DECLARATION_LEVEL"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "INT_LITERAL",
+          "symbolName": "DECLARATION_LEVEL"
+        }
       }
     ]
   },

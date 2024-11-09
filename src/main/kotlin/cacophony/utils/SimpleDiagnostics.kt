@@ -1,27 +1,28 @@
 package cacophony.utils
 
+import cacophony.diagnostics.DiagnosticMessage
+import cacophony.diagnostics.Diagnostics
+
 class SimpleDiagnostics(
     private val input: Input,
 ) : Diagnostics {
-    class ReportedError(
-        val message: String,
-    )
+    inner class ReportedError(
+        val message: DiagnosticMessage,
+        val range: Pair<Location, Location>,
+    ) {
+        override fun toString(): String = "${input.locationRangeToString(range.first, range.second)}: ${message.getMessage()}"
+    }
 
     private val errors: MutableList<ReportedError> = ArrayList()
 
     override fun report(
-        message: String,
-        location: Location,
-    ) {
-        errors.add(ReportedError("${input.locationToString(location)}: $message"))
-    }
-
-    override fun report(
-        message: String,
+        message: DiagnosticMessage,
         range: Pair<Location, Location>,
     ) {
-        errors.add(ReportedError("${input.locationRangeToString(range.first, range.second)}: $message"))
+        errors.add(ReportedError(message, range))
     }
 
     fun getErrors(): List<ReportedError> = errors
+
+    fun extractErrors(): List<String> = errors.map { it.toString() }
 }

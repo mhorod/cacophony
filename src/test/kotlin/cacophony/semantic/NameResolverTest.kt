@@ -1,5 +1,7 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.ResolvedName.Argument
 import cacophony.semantic.ResolvedName.Function
 import cacophony.semantic.ResolvedName.Variable
@@ -14,7 +16,6 @@ import cacophony.semantic.syntaxtree.Statement.ReturnStatement
 import cacophony.semantic.syntaxtree.Statement.WhileStatement
 import cacophony.semantic.syntaxtree.Type.Basic
 import cacophony.semantic.syntaxtree.Type.Functional
-import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import io.mockk.Called
 import io.mockk.MockKAnnotations
@@ -1026,7 +1027,7 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: b", invalidUseRange) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("b"), invalidUseRange) }
             confirmVerified(diagnostics)
         }
 
@@ -1052,7 +1053,7 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: a", invalidUseRange) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("a"), invalidUseRange) }
             confirmVerified(diagnostics)
         }
 
@@ -1078,7 +1079,7 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: a", invalidUseRange) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("a"), invalidUseRange) }
             confirmVerified(diagnostics)
         }
 
@@ -1122,8 +1123,8 @@ class NameResolverTest {
             resolveNames(ast, diagnostics)
 
             // then
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange2) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange2) }
             confirmVerified(diagnostics)
         }
 
@@ -1156,9 +1157,9 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange2) }
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange3) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange2) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange3) }
             confirmVerified(diagnostics)
         }
 
@@ -1190,8 +1191,8 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange2) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange2) }
             confirmVerified(diagnostics)
         }
 
@@ -1222,7 +1223,7 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
             confirmVerified(diagnostics)
         }
 
@@ -1253,8 +1254,8 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange2) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange2) }
             confirmVerified(diagnostics)
         }
 
@@ -1284,7 +1285,7 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
             confirmVerified(diagnostics)
         }
 
@@ -1310,7 +1311,7 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
             confirmVerified(diagnostics)
         }
 
@@ -1336,7 +1337,7 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
             confirmVerified(diagnostics)
         }
 
@@ -1367,8 +1368,8 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange2) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange2) }
             confirmVerified(diagnostics)
         }
 
@@ -1398,7 +1399,7 @@ class NameResolverTest {
             // then
             assertThatResolvedNames(resolvedNames)
                 .andNothingElse()
-            verify(exactly = 1) { diagnostics.report("Undefined identifier: x", invalidUseRange1) }
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("x"), invalidUseRange1) }
             confirmVerified(diagnostics)
         }
 

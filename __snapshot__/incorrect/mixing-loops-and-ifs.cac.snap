@@ -5,7 +5,11 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token KEYWORD_ELSE while parsing BLOCK"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "KEYWORD_ELSE",
+          "symbolName": "BLOCK"
+        }
       }
     ]
   },

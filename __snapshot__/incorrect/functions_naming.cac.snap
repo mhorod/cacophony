@@ -5,7 +5,11 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token TYPE_IDENTIFIER while parsing DECLARATION_LEVEL"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "TYPE_IDENTIFIER",
+          "symbolName": "DECLARATION_LEVEL"
+        }
       }
     ]
   },

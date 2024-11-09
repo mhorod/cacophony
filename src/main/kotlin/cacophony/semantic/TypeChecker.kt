@@ -1,5 +1,7 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.TypeCheckerDiagnostics
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
@@ -12,7 +14,6 @@ import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.Type
 import cacophony.semantic.syntaxtree.VariableUse
-import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 
 typealias TypeCheckingResult = Map<Expression, TypeExpr>
@@ -322,19 +323,19 @@ private class ErrorHandler(
         found: TypeExpr,
         range: Pair<Location, Location>,
     ) {
-        diagnostics.report("Type mismatch: expected $expected, found $found", range)
+        diagnostics.report(TypeCheckerDiagnostics.TypeMismatch(expected.toString(), found.toString()), range)
     }
 
     fun unknownType(range: Pair<Location, Location>) {
-        diagnostics.report("Unknown type", range)
+        diagnostics.report(TypeCheckerDiagnostics.UnknownType, range)
     }
 
     fun expectedFunction(range: Pair<Location, Location>) {
-        diagnostics.report("Expected function", range)
+        diagnostics.report(TypeCheckerDiagnostics.ExpectedFunction, range)
     }
 
     fun expectedLvalue(range: Pair<Location, Location>) {
-        diagnostics.report("Expected lvalue reference", range)
+        diagnostics.report(TypeCheckerDiagnostics.ExpectedLValueReference, range)
     }
 
     fun operationNotSupportedOn(
@@ -342,7 +343,7 @@ private class ErrorHandler(
         type: TypeExpr,
         range: Pair<Location, Location>,
     ) {
-        diagnostics.report("Type $type does not support $operation", range)
+        diagnostics.report(TypeCheckerDiagnostics.UnsupportedOperation(type.toString(), operation), range)
     }
 
     fun noCommonType(
@@ -350,11 +351,11 @@ private class ErrorHandler(
         type2: TypeExpr,
         range: Pair<Location, Location>,
     ) {
-        diagnostics.report("Could not find common type for $type1 and $type2", range)
+        diagnostics.report(TypeCheckerDiagnostics.NoCommonType(type1.toString(), type2.toString()), range)
     }
 
     fun returnOutsideFunction(range: Pair<Location, Location>) {
-        diagnostics.report("Return outside function body", range)
+        diagnostics.report(TypeCheckerDiagnostics.MisplacedReturn, range)
     }
 }
 

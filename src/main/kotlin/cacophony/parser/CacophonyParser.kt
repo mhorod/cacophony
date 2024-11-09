@@ -1,8 +1,8 @@
 package cacophony.parser
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
-import cacophony.utils.Diagnostics
 
 class CacophonyParser : Parser<CacophonyGrammarSymbol> {
     private val innerParser: LLOneParser<Int, CacophonyGrammarSymbol>

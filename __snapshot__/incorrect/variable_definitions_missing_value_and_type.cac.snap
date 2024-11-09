@@ -5,7 +5,11 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token SEMICOLON while parsing DECLARATION_LEVEL"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "SEMICOLON",
+          "symbolName": "DECLARATION_LEVEL"
+        }
       }
     ]
   },

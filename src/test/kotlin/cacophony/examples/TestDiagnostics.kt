@@ -1,47 +1,39 @@
 package cacophony.examples
 
-import cacophony.utils.Diagnostics
-import cacophony.utils.Input
+import cacophony.diagnostics.DiagnosticMessage
+import cacophony.diagnostics.Diagnostics
 import cacophony.utils.Location
 
 class TestDiagnostics : Diagnostics {
     open class ReportedError(
-        open val message: String,
+        open val message: DiagnosticMessage,
     )
 
     class LexerError(
-        message: String,
+        message: DiagnosticMessage,
         location: Location,
     ) : ReportedError(message)
 
     class ParserError(
-        message: String,
+        message: DiagnosticMessage,
         range: Pair<Location, Location>,
     ) : ReportedError(message)
 
     private val errors: MutableList<ReportedError> = ArrayList()
 
-    override fun report(
-        message: String,
-        location: Location,
-    ) {
-        errors.add(LexerError(message, location))
-    }
+    fun errors(): List<ReportedError> = errors
 
     override fun report(
-        message: String,
+        message: DiagnosticMessage,
         range: Pair<Location, Location>,
     ) {
         errors.add(ParserError(message, range))
     }
 
-    fun reportFatal(
-        message: String,
-        input: Input,
+    override fun report(
+        message: DiagnosticMessage,
         location: Location,
     ) {
         errors.add(LexerError(message, location))
     }
-
-    fun errors(): List<ReportedError> = errors
 }

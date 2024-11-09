@@ -50,7 +50,10 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unable to continue parsing symbol COMMA"
+        "message": {
+          "__class__": "UnableToContinueParsing",
+          "symbolName": "COMMA"
+        }
       }
     ]
   },

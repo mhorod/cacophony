@@ -1,8 +1,8 @@
 package cacophony.parser
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
 import cacophony.utils.CompileException
-import cacophony.utils.Diagnostics
 
 interface Parser<SymbolType : Enum<SymbolType>> {
     fun process(

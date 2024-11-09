@@ -5,11 +5,19 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token RIGHT_BRACKET while parsing FUNCTION_ARGUMENT"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "RIGHT_BRACKET",
+          "symbolName": "FUNCTION_ARGUMENT"
+        }
       },
       {
         "__class__": "ParserError",
-        "message": "Unexpected token SEMICOLON while parsing FUNCTION_DECLARATION"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "SEMICOLON",
+          "symbolName": "FUNCTION_DECLARATION"
+        }
       }
     ]
   },

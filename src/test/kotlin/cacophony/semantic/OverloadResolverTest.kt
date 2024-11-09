@@ -1,12 +1,12 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.FunctionCall
 import cacophony.semantic.syntaxtree.Literal
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.VariableUse
-import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import io.mockk.MockKAnnotations
 import io.mockk.every

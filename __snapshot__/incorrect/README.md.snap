@@ -5,7 +5,9 @@
     "errors": [
       {
         "__class__": "LexerError",
-        "message": "Lexer failure: no valid token found."
+        "message": {
+          "__class__": "NoValidToken"
+        }
       }
     ]
   },

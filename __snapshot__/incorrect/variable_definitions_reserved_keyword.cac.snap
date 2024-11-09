@@ -5,7 +5,11 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token KEYWORD_WHILE while parsing DECLARATION_LEVEL"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "KEYWORD_WHILE",
+          "symbolName": "DECLARATION_LEVEL"
+        }
       }
     ]
   },

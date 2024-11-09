@@ -40,10 +40,6 @@ class ASTGenerationTests {
         return mock
     }
 
-    private fun SimpleDiagnostics.extractErrors(): List<String> {
-        return getErrors().map { it.message }
-    }
-
     private fun computeASTAndDiagnostics(content: String): Triple<AST?, List<String>, CompileException?> {
         val input = StringInput(content)
         val diagnostics = SimpleDiagnostics(input)

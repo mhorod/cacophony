@@ -5,7 +5,11 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token VARIABLE_IDENTIFIER while parsing FUNCTION_DECLARATION"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "VARIABLE_IDENTIFIER",
+          "symbolName": "FUNCTION_DECLARATION"
+        }
       }
     ]
   },

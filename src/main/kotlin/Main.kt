@@ -17,8 +17,6 @@ fun main(args: Array<String>) {
     try {
         CacophonyPipeline(diagnostics, CacophonyLogger()).process(input)
     } catch (t: CompileException) {
-        for (error in diagnostics.getErrors()) {
-            println(error.message)
-        }
+        println(diagnostics.extractErrors().joinToString("\n"))
     }
 }

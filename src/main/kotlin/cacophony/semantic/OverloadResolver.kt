@@ -1,7 +1,8 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.ORDiagnostics
 import cacophony.semantic.syntaxtree.*
-import cacophony.utils.Diagnostics
 
 class OverloadResolutionError(
     reason: String,
@@ -66,7 +67,7 @@ fun resolveOverloads(
                         resolvedVariables[expr] = resName.def
                     }
                     is ResolvedName.Function -> {
-                        diagnostics.report("Unexpected function call", expr.range)
+                        diagnostics.report(ORDiagnostics.UnexpectedFunctionCall, expr.range)
                     }
                 }
             }

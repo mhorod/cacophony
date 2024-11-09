@@ -3,9 +3,13 @@
 package cacophony.semantic
 
 import cacophony.semantic.syntaxtree.*
-import cacophony.utils.Diagnostics
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.TypeCheckerDiagnostics
 import cacophony.utils.Location
+import io.mockk.*
+import io.mockk.impl.annotations.MockK
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class TypeCheckerTest {
@@ -37,30 +41,13 @@ class TypeCheckerTest {
 
     private val lc = Pair(Location(0), Location(0))
 
-    class DiagnosticsMock : Diagnostics {
-        var msg: String? = null
+    @MockK
+    lateinit var diagnostics: Diagnostics
 
-        override fun report(
-            message: String,
-            location: Location,
-        ) {}
-
-        override fun report(
-            message: String,
-            range: Pair<Location, Location>,
-        ) {
-            msg = message
-        }
-    }
-
-    private fun getDiagnostic() = object : Diagnostics {
-        var msg: String? = null
-
-        override fun report(message: String, location: Location) {}
-
-        override fun report(message: String, range: Pair<Location, Location>) {
-            msg = message
-        }
+    @BeforeEach
+    fun setUpMocks() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        every { diagnostics.report(any(), any<Location>()) } just runs
     }
 
     private val testUnit = Type.Basic(lc, "Unit")
@@ -72,41 +59,37 @@ class TypeCheckerTest {
     @Test
     fun `ok - empty block`() {
         val ast = Block(lc, emptyList())
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - block with empty expression`() {
         val ast = Block(lc, listOf(Empty(lc)))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - variable definition with type`() {
         val varDef = Definition.VariableDeclaration(lc, "x", testInt, intLiteral)
         val ast = Block(lc, listOf(varDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[varDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - variable declaration without type`() {
         val varDef = Definition.VariableDeclaration(lc, "x", null, intLiteral)
         val ast = Block(lc, listOf(varDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[varDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -114,12 +97,11 @@ class TypeCheckerTest {
         val varDef = Definition.VariableDeclaration(lc, "x", testInt, intLiteral)
         val varUse = VariableUse(lc, "x")
         val ast = Block(lc, listOf(varDef, varUse))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.UnitType, result[varDef])
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -127,12 +109,11 @@ class TypeCheckerTest {
         val varDef = Definition.VariableDeclaration(lc, "x", null, intLiteral)
         val varUse = VariableUse(lc, "x")
         val ast = Block(lc, listOf(varDef, varUse))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.UnitType, result[varDef])
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -140,83 +121,77 @@ class TypeCheckerTest {
         val varDef = Definition.VariableDeclaration(lc, "x", testInt, intLiteral)
         val varUse = VariableUse(lc, "x")
         val ast = Block(lc, listOf(varDef, varUse, Empty(lc)))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.UnitType, result[varDef])
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - empty function declaration without type - () to Unit`() {
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testUnit, Empty(lc))
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - empty function declaration with type - () to Unit`() {
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, emptyList(), testUnit), emptyList(), testUnit, Empty(lc))
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, emptyList(), testUnit), emptyList(), testUnit, Empty(lc)
+        )
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - empty function declaration without type - (Int) to Unit`() {
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                null,
-                listOf(Definition.FunctionArgument(lc, "x", testInt)),
-                testUnit,
-                Empty(lc),
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc,
+            "f",
+            null,
+            listOf(Definition.FunctionArgument(lc, "x", testInt)),
+            testUnit,
+            Empty(lc),
+        )
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - empty function declaration with type - (Int) to Unit`() {
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                Type.Functional(lc, listOf(testInt), testUnit),
-                listOf(Definition.FunctionArgument(lc, "x", testInt)),
-                testUnit,
-                Empty(lc),
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc,
+            "f",
+            Type.Functional(lc, listOf(testInt), testUnit),
+            listOf(Definition.FunctionArgument(lc, "x", testInt)),
+            testUnit,
+            Empty(lc),
+        )
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - nonempty function declaration - () to Int`() {
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, intLiteral)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -224,12 +199,11 @@ class TypeCheckerTest {
         val funArg = Definition.FunctionArgument(lc, "x", testInt)
         val funDef = Definition.FunctionDeclaration(lc, "f", null, listOf(funArg), testInt, intLiteral)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.IntegerType, result[funArg])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -238,12 +212,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val funDef = Definition.FunctionDeclaration(lc, "f", null, listOf(funArg), testInt, varUse)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to funArg))
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.IntegerType, result[funArg])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -252,12 +225,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, varUse)
         val ast = Block(lc, listOf(varDec, funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDec))
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[varDec])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -266,39 +238,40 @@ class TypeCheckerTest {
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
         val funDef = Definition.FunctionDeclaration(lc, "f", null, listOf(arg1, arg2), testInt, intLiteral)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.IntegerType, result[arg1])
         assertTypeEquals(BuiltinType.BooleanType, result[arg2])
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - function declaration - (Int, Bool) to Int with type`() {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt)
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(testInt, testBoolean), testInt), listOf(arg1, arg2), testInt, intLiteral)
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, listOf(testInt, testBoolean), testInt), listOf(arg1, arg2), testInt, intLiteral
+        )
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.IntegerType, result[arg1])
         assertTypeEquals(BuiltinType.BooleanType, result[arg2])
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - function declaration - () to Unit with type`() {
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, emptyList(), Type.Basic(lc, "Unit")), emptyList(), testUnit, Empty(lc))
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, emptyList(), Type.Basic(lc, "Unit")), emptyList(), testUnit, Empty(lc)
+        )
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -307,13 +280,12 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "f")
         val funCall = FunctionCall(lc, varUse, emptyList())
         val ast = Block(lc, listOf(funDef, funCall))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to funDef))
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(FunctionType(emptyList(), BuiltinType.IntegerType), result[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result[funCall])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -323,13 +295,12 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "f")
         val funCall = FunctionCall(lc, varUse, listOf(Empty(lc)))
         val ast = Block(lc, listOf(funDef, funCall))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to funDef))
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(FunctionType(listOf(BuiltinType.UnitType), BuiltinType.IntegerType), result[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result[funCall])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -341,34 +312,31 @@ class TypeCheckerTest {
         val funUse = VariableUse(lc, "f")
         val funCall = FunctionCall(lc, funUse, listOf(varUse))
         val ast = Block(lc, listOf(varDef, funDef, funCall))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(funUse to funDef, varUse to varDef))
         assertTypeEquals(FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType), result[funUse])
         assertTypeEquals(BuiltinType.IntegerType, result[funCall])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - int literal`() {
         val literal = Literal.IntLiteral(lc, 1)
         val ast = Block(lc, listOf(literal))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.IntegerType, result[literal])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - boolean literal`() {
         val literal = Literal.BoolLiteral(lc, true)
         val ast = Block(lc, listOf(literal))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.BooleanType, result[literal])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -377,13 +345,12 @@ class TypeCheckerTest {
         val block1 = Block(lc, listOf(inside))
         val block2 = Block(lc, listOf())
         val ast = Block(lc, listOf(block1, block2))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[inside])
         assertTypeEquals(BuiltinType.UnitType, result[block1])
         assertTypeEquals(BuiltinType.UnitType, result[block2])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -392,14 +359,13 @@ class TypeCheckerTest {
         val em2 = Empty(lc)
         val statement = Statement.IfElseStatement(lc, booleanLiteral, em1, em2)
         val ast = Block(lc, listOf(statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.BooleanType, result[booleanLiteral])
         assertTypeEquals(BuiltinType.UnitType, result[em1])
         assertTypeEquals(BuiltinType.UnitType, result[em2])
         assertTypeEquals(BuiltinType.UnitType, result[statement])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -408,14 +374,13 @@ class TypeCheckerTest {
         val branch2 = Literal.IntLiteral(lc, 2)
         val statement = Statement.IfElseStatement(lc, booleanLiteral, branch1, branch2)
         val ast = Block(lc, listOf(statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.BooleanType, result[booleanLiteral])
         assertTypeEquals(BuiltinType.IntegerType, result[branch1])
         assertTypeEquals(BuiltinType.IntegerType, result[branch2])
         assertTypeEquals(BuiltinType.IntegerType, result[statement])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -425,14 +390,13 @@ class TypeCheckerTest {
         val branch2 = VariableUse(lc, "x")
         val statement = Statement.IfElseStatement(lc, booleanLiteral, branch1, branch2)
         val ast = Block(lc, listOf(varDef, statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(branch2 to varDef))
         assertTypeEquals(BuiltinType.BooleanType, result[booleanLiteral])
         assertTypeEquals(BuiltinType.IntegerType, result[branch1])
         assertTypeEquals(BuiltinType.IntegerType, result[branch2])
         assertTypeEquals(BuiltinType.IntegerType, result[statement])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -440,13 +404,12 @@ class TypeCheckerTest {
         val branch = Empty(lc)
         val statement = Statement.IfElseStatement(lc, booleanLiteral, branch, null)
         val ast = Block(lc, listOf(statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.BooleanType, result[booleanLiteral])
         assertTypeEquals(BuiltinType.UnitType, result[branch])
         assertTypeEquals(BuiltinType.UnitType, result[statement])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
 
@@ -457,13 +420,12 @@ class TypeCheckerTest {
         val branch = Empty(lc)
         val statement = Statement.IfElseStatement(lc, varUse, branch, null)
         val ast = Block(lc, listOf(varDef, statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.BooleanType, result[varUse])
         assertTypeEquals(BuiltinType.UnitType, result[branch])
         assertTypeEquals(BuiltinType.UnitType, result[statement])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -474,24 +436,22 @@ class TypeCheckerTest {
         val branchUse = VariableUse(lc, "x")
         val statement = Statement.IfElseStatement(lc, flagUse, Block(lc, listOf(branchUse, Empty(lc))), null)
         val ast = Block(lc, listOf(flagDef, branchDef, statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(flagUse to flagDef, branchUse to branchDef))
         assertTypeEquals(BuiltinType.BooleanType, result[flagUse])
         assertTypeEquals(BuiltinType.IntegerType, result[branchUse])
         assertTypeEquals(BuiltinType.UnitType, result[statement])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - empty while, literal test`() {
         val statement = Statement.WhileStatement(lc, booleanLiteral, Empty(lc))
         val ast = Block(lc, listOf(statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[statement])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -500,11 +460,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val statement = Statement.WhileStatement(lc, varUse, Empty(lc))
         val ast = Block(lc, listOf(varDef, statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.UnitType, result[statement])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -515,12 +474,11 @@ class TypeCheckerTest {
         val body = Block(lc, listOf(varUse2))
         val statement = Statement.WhileStatement(lc, varUse1, body)
         val ast = Block(lc, listOf(varDef, statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse1 to varDef, varUse2 to varDef))
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[statement])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -528,11 +486,10 @@ class TypeCheckerTest {
         val body = Statement.ReturnStatement(lc, Empty(lc))
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testUnit, body)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -540,11 +497,10 @@ class TypeCheckerTest {
         val body = Block(lc, listOf(Statement.ReturnStatement(lc, Empty(lc)), Empty(lc)))
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testUnit, body)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertNull(diagnostics.msg)
         assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -552,11 +508,10 @@ class TypeCheckerTest {
         val body = Statement.ReturnStatement(lc, intLiteral)
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, body)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -566,81 +521,85 @@ class TypeCheckerTest {
         val body = Statement.ReturnStatement(lc, argUse)
         val funDef = Definition.FunctionDeclaration(lc, "f", null, listOf(argDef), testInt, body)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(argUse to argDef))
         assertTypeEquals(BuiltinType.IntegerType, result[argUse])
         assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - return inside if branch`() {
-        val body = Statement.IfElseStatement(lc, booleanLiteral, Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)), Literal.IntLiteral(lc,3))
+        val body = Statement.IfElseStatement(
+            lc, booleanLiteral, Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)), Literal.IntLiteral(lc, 3)
+        )
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, body)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - return inside both branches`() {
-        val body = Statement.IfElseStatement(lc, booleanLiteral, Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)), Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 3)))
+        val body = Statement.IfElseStatement(
+            lc,
+            booleanLiteral,
+            Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)),
+            Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 3))
+        )
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, body)
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.VoidType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - return in nested function`() {
-        val innerFunDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, Statement.ReturnStatement(lc, intLiteral))
-        val outerFunDef = Definition.FunctionDeclaration(lc, "g", null, emptyList(), testBoolean, Block(lc, listOf(innerFunDef, booleanLiteral)))
+        val innerFunDef = Definition.FunctionDeclaration(
+            lc, "f", null, emptyList(), testInt, Statement.ReturnStatement(lc, intLiteral)
+        )
+        val outerFunDef = Definition.FunctionDeclaration(
+            lc, "g", null, emptyList(), testBoolean, Block(lc, listOf(innerFunDef, booleanLiteral))
+        )
         val ast = Block(lc, listOf(outerFunDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[innerFunDef])
         assertTypeEquals(BuiltinType.UnitType, result[outerFunDef])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - break is Void`() {
         val statement = Statement.BreakStatement(lc)
         val ast = Block(lc, listOf(statement))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.VoidType, result[statement])
         assertTypeEquals(BuiltinType.VoidType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - break in else branch`() {
         val breakStatement = Statement.BreakStatement(lc)
         val ast = Block(lc, listOf(Statement.IfElseStatement(lc, booleanLiteral, intLiteral, breakStatement)))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.VoidType, result[breakStatement])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - negation of literal`() {
         val body = OperatorUnary.Negation(lc, booleanLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -649,22 +608,20 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorUnary.Negation(lc, varUse)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - unary minus of literal`() {
         val body = OperatorUnary.Minus(lc, intLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -673,13 +630,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorUnary.Minus(lc, varUse)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
-        println(result[varDef])
-        println(result[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -688,11 +642,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Addition(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -701,11 +654,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Subtraction(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -714,11 +666,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Multiplication(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -727,11 +678,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Division(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -740,11 +690,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Modulo(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -754,11 +703,10 @@ class TypeCheckerTest {
         val varUse2 = VariableUse(lc, "x")
         val body = OperatorBinary.AdditionAssignment(lc, varUse1, varUse2)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse1 to varDef, varUse2 to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
 
@@ -769,11 +717,10 @@ class TypeCheckerTest {
         val varUse2 = VariableUse(lc, "x")
         val body = OperatorBinary.SubtractionAssignment(lc, varUse1, varUse2)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse1 to varDef, varUse2 to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -783,11 +730,10 @@ class TypeCheckerTest {
         val varUse2 = VariableUse(lc, "x")
         val body = OperatorBinary.MultiplicationAssignment(lc, varUse1, varUse2)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse1 to varDef, varUse2 to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -797,11 +743,10 @@ class TypeCheckerTest {
         val varUse2 = VariableUse(lc, "x")
         val body = OperatorBinary.DivisionAssignment(lc, varUse1, varUse2)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse1 to varDef, varUse2 to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -811,11 +756,10 @@ class TypeCheckerTest {
         val varUse2 = VariableUse(lc, "x")
         val body = OperatorBinary.ModuloAssignment(lc, varUse1, varUse2)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse1 to varDef, varUse2 to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -824,11 +768,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.LogicalOr(lc, varUse, booleanLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -837,11 +780,10 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.LogicalAnd(lc, varUse, booleanLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -850,12 +792,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Less(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -864,12 +805,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.LessEqual(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -878,12 +818,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Greater(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -892,12 +831,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.GreaterEqual(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -906,12 +844,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Equals(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -920,12 +857,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Equals(lc, varUse, booleanLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.BooleanType, result[varUse])
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -934,12 +870,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.NotEquals(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -948,12 +883,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.NotEquals(lc, varUse, booleanLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.BooleanType, result[varUse])
         assertTypeEquals(BuiltinType.BooleanType, result[body])
         assertTypeEquals(BuiltinType.BooleanType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -964,13 +898,12 @@ class TypeCheckerTest {
         val var2Use = VariableUse(lc, "y")
         val body = OperatorBinary.Assignment(lc, var1Use, var2Use)
         val ast = Block(lc, listOf(var1Def, var2Def, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(var1Use to var1Def, var2Use to var2Def))
         assertTypeEquals(BuiltinType.IntegerType, result[var1Use])
         assertTypeEquals(BuiltinType.IntegerType, result[var2Use])
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -979,12 +912,11 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Assignment(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDef, body))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.IntegerType, result[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
@@ -993,129 +925,180 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val res = Statement.ReturnStatement(lc, Empty(lc))
         val body = OperatorBinary.Assignment(lc, varUse, res)
-        val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testUnit, Block(lc, listOf(body, Empty(lc))))
+        val funDef =
+            Definition.FunctionDeclaration(lc, "f", null, emptyList(), testUnit, Block(lc, listOf(body, Empty(lc))))
         val ast = Block(lc, listOf(varDef, funDef))
-        val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(BuiltinType.VoidType, result[res])
         assertTypeEquals(BuiltinType.IntegerType, result[body])
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
         assertTypeEquals(BuiltinType.UnitType, result[ast])
-        assertNull(diagnostics.msg)
+        verify { diagnostics wasNot called }
     }
 
     @Test
     fun `error - unknown type at variable declaration`() {
         val varDec = Definition.VariableDeclaration(lc, "x", Type.Basic(lc, "Type"), Empty(lc))
         val ast = Block(lc, listOf(varDec))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Unknown type", diagnostics.msg)
+        verify(exactly = 1) { diagnostics.report(TypeCheckerDiagnostics.UnknownType, any<Pair<Location, Location>>()) }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - unknown type at argument declaration`() {
-        val funDec = Definition.FunctionDeclaration(lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", Type.Basic(lc, "Type"))), testUnit, Empty(lc))
+        val funDec = Definition.FunctionDeclaration(
+            lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", Type.Basic(lc, "Type"))), testUnit, Empty(lc)
+        )
         val ast = Block(lc, listOf(funDec))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Unknown type", diagnostics.msg)
+        verify(exactly = 1) { diagnostics.report(TypeCheckerDiagnostics.UnknownType, any<Pair<Location, Location>>()) }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - function declaration type mismatch - types`() {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt)
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(testBoolean, testInt), testInt), listOf(arg1, arg2), testInt, intLiteral)
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, listOf(testBoolean, testInt), testInt), listOf(arg1, arg2), testInt, intLiteral
+        )
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected [Bool, Int] -> Int, found [Int, Bool] -> Int", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch(
+                    "[Bool, Int] -> Int", "[Int, Bool] -> Int"
+                ), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `ok - function declaration type mismatch - number of args`() {
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(testInt), Type.Basic(lc, "Unit")), emptyList(), testUnit, Empty(lc))
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, listOf(testInt), Type.Basic(lc, "Unit")), emptyList(), testUnit, Empty(lc)
+        )
         val ast = Block(lc, listOf(funDef))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected [Int] -> Unit, found [] -> Unit", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch(
+                    "[Int] -> Unit", "[] -> Unit"
+                ), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - mismatch init vs declared`() {
         val varDec = Definition.VariableDeclaration(lc, "x", testBoolean, intLiteral)
         val ast = Block(lc, listOf(varDec))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - mismatch body vs return type`() {
         val funDec = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, booleanLiteral)
         val ast = Block(lc, listOf(funDec))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - calling non function`() {
         val body = FunctionCall(lc, intLiteral, emptyList())
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Expected function", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.ExpectedFunction, any<Pair<Location, Location>>()
+            )
+        }
     }
 
     @Test
     fun `error - wrong argument type`() {
-        val funDec = Definition.FunctionDeclaration(lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", testInt)), testUnit, Empty(lc))
+        val funDec = Definition.FunctionDeclaration(
+            lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", testInt)), testUnit, Empty(lc)
+        )
         val funUse = VariableUse(lc, "f")
         val body = FunctionCall(lc, funUse, listOf(booleanLiteral))
         val ast = Block(lc, listOf(funDec, body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, mapOf(funUse to funDec))
-        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - assignment to non lvalue reference`() {
         val body = OperatorBinary.Assignment(lc, Empty(lc), booleanLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Expected lvalue reference", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.ExpectedLValueReference, any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - mismatch assignment`() {
         val varDec = Definition.VariableDeclaration(lc, "x", testBoolean, booleanLiteral)
-        val varUse = VariableUse(lc ,"x")
+        val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Assignment(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDec, body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
-        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - mismatch equals`() {
         val body = OperatorBinary.Equals(lc, booleanLiteral, intLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - mismatch not equals`() {
         val body = OperatorBinary.NotEquals(lc, booleanLiteral, intLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
 
@@ -1123,99 +1106,145 @@ class TypeCheckerTest {
     fun `error - equals on Unit`() {
         val body = OperatorBinary.Equals(lc, Empty(lc), Empty(lc))
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type Unit does not support == operator", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.UnsupportedOperation("Unit", "== operator"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - not equals on Unit`() {
         val body = OperatorBinary.NotEquals(lc, Empty(lc), Empty(lc))
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type Unit does not support != operator", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.UnsupportedOperation("Unit", "!= operator"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - unary minus on wrong type`() {
         val body = OperatorUnary.Minus(lc, booleanLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type Bool does not support unary - operator", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.UnsupportedOperation("Bool", "unary - operator"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - unary negation on wrong type`() {
         val body = OperatorUnary.Negation(lc, intLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type Int does not support unary ! operator", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.UnsupportedOperation("Int", "unary ! operator"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - test in if statement`() {
         val body = Statement.IfElseStatement(lc, intLiteral, Empty(lc), null)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - mismatch in non empty branches`() {
         val body = Statement.IfElseStatement(lc, booleanLiteral, intLiteral, booleanLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Could not find common type for Int and Bool", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.NoCommonType("Int", "Bool"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - mismatch in empty branches`() {
         val body = Statement.IfElseStatement(lc, booleanLiteral, intLiteral, null)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Could not find common type for Int and Unit", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.NoCommonType("Int", "Unit"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - return outside function body`() {
         val body = Statement.ReturnStatement(lc, Empty(lc))
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Return outside function body", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.MisplacedReturn, any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - return with wrong type`() {
-        val funDec = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, Statement.ReturnStatement(lc, booleanLiteral))
+        val funDec = Definition.FunctionDeclaration(
+            lc, "f", null, emptyList(), testInt, Statement.ReturnStatement(lc, booleanLiteral)
+        )
         val ast = Block(lc, listOf(funDec))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - non Bool in while test`() {
         val body = Statement.WhileStatement(lc, Empty(lc), Empty(lc))
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Bool, found Unit", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Unit"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - operator assignment on non lvalue`() {
         val body = OperatorBinary.AdditionAssignment(lc, intLiteral, Literal.IntLiteral(lc, 4))
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Expected lvalue reference", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.ExpectedLValueReference, any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
@@ -1224,9 +1253,13 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.AdditionAssignment(lc, varUse, booleanLiteral)
         val ast = Block(lc, listOf(varDec, body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
-        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
@@ -1235,44 +1268,64 @@ class TypeCheckerTest {
         val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.AdditionAssignment(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDec, body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
-        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - add on wrong value rhs`() {
         val body = OperatorBinary.Addition(lc, intLiteral, booleanLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - add on wrong value lhs`() {
         val body = OperatorBinary.Addition(lc, booleanLiteral, intLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Int, found Bool", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - or on wrong value lhs`() {
         val body = OperatorBinary.LogicalOr(lc, booleanLiteral, intLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
     fun `error - or on wrong value rhs`() {
         val body = OperatorBinary.LogicalOr(lc, intLiteral, booleanLiteral)
         val ast = Block(lc, listOf(body))
-        val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
-        assertEquals("Type mismatch: expected Bool, found Int", diagnostics.msg)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
+            )
+        }
+        confirmVerified(diagnostics)
     }
 }

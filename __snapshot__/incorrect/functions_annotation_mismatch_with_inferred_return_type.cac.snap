@@ -5,7 +5,11 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token DOUBLE_ARROW while parsing FUNCTION_DECLARATION"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "DOUBLE_ARROW",
+          "symbolName": "FUNCTION_DECLARATION"
+        }
       }
     ]
   },

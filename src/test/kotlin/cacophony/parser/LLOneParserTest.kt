@@ -2,10 +2,11 @@ package cacophony.parser
 
 import cacophony.automata.SimpleDFA
 import cacophony.automata.minimalization.via
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.ParserDiagnostics
 import cacophony.grammars.*
 import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex
-import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -900,7 +901,8 @@ class LLOneParserTest {
                             ParseTree.Branch(
                                 Location(0) to Location(3),
                                 ctogroup,
-                                listOf( // Nothing in between parentheses because of errors
+                                listOf(
+                                    // Nothing in between parentheses because of errors
                                     terminals[0],
                                     terminals[3],
                                 ),
@@ -937,7 +939,7 @@ class LLOneParserTest {
 
         verify(exactly = 1) {
             diagnostics.report(
-                eq("Unexpected token RPAREN while parsing A"),
+                eq(ParserDiagnostics.UnexpectedToken("RPAREN", "A")),
                 eq(Pair(Location(3), Location(4))),
             )
         }
@@ -1052,13 +1054,13 @@ class LLOneParserTest {
                 listOf(SymbolAryt.RPAREN),
             )
 
-        assertThatExceptionOfType(ParsingException::class.java).isThrownBy({
+        assertThatExceptionOfType(ParsingException::class.java).isThrownBy {
             parser.process(terminals, diagnostics)
-        })
+        }
 
         verify(exactly = 1) {
             diagnostics.report(
-                eq("Unexpected token SUM while parsing A"),
+                eq(ParserDiagnostics.UnexpectedToken("SUM", "A")),
                 eq(Pair(Location(2), Location(3))),
             )
         }
@@ -1129,7 +1131,7 @@ class LLOneParserTest {
 
         verify(exactly = 1) {
             diagnostics.report(
-                eq("Unable to continue parsing symbol X"),
+                eq(ParserDiagnostics.UnableToContinueParsing("X")),
                 eq(Pair(Location(1), Location(2))),
             )
         }

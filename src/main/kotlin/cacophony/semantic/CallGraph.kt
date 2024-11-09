@@ -1,5 +1,6 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
@@ -10,7 +11,6 @@ import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.VariableUse
-import cacophony.utils.Diagnostics
 import kotlin.collections.mutableMapOf
 
 typealias CallGraph = Map<Definition.FunctionDeclaration, Set<Definition.FunctionDeclaration>>

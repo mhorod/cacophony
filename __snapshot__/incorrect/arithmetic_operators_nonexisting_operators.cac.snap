@@ -5,7 +5,11 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unexpected token OPERATOR_ADDITION while parsing ADDITION_LEVEL"
+        "message": {
+          "__class__": "UnexpectedToken",
+          "tokenName": "OPERATOR_ADDITION",
+          "symbolName": "ADDITION_LEVEL"
+        }
       }
     ]
   },

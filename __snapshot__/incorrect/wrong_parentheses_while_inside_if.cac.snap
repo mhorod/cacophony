@@ -349,7 +349,10 @@
     "errors": [
       {
         "__class__": "ParserError",
-        "message": "Unable to continue parsing symbol KEYWORD_ELSE"
+        "message": {
+          "__class__": "UnableToContinueParsing",
+          "symbolName": "KEYWORD_ELSE"
+        }
       }
     ]
   },
