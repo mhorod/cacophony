@@ -30,11 +30,16 @@ fun checkTypes(
     return typer.result
 }
 
-private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVariables, val types: Map<String, TypeExpr>) {
+private class Typer(
+    diagnostics: Diagnostics,
+    val resolvedVariables: ResolvedVariables,
+    val types: Map<String, TypeExpr>,
+) {
     val result: MutableMap<Expression, TypeExpr> = mutableMapOf()
     val typedVariables: MutableMap<Definition, TypeExpr> = mutableMapOf()
     val functionContext = ArrayDeque<TypeExpr>()
     val error = ErrorHandler(diagnostics)
+    var whileDepth = 0
 
     fun typeExpression(expression: Expression): TypeExpr? {
         val expressionType: TypeExpr? =
@@ -87,16 +92,17 @@ private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVar
                             "Arity of function resolved in previous step does not match",
                         )
                     }
-                    (argsTypes zip functionType.args).mapIndexed { ind, (deduced, required) ->
-                        if (deduced == null) {
-                            false
-                        } else if (!isSubtype(deduced, required)) {
-                            error.typeMismatchError(required, deduced, expression.arguments[ind].range)
-                            false
-                        } else {
-                            true
-                        }
-                    }.forEach { if (!it) return null }
+                    (argsTypes zip functionType.args)
+                        .mapIndexed { ind, (deduced, required) ->
+                            if (deduced == null) {
+                                false
+                            } else if (!isSubtype(deduced, required)) {
+                                error.typeMismatchError(required, deduced, expression.arguments[ind].range)
+                                false
+                            } else {
+                                true
+                            }
+                        }.forEach { if (!it) return null }
                     functionType.result
                 }
                 is Literal.BoolLiteral -> BuiltinType.BooleanType
@@ -169,7 +175,13 @@ private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVar
                     }
                     BuiltinType.BooleanType
                 }
-                is Statement.BreakStatement -> TypeExpr.VoidType
+                is Statement.BreakStatement -> {
+                    if (whileDepth == 0) {
+                        error.breakOutsideWhile(expression.range)
+                        return null
+                    }
+                    TypeExpr.VoidType
+                }
                 is Statement.IfElseStatement -> {
                     val trueBranchType = typeExpression(expression.doExpression)
                     val falseBranchType =
@@ -207,7 +219,9 @@ private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVar
                     TypeExpr.VoidType
                 }
                 is Statement.WhileStatement -> {
+                    whileDepth++
                     typeExpression(expression.doExpression)
+                    whileDepth--
                     val conditionType = typeExpression(expression.testExpression) ?: return null
                     if (!isSubtype(conditionType, BuiltinType.BooleanType)) {
                         error.typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
@@ -305,7 +319,9 @@ private class Typer(diagnostics: Diagnostics, val resolvedVariables: ResolvedVar
 }
 
 // class responsible for the interaction with Diagnostics
-private class ErrorHandler(val diagnostics: Diagnostics) {
+private class ErrorHandler(
+    val diagnostics: Diagnostics,
+) {
     fun typeMismatchError(
         expected: TypeExpr,
         found: TypeExpr,
@@ -345,28 +361,32 @@ private class ErrorHandler(val diagnostics: Diagnostics) {
     fun returnOutsideFunction(range: Pair<Location, Location>) {
         diagnostics.report("Return outside function body", range)
     }
+
+    fun breakOutsideWhile(range: Pair<Location, Location>) {
+        diagnostics.report("Break outside while loop body", range)
+    }
 }
 
-sealed class TypeExpr(val name: String) {
-    override fun toString(): String {
-        return name
-    }
+sealed class TypeExpr(
+    val name: String,
+) {
+    override fun toString(): String = name
 
     override fun equals(other: Any?): Boolean {
         if (other == null || other !is TypeExpr) return false
         return name == other.name
     }
 
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
+    override fun hashCode(): Int = name.hashCode()
 
     // TODO: Propagate Void maybe
     // atm Void is not something you can type in code
     object VoidType : TypeExpr("Void") // Only for `return` and `break` statement
 }
 
-sealed class BuiltinType private constructor(name: String) : TypeExpr(name) {
+sealed class BuiltinType private constructor(
+    name: String,
+) : TypeExpr(name) {
     object BooleanType : BuiltinType("Boolean")
 
     object IntegerType : BuiltinType("Int")
@@ -374,9 +394,10 @@ sealed class BuiltinType private constructor(name: String) : TypeExpr(name) {
     object UnitType : BuiltinType("Unit")
 }
 
-class FunctionType(val args: List<TypeExpr>, val result: TypeExpr) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
-
-class UserDefinedType(name: String) : TypeExpr(name)
+class FunctionType(
+    val args: List<TypeExpr>,
+    val result: TypeExpr,
+) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
 
 fun isSubtype(
     subtype: TypeExpr,

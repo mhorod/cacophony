@@ -37,26 +37,12 @@ class TypeCheckerTest {
 
     private val lc = Pair(Location(0), Location(0))
 
-    class DiagnosticsMock : Diagnostics {
-        var msg: String? = null
-
-        override fun report(
-            message: String,
-            location: Location,
-        ) {}
-
-        override fun report(
-            message: String,
-            range: Pair<Location, Location>,
-        ) {
-            msg = message
-        }
-    }
-
     private fun getDiagnostic() = object : Diagnostics {
         var msg: String? = null
 
-        override fun report(message: String, location: Location) {}
+        override fun report(message: String, location: Location) {
+            msg = message
+        }
 
         override fun report(message: String, range: Pair<Location, Location>) {
             msg = message
@@ -599,24 +585,62 @@ class TypeCheckerTest {
     }
 
     @Test
-    fun `ok - break is Void`() {
+    fun `ok - break inside loop`() {
+        val body1 = Block(lc, listOf(Statement.BreakStatement(lc)))
+        val while1 = Statement.WhileStatement(lc, Literal.BoolLiteral(lc, false), body1)
+        val body2 = Block(lc, listOf(while1, Statement.BreakStatement(lc)))
+        val while2 = Statement.WhileStatement(lc, Literal.BoolLiteral(lc, false), body2)
+        val ast = Block(lc, listOf(while2))
+        val diagnostics = getDiagnostic()
+        val result = checkTypes(ast, diagnostics, emptyMap())
+        assertTypeEquals(TypeExpr.VoidType, result[body1])
+        assertTypeEquals(BuiltinType.UnitType, result[while1])
+        assertTypeEquals(TypeExpr.VoidType, result[body2])
+        assertTypeEquals(BuiltinType.UnitType, result[while2])
+        assertTypeEquals(BuiltinType.UnitType, result[ast])
+    }
+
+    @Test
+    fun `error - bare break statement`() {
         val statement = Statement.BreakStatement(lc)
         val ast = Block(lc, listOf(statement))
         val diagnostics = getDiagnostic()
-        val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(TypeExpr.VoidType, result[statement])
-        assertTypeEquals(TypeExpr.VoidType, result[ast])
-        assertNull(diagnostics.msg)
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Break outside while loop body", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - break outside loop`() {
+        val while1 = Statement.WhileStatement(lc, Literal.BoolLiteral(lc, false), Empty(lc))
+        val while2 = Statement.WhileStatement(lc, Literal.BoolLiteral(lc, false), while1)
+        val ast = Block(lc, listOf(while2, Statement.BreakStatement(lc)))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Break outside while loop body", diagnostics.msg)
+    }
+
+    @Test
+    fun `error - break inside loop test condition`() {
+        val testBlock = Block(lc, listOf(Statement.BreakStatement(lc), Literal.BoolLiteral(lc, false)))
+        val whileStatement = Statement.WhileStatement(lc, testBlock, Empty(lc))
+        val ast = Block(lc, listOf(whileStatement))
+        val diagnostics = getDiagnostic()
+        checkTypes(ast, diagnostics, emptyMap())
+        assertEquals("Break outside while loop body", diagnostics.msg)
     }
 
     @Test
     fun `ok - break in else branch`() {
         val breakStatement = Statement.BreakStatement(lc)
-        val ast = Block(lc, listOf(Statement.IfElseStatement(lc, booleanLiteral, intLiteral, breakStatement)))
+        val ifElseStatement = Statement.IfElseStatement(lc, booleanLiteral, intLiteral, breakStatement)
+        val testLiteral = Literal.BoolLiteral(lc, true)
+        val whileStatement = Statement.WhileStatement(lc, testLiteral, ifElseStatement)
+        val ast = Block(lc, listOf(whileStatement))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(TypeExpr.VoidType, result[breakStatement])
-        assertTypeEquals(BuiltinType.IntegerType, result[ast])
+        assertTypeEquals(BuiltinType.IntegerType, result[ifElseStatement])
+        assertTypeEquals(BuiltinType.UnitType, result[ast])
         assertNull(diagnostics.msg)
     }
 
