@@ -13,11 +13,6 @@ class FunctionHandler(
         data class Stack(val offset: Int)
     }
 
-    // TODO discuss this
-    private fun getIdentifier(): String {
-        return function.identifier + function.arguments.size.toString()
-    }
-
     fun generateCall(
         arguments: List<CFGNode>,
         result: Register?,
@@ -40,7 +35,7 @@ class FunctionHandler(
             nodes.add(CFGNode.Push(CFGNode.VariableUse(register)))
         }
 
-        nodes.add(CFGNode.Call(getIdentifier()))
+        nodes.add(CFGNode.Call(function))
 
         if (stackArguments.isNotEmpty()) {
             nodes.add(

@@ -1,5 +1,7 @@
 package cacophony.controlflow
 
+import cacophony.semantic.syntaxtree.Definition
+
 class CFGLabel
 
 sealed class CFGVertex(
@@ -41,7 +43,7 @@ sealed interface CFGNode {
         Leaf
 
     class Call(
-        val identifier: String,
+        val declaration: Definition.FunctionDeclaration,
     ) : Unconditional,
         Leaf
 
