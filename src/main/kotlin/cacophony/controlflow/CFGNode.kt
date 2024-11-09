@@ -25,7 +25,7 @@ sealed class CFGVertex(
     }
 
     class Final(
-        tree: CFGNode.Unconditional,
+        tree: CFGNode
     ) : CFGVertex(tree) {
         override fun dependents() = emptyList<CFGLabel>()
     }
@@ -41,6 +41,8 @@ sealed interface CFGNode {
     data object Return :
         Unconditional,
         Leaf
+
+    data object NoOp : Unconditional, Leaf
 
     data class Call(
         val declaration: Definition.FunctionDeclaration,
@@ -150,4 +152,10 @@ sealed interface CFGNode {
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
+
+    companion object {
+        val UNIT = Constant(0)
+        val FALSE = Constant(0)
+        val TRUE = Constant(1)
+    }
 }
