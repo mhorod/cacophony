@@ -1,16 +1,20 @@
 package cacophony.controlflow
 
+import cacophony.controlflow.CFGNode.Addition
+import cacophony.controlflow.CFGNode.Constant
+import cacophony.controlflow.CFGNode.MemoryAccess
+import cacophony.controlflow.CFGNode.VariableUse
 import cacophony.semantic.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.utils.CompileException
 
 sealed class VariableAllocation {
     class InRegister(
-        register: Register,
+        val register: Register,
     ) : VariableAllocation()
 
     class OnStack(
-        offset: Int,
+        val offset: Int,
     ) : VariableAllocation()
 }
 
@@ -91,17 +95,65 @@ class FunctionHandlerImpl(
         return mapOf(CFGLabel() to CFGVertex.Final(CFGNode.Sequence(nodes)))
     }
 
+    private fun generateAccessToFramePointer(other: FunctionDeclaration): CFGNode {
+        if (other == function) {
+            return VariableUse(Register.FixedRegister("RBP"))
+        } else {
+            val childOfOtherIndex =
+                ancestorFunctionHandlers
+                    .indexOfFirst { it.getFunctionDeclaration() == other } - 1
+
+            val otherFramePointerVariable = ancestorFunctionHandlers[childOfOtherIndex].getStaticLink()
+
+            return generateVariableAccess(otherFramePointerVariable)
+        }
+    }
+
     override fun generateVariableAccess(variable: Variable): CFGNode {
-        TODO("Not yet implemented")
+        val definedInDeclaration =
+            when (variable) {
+                is Variable.SourceVariable -> {
+                    analyzedFunction.variables.find { it.declaration == variable.definition }?.definedIn
+                }
+                is Variable.AuxVariable.StaticLinkVariable -> {
+                    if (getStaticLink() == variable) {
+                        function
+                    } else {
+                        ancestorFunctionHandlers.find { it.getStaticLink() == variable }?.getFunctionDeclaration()
+                    }
+                }
+                else -> throw GenerateVariableAccessException(
+                    "Cannot generate access to variables other than static links and source variables.",
+                )
+            }
+
+        if (definedInDeclaration == null) {
+            throw GenerateVariableAccessException("Function $function has no access to $variable.")
+        }
+
+        val definedInFunctionHandler =
+            ancestorFunctionHandlers.find { it.getFunctionDeclaration() == definedInDeclaration } ?: this
+
+        return when (val variableAllocation = definedInFunctionHandler.getVariableAllocation(variable)) {
+            is VariableAllocation.InRegister -> {
+                VariableUse(variableAllocation.register)
+            }
+            is VariableAllocation.OnStack -> {
+                MemoryAccess(
+                    Addition(
+                        generateAccessToFramePointer(function),
+                        Constant(variableAllocation.offset),
+                    ),
+                )
+            }
+        }
     }
 
     override fun getVariableAllocation(variable: Variable): VariableAllocation {
         TODO("Not yet implemented")
     }
 
-    override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable {
-        return staticLink
-    }
+    override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     private fun introduceStaticLinksParams() {
