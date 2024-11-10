@@ -10,6 +10,6 @@ sealed class Register {
     class VirtualRegister : Register()
 
     class FixedRegister(
-        id: String,
+        val hardwareRegister: X64Register,
     ) : Register()
 }
