@@ -53,9 +53,9 @@ class FunctionHandlerImpl(
             // or remove one of them via RSP assignment
             val oldRSP = Register.VirtualRegister()
             nodes.add(CFGNode.Assignment(oldRSP, CFGNode.VariableUse(Register.FixedRegister(X64Register.RSP))))
-            for (i in 0..2) {
-                nodes.add(CFGNode.Push(CFGNode.VariableUse(oldRSP)))
-            }
+
+            nodes.add(CFGNode.Push(CFGNode.VariableUse(oldRSP)))
+            nodes.add(CFGNode.Push(CFGNode.VariableUse(oldRSP)))
 
             // in an ideal world we would do something like "and rsp, ~15" or similar; for now this will do
             // at the very least split the computation of (RSP + stackArguments.size % 2 * 8) % 16
