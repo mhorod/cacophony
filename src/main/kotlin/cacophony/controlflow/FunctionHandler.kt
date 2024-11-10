@@ -122,9 +122,13 @@ class FunctionHandlerImpl(
                         ancestorFunctionHandlers.find { it.getStaticLink() == variable }?.getFunctionDeclaration()
                     }
                 }
-                else -> throw GenerateVariableAccessException(
-                    "Cannot generate access to variables other than static links and source variables.",
-                )
+                // For whoever finds this place in the future because of compilation error after
+                // adding a new subtype of AuxVariable:
+                //   If generateVariableAccess should support the new type, implement new logic here.
+                //   If not, uncomment this else statement and add an appropriate unit test.
+                // else -> throw GenerateVariableAccessException(
+                //   "Cannot generate access to variables other than static links and source variables.",
+                // )
             }
 
         if (definedInDeclaration == null) {
