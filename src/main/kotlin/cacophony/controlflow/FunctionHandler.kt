@@ -32,7 +32,7 @@ interface FunctionHandler {
 
     fun getVariableAllocation(variable: Variable): VariableAllocation
 
-    //Returns static link to parent
+    // Returns static link to parent
     fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable
 }
 
@@ -46,8 +46,8 @@ class FunctionHandlerImpl(
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionHandler {
-
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
+
     init {
         introduceStaticLinksParams()
     }
@@ -78,7 +78,7 @@ class FunctionHandlerImpl(
                 CFGNode.MemoryWrite(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     CFGNode.VariableUse(Register.FixedRegister("RBP")),
-                )
+                ),
             )
         } else {
             // It's called from nested function, therefore caller should have access to staticLink.
@@ -86,7 +86,7 @@ class FunctionHandlerImpl(
                 CFGNode.MemoryWrite(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     callerFunction.generateVariableAccess(staticLink),
-                )
+                ),
             )
         }
 
