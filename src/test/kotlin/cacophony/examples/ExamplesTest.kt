@@ -51,7 +51,7 @@ class ExamplesTest {
         val diagnostics = CacophonyDiagnostics(input)
         CacophonyPipeline(diagnostics, null, lexer, parser).process(input)
         diagnostics.getErrors().forEach {
-            println(it.message)
+            println(it)
         }
         assertThat(diagnostics.getErrors()).isEmpty()
     }

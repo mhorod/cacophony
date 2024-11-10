@@ -11,5 +11,5 @@
       }
     ]
   },
-  "exceptionMessage": "java.util.NoSuchElementException: List is empty."
+  "exceptionMessage": "java.lang.Exception: Failed"
 }

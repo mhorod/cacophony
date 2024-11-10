@@ -1,35 +1,5 @@
 {
   "__class__": "ExampleResult",
-  "AST": {
-    "__class__": "VariableDeclaration",
-    "value": {
-      "__class__": "VariableUse",
-      "identifier": "x",
-      "range": {
-        "__class__": "Pair",
-        "first": {
-          "__class__": "Location",
-          "value": 8
-        },
-        "second": {
-          "__class__": "Location",
-          "value": 8
-        }
-      }
-    },
-    "identifier": "f",
-    "range": {
-      "__class__": "Pair",
-      "first": {
-        "__class__": "Location",
-        "value": 0
-      },
-      "second": {
-        "__class__": "Location",
-        "value": 8
-      }
-    }
-  },
   "diagnostics": {
     "__class__": "TestDiagnostics",
     "errors": [
@@ -42,5 +12,5 @@
       }
     ]
   },
-  "exceptionMessage": ""
+  "exceptionMessage": "java.lang.Exception: Failed"
 }

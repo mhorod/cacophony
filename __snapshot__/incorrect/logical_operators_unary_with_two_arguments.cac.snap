@@ -1,20 +1,5 @@
 {
   "__class__": "ExampleResult",
-  "AST": {
-    "__class__": "BoolLiteral",
-    "value": true,
-    "range": {
-      "__class__": "Pair",
-      "first": {
-        "__class__": "Location",
-        "value": 28
-      },
-      "second": {
-        "__class__": "Location",
-        "value": 31
-      }
-    }
-  },
   "diagnostics": {
     "__class__": "TestDiagnostics",
     "errors": [
@@ -27,5 +12,5 @@
       }
     ]
   },
-  "exceptionMessage": ""
+  "exceptionMessage": "java.lang.Exception: Failed"
 }

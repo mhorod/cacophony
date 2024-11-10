@@ -1,50 +1,5 @@
 {
   "__class__": "ExampleResult",
-  "AST": {
-    "__class__": "Block",
-    "expressions": [
-      {
-        "__class__": "Empty",
-        "range": {
-          "__class__": "Pair",
-          "first": {
-            "__class__": "Location",
-            "value": 0
-          },
-          "second": {
-            "__class__": "Location",
-            "value": 0
-          }
-        }
-      },
-      {
-        "__class__": "VariableUse",
-        "identifier": "neither",
-        "range": {
-          "__class__": "Pair",
-          "first": {
-            "__class__": "Location",
-            "value": 2
-          },
-          "second": {
-            "__class__": "Location",
-            "value": 8
-          }
-        }
-      }
-    ],
-    "range": {
-      "__class__": "Pair",
-      "first": {
-        "__class__": "Location",
-        "value": 0
-      },
-      "second": {
-        "__class__": "Location",
-        "value": 8
-      }
-    }
-  },
   "diagnostics": {
     "__class__": "TestDiagnostics",
     "errors": [
@@ -57,5 +12,5 @@
       }
     ]
   },
-  "exceptionMessage": ""
+  "exceptionMessage": "java.lang.Exception: Failed"
 }

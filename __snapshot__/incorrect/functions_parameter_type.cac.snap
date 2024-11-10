@@ -21,5 +21,5 @@
       }
     ]
   },
-  "exceptionMessage": "java.lang.ClassCastException: class cacophony.grammars.ParseTree$Leaf cannot be cast to class cacophony.grammars.ParseTree$Branch (cacophony.grammars.ParseTree$Leaf and cacophony.grammars.ParseTree$Branch are in unnamed module of loader \u0027app\u0027)"
+  "exceptionMessage": "java.lang.Exception: Failed"
 }

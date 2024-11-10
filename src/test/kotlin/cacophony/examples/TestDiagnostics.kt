@@ -23,6 +23,8 @@ class TestDiagnostics : Diagnostics {
 
     fun errors(): List<ReportedError> = errors
 
+    override fun getErrors() = errors.map(ReportedError::message).map(DiagnosticMessage::getMessage)
+
     override fun report(
         message: DiagnosticMessage,
         range: Pair<Location, Location>,
