@@ -43,7 +43,7 @@ class FunctionHandlerImpl(
     private val function: FunctionDeclaration,
     private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
-    private val ancestorFunctionHandlers: List<FunctionHandler>
+    private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionHandler {
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
 
@@ -70,21 +70,21 @@ class FunctionHandlerImpl(
         result: Register?,
     ): CFGFragment {
         val nodes: MutableList<CFGNode> = mutableListOf()
-        if(ancestorFunctionHandlers.isNotEmpty()) {
+        if (ancestorFunctionHandlers.isNotEmpty()) {
             val parentFunction = ancestorFunctionHandlers[0]
             val parentLink = parentFunction.getStaticLink()
             nodes.add(
                 CFGNode.MemoryWrite(
                     CFGNode.MemoryAccess(caller.generateVariableAccess(parentLink)),
-                    CFGNode.MemoryAccess(this.generateVariableAccess(parentLink))
-                )
+                    CFGNode.MemoryAccess(this.generateVariableAccess(parentLink)),
+                ),
             )
         }
         nodes.add(
             CFGNode.MemoryWrite(
                 CFGNode.MemoryAccess(generateVariableAccess(staticLink)),
-                CFGNode.VariableUse(Register.FixedRegister("RBP"))
-            )
+                CFGNode.VariableUse(Register.FixedRegister("RBP")),
+            ),
         )
 
         nodes.addAll(generateCall(arguments, result))
