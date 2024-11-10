@@ -76,11 +76,6 @@ sealed interface CFGNode {
     ) : Unconditional,
         LValue
 
-    data class MemoryWrite(
-        val destination: MemoryAccess,
-        val value: CFGNode,
-    ) : Unconditional
-
     data class Constant(
         val value: Int,
     ) : Unconditional,

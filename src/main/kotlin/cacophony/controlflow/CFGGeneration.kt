@@ -13,6 +13,7 @@ import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.VariableUse
+import kotlin.math.exp
 
 fun generateCFG(
     resolvedVariables: ResolvedVariables,
@@ -48,10 +49,18 @@ class CFGGenerator(
 ) {
     private val cfg = mutableMapOf<CFGLabel, CFGVertex>()
 
-    enum class EvalMode {
-        VALUE,
-        CONDITION,
-        SIDE_EFFECT
+    private sealed interface SubCFG {
+        val access: CFGNode.Unconditional
+
+        data class Immediate(override val access: CFGNode.Unconditional) : SubCFG
+        data class Extracted(val entry: CFGLabel, val exit: CFGLabel, override val access: CFGNode.Unconditional) :
+            SubCFG
+    }
+
+    private sealed interface EvalMode {
+        data object Value : EvalMode
+        data object SideEffect : EvalMode
+        data class Conditional(val trueLabel: CFGLabel, val falseLabel: CFGLabel) : EvalMode
     }
 
     fun getCFGFragment(): CFGFragment {
@@ -59,10 +68,10 @@ class CFGGenerator(
     }
 
     fun run(expression: Definition.FunctionDeclaration) {
-        val writeReturnValue = CFGNode.Assignment(Register.Fixed.RAX, visit(expression.body, EvalMode.VALUE))
-
-        val returnLabel = addVertex(CFGVertex.Final(CFGNode.Return()))
-        addVertex(CFGVertex.Jump(writeReturnValue, returnLabel))
+//        val writeReturnValue = CFGNode.Assignment(Register.Fixed.RAX, visit(expression.body, EvalMode.VALUE))
+//        val returnLabel = addVertex(CFGVertex.Final(CFGNode.Return()))
+//        addVertex(CFGVertex.Jump(writeReturnValue, returnLabel))
+        TODO("sus")
     }
 
 
@@ -70,30 +79,34 @@ class CFGGenerator(
         TODO() // use analysedUseTypes to determine if variable uses clash
     }
 
-    private fun visit(expression: Expression, mode: EvalMode): CFGNode = when (expression) {
-        is Block -> visitBlock(expression, mode)
-        is Definition.FunctionArgument -> visitFunctionArgument(expression, mode)
-        is Definition.FunctionDeclaration -> visitFunctionDeclaration(expression, mode)
-        is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode)
-        is Empty -> visitEmpty(expression, mode)
-        is FunctionCall -> visitFunctionCall(expression, mode)
-        is Literal -> visitLiteral(expression, mode)
-        is OperatorBinary -> visitOperatorBinary(expression, mode)
-        is OperatorUnary -> visitOperatorUnary(expression, mode)
-        is Statement.BreakStatement -> visitBreakStatement(expression, mode)
-        is Statement.IfElseStatement -> visitIfElseStatement(expression, mode)
-        is Statement.ReturnStatement -> visitReturnStatement(expression, mode)
-        is Statement.WhileStatement -> visitWhileStatement(expression, mode)
-        is VariableUse -> visitVariableUse(expression, mode)
+    private fun visit(expression: Expression, mode: EvalMode, dependentLabel: CFGLabel): SubCFG = when (expression) {
+        is Block -> visitBlock(expression, mode, dependentLabel)
+        is Definition.FunctionArgument -> visitFunctionArgument(expression, mode, dependentLabel)
+        is Definition.FunctionDeclaration -> visitFunctionDeclaration(expression, mode, dependentLabel)
+        is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, dependentLabel)
+        is Empty -> visitEmpty(expression, mode, dependentLabel)
+        is FunctionCall -> visitFunctionCall(expression, mode, dependentLabel)
+        is Literal -> visitLiteral(expression, mode, dependentLabel)
+        is OperatorBinary -> visitOperatorBinary(expression, mode, dependentLabel)
+        is OperatorUnary -> visitOperatorUnary(expression, mode, dependentLabel)
+        is Statement.BreakStatement -> visitBreakStatement(expression, mode, dependentLabel)
+        is Statement.IfElseStatement -> visitIfElseStatement(expression, mode, dependentLabel)
+        is Statement.ReturnStatement -> visitReturnStatement(expression, mode, dependentLabel)
+        is Statement.WhileStatement -> visitWhileStatement(expression, mode, dependentLabel)
+        is VariableUse -> visitVariableUse(expression, mode, dependentLabel)
     }
 
-    private fun visitBlock(expression: Block, mode: EvalMode): CFGNode {
-        expression.expressions.dropLast(1).forEach { visit(it, EvalMode.SIDE_EFFECT) }
-        expression.expressions.lastOrNull()?.let { visit(it, mode) }
+    private fun visitBlock(expression: Block, mode: EvalMode, dependentLabel: CFGLabel): SubCFG {
+        expression.expressions.dropLast(1).forEach { visit(it, EvalMode.SideEffect, dependentLabel) }
+        expression.expressions.lastOrNull()?.let { visit(it, mode, dependentLabel) }
         TODO("sus")
     }
 
-    private fun visitFunctionArgument(expression: Definition.FunctionArgument, mode: EvalMode): CFGNode {
+    private fun visitFunctionArgument(
+        expression: Definition.FunctionArgument,
+        mode: EvalMode,
+        dependentLabel: CFGLabel
+    ): SubCFG {
         TODO("Not yet implemented")
     }
 
@@ -103,58 +116,119 @@ class CFGGenerator(
         return label
     }
 
-    private fun noOpOrUnit(mode: EvalMode): CFGNode = when (mode) {
-        EvalMode.VALUE -> CFGNode.UNIT
-        else -> CFGNode.NoOp()
-    }
+    private fun noOpOrUnit(mode: EvalMode): CFGNode.Unconditional =
+        if (mode is EvalMode.Value) CFGNode.UNIT else CFGNode.NoOp
 
-    private fun visitFunctionDeclaration(expression: Definition.FunctionDeclaration, mode: EvalMode): CFGNode {
-        return noOpOrUnit(mode)
-    }
+    private fun visitFunctionDeclaration(
+        expression: Definition.FunctionDeclaration,
+        mode: EvalMode,
+        dependentLabel: CFGLabel
+    ): SubCFG =
+        SubCFG.Immediate(noOpOrUnit(mode))
 
-    private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode): CFGNode {
-        val valueCFG = visit(expression.value, EvalMode.VALUE)
+    private fun visitVariableDeclaration(
+        expression: Definition.VariableDeclaration,
+        mode: EvalMode,
+        dependentLabel: CFGLabel
+    ): SubCFG {
+        val valueCFG = visit(expression.value, EvalMode.Value, dependentLabel)
+        if (valueCFG is SubCFG.Extracted)
+            cfg[valueCFG.exit] = CFGVertex.Jump(CFGNode.NoOp, dependentLabel)
+
         val variableAccess = functionHandler.generateVariableAccess(SourceVariable(expression))
-        val assignmentNode = CFGNode.MemoryWrite(CFGNode.MemoryAccess(variableAccess), valueCFG)
-        return CFGNode.Sequence(listOf(assignmentNode, noOpOrUnit(mode)))
+        val variableWrite = CFGNode.Assignment(variableAccess, valueCFG.access)
+        return SubCFG.Immediate(CFGNode.Sequence(listOf(variableWrite, noOpOrUnit(mode))))
     }
 
-    private fun visitEmpty(expr: Empty, mode: EvalMode): CFGNode = noOpOrUnit(mode)
+    private fun visitEmpty(expr: Empty, mode: EvalMode, dependentLabel: CFGLabel): SubCFG =
+        SubCFG.Immediate(noOpOrUnit(mode))
 
-    private fun visitFunctionCall(expression: FunctionCall, mode: EvalMode): CFGNode {
+    private fun visitFunctionCall(expression: FunctionCall, mode: EvalMode, dependentLabel: CFGLabel): SubCFG {
         TODO("Not yet implemented")
     }
 
-    private fun visitLiteral(literal: Literal, mode: EvalMode): CFGNode = if (mode == EvalMode.VALUE) when (literal) {
-        is Literal.BoolLiteral -> if (literal.value) CFGNode.TRUE else CFGNode.FALSE
-        is Literal.IntLiteral -> CFGNode.Constant(literal.value)
-    } else CFGNode.NoOp()
+    private fun visitLiteral(literal: Literal, mode: EvalMode, dependentLabel: CFGLabel): SubCFG = SubCFG.Immediate(
+        if (mode == EvalMode.Value) when (literal) {
+            is Literal.BoolLiteral -> if (literal.value) CFGNode.TRUE else CFGNode.FALSE
+            is Literal.IntLiteral -> CFGNode.Constant(literal.value)
+        } else CFGNode.NoOp
+    )
 
-    private fun visitOperatorBinary(expression: OperatorBinary, mode: EvalMode): CFGNode {
+    private fun visitOperatorBinary(expression: OperatorBinary, mode: EvalMode, dependentLabel: CFGLabel): SubCFG {
         TODO("Not yet implemented")
     }
 
-    private fun visitOperatorUnary(expression: OperatorUnary, mode: EvalMode): CFGNode {
+    private fun visitOperatorUnary(expression: OperatorUnary, mode: EvalMode, dependentLabel: CFGLabel): SubCFG {
         TODO("Not yet implemented")
     }
 
-    private fun visitBreakStatement(expression: Statement.BreakStatement, mode: EvalMode): CFGNode {
+    private fun visitBreakStatement(
+        expression: Statement.BreakStatement,
+        mode: EvalMode,
+        dependentLabel: CFGLabel
+    ): SubCFG {
         TODO("Not yet implemented")
     }
 
-    private fun visitIfElseStatement(expression: Statement.IfElseStatement, mode: EvalMode): CFGNode {
+    private fun visitIfElseStatement(
+        expression: Statement.IfElseStatement,
+        mode: EvalMode,
+        dependentLabel: CFGLabel
+    ): SubCFG {
+        if (expression.testExpression is Literal.BoolLiteral)
+            return shortenTrivialIfStatement(expression, mode, dependentLabel)
+
+        val entryLabel = CFGLabel()
+        val trueLabel = CFGLabel()
+        val falseLabel = CFGLabel()
+        val exitLabel = CFGLabel()
+
+        val condition = visit(expression.testExpression, EvalMode.Conditional(trueLabel, falseLabel), entryLabel)
+
+        val trueSubCFG = visit(expression.doExpression, mode, trueLabel)
+        val falseSubCFG =
+            expression.elseExpression?.let { visit(it, mode, falseLabel) } ?: SubCFG.Immediate(CFGNode.NoOp)
+
+        val trueVertex = CFGVertex.Jump(trueSubCFG.access, exitLabel)
+        val falseVertex = CFGVertex.Jump(falseSubCFG.access, exitLabel)
+        cfg[trueLabel] = trueVertex
+        cfg[falseLabel] = falseVertex
+
+        return SubCFG.Extracted(entryLabel, exitLabel, condition.access)
+    }
+
+    private fun shortenTrivialIfStatement(expression: Statement.IfElseStatement, mode: EvalMode, dependentLabel: CFGLabel): SubCFG {
+        if (expression.testExpression !is Literal.BoolLiteral)
+            throw IllegalStateException("Expected testExpression to be BoolLiteral")
+
+        return if (expression.testExpression.value)
+            visit(expression.doExpression, mode, dependentLabel)
+        else expression.elseExpression?.let {
+            visit(
+                it,
+                mode,
+                dependentLabel
+            )
+        } ?: SubCFG.Immediate(CFGNode.NoOp)
+    }
+
+    private fun visitReturnStatement(
+        expression: Statement.ReturnStatement,
+        mode: EvalMode,
+        dependentLabel: CFGLabel
+    ): SubCFG {
         TODO("Not yet implemented")
     }
 
-    private fun visitReturnStatement(expression: Statement.ReturnStatement, mode: EvalMode): CFGNode {
+    private fun visitWhileStatement(
+        expression: Statement.WhileStatement,
+        mode: EvalMode,
+        dependentLabel: CFGLabel
+    ): SubCFG {
         TODO("Not yet implemented")
     }
 
-    private fun visitWhileStatement(expression: Statement.WhileStatement, mode: EvalMode): CFGNode {
-        TODO("Not yet implemented")
-    }
-
-    private fun visitVariableUse(expression: VariableUse, mode: EvalMode): CFGNode {
+    private fun visitVariableUse(expression: VariableUse, mode: EvalMode, dependentLabel: CFGLabel): SubCFG {
         TODO("Not yet implemented")
     }
 }
