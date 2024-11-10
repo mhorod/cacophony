@@ -64,10 +64,7 @@ private class FactContext<StateT, SymbolT, ResultT>(
         }
 
     private val enteringTransitions:
-        Map<
-            DFAStateReference<StateT, SymbolT, ResultT>,
-            Collection<Pair<DFAStateReference<StateT, SymbolT, ResultT>, SymbolT>>,
-        > =
+        Map<DFAStateReference<StateT, SymbolT, ResultT>, Collection<Pair<DFAStateReference<StateT, SymbolT, ResultT>, SymbolT>>> =
         automata.values
             .flatMap { automaton ->
                 automaton
