@@ -1,5 +1,6 @@
 package cacophony.examples
 
+import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyParser
 import cacophony.pipeline.CacophonyPipeline
@@ -47,7 +48,7 @@ class ExamplesTest {
     @MethodSource("correctExamples")
     fun `correct examples compile without errors`(path: Path) {
         val input = FileInput(path.toString())
-        val diagnostics = SimpleDiagnostics(input)
+        val diagnostics = CacophonyDiagnostics(input)
         CacophonyPipeline(diagnostics, null, lexer, parser).process(input)
         diagnostics.getErrors().forEach {
             println(it.message)

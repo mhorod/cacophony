@@ -12,4 +12,8 @@ interface Diagnostics {
         message: DiagnosticMessage,
         range: Pair<Location, Location>,
     )
+
+    fun fatal(): Throwable
+
+    fun getErrors(): List<String>
 }

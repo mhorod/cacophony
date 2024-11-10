@@ -1,9 +1,10 @@
-package cacophony.utils
+package cacophony.diagnostics
 
-import cacophony.diagnostics.DiagnosticMessage
-import cacophony.diagnostics.Diagnostics
+import cacophony.utils.CompileException
+import cacophony.utils.Input
+import cacophony.utils.Location
 
-class SimpleDiagnostics(
+class CacophonyDiagnostics(
     private val input: Input,
 ) : Diagnostics {
     inner class ReportedError(
@@ -22,7 +23,9 @@ class SimpleDiagnostics(
         errors.add(ReportedError(message, range))
     }
 
-    fun getErrors(): List<ReportedError> = errors
+    override fun fatal() = CompileException("Compilation failed")
+
+    override fun getErrors(): List<String> = errors.map(ReportedError::toString)
 
     fun extractErrors(): List<String> = errors.map { it.toString() }
 }

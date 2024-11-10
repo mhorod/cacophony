@@ -36,4 +36,6 @@ class TestDiagnostics : Diagnostics {
     ) {
         errors.add(LexerError(message, location))
     }
+
+    override fun fatal() = Exception("Failed")
 }
