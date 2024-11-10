@@ -7,11 +7,11 @@ import cacophony.utils.CompileException
 
 sealed class VariableAllocation {
     class InRegister(
-        register: Register,
+        val register: Register,
     ) : VariableAllocation()
 
     class OnStack(
-        offset: Int,
+        val offset: Int,
     ) : VariableAllocation()
 }
 
@@ -39,7 +39,7 @@ class FunctionHandlerImpl(
     private val analyzedFunction: AnalyzedFunction,
 ) : FunctionHandler {
     private val definitionToVariable = analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
-    private val variableAllocation: Map<Variable, VariableAllocation> =
+    private val variableAllocation: MutableMap<Variable, VariableAllocation> =
         run {
             val res = mutableMapOf<Variable, VariableAllocation>()
             val usedVars = analyzedFunction.variablesUsedInNestedFunctions
@@ -58,6 +58,13 @@ class FunctionHandlerImpl(
             }
             res
         }
+
+    private fun registerVariableAllocation(
+        variable: Variable,
+        allocation: VariableAllocation,
+    ) {
+        variableAllocation[variable] = allocation
+    }
 
     override fun getFunctionDeclaration(): FunctionDeclaration = function
 
