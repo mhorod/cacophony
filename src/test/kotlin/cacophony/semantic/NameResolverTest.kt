@@ -29,7 +29,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class NameResolverTest {
     val mockRange = Location(0) to Location(0)
@@ -1431,7 +1430,9 @@ class NameResolverTest {
                 )
 
             // when & then
-            assertThrows<NameResolutionException> { resolveNames(ast, diagnostics) }
+            resolveNames(ast, diagnostics)
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.IllegalFunctionalArgument("x"), functionalArgumentRange) }
+            confirmVerified(diagnostics)
         }
     }
 }

@@ -1,6 +1,7 @@
 package cacophony.semantic
 
 import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.ORDiagnostics
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.FunctionCall
@@ -8,16 +9,11 @@ import cacophony.semantic.syntaxtree.Literal
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.VariableUse
 import cacophony.utils.Location
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.MockK
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class OverloadResolverTest {
     @MockK
@@ -95,7 +91,8 @@ class OverloadResolverTest {
         every { overloadSet[2] } returns def2
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
-        assertThrows<OverloadResolutionError> { resolveOverloads(ast, diagnostics, nr) }
+        resolveOverloads(ast, diagnostics, nr)
+        verify(exactly = 1) { diagnostics.report(ORDiagnostics.IdentifierNotFound("f"), any<Pair<Location, Location>>()) }
     }
 
     @Test
@@ -150,7 +147,8 @@ class OverloadResolverTest {
         every { overloadSet[1] } returns def
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
-        assertThrows<OverloadResolutionError> { resolveOverloads(ast, diagnostics, nr) }
+        resolveOverloads(ast, diagnostics, nr)
+        verify(exactly = 1) { diagnostics.report(ORDiagnostics.FunctionIsNotVariableUse, any<Pair<Location, Location>>()) }
     }
 
     @Test
@@ -166,7 +164,8 @@ class OverloadResolverTest {
         val def = mockk<Definition.VariableDeclaration>()
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Variable(def))
 
-        assertThrows<OverloadResolutionError> { resolveOverloads(ast, diagnostics, nr) }
+        resolveOverloads(ast, diagnostics, nr)
+        verify(exactly = 1) { diagnostics.report(ORDiagnostics.UsingVariableAsFunction("f"), any<Pair<Location, Location>>()) }
     }
 
     @Test
@@ -182,7 +181,8 @@ class OverloadResolverTest {
         val def = mockk<Definition.FunctionArgument>()
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Argument(def))
 
-        assertThrows<OverloadResolutionError> { resolveOverloads(ast, diagnostics, nr) }
+        resolveOverloads(ast, diagnostics, nr)
+        verify(exactly = 1) { diagnostics.report(ORDiagnostics.UsingArgumentAsFunction("f"), any<Pair<Location, Location>>()) }
     }
 
     @Test

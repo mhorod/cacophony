@@ -6,7 +6,6 @@ import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyGrammarSymbol.*
 import cacophony.semantic.syntaxtree.*
-import cacophony.utils.CompileException
 import cacophony.utils.Location
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
@@ -138,7 +137,7 @@ private fun generateASTInternal(
                         context.toInt()
                     } catch (e: NumberFormatException) {
                         diagnostics.report(ASTDiagnostics.ValueOutOfRange(context), parseTree.range)
-                        throw CompileException("Value $context is out of range")
+                        throw diagnostics.fatal()
                     },
                 )
             BOOL_LITERAL -> Literal.BoolLiteral(parseTree.range, context.toBoolean())

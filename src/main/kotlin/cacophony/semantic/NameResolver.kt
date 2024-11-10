@@ -175,9 +175,7 @@ fun resolveNames(
             }
             is FunctionArgument -> {
                 if (node.type is Type.Functional) {
-                    throw NameResolutionException(
-                        "Illegal functional argument: ${node.identifier} at position ${node.range}",
-                    )
+                    diagnostics.report(NRDiagnostics.IllegalFunctionalArgument(node.identifier), node.range)
                 }
                 symbolsTable.define(node.identifier, node)
             }
