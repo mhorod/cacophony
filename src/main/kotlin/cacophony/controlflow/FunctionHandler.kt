@@ -103,7 +103,9 @@ class FunctionHandlerImpl(
                 ancestorFunctionHandlers
                     .indexOfFirst { it.getFunctionDeclaration() == other } - 1
 
-            val otherFramePointerVariable = ancestorFunctionHandlers[childOfOtherIndex].getStaticLink()
+            val otherFramePointerVariable =
+                (ancestorFunctionHandlers.getOrNull(childOfOtherIndex) ?: this)
+                    .getStaticLink()
 
             return generateVariableAccess(otherFramePointerVariable)
         }
@@ -145,7 +147,7 @@ class FunctionHandlerImpl(
             is VariableAllocation.OnStack -> {
                 MemoryAccess(
                     Addition(
-                        generateAccessToFramePointer(function),
+                        generateAccessToFramePointer(definedInDeclaration),
                         Constant(variableAllocation.offset),
                     ),
                 )
