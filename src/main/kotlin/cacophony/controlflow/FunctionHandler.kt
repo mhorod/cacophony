@@ -23,13 +23,6 @@ interface FunctionHandler {
     ): CFGFragment
 
     fun generateVariableAccess(variable: Variable): CFGNode
-
-    // Use this whenever you create a new Variable (Aux or Source) or change
-    // allocation of an existing one, so that the generateVariableAccess works properly
-    fun registerVariable(
-        variable: Variable,
-        allocation: VariableAllocation,
-    )
 }
 
 class GenerateVariableAccessException(
@@ -40,7 +33,21 @@ class FunctionHandlerImpl(
     private val function: FunctionDeclaration,
     private val analyzedFunction: AnalyzedFunction,
 ) : FunctionHandler {
-    private val variableAllocation: MutableMap<Variable, VariableAllocation> = mutableMapOf()
+    private val variableAllocation: Map<Variable, VariableAllocation> =
+        run {
+            val res = mutableMapOf<Variable, VariableAllocation>()
+            val usedVars = analyzedFunction.variablesUsedInNestedFunctions
+            val regVar = analyzedFunction.variables.map { it.declaration }.toSet().minus(usedVars)
+            regVar.forEach { varDef ->
+                res[Variable.SourceVariable(varDef)] = VariableAllocation.InRegister(Register.VirtualRegister())
+            }
+            var offset = 0
+            usedVars.forEach { varDef ->
+                res[Variable.SourceVariable(varDef)] = VariableAllocation.OnStack(offset)
+                offset += 8
+            }
+            res
+        }
 
     override fun getFunctionDeclaration(): FunctionDeclaration = function
 
@@ -53,14 +60,6 @@ class FunctionHandlerImpl(
 
     override fun generateVariableAccess(variable: Variable): CFGNode {
         TODO("Not yet implemented")
-    }
-
-    // Use this function, whenever you create new AuxVariable
-    override fun registerVariable(
-        variable: Variable,
-        allocation: VariableAllocation,
-    ) {
-        variableAllocation[variable] = allocation
     }
 
     private fun getVariableAllocation(variable: Variable): VariableAllocation =
