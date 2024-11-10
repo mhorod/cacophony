@@ -20,8 +20,8 @@ interface FunctionHandler {
     fun generateCall(
         arguments: List<CFGNode>,
         result: Register?,
-        respectStackAlignment: Boolean = false,
-    ): CFGFragment
+        respectStackAlignment: Boolean = true,
+    ): List<CFGNode>
 
     fun generateVariableAccess(variable: Variable): CFGNode
 
@@ -42,7 +42,11 @@ class FunctionHandlerImpl(
         arguments: List<CFGNode>,
         result: Register?,
         respectStackAlignment: Boolean,
-    ): CFGFragment {
+    ): List<CFGNode> {
+        if (function.arguments.size != arguments.size) {
+            throw IllegalArgumentException("Unexpected number of arguments")
+        }
+
         val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
         val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
 
@@ -115,8 +119,7 @@ class FunctionHandlerImpl(
             nodes.add(CFGNode.Assignment(result, CFGNode.VariableUse(Register.FixedRegister(X64Register.RAX))))
         }
 
-        // should this be a sequence?
-        return mapOf(CFGLabel() to CFGVertex.Final(CFGNode.Sequence(nodes)))
+        return nodes
     }
 
     override fun generateVariableAccess(variable: Variable): CFGNode {
