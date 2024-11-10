@@ -70,6 +70,11 @@ sealed interface CFGNode {
     ) : Unconditional,
         LValue
 
+    class MemoryWrite(
+        val destination: MemoryAccess,
+        val value: CFGNode
+    ): Unconditional
+
     class Constant(
         val value: Int,
     ) : Unconditional,

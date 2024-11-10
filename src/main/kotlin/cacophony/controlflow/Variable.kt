@@ -3,7 +3,9 @@ package cacophony.controlflow
 sealed class Variable {
     class SourceVariable : Variable()
 
-    class AuxVariable : Variable()
+    sealed class AuxVariable : Variable() {
+        class StaticLinkVariable() : AuxVariable()
+    }
 }
 
 sealed class Register {
