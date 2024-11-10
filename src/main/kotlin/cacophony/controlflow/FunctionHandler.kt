@@ -23,7 +23,7 @@ interface FunctionHandler {
     ): List<CFGNode>
 
     fun generateCallFrom(
-        function: FunctionHandler,
+        callerFunction: FunctionHandler,
         arguments: List<CFGNode>,
         result: Register?,
     ): CFGFragment
@@ -32,6 +32,7 @@ interface FunctionHandler {
 
     fun getVariableAllocation(variable: Variable): VariableAllocation
 
+    //Returns static link to parent
     fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable
 }
 
@@ -45,7 +46,11 @@ class FunctionHandlerImpl(
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionHandler {
+
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
+    init {
+        introduceStaticLinksParams()
+    }
 
     override fun getFunctionDeclaration(): FunctionDeclaration = function
 
@@ -57,35 +62,33 @@ class FunctionHandlerImpl(
     }
 
     // Wrapper for generateCall that additionally fills staticLink to parent function.
-    // Generally when we call another function we have to pass the staticLink to it,
-    // we have to find parent of called function and use variableAccess to its staticLink variable.
-    // It should be possible both from the parent itself and from nested functions,
-    // therefore there is option that both will have this staticLink,
-    // or it can be ified in such a way that calling nested functions uses RBP directly.
-    // I've decided to keep both links (to itself and to parent) in auxVariables.
-    // If it causes problems it can be modified to store only staticLink to parent.
+    // Since staticLink is not property of node itself, but rather of its children,
+    // if caller is immediate parent, we have to fetch RBP instead.
     override fun generateCallFrom(
-        caller: FunctionHandler,
+        callerFunction: FunctionHandler,
         arguments: List<CFGNode>,
         result: Register?,
     ): CFGFragment {
         val nodes: MutableList<CFGNode> = mutableListOf()
-        if (ancestorFunctionHandlers.isNotEmpty()) {
-            val parentFunction = ancestorFunctionHandlers[0]
-            val parentLink = parentFunction.getStaticLink()
+        val staticLinkAccess: CFGNode = generateVariableAccess(staticLink)
+        if (analyzedFunction.parentLink?.parent === getFunctionDeclaration()) {
+            // Function is called from parent which doesn't have access to variable with its static pointer,
+            // we need to get it from RBP.
             nodes.add(
                 CFGNode.MemoryWrite(
-                    CFGNode.MemoryAccess(caller.generateVariableAccess(parentLink)),
-                    CFGNode.MemoryAccess(this.generateVariableAccess(parentLink)),
-                ),
+                    CFGNode.MemoryAccess(staticLinkAccess),
+                    CFGNode.VariableUse(Register.FixedRegister("RBP")),
+                )
+            )
+        } else {
+            // It's called from nested function, therefore caller should have access to staticLink.
+            nodes.add(
+                CFGNode.MemoryWrite(
+                    CFGNode.MemoryAccess(staticLinkAccess),
+                    callerFunction.generateVariableAccess(staticLink),
+                )
             )
         }
-        nodes.add(
-            CFGNode.MemoryWrite(
-                CFGNode.MemoryAccess(generateVariableAccess(staticLink)),
-                CFGNode.VariableUse(Register.FixedRegister("RBP")),
-            ),
-        )
 
         nodes.addAll(generateCall(arguments, result))
         return mapOf(CFGLabel() to CFGVertex.Final(CFGNode.Sequence(nodes)))
@@ -104,10 +107,14 @@ class FunctionHandlerImpl(
     }
 
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
+    // Static link is created even if parent doesn't exist.
     private fun introduceStaticLinksParams() {
+        // I truly don't know who is responsible for layout of the stack
+        // TODO: uncomment (and fix) after #127 is merged
+//            registerVariable(
+//                staticLink,
+//                VariableAllocation.OnStack(/*what should be there?*/),
+//            )
         analyzedFunction.auxVariables.add(staticLink)
-        if (ancestorFunctionHandlers.isNotEmpty()) {
-            analyzedFunction.auxVariables.add(ancestorFunctionHandlers[0].getStaticLink())
-        }
     }
 }
