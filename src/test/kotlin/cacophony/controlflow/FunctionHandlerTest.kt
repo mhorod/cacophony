@@ -17,22 +17,23 @@ import kotlin.math.max
 class FunctionHandlerTest {
     @Nested
     inner class GenerateCall {
-        private fun mockFunDeclarationAndFunHandler(argumentCount: Int): FunctionHandlerImpl = run {
-            val analyzedFunction = mockk<AnalyzedFunction>()
-            every { analyzedFunction.variables } returns emptySet()
-            every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
-            FunctionHandlerImpl(
-                Definition.FunctionDeclaration(
-                    mockk(),
-                    "fun def",
-                    mockk(),
-                    (1..argumentCount).map { mockk() },
-                    mockk(),
-                    mockk(),
-                ),
-                analyzedFunction,
-            )
-        }
+        private fun mockFunDeclarationAndFunHandler(argumentCount: Int): FunctionHandlerImpl =
+            run {
+                val analyzedFunction = mockk<AnalyzedFunction>()
+                every { analyzedFunction.variables } returns emptySet()
+                every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+                FunctionHandlerImpl(
+                    Definition.FunctionDeclaration(
+                        mockk(),
+                        "fun def",
+                        mockk(),
+                        (1..argumentCount).map { mockk() },
+                        mockk(),
+                        mockk(),
+                    ),
+                    analyzedFunction,
+                )
+            }
 
         private fun getCallNodes(
             argumentCount: Int,
