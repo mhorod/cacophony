@@ -36,7 +36,7 @@ sealed interface CFGNode {
 
     sealed interface Leaf : CFGNode
 
-    sealed interface LValue : CFGNode
+    sealed interface LValue : Unconditional
 
     data object Return :
         Unconditional,
@@ -67,14 +67,12 @@ sealed interface CFGNode {
 
     data class VariableUse(
         val regvar: Register,
-    ) : Unconditional,
-        Leaf,
-        LValue
+    ) : LValue,
+        Leaf
 
     data class MemoryAccess(
         val destination: CFGNode,
-    ) : Unconditional,
-        LValue
+    ) : LValue
 
     data class Constant(
         val value: Int,
