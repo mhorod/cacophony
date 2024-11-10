@@ -1,6 +1,7 @@
 package cacophony.controlflow
 
 import cacophony.semantic.AnalyzedFunction
+import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.utils.CompileException
 
@@ -23,6 +24,10 @@ interface FunctionHandler {
     ): CFGFragment
 
     fun generateVariableAccess(variable: Variable): CFGNode
+
+    fun getVariableAllocation(variable: Variable): VariableAllocation
+
+    fun getVariableFromDefinition(varDef: Definition): Variable
 }
 
 class GenerateVariableAccessException(
@@ -33,17 +38,22 @@ class FunctionHandlerImpl(
     private val function: FunctionDeclaration,
     private val analyzedFunction: AnalyzedFunction,
 ) : FunctionHandler {
+    private val definitionToVariable = analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
     private val variableAllocation: Map<Variable, VariableAllocation> =
         run {
             val res = mutableMapOf<Variable, VariableAllocation>()
             val usedVars = analyzedFunction.variablesUsedInNestedFunctions
-            val regVar = analyzedFunction.variables.map { it.declaration }.toSet().minus(usedVars)
+            val regVar =
+                analyzedFunction.variables
+                    .map { it.declaration }
+                    .toSet()
+                    .minus(usedVars)
             regVar.forEach { varDef ->
-                res[Variable.SourceVariable(varDef)] = VariableAllocation.InRegister(Register.VirtualRegister())
+                res[definitionToVariable[varDef]!!] = VariableAllocation.InRegister(Register.VirtualRegister())
             }
             var offset = 0
             usedVars.forEach { varDef ->
-                res[Variable.SourceVariable(varDef)] = VariableAllocation.OnStack(offset)
+                res[definitionToVariable[varDef]!!] = VariableAllocation.OnStack(offset)
                 offset += 8
             }
             res
@@ -62,9 +72,14 @@ class FunctionHandlerImpl(
         TODO("Not yet implemented")
     }
 
-    private fun getVariableAllocation(variable: Variable): VariableAllocation =
+    override fun getVariableAllocation(variable: Variable): VariableAllocation =
         variableAllocation.getOrElse(variable) {
-            throw IllegalArgumentException("Variable $variable have not been registered inside $this FunctionHandler")
+            throw IllegalArgumentException("Variable $variable have not been allocated inside $this FunctionHandler")
+        }
+
+    override fun getVariableFromDefinition(varDef: Definition): Variable =
+        definitionToVariable.getOrElse(varDef) {
+            throw IllegalArgumentException("Variable $varDef have not been defined inside function $function")
         }
 
     private fun introduceStaticLinksParams(): List<CFGNode> {
