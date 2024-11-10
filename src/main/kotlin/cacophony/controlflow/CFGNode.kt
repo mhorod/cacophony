@@ -25,7 +25,7 @@ sealed class CFGVertex(
     }
 
     class Final(
-        tree: CFGNode
+        tree: CFGNode,
     ) : CFGVertex(tree) {
         override fun dependents() = emptyList<CFGLabel>()
     }
@@ -110,6 +110,8 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
+    class Minus(val value: CFGNode): ArithmeticOperator
+
     sealed interface LogicalOperator : CFGNode
 
     data class LogicalNot(
@@ -145,6 +147,8 @@ sealed interface CFGNode {
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
+
+    class Negation(val value: CFGNode): ArithmeticOperator
 
     companion object {
         val UNIT = Constant(0)
