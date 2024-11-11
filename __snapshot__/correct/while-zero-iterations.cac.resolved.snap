@@ -1,0 +1,14 @@
+{
+  "__class__": "SingletonMap",
+  "(Location(value\u003d57), Location(value\u003d71))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 0
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 37
+    }
+  }
+}

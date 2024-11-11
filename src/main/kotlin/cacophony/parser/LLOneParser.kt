@@ -155,6 +155,11 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                 throw ParsingException("State $state in DFA for $symbol is not accepting")
             }
 
+            if (children.isEmpty()) {
+                diagnostics.report(ParserDiagnostics.ChildrenEmpty(symbol.name), terminal.range)
+                throw diagnostics.fatal()
+            }
+
             val range = Pair(children.first().range.first, children.last().range.second)
             return ParseTree.Branch(range, dfa.result(state)!!, children)
         }

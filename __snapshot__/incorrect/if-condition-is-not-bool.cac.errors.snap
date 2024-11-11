@@ -1,0 +1,21 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "TypeMismatch",
+      "expected": "Bool",
+      "found": "Unit"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 3
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 4
+      }
+    }
+  }
+]

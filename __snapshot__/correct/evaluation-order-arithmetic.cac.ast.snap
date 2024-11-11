@@ -1,0 +1,224 @@
+{
+  "__class__": "Block",
+  "expressions": [
+    {
+      "__class__": "VariableDeclaration",
+      "type": {
+        "__class__": "Basic",
+        "identifier": "Int",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 7
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 9
+          }
+        }
+      },
+      "value": {
+        "__class__": "IntLiteral",
+        "value": 3,
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 13
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 13
+          }
+        }
+      },
+      "identifier": "x",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 0
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 13
+        }
+      }
+    },
+    {
+      "__class__": "SubtractionAssignment",
+      "lhs": {
+        "__class__": "VariableUse",
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 16
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 16
+          }
+        }
+      },
+      "rhs": {
+        "__class__": "Subtraction",
+        "lhs": {
+          "__class__": "Block",
+          "expressions": [
+            {
+              "__class__": "AdditionAssignment",
+              "lhs": {
+                "__class__": "VariableUse",
+                "identifier": "x",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 22
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 22
+                  }
+                }
+              },
+              "rhs": {
+                "__class__": "VariableUse",
+                "identifier": "x",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 27
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 27
+                  }
+                }
+              },
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 22
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 27
+                }
+              }
+            }
+          ],
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 21
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 28
+            }
+          }
+        },
+        "rhs": {
+          "__class__": "Block",
+          "expressions": [
+            {
+              "__class__": "MultiplicationAssignment",
+              "lhs": {
+                "__class__": "VariableUse",
+                "identifier": "x",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 33
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 33
+                  }
+                }
+              },
+              "rhs": {
+                "__class__": "VariableUse",
+                "identifier": "x",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 38
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 38
+                  }
+                }
+              },
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 33
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 38
+                }
+              }
+            }
+          ],
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 32
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 39
+            }
+          }
+        },
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 21
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 39
+          }
+        }
+      },
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 16
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 39
+        }
+      }
+    }
+  ],
+  "range": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 0
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 39
+    }
+  }
+}

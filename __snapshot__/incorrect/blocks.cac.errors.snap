@@ -1,0 +1,20 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnableToContinueParsing",
+      "symbolName": "BOOL_LITERAL"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 11
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 15
+      }
+    }
+  }
+]

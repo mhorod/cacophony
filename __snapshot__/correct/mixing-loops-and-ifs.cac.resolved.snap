@@ -1,0 +1,234 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d128), Location(value\u003d128))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 105
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 118
+    }
+  },
+  "(Location(value\u003d133), Location(value\u003d133))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 70
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 84
+    }
+  },
+  "(Location(value\u003d196), Location(value\u003d196))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 172
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 185
+    }
+  },
+  "(Location(value\u003d201), Location(value\u003d201))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 70
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 84
+    }
+  },
+  "(Location(value\u003d218), Location(value\u003d218))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 172
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 185
+    }
+  },
+  "(Location(value\u003d222), Location(value\u003d222))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 105
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 118
+    }
+  },
+  "(Location(value\u003d228), Location(value\u003d228))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 70
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 84
+    }
+  },
+  "(Location(value\u003d239), Location(value\u003d241))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 87
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 102
+    }
+  },
+  "(Location(value\u003d245), Location(value\u003d247))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 87
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 102
+    }
+  },
+  "(Location(value\u003d267), Location(value\u003d267))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 172
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 185
+    }
+  },
+  "(Location(value\u003d271), Location(value\u003d271))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 105
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 118
+    }
+  },
+  "(Location(value\u003d276), Location(value\u003d276))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 70
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 84
+    }
+  },
+  "(Location(value\u003d292), Location(value\u003d292))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 105
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 118
+    }
+  },
+  "(Location(value\u003d296), Location(value\u003d296))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 105
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 118
+    }
+  },
+  "(Location(value\u003d417), Location(value\u003d417))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 397
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 410
+    }
+  },
+  "(Location(value\u003d438), Location(value\u003d438))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 397
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 410
+    }
+  },
+  "(Location(value\u003d452), Location(value\u003d452))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 397
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 410
+    }
+  },
+  "(Location(value\u003d457), Location(value\u003d457))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 397
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 410
+    }
+  },
+  "(Location(value\u003d479), Location(value\u003d479))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 397
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 410
+    }
+  },
+  "(Location(value\u003d493), Location(value\u003d493))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 397
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 410
+    }
+  },
+  "(Location(value\u003d498), Location(value\u003d498))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 397
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 410
+    }
+  }
+}

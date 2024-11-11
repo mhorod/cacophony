@@ -1,0 +1,56 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnidentifiedIdentifier",
+      "identifier": "x"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 184
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 184
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnidentifiedIdentifier",
+      "identifier": "x"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 212
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 212
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnidentifiedIdentifier",
+      "identifier": "x"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 273
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 273
+      }
+    }
+  }
+]

@@ -1,0 +1,73 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d39), Location(value\u003d43))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d0), Location(value\u003d43))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d74), Location(value\u003d74))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d74), Location(value\u003d75))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d46), Location(value\u003d75))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d127), Location(value\u003d131))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d144), Location(value\u003d150))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "UnitType",
+      "name": "Unit"
+    },
+    "name": "[] -\u003e Unit"
+  },
+  "(Location(value\u003d144), Location(value\u003d152))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d97), Location(value\u003d114))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "BooleanType",
+      "name": "Bool"
+    },
+    "name": "[] -\u003e Bool"
+  },
+  "(Location(value\u003d97), Location(value\u003d116))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d94), Location(value\u003d152))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d84), Location(value\u003d87))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d78), Location(value\u003d152))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d152), Location(value\u003d152))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d153))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

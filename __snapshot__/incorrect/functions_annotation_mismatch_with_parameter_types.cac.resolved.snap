@@ -1,0 +1,25 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d49), Location(value\u003d49))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 23
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 28
+    }
+  },
+  "(Location(value\u003d53), Location(value\u003d53))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 31
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 36
+    }
+  }
+}

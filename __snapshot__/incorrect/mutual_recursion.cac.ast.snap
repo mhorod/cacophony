@@ -1,0 +1,542 @@
+{
+  "__class__": "Block",
+  "expressions": [
+    {
+      "__class__": "FunctionDeclaration",
+      "arguments": [
+        {
+          "__class__": "FunctionArgument",
+          "type": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 46
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 48
+              }
+            }
+          },
+          "identifier": "x",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 43
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 48
+            }
+          }
+        }
+      ],
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Bool",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 54
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 57
+          }
+        }
+      },
+      "body": {
+        "__class__": "Block",
+        "expressions": [
+          {
+            "__class__": "IfElseStatement",
+            "testExpression": {
+              "__class__": "Equals",
+              "lhs": {
+                "__class__": "VariableUse",
+                "identifier": "x",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 71
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 71
+                  }
+                }
+              },
+              "rhs": {
+                "__class__": "IntLiteral",
+                "value": 0,
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 76
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 76
+                  }
+                }
+              },
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 71
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 76
+                }
+              }
+            },
+            "doExpression": {
+              "__class__": "BoolLiteral",
+              "value": false,
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 91
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 95
+                }
+              }
+            },
+            "elseExpression": {
+              "__class__": "FunctionCall",
+              "function": {
+                "__class__": "VariableUse",
+                "identifier": "is_even",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 114
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 120
+                  }
+                }
+              },
+              "arguments": [
+                {
+                  "__class__": "Subtraction",
+                  "lhs": {
+                    "__class__": "VariableUse",
+                    "identifier": "x",
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 122
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 122
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "__class__": "IntLiteral",
+                    "value": 1,
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 126
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 126
+                      }
+                    }
+                  },
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 122
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 126
+                    }
+                  }
+                }
+              ],
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 114
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 127
+                }
+              }
+            },
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 68
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 127
+              }
+            }
+          }
+        ],
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 62
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 129
+          }
+        }
+      },
+      "identifier": "is_odd",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 29
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 129
+        }
+      }
+    },
+    {
+      "__class__": "FunctionDeclaration",
+      "arguments": [
+        {
+          "__class__": "FunctionArgument",
+          "type": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 151
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 153
+              }
+            }
+          },
+          "identifier": "x",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 148
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 153
+            }
+          }
+        }
+      ],
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Bool",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 159
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 162
+          }
+        }
+      },
+      "body": {
+        "__class__": "Block",
+        "expressions": [
+          {
+            "__class__": "IfElseStatement",
+            "testExpression": {
+              "__class__": "Equals",
+              "lhs": {
+                "__class__": "VariableUse",
+                "identifier": "x",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 176
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 176
+                  }
+                }
+              },
+              "rhs": {
+                "__class__": "IntLiteral",
+                "value": 0,
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 181
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 181
+                  }
+                }
+              },
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 176
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 181
+                }
+              }
+            },
+            "doExpression": {
+              "__class__": "BoolLiteral",
+              "value": true,
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 196
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 199
+                }
+              }
+            },
+            "elseExpression": {
+              "__class__": "FunctionCall",
+              "function": {
+                "__class__": "VariableUse",
+                "identifier": "is_odd",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 218
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 223
+                  }
+                }
+              },
+              "arguments": [
+                {
+                  "__class__": "Subtraction",
+                  "lhs": {
+                    "__class__": "VariableUse",
+                    "identifier": "x",
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 225
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 225
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "__class__": "IntLiteral",
+                    "value": 1,
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 229
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 229
+                      }
+                    }
+                  },
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 225
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 229
+                    }
+                  }
+                }
+              ],
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 218
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 230
+                }
+              }
+            },
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 173
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 230
+              }
+            }
+          },
+          {
+            "__class__": "Empty",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 232
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 232
+              }
+            }
+          }
+        ],
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 167
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 233
+          }
+        }
+      },
+      "identifier": "is_even",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 133
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 233
+        }
+      }
+    },
+    {
+      "__class__": "FunctionCall",
+      "function": {
+        "__class__": "VariableUse",
+        "identifier": "is_even",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 237
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 243
+          }
+        }
+      },
+      "arguments": [
+        {
+          "__class__": "IntLiteral",
+          "value": 10,
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 245
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 246
+            }
+          }
+        }
+      ],
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 237
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 247
+        }
+      }
+    },
+    {
+      "__class__": "Empty",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 247
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 247
+        }
+      }
+    }
+  ],
+  "range": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 29
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 248
+    }
+  }
+}

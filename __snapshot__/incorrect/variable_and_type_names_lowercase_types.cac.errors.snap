@@ -1,0 +1,21 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnexpectedToken",
+      "tokenName": "VARIABLE_IDENTIFIER",
+      "symbolName": "DECLARATION_TYPED"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 47
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 49
+      }
+    }
+  }
+]

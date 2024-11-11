@@ -1,0 +1,56 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d48), Location(value\u003d48))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d48), Location(value\u003d49))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d18), Location(value\u003d49))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d54), Location(value\u003d62))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "UnitType",
+      "name": "Unit"
+    },
+    "name": "[] -\u003e Unit"
+  },
+  "(Location(value\u003d54), Location(value\u003d64))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d69), Location(value\u003d73))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d75), Location(value\u003d75))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d14), Location(value\u003d76))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d6), Location(value\u003d9))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d0), Location(value\u003d76))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d76), Location(value\u003d76))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d77))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

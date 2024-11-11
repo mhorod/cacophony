@@ -88,7 +88,7 @@ class CacophonyPipeline(
         return result
     }
 
-    private fun resolveOverloads(ast: AST): ResolvedVariables {
+    fun resolveOverloads(ast: AST): ResolvedVariables {
         val nr = resolveNames(ast)
         return resolveOverloads(ast, nr)
     }
@@ -108,7 +108,7 @@ class CacophonyPipeline(
         return result
     }
 
-    private fun checkTypes(
+    fun checkTypes(
         ast: AST,
         resolvedVariables: ResolvedVariables,
     ): TypeCheckingResult {
@@ -153,7 +153,7 @@ class CacophonyPipeline(
         return analyzeFunctions(ast, resolvedVariables, types)
     }
 
-    private fun analyzeFunctions(
+    fun analyzeFunctions(
         ast: AST,
         resolvedVariables: ResolvedVariables,
         types: TypeCheckingResult,

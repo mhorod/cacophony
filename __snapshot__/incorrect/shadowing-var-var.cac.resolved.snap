@@ -1,0 +1,36 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d111), Location(value\u003d111))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 93
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 98
+    }
+  },
+  "(Location(value\u003d126), Location(value\u003d130))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 80
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 111
+    }
+  },
+  "(Location(value\u003d132), Location(value\u003d132))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 59
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 77
+    }
+  }
+}

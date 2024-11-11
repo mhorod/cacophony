@@ -27,5 +27,5 @@ class CacophonyDiagnostics(
 
     override fun getErrors(): List<String> = errors.map(ReportedError::toString)
 
-    fun extractErrors(): List<String> = errors.map { it.toString() }
+    fun extractErrors(): List<ReportedError> = errors
 }

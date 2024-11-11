@@ -1,0 +1,15 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d0), Location(value\u003d4))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d4), Location(value\u003d4))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d5))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  }
+}
