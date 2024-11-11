@@ -7,9 +7,9 @@ typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseTyp
 fun analyzeVarUseTypes(
     ast: AST,
     resolvedVariables: ResolvedVariables,
-    callGraph: CallGraph,
+    functionAnalysis: FunctionAnalysisResult,
 ): UseTypeAnalysisResult {
-    val visitor = VarUseVisitor(resolvedVariables)
+    val visitor = VarUseVisitor(resolvedVariables, functionAnalysis)
     visitor.visit(ast)
     return visitor.getAnalysisResult()
 }
@@ -24,9 +24,8 @@ private class UseTypesForExpression(
         val previousType =
             map.getOrElse(
                 definition,
-                { VariableUseType.UNUSED },
-            )
-        map.put(definition, previousType.union(type))
+            ) { VariableUseType.UNUSED }
+        map[definition] = previousType.union(type)
     }
 
     fun getMap(): Map<Definition, VariableUseType> = map
@@ -37,13 +36,17 @@ private class UseTypesForExpression(
         }
     }
 
+    fun filter(collection: Collection<Definition>) {
+        map.keys.removeAll(collection.toSet())
+    }
+
     companion object {
         fun empty() = UseTypesForExpression(mutableMapOf())
 
         fun merge(vararg subexpressionUseTypes: UseTypesForExpression?): UseTypesForExpression {
             val result = empty()
-            subexpressionUseTypes.forEach {
-                it?.getMap()?.forEach {
+            subexpressionUseTypes.forEach { useTypesForExpression ->
+                useTypesForExpression?.getMap()?.forEach {
                     result.add(it.key, it.value)
                 }
             }
@@ -54,14 +57,24 @@ private class UseTypesForExpression(
 
 private class VarUseVisitor(
     val resolvedVariables: ResolvedVariables,
+    val functionAnalysis: FunctionAnalysisResult,
 ) {
     private val useTypeAnalysis = mutableMapOf<Expression, UseTypesForExpression>()
+    private val scopeStack = ArrayDeque<MutableSet<Definition>>()
+    var staticDepth = -1
 
     fun visit(ast: AST) = visitExpression(ast)
 
     fun getAnalysisResult(): UseTypeAnalysisResult = useTypeAnalysis.mapValues { it.value.getMap() }
 
     private fun visitExpression(expr: Expression) {
+        when (expr) {
+            is Definition -> {
+                scopeStack.lastOrNull()?.add(expr)
+            }
+            else -> {
+            }
+        }
         when (expr) {
             is Block -> visitBlock(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
@@ -73,15 +86,15 @@ private class VarUseVisitor(
             is OperatorUnary -> visitUnaryOperator(expr)
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
-            else -> {
-                // do nothing for expressions without nested expressions
+            is LeafExpression -> {
+                useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
         }
     }
 
     private fun visitVariableUse(expr: VariableUse) {
-        useTypeAnalysis.put(expr, UseTypesForExpression.empty())
-        useTypeAnalysis.get(expr)!!.add(
+        useTypeAnalysis[expr] = UseTypesForExpression.empty()
+        useTypeAnalysis[expr]!!.add(
             resolvedVariables[expr]!!,
             VariableUseType.READ,
         )
@@ -99,13 +112,11 @@ private class VarUseVisitor(
             else -> {
                 visitExpression(expr.lhs)
                 visitExpression(expr.rhs)
-                useTypeAnalysis.put(
-                    expr,
+                useTypeAnalysis[expr] =
                     UseTypesForExpression.merge(
-                        useTypeAnalysis.get(expr.lhs),
-                        useTypeAnalysis.get(expr.rhs),
-                    ),
-                )
+                        useTypeAnalysis[expr.lhs],
+                        useTypeAnalysis[expr.rhs],
+                    )
             }
         }
     }
@@ -114,12 +125,12 @@ private class VarUseVisitor(
         visitExpression(expr.rhs)
         when (expr.lhs) {
             is VariableUse -> {
-                useTypeAnalysis.put(expr, UseTypesForExpression.empty())
-                useTypeAnalysis.get(expr)!!.add(
+                useTypeAnalysis[expr] = UseTypesForExpression.empty()
+                useTypeAnalysis[expr]!!.add(
                     resolvedVariables[expr.lhs]!!,
                     VariableUseType.READ_WRITE,
                 )
-                useTypeAnalysis.get(expr)!!.mergeWith(useTypeAnalysis.get(expr.rhs)!!)
+                useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.rhs]!!)
             }
 
             else -> visitExpression(expr.lhs)
@@ -130,12 +141,12 @@ private class VarUseVisitor(
         visitExpression(expr.rhs)
         when (expr.lhs) {
             is VariableUse -> {
-                useTypeAnalysis.put(expr, UseTypesForExpression.empty())
-                useTypeAnalysis.get(expr)!!.add(
+                useTypeAnalysis[expr] = UseTypesForExpression.empty()
+                useTypeAnalysis[expr]!!.add(
                     resolvedVariables[expr.lhs]!!,
                     VariableUseType.WRITE,
                 )
-                useTypeAnalysis.get(expr)!!.mergeWith(useTypeAnalysis.get(expr.rhs)!!)
+                useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.rhs]!!)
             }
 
             else -> visitExpression(expr.lhs)
@@ -144,92 +155,93 @@ private class VarUseVisitor(
 
     private fun visitUnaryOperator(expr: OperatorUnary) {
         visitExpression(expr.expression)
-        useTypeAnalysis.put(
-            expr,
+        useTypeAnalysis[expr] =
             UseTypesForExpression.merge(
-                useTypeAnalysis.get(expr.expression),
-            ),
-        )
+                useTypeAnalysis[expr.expression],
+            )
     }
 
     private fun visitReturnStatement(expr: Statement.ReturnStatement) {
         visitExpression(expr.value)
-        useTypeAnalysis.put(
-            expr,
+        useTypeAnalysis[expr] =
             UseTypesForExpression.merge(
-                useTypeAnalysis.get(expr.value),
-            ),
-        )
+                useTypeAnalysis[expr.value],
+            )
     }
 
     private fun visitWhileStatement(expr: Statement.WhileStatement) {
         visitExpression(expr.testExpression)
         visitExpression(expr.doExpression)
-        useTypeAnalysis.put(
-            expr,
+        useTypeAnalysis[expr] =
             UseTypesForExpression.merge(
-                useTypeAnalysis.get(expr.testExpression),
-                useTypeAnalysis.get(expr.doExpression),
-            ),
-        )
+                useTypeAnalysis[expr.testExpression],
+                useTypeAnalysis[expr.doExpression],
+            )
     }
 
     private fun visitIfElseStatement(expr: Statement.IfElseStatement) {
         visitExpression(expr.testExpression)
         visitExpression(expr.doExpression)
         expr.elseExpression?.let { visitExpression(it) }
-        useTypeAnalysis.put(
-            expr,
+        useTypeAnalysis[expr] =
             UseTypesForExpression.merge(
-                useTypeAnalysis.get(expr.testExpression),
-                useTypeAnalysis.get(expr.doExpression),
-                useTypeAnalysis.get(expr.elseExpression),
-            ),
-        )
+                useTypeAnalysis[expr.testExpression],
+                useTypeAnalysis[expr.doExpression],
+                useTypeAnalysis[expr.elseExpression],
+            )
     }
 
     private fun visitFunctionCall(expr: FunctionCall) {
         visitExpression(expr.function)
-        useTypeAnalysis.put(
-            expr,
+        useTypeAnalysis[expr] =
             UseTypesForExpression.merge(
-                useTypeAnalysis.get(expr.function),
-            ),
-        )
-        expr.arguments.forEach {
+                useTypeAnalysis[expr.function],
+            )
+        expr.arguments.forEach { // arguments should be marked as read-used
             visitExpression(it)
-            useTypeAnalysis.get(expr)!!.mergeWith(useTypeAnalysis.get(it)!!)
+            useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[it]!!)
+        }
+
+        // variables used in called function:
+        val calledFunction = resolvedVariables[expr.function]
+        if (calledFunction is Definition.FunctionDeclaration) {
+            val map =
+                functionAnalysis[calledFunction]!!.variables.filterNot {
+                    // had to use staticDepth because of called functions that use variables not visible in current scope
+                    functionAnalysis[it.definedIn]!!.staticDepth > staticDepth
+                }.associate {
+                    it.declaration to it.useType
+                }
+            useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
+        } else {
+            throw IllegalStateException("Left side of function call is not a function declaration")
         }
     }
 
     private fun visitFunctionDeclaration(expr: Definition.FunctionDeclaration) {
+        // we don't want to merge with declaration body, as it need to be called to use the variables
+        staticDepth += 1
         visitExpression(expr.body)
-        useTypeAnalysis.put(
-            expr,
-            UseTypesForExpression.merge(
-                useTypeAnalysis.get(expr.body),
-            ),
-        )
+        staticDepth -= 1
+        useTypeAnalysis[expr] = UseTypesForExpression.empty()
     }
 
     private fun visitVariableDeclaration(expr: Definition.VariableDeclaration) {
         visitExpression(expr.value)
-        useTypeAnalysis.put(
-            expr,
+        useTypeAnalysis[expr] =
             UseTypesForExpression.merge(
-                useTypeAnalysis.get(expr.value),
-            ),
-        )
+                useTypeAnalysis[expr.value],
+            )
     }
 
     private fun visitBlock(expr: Block) {
-        useTypeAnalysis.put(
-            expr,
-            UseTypesForExpression.empty(),
-        )
+        useTypeAnalysis[expr] = UseTypesForExpression.empty()
+        scopeStack.addLast(mutableSetOf())
         expr.expressions.forEach {
             visitExpression(it)
-            useTypeAnalysis.get(expr)!!.mergeWith(useTypeAnalysis.get(it)!!)
+            useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[it]!!)
         }
+        useTypeAnalysis[expr]!!.filter(scopeStack.last())
+        scopeStack.removeLast()
     }
 }
