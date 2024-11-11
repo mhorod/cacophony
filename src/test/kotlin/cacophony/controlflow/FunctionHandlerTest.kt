@@ -15,8 +15,6 @@ import org.junit.jupiter.params.provider.ValueSource
 import kotlin.math.max
 
 class FunctionHandlerTest {
-
-
     @Nested
     inner class GenerateCall {
         private fun mockAnalyzedFunction(): AnalyzedFunction =
@@ -30,7 +28,10 @@ class FunctionHandlerTest {
                 analyzedFunction
             }
 
-        private fun mockFunDeclarationAndFunHandlerWithParents(argumentCount: Int, chainLength: Int): List<FunctionHandlerImpl> =
+        private fun mockFunDeclarationAndFunHandlerWithParents(
+            argumentCount: Int,
+            chainLength: Int
+        ): List<FunctionHandlerImpl> =
             run {
                 val functionHandlers = mutableListOf<FunctionHandlerImpl>()
                 for (i in 1..chainLength) {
@@ -47,9 +48,8 @@ class FunctionHandlerTest {
                                 mockk(),
                             ),
                             analyzedFunction,
-
                             functionHandlers.toList(),
-                        )
+                        ),
                     )
                 }
 
@@ -281,8 +281,8 @@ class FunctionHandlerTest {
     fun `initialization registers static link`() {
         val analyzedFunction = mockk<AnalyzedFunction>()
         val auxVariables = mutableSetOf<Variable.AuxVariable>()
-        every {analyzedFunction.auxVariables} returns auxVariables
-        every {analyzedFunction.variables} returns emptySet()
+        every { analyzedFunction.auxVariables } returns auxVariables
+        every { analyzedFunction.variables } returns emptySet()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
 
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
