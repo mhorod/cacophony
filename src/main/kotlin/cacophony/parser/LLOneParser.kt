@@ -1,11 +1,12 @@
 package cacophony.parser
 
 import cacophony.automata.DFA
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.ParserDiagnostics
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.DFAStateReference
 import cacophony.grammars.ParseTree
 import cacophony.grammars.Production
-import cacophony.utils.Diagnostics
 import kotlin.collections.mutableListOf
 
 // This is not CompileException intentionally.
@@ -138,20 +139,25 @@ class LLOneParser<StateT, SymbolT : Enum<SymbolT>>(
                             children.add(topDownParse(nextSymbol))
                         } catch (e: ParsingException) {
                             if (!eof && dfa.getProduction(state, terminal.token.category) == null) {
-                                throw e
+                                throw diagnostics.fatal()
                             } else {}
                         }
                     } ?: run {
-                        diagnostics.report("Unexpected token ${terminal.token.category} while parsing $symbol", terminal.range)
+                        diagnostics.report(ParserDiagnostics.UnexpectedToken(terminal.token.category.name, symbol.name), terminal.range)
                         goToSyncSymbol()
                         throw ParsingException("Unable to go to desired symbol $nextSymbol from $state in DFA for $symbol")
                     }
                 } ?: break
             } while (!eof)
             if (!dfa.isAccepting(state)) {
-                diagnostics.report("Unexpected token ${terminal.token.category} while parsing $symbol", terminal.range)
+                diagnostics.report(ParserDiagnostics.UnexpectedToken(terminal.token.category.name, symbol.name), terminal.range)
                 goToSyncSymbol()
                 throw ParsingException("State $state in DFA for $symbol is not accepting")
+            }
+
+            if (children.isEmpty()) {
+                diagnostics.report(ParserDiagnostics.ChildrenEmpty(symbol.name), terminal.range)
+                throw diagnostics.fatal()
             }
 
             val range = Pair(children.first().range.first, children.last().range.second)
@@ -160,7 +166,7 @@ class LLOneParser<StateT, SymbolT : Enum<SymbolT>>(
 
         return topDownParse(startSymbol).also {
             if (!eof) {
-                diagnostics.report("Unable to continue parsing symbol ${terminal.token.category}", terminal.range)
+                diagnostics.report(ParserDiagnostics.UnableToContinueParsing(terminal.token.category.name), terminal.range)
             }
         }
     }

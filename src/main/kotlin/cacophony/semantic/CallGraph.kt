@@ -1,5 +1,7 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.CallGraphDiagnostics
+import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
@@ -10,14 +12,9 @@ import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.VariableUse
-import cacophony.utils.Diagnostics
 import kotlin.collections.mutableMapOf
 
 typealias CallGraph = Map<Definition.FunctionDeclaration, Set<Definition.FunctionDeclaration>>
-
-class FunctionCallError(
-    reason: String,
-) : Exception(reason)
 
 fun generateCallGraph(
     ast: AST,
@@ -73,8 +70,14 @@ private class CallGraphProvider(
             when (val decl = resolvedVariables[fn]) {
                 is Definition.FunctionDeclaration ->
                     currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
-                is Definition -> throw FunctionCallError("Cannot call non-function ${decl.identifier}")
-                null -> throw FunctionCallError("Identifier ${fn.identifier} does not exist")
+                is Definition -> {
+                    diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)
+                    throw diagnostics.fatal()
+                }
+                null -> {
+                    diagnostics.report(CallGraphDiagnostics.CallingNonExistentIdentifier(fn.identifier), fn.range)
+                    throw diagnostics.fatal()
+                }
             }
         }
         else -> generateDirectCallGraph(fn, currentFn)

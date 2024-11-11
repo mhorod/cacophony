@@ -1,0 +1,38 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnidentifiedIdentifier",
+      "identifier": "goes_vroom"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 88
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 97
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnidentifiedIdentifier",
+      "identifier": "is_red"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 107
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 112
+      }
+    }
+  }
+]

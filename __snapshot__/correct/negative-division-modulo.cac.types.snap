@@ -1,0 +1,179 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d1), Location(value\u003d1))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d3), Location(value\u003d3))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1), Location(value\u003d3))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d0), Location(value\u003d4))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d8), Location(value\u003d8))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d0), Location(value\u003d8))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d11), Location(value\u003d11))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d16), Location(value\u003d16))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d18), Location(value\u003d18))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d16), Location(value\u003d18))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d15), Location(value\u003d19))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d11), Location(value\u003d19))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d23), Location(value\u003d23))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d25), Location(value\u003d25))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d23), Location(value\u003d25))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d22), Location(value\u003d26))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d31), Location(value\u003d31))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d33), Location(value\u003d33))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d31), Location(value\u003d33))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d30), Location(value\u003d34))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d22), Location(value\u003d34))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d39), Location(value\u003d39))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d41), Location(value\u003d41))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d39), Location(value\u003d41))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d38), Location(value\u003d42))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d46), Location(value\u003d46))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d38), Location(value\u003d46))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d49), Location(value\u003d49))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d54), Location(value\u003d54))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d56), Location(value\u003d56))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d54), Location(value\u003d56))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d53), Location(value\u003d57))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d49), Location(value\u003d57))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d61), Location(value\u003d61))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d63), Location(value\u003d63))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d61), Location(value\u003d63))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d60), Location(value\u003d64))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d69), Location(value\u003d69))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d71), Location(value\u003d71))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d69), Location(value\u003d71))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d68), Location(value\u003d72))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d60), Location(value\u003d72))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d72), Location(value\u003d72))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d73))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

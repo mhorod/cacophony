@@ -1,21 +1,20 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.ASTDiagnostics
+import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyGrammarSymbol.*
 import cacophony.semantic.syntaxtree.*
-import cacophony.utils.CompileException
-import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
-private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): CacophonyGrammarSymbol {
-    return when (parseTree) {
+private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): CacophonyGrammarSymbol =
+    when (parseTree) {
         is ParseTree.Leaf -> parseTree.token.category
         is ParseTree.Branch -> parseTree.production.lhs
     }
-}
 
 private fun pruneParseTree(
     parseTree: ParseTree<CacophonyGrammarSymbol>,
@@ -137,8 +136,8 @@ private fun generateASTInternal(
                     try {
                         context.toInt()
                     } catch (e: NumberFormatException) {
-                        diagnostics.report("Value $context is out of range", parseTree.range)
-                        throw CompileException("Value $context is out of range")
+                        diagnostics.report(ASTDiagnostics.ValueOutOfRange(context), parseTree.range)
+                        throw diagnostics.fatal()
                     },
                 )
             BOOL_LITERAL -> Literal.BoolLiteral(parseTree.range, context.toBoolean())

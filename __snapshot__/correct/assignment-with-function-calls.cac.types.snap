@@ -1,0 +1,165 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d9), Location(value\u003d14))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d27), Location(value\u003d27))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d0), Location(value\u003d27))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d44), Location(value\u003d45))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d31), Location(value\u003d45))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d48), Location(value\u003d48))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d52), Location(value\u003d52))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d56), Location(value\u003d56))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d52), Location(value\u003d56))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d48), Location(value\u003d56))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d75), Location(value\u003d75))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d73), Location(value\u003d73))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "IntegerType",
+        "name": "Int"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Int] -\u003e Int"
+  },
+  "(Location(value\u003d73), Location(value\u003d76))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d60), Location(value\u003d76))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d79), Location(value\u003d79))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d83), Location(value\u003d83))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d89), Location(value\u003d89))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d87), Location(value\u003d87))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "IntegerType",
+        "name": "Int"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Int] -\u003e Int"
+  },
+  "(Location(value\u003d87), Location(value\u003d90))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d83), Location(value\u003d90))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d79), Location(value\u003d90))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d94), Location(value\u003d94))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d98), Location(value\u003d98))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d102), Location(value\u003d102))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d98), Location(value\u003d102))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d94), Location(value\u003d102))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d106), Location(value\u003d106))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d113), Location(value\u003d113))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d111), Location(value\u003d111))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "IntegerType",
+        "name": "Int"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Int] -\u003e Int"
+  },
+  "(Location(value\u003d111), Location(value\u003d114))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d106), Location(value\u003d114))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d114), Location(value\u003d114))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d115))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

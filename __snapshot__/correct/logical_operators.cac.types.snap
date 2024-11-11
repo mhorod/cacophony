@@ -1,0 +1,171 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d26), Location(value\u003d30))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d33), Location(value\u003d36))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d26), Location(value\u003d36))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d39), Location(value\u003d43))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d46), Location(value\u003d49))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d39), Location(value\u003d49))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d53), Location(value\u003d57))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d52), Location(value\u003d57))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d108), Location(value\u003d111))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d94), Location(value\u003d111))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d128), Location(value\u003d132))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d114), Location(value\u003d132))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d136), Location(value\u003d136))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d139), Location(value\u003d139))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d136), Location(value\u003d139))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d142), Location(value\u003d142))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d145), Location(value\u003d145))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d142), Location(value\u003d145))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d149), Location(value\u003d149))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d148), Location(value\u003d149))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d173), Location(value\u003d173))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d176), Location(value\u003d176))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d173), Location(value\u003d176))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d172), Location(value\u003d177))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d183), Location(value\u003d186))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d189), Location(value\u003d193))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d183), Location(value\u003d193))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d182), Location(value\u003d194))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d181), Location(value\u003d194))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d180), Location(value\u003d195))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d172), Location(value\u003d195))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d241), Location(value\u003d241))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d245), Location(value\u003d249))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d241), Location(value\u003d249))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d268), Location(value\u003d271))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d276), Location(value\u003d280))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d268), Location(value\u003d280))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d267), Location(value\u003d281))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d266), Location(value\u003d281))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d252), Location(value\u003d281))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d281), Location(value\u003d281))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d26), Location(value\u003d282))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

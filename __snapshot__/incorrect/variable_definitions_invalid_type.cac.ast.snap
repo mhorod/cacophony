@@ -1,0 +1,90 @@
+{
+  "__class__": "Block",
+  "expressions": [
+    {
+      "__class__": "VariableDeclaration",
+      "type": {
+        "__class__": "Basic",
+        "identifier": "Int",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 45
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 47
+          }
+        }
+      },
+      "value": {
+        "__class__": "Block",
+        "expressions": [
+          {
+            "__class__": "Empty",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 51
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 51
+              }
+            }
+          }
+        ],
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 51
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 52
+          }
+        }
+      },
+      "identifier": "num",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 36
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 52
+        }
+      }
+    },
+    {
+      "__class__": "Empty",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 52
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 52
+        }
+      }
+    }
+  ],
+  "range": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 36
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 53
+    }
+  }
+}

@@ -9,9 +9,10 @@ import cacophony.automata.SimpleDFA
 import cacophony.automata.SimpleNFA
 import cacophony.automata.buildNFAFromRegex
 import cacophony.automata.determinize
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.LexerDiagnostics
 import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex
-import cacophony.utils.Diagnostics
 import cacophony.utils.Location
 import cacophony.utils.StringInput
 import io.mockk.*
@@ -138,7 +139,7 @@ class RegularLanguageLexerTest {
         )
         verify(exactly = 1) {
             diagnostics.report(
-                eq("Lexer failure: no valid token found."),
+                eq(LexerDiagnostics.NoValidToken),
                 eq(Location(2)),
             )
         }

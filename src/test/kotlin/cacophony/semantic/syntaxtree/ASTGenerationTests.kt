@@ -1,5 +1,6 @@
 package cacophony.semantic.syntaxtree
 
+import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.utils.*
 import io.mockk.every
@@ -40,17 +41,13 @@ class ASTGenerationTests {
         return mock
     }
 
-    private fun SimpleDiagnostics.extractErrors(): List<String> {
-        return getErrors().map { it.message }
-    }
-
     private fun computeASTAndDiagnostics(content: String): Triple<AST?, List<String>, CompileException?> {
         val input = StringInput(content)
-        val diagnostics = SimpleDiagnostics(input)
+        val diagnostics = CacophonyDiagnostics(input)
         return try {
-            Triple(CacophonyPipeline(diagnostics).generateAST(input), diagnostics.extractErrors(), null)
+            Triple(CacophonyPipeline(diagnostics).generateAST(input), diagnostics.getErrors(), null)
         } catch (t: CompileException) {
-            Triple(null, diagnostics.extractErrors(), t)
+            Triple(null, diagnostics.getErrors(), t)
         }
     }
 

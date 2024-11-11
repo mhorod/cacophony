@@ -1,0 +1,619 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d40), Location(value\u003d40))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d26), Location(value\u003d40))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d62), Location(value\u003d65))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d47), Location(value\u003d65))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d85), Location(value\u003d91))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d105), Location(value\u003d105))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d72), Location(value\u003d105))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d118), Location(value\u003d118))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d112), Location(value\u003d116))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "BooleanType",
+        "name": "Bool"
+      }
+    ],
+    "result": {
+      "__class__": "BooleanType",
+      "name": "Bool"
+    },
+    "name": "[Bool] -\u003e Bool"
+  },
+  "(Location(value\u003d112), Location(value\u003d119))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d121), Location(value\u003d121))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d20), Location(value\u003d122))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d177), Location(value\u003d177))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d163), Location(value\u003d177))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d198), Location(value\u003d198))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d184), Location(value\u003d198))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d218), Location(value\u003d224))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d238), Location(value\u003d238))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d205), Location(value\u003d238))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d251), Location(value\u003d251))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d256), Location(value\u003d256))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d251), Location(value\u003d256))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d245), Location(value\u003d249))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "BooleanType",
+        "name": "Bool"
+      }
+    ],
+    "result": {
+      "__class__": "BooleanType",
+      "name": "Bool"
+    },
+    "name": "[Bool] -\u003e Bool"
+  },
+  "(Location(value\u003d245), Location(value\u003d257))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d259), Location(value\u003d259))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d157), Location(value\u003d260))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d309), Location(value\u003d309))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d295), Location(value\u003d309))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d341), Location(value\u003d344))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d326), Location(value\u003d344))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d368), Location(value\u003d374))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d388), Location(value\u003d388))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d355), Location(value\u003d388))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d405), Location(value\u003d405))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d399), Location(value\u003d403))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "BooleanType",
+        "name": "Bool"
+      }
+    ],
+    "result": {
+      "__class__": "BooleanType",
+      "name": "Bool"
+    },
+    "name": "[Bool] -\u003e Bool"
+  },
+  "(Location(value\u003d399), Location(value\u003d406))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d412), Location(value\u003d412))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d316), Location(value\u003d413))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d433), Location(value\u003d438))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d451), Location(value\u003d451))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d420), Location(value\u003d451))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d464), Location(value\u003d464))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d458), Location(value\u003d462))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "IntegerType",
+        "name": "Int"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Int] -\u003e Int"
+  },
+  "(Location(value\u003d458), Location(value\u003d465))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d467), Location(value\u003d467))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d289), Location(value\u003d468))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d518), Location(value\u003d521))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d503), Location(value\u003d521))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d537), Location(value\u003d542))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d555), Location(value\u003d555))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d528), Location(value\u003d555))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d564), Location(value\u003d564))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d562), Location(value\u003d562))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "IntegerType",
+        "name": "Int"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Int] -\u003e Int"
+  },
+  "(Location(value\u003d562), Location(value\u003d565))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d567), Location(value\u003d567))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d497), Location(value\u003d568))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d621), Location(value\u003d621))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d607), Location(value\u003d621))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d637), Location(value\u003d642))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d655), Location(value\u003d655))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d628), Location(value\u003d655))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d680), Location(value\u003d683))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d665), Location(value\u003d683))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d695), Location(value\u003d701))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d714), Location(value\u003d714))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d686), Location(value\u003d714))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d719), Location(value\u003d719))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d717), Location(value\u003d717))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "BooleanType",
+        "name": "Bool"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Bool] -\u003e Int"
+  },
+  "(Location(value\u003d717), Location(value\u003d720))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d664), Location(value\u003d721))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d662), Location(value\u003d662))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "IntegerType",
+        "name": "Int"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Int] -\u003e Int"
+  },
+  "(Location(value\u003d662), Location(value\u003d722))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d724), Location(value\u003d724))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d601), Location(value\u003d725))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d769), Location(value\u003d775))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d788), Location(value\u003d788))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d760), Location(value\u003d788))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d804), Location(value\u003d809))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d847), Location(value\u003d850))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d832), Location(value\u003d850))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d863), Location(value\u003d863))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d861), Location(value\u003d861))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "BooleanType",
+        "name": "Bool"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Bool] -\u003e Int"
+  },
+  "(Location(value\u003d861), Location(value\u003d864))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d822), Location(value\u003d870))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d795), Location(value\u003d870))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d872), Location(value\u003d872))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d754), Location(value\u003d873))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d932), Location(value\u003d932))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d911), Location(value\u003d932))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d953), Location(value\u003d953))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d939), Location(value\u003d953))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d960), Location(value\u003d960))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d964), Location(value\u003d964))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d960), Location(value\u003d964))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d966), Location(value\u003d966))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d905), Location(value\u003d967))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1019), Location(value\u003d1019))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1005), Location(value\u003d1019))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1047), Location(value\u003d1047))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1026), Location(value\u003d1047))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1054), Location(value\u003d1054))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[] -\u003e Int"
+  },
+  "(Location(value\u003d1054), Location(value\u003d1056))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1060), Location(value\u003d1060))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[] -\u003e Int"
+  },
+  "(Location(value\u003d1060), Location(value\u003d1062))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1054), Location(value\u003d1062))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1064), Location(value\u003d1064))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d999), Location(value\u003d1065))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1117), Location(value\u003d1117))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1103), Location(value\u003d1117))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1133), Location(value\u003d1139))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d1153), Location(value\u003d1153))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d1124), Location(value\u003d1153))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1169), Location(value\u003d1174))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1187), Location(value\u003d1187))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1160), Location(value\u003d1187))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1196), Location(value\u003d1196))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1194), Location(value\u003d1194))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "IntegerType",
+        "name": "Int"
+      }
+    ],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[Int] -\u003e Int"
+  },
+  "(Location(value\u003d1194), Location(value\u003d1197))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1199), Location(value\u003d1199))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1097), Location(value\u003d1200))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1253), Location(value\u003d1258))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1271), Location(value\u003d1271))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1275), Location(value\u003d1275))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1271), Location(value\u003d1275))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d1244), Location(value\u003d1275))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1277), Location(value\u003d1277))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1238), Location(value\u003d1278))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1278), Location(value\u003d1278))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d20), Location(value\u003d1279))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

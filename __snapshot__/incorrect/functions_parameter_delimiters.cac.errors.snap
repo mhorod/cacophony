@@ -1,0 +1,20 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnableToContinueParsing",
+      "symbolName": "COLON"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 9
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 9
+      }
+    }
+  }
+]

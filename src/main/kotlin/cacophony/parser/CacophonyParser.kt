@@ -1,8 +1,8 @@
 package cacophony.parser
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
-import cacophony.utils.Diagnostics
 
 class CacophonyParser : Parser<CacophonyGrammarSymbol> {
     private val innerParser: LLOneParser<Int, CacophonyGrammarSymbol>
@@ -18,7 +18,7 @@ class CacophonyParser : Parser<CacophonyGrammarSymbol> {
     ): ParseTree<CacophonyGrammarSymbol> = innerParser.process(terminals, diagnostics)
 
     companion object {
-        val syncSymbols = setOf<CacophonyGrammarSymbol>()
+        val syncSymbols = setOf(CacophonyGrammarSymbol.SEMICOLON)
         val grammar = CacophonyGrammar.grammar
     }
 }

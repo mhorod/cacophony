@@ -1,8 +1,0 @@
-{
-  "__class__": "ExampleResult",
-  "diagnostics": {
-    "__class__": "TestDiagnostics",
-    "errors": []
-  },
-  "exceptionMessage": "java.util.NoSuchElementException: List is empty."
-}

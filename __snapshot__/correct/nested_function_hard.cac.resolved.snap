@@ -1,0 +1,124 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d127), Location(value\u003d127))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 109
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 114
+    }
+  },
+  "(Location(value\u003d134), Location(value\u003d136))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 98
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 127
+    }
+  },
+  "(Location(value\u003d138), Location(value\u003d138))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 45
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 50
+    }
+  },
+  "(Location(value\u003d146), Location(value\u003d148))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 98
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 127
+    }
+  },
+  "(Location(value\u003d150), Location(value\u003d150))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 70
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 75
+    }
+  },
+  "(Location(value\u003d158), Location(value\u003d158))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 57
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 63
+    }
+  },
+  "(Location(value\u003d167), Location(value\u003d167))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 31
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 162
+    }
+  },
+  "(Location(value\u003d169), Location(value\u003d169))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 9
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 14
+    }
+  },
+  "(Location(value\u003d178), Location(value\u003d178))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 9
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 14
+    }
+  },
+  "(Location(value\u003d184), Location(value\u003d184))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 9
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 14
+    }
+  },
+  "(Location(value\u003d189), Location(value\u003d189))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": 0
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 186
+    }
+  }
+}

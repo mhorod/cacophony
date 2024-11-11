@@ -1,0 +1,21 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnexpectedToken",
+      "tokenName": "SEMICOLON",
+      "symbolName": "DECLARATION_LEVEL"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 49
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 49
+      }
+    }
+  }
+]

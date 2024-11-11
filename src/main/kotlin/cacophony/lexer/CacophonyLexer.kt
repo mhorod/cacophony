@@ -1,10 +1,10 @@
 package cacophony.lexer
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.regex.RegexStrings
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.AlgebraicRegex
-import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 class CacophonyLexer : Lexer<TokenCategorySpecific> {
@@ -27,8 +27,7 @@ class CacophonyLexer : Lexer<TokenCategorySpecific> {
     }
 
     companion object {
-        private fun isWhitespaceToken(token: Token<TokenCategorySpecific>): Boolean {
-            return token.category == TokenCategorySpecific.WHITESPACE || token.category == TokenCategorySpecific.COMMENT
-        }
+        private fun isWhitespaceToken(token: Token<TokenCategorySpecific>): Boolean =
+            token.category == TokenCategorySpecific.WHITESPACE || token.category == TokenCategorySpecific.COMMENT
     }
 }

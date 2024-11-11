@@ -1,7 +1,7 @@
 package cacophony.lexer
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.token.Token
-import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 interface Lexer<TC : Enum<TC>> {

@@ -1,0 +1,8 @@
+let voids_in_action = [] -> Bool => (
+    # all these definitions type-check because the type of a `return` expression is `Void` which is a subtype of any type
+    let b: Bool = return true;
+    let i: Int = return true;
+    let u: Unit = return true;
+    let v: Void = return true;
+    false
+);

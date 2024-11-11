@@ -1,0 +1,27 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d16), Location(value\u003d16))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d16), Location(value\u003d17))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d3), Location(value\u003d7))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d0), Location(value\u003d17))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d17), Location(value\u003d17))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d18))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

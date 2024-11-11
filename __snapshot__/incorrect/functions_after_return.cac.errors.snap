@@ -1,0 +1,40 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "TypeMismatch",
+      "expected": "Int",
+      "found": "Bool"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 41
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 51
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "TypeMismatch",
+      "expected": "Int",
+      "found": "Unit"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 139
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 147
+      }
+    }
+  }
+]

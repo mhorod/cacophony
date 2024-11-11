@@ -1,12 +1,13 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 import cacophony.semantic.syntaxtree.Type
 import cacophony.utils.CompileException
-import cacophony.utils.Diagnostics
 
 class NameResolutionException(
     reason: String,
@@ -157,7 +158,7 @@ fun resolveNames(
                 symbolsTable
                     .find(node.identifier)
                     ?.let { resolvedName -> resolution[node] = resolvedName }
-                    ?: diagnostics.report("Undefined identifier: ${node.identifier}", node.range)
+                    ?: diagnostics.report(NRDiagnostics.UnidentifiedIdentifier(node.identifier), node.range)
             }
             is VariableDeclaration -> {
                 symbolsTable.define(node.identifier, node)
@@ -174,9 +175,7 @@ fun resolveNames(
             }
             is FunctionArgument -> {
                 if (node.type is Type.Functional) {
-                    throw NameResolutionException(
-                        "Illegal functional argument: ${node.identifier} at position ${node.range}",
-                    )
+                    diagnostics.report(NRDiagnostics.IllegalFunctionalArgument(node.identifier), node.range)
                 }
                 symbolsTable.define(node.identifier, node)
             }

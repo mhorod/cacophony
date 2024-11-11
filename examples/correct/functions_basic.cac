@@ -2,14 +2,13 @@ let simple_check = [x: Int] -> Bool => x == 42; # the body of a function can be 
 simple_check[43]; # functions can be called - returns `false`
 
 let complex_check = [x: Int] -> Bool => (
-    let temporary = simple[x];
+    let temporary = simple_check[x];
     temporary || x == 43
 ); # the body of a function can also be a block
 complex_check[43]; # returns `true`
 
-let global = false;
 let confusing = [x: Int] -> Bool =>
-    global = true; # careful! this is syntactically correct but the indentation is confusing
+    true; # careful! this is syntactically correct but the indentation is confusing
     false; # this expression does not belong to the `confusing` function
 confusing[5]; # sets `global` to `true` and returns it
 

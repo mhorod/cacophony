@@ -1,0 +1,40 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnexpectedToken",
+      "tokenName": "TYPE_IDENTIFIER",
+      "symbolName": "DECLARATION_LEVEL"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 4
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 11
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnexpectedToken",
+      "tokenName": "INT_LITERAL",
+      "symbolName": "DECLARATION_LEVEL"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 103
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 106
+      }
+    }
+  }
+]

@@ -1,0 +1,43 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d41), Location(value\u003d44))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d53), Location(value\u003d57))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d17), Location(value\u003d21))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d28), Location(value\u003d31))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d7), Location(value\u003d10))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d4), Location(value\u003d31))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d3), Location(value\u003d32))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d0), Location(value\u003d57))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d57), Location(value\u003d57))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d58))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

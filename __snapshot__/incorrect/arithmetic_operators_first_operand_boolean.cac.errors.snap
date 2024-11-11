@@ -1,0 +1,78 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "TypeMismatch",
+      "expected": "Int",
+      "found": "Bool"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 69
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 73
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "TypeMismatch",
+      "expected": "Int",
+      "found": "Bool"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 83
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 87
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "TypeMismatch",
+      "expected": "Int",
+      "found": "Bool"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 94
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 97
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "TypeMismatch",
+      "expected": "Int",
+      "found": "Bool"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 104
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 108
+      }
+    }
+  }
+]

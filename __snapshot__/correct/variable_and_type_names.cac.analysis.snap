@@ -1,0 +1,122 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d289), Location(value\u003d323))": {
+    "__class__": "AnalyzedFunction",
+    "variables": [
+      {
+        "__class__": "AnalyzedVariable",
+        "declaration": {
+          "__class__": "FunctionArgument",
+          "type": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 308
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 310
+              }
+            }
+          },
+          "identifier": "x",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 305
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 310
+            }
+          }
+        },
+        "definedIn": {
+          "__class__": "FunctionDeclaration",
+          "arguments": [
+            {
+              "__class__": "FunctionArgument",
+              "type": {
+                "__class__": "Basic",
+                "identifier": "Int",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 308
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 310
+                  }
+                }
+              },
+              "identifier": "x",
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 305
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 310
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 316
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 318
+              }
+            }
+          },
+          "body": {
+            "__class__": "VariableUse",
+            "identifier": "x",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 323
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 323
+              }
+            }
+          },
+          "identifier": "function",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 289
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 323
+            }
+          }
+        },
+        "useType": "READ"
+      }
+    ],
+    "auxVariables": [],
+    "staticDepth": 0,
+    "variablesUsedInNestedFunctions": []
+  }
+}

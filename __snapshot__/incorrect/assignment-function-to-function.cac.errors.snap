@@ -1,0 +1,36 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnexpectedFunctionCall"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 114
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 114
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "UnexpectedFunctionCall"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 118
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 118
+      }
+    }
+  }
+]

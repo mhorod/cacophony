@@ -1,0 +1,275 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d28), Location(value\u003d32))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d20), Location(value\u003d23))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d14), Location(value\u003d32))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d32))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d54), Location(value\u003d54))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d53), Location(value\u003d55))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d52), Location(value\u003d56))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d51), Location(value\u003d57))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d50), Location(value\u003d58))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d49), Location(value\u003d59))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d36), Location(value\u003d59))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d129), Location(value\u003d129))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d133), Location(value\u003d133))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d129), Location(value\u003d133))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d113), Location(value\u003d117))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d120), Location(value\u003d123))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d112), Location(value\u003d124))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d106), Location(value\u003d133))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d98), Location(value\u003d101))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d92), Location(value\u003d133))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d165), Location(value\u003d169))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d151), Location(value\u003d169))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d143), Location(value\u003d146))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d137), Location(value\u003d169))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d201), Location(value\u003d201))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d201), Location(value\u003d202))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d187), Location(value\u003d202))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d173), Location(value\u003d202))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d221), Location(value\u003d221))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d222), Location(value\u003d222))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d223), Location(value\u003d223))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d224), Location(value\u003d224))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d225), Location(value\u003d225))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d226), Location(value\u003d226))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d227), Location(value\u003d227))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d228), Location(value\u003d228))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d229), Location(value\u003d229))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d230), Location(value\u003d230))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d231), Location(value\u003d231))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d232), Location(value\u003d232))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d233), Location(value\u003d233))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d234), Location(value\u003d234))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d235), Location(value\u003d235))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d236), Location(value\u003d236))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d237), Location(value\u003d237))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d220), Location(value\u003d238))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d206), Location(value\u003d238))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d257), Location(value\u003d263))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d277), Location(value\u003d277))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d277), Location(value\u003d278))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d248), Location(value\u003d278))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d296), Location(value\u003d302))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d315), Location(value\u003d315))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d287), Location(value\u003d315))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d285), Location(value\u003d285))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "UnitType",
+        "name": "Unit"
+      }
+    ],
+    "result": {
+      "__class__": "UnitType",
+      "name": "Unit"
+    },
+    "name": "[Unit] -\u003e Unit"
+  },
+  "(Location(value\u003d285), Location(value\u003d316))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d339), Location(value\u003d339))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d339), Location(value\u003d340))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d337), Location(value\u003d337))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "UnitType",
+        "name": "Unit"
+      }
+    ],
+    "result": {
+      "__class__": "UnitType",
+      "name": "Unit"
+    },
+    "name": "[Unit] -\u003e Unit"
+  },
+  "(Location(value\u003d337), Location(value\u003d341))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d323), Location(value\u003d341))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d242), Location(value\u003d371))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d371))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

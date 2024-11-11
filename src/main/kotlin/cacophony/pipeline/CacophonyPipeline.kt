@@ -1,5 +1,6 @@
 package cacophony.pipeline
 
+import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammarSymbol
@@ -13,12 +14,11 @@ import cacophony.semantic.syntaxtree.AST
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
-import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 class CacophonyPipeline(
     val diagnostics: Diagnostics,
-    val logger: CacophonyLogger? = null,
+    private val logger: CacophonyLogger? = null,
     private val lexer: CacophonyLexer = cachedLexer,
     private val parser: CacophonyParser = cachedParser,
 ) {
@@ -27,13 +27,21 @@ class CacophonyPipeline(
         private val cachedParser = CacophonyParser()
     }
 
+    private fun <T> assertEmptyDiagnosticsAfter(action: () -> T): T {
+        val x = action()
+        if (diagnostics.getErrors().isNotEmpty()) {
+            throw diagnostics.fatal()
+        }
+        return x
+    }
+
     // run the full pipeline
     fun process(input: Input): FunctionAnalysisResult = analyzeFunctions(input)
 
-    fun lex(input: Input): List<Token<TokenCategorySpecific>> {
+    private fun lex(input: Input): List<Token<TokenCategorySpecific>> {
         val tokens =
             try {
-                lexer.process(input, diagnostics)
+                assertEmptyDiagnosticsAfter { lexer.process(input, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedLexing()
                 throw e
@@ -42,11 +50,11 @@ class CacophonyPipeline(
         return tokens
     }
 
-    fun parse(input: Input): ParseTree<CacophonyGrammarSymbol> {
+    private fun parse(input: Input): ParseTree<CacophonyGrammarSymbol> {
         val terminals = lex(input).map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
         val parseTree =
             try {
-                parser.process(terminals, diagnostics)
+                assertEmptyDiagnosticsAfter { parser.process(terminals, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedParsing()
                 throw e
@@ -59,7 +67,7 @@ class CacophonyPipeline(
         val parseTree = parse(input)
         val ast =
             try {
-                cacophony.semantic.generateAST(parseTree, diagnostics)
+                assertEmptyDiagnosticsAfter { cacophony.semantic.generateAST(parseTree, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedAstGeneration()
                 throw e
@@ -68,12 +76,10 @@ class CacophonyPipeline(
         return ast
     }
 
-    fun resolveNames(input: Input): NameResolutionResult = resolveNames(generateAST(input))
-
-    fun resolveNames(ast: AST): NameResolutionResult {
+    private fun resolveNames(ast: AST): NameResolutionResult {
         val result =
             try {
-                cacophony.semantic.resolveNames(ast, diagnostics)
+                assertEmptyDiagnosticsAfter { cacophony.semantic.resolveNames(ast, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedNameResolution()
                 throw e
@@ -82,20 +88,18 @@ class CacophonyPipeline(
         return result
     }
 
-    fun resolveOverloads(input: Input): ResolvedVariables = resolveOverloads(generateAST(input))
-
     fun resolveOverloads(ast: AST): ResolvedVariables {
         val nr = resolveNames(ast)
         return resolveOverloads(ast, nr)
     }
 
-    fun resolveOverloads(
+    private fun resolveOverloads(
         ast: AST,
         nr: NameResolutionResult,
     ): ResolvedVariables {
         val result =
             try {
-                cacophony.semantic.resolveOverloads(ast, diagnostics, nr)
+                assertEmptyDiagnosticsAfter { cacophony.semantic.resolveOverloads(ast, diagnostics, nr) }
             } catch (e: CompileException) {
                 logger?.logFailedOverloadResolution()
                 throw e
@@ -104,20 +108,13 @@ class CacophonyPipeline(
         return result
     }
 
-    fun checkTypes(input: Input): TypeCheckingResult = checkTypes(generateAST(input))
-
-    fun checkTypes(ast: AST): TypeCheckingResult {
-        val nr = resolveNames(ast)
-        return checkTypes(ast, resolveOverloads(ast, nr))
-    }
-
     fun checkTypes(
         ast: AST,
         resolvedVariables: ResolvedVariables,
     ): TypeCheckingResult {
         val types =
             try {
-                cacophony.semantic.checkTypes(ast, diagnostics, resolvedVariables)
+                assertEmptyDiagnosticsAfter { cacophony.semantic.checkTypes(ast, diagnostics, resolvedVariables) }
             } catch (e: CompileException) {
                 logger?.logFailedTypeChecking()
                 throw e
@@ -126,20 +123,13 @@ class CacophonyPipeline(
         return types
     }
 
-    fun generateCallGraph(input: Input): CallGraph = generateCallGraph(generateAST(input))
-
-    fun generateCallGraph(ast: AST): CallGraph {
-        val resolvedVariables = resolveOverloads(ast)
-        return generateCallGraph(ast, resolvedVariables)
-    }
-
-    fun generateCallGraph(
+    private fun generateCallGraph(
         ast: AST,
         resolvedVariables: ResolvedVariables,
     ): CallGraph {
         val callGraph =
             try {
-                cacophony.semantic.generateCallGraph(ast, diagnostics, resolvedVariables)
+                assertEmptyDiagnosticsAfter { cacophony.semantic.generateCallGraph(ast, diagnostics, resolvedVariables) }
             } catch (e: CompileException) {
                 logger?.logFailedCallGraphGeneration()
                 throw e
@@ -148,14 +138,14 @@ class CacophonyPipeline(
         return callGraph
     }
 
-    fun analyzeFunctions(input: Input): FunctionAnalysisResult = analyzeFunctions(generateAST(input))
+    private fun analyzeFunctions(input: Input): FunctionAnalysisResult = analyzeFunctions(generateAST(input))
 
-    fun analyzeFunctions(ast: AST): FunctionAnalysisResult {
+    private fun analyzeFunctions(ast: AST): FunctionAnalysisResult {
         val resolvedFunctions = resolveOverloads(ast)
         return analyzeFunctions(ast, resolvedFunctions)
     }
 
-    fun analyzeFunctions(
+    private fun analyzeFunctions(
         ast: AST,
         resolvedVariables: ResolvedVariables,
     ): FunctionAnalysisResult {
@@ -172,7 +162,7 @@ class CacophonyPipeline(
         return analyzeFunctions(ast, resolvedVariables, types, callGraph)
     }
 
-    fun analyzeFunctions(
+    private fun analyzeFunctions(
         ast: AST,
         resolvedVariables: ResolvedVariables,
         types: TypeCheckingResult,
@@ -180,7 +170,7 @@ class CacophonyPipeline(
     ): FunctionAnalysisResult {
         val result =
             try {
-                cacophony.semantic.analyzeFunctions(ast, resolvedVariables, callGraph)
+                assertEmptyDiagnosticsAfter { cacophony.semantic.analyzeFunctions(ast, resolvedVariables, callGraph) }
             } catch (e: CompileException) {
                 logger?.logFailedFunctionAnalysis()
                 throw e

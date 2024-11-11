@@ -8,7 +8,7 @@
 
 # many functions
 (
-    let f = [] -> Bool => true;
+    let f = [] -> Int => 1;
     let f = [x : Int] -> Int => x;
     let f = [x : Int, y: Int] -> Int => x + y;
     let f = [x : Int, y: Int, z: Int] -> Int => x + y + z;
@@ -17,7 +17,7 @@
 
 # different scopes
 (
-    let f = [] -> Bool => true;
+    let f = [] -> Int => 1;
     (
         let f = [x : Int] -> Int => x;
         (
@@ -67,7 +67,7 @@
 (
     let f = [] -> Bool => (
         let f = [x: Int] -> Bool => true;
-        if f[x] then true else f[]
+        if f[42] then true else f[]
     );
 );
 

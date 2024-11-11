@@ -7,9 +7,10 @@ import cacophony.automata.buildNFAFromRegex
 import cacophony.automata.determinize
 import cacophony.automata.minimization.ContractedDFAState
 import cacophony.automata.minimization.minimize
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.LexerDiagnostics
 import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex
-import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 class RegularLanguageLexer<TC : Enum<TC>>(
@@ -95,7 +96,7 @@ class RegularLanguageLexer<TC : Enum<TC>>(
                     matchNewToken(input)?.let { token ->
                         tokens.add(token)
                     } ?: run {
-                        diagnostics.report("Lexer failure: no valid token found.", input.getLocation())
+                        diagnostics.report(LexerDiagnostics.NoValidToken, input.getLocation())
                     }
                     input.next()
                 }

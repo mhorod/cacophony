@@ -1,0 +1,15 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d72), Location(value\u003d75))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d75), Location(value\u003d75))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d72), Location(value\u003d76))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

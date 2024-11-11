@@ -1,0 +1,44 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d36), Location(value\u003d36))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d36), Location(value\u003d37))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d37))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d57), Location(value\u003d71))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "UnitType",
+      "name": "Unit"
+    },
+    "name": "[] -\u003e Unit"
+  },
+  "(Location(value\u003d57), Location(value\u003d73))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d46), Location(value\u003d50))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d40), Location(value\u003d73))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d73), Location(value\u003d73))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d74))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

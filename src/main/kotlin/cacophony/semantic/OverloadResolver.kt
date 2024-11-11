@@ -1,11 +1,8 @@
 package cacophony.semantic
 
+import cacophony.diagnostics.Diagnostics
+import cacophony.diagnostics.ORDiagnostics
 import cacophony.semantic.syntaxtree.*
-import cacophony.utils.Diagnostics
-
-class OverloadResolutionError(
-    reason: String,
-) : Exception(reason)
 
 fun resolveOverloads(
     ast: AST,
@@ -24,26 +21,18 @@ fun resolveOverloads(
                     when (val resName = nr[expr.function]!!) {
                         is ResolvedName.Function -> {
                             when (val overload = resName.def[expr.arguments.size]) {
-                                null -> throw OverloadResolutionError(
-                                    "Cannot find an appropriate function declaration: " +
-                                        "${expr.function.identifier} at ${expr.range}",
-                                )
+                                null ->
+                                    diagnostics.report(ORDiagnostics.IdentifierNotFound(expr.function.identifier), expr.function.range)
                                 else -> resolvedVariables[expr.function] = overload
                             }
                         }
-                        is ResolvedName.Argument -> throw OverloadResolutionError(
-                            "Cannot use function argument as a function: " +
-                                "${expr.function.identifier} at ${expr.function.range}",
-                        )
-                        is ResolvedName.Variable -> throw OverloadResolutionError(
-                            "Cannot use variable as a function: " +
-                                "${expr.function.identifier} at ${expr.function.range}",
-                        )
+                        is ResolvedName.Argument ->
+                            diagnostics.report(ORDiagnostics.UsingArgumentAsFunction(expr.function.identifier), expr.function.range)
+                        is ResolvedName.Variable ->
+                            diagnostics.report(ORDiagnostics.UsingVariableAsFunction(expr.function.identifier), expr.function.range)
                     }
                 } else {
-                    throw OverloadResolutionError(
-                        "Function has to be a simple expression: at ${expr.function.range}",
-                    )
+                    diagnostics.report(ORDiagnostics.FunctionIsNotVariableUse, expr.function.range)
                 }
                 expr.arguments.forEach { resolveOverloadsRec(it) }
             }
@@ -66,7 +55,7 @@ fun resolveOverloads(
                         resolvedVariables[expr] = resName.def
                     }
                     is ResolvedName.Function -> {
-                        diagnostics.report("Unexpected function call", expr.range)
+                        diagnostics.report(ORDiagnostics.UnexpectedFunctionCall, expr.range)
                     }
                 }
             }
