@@ -1,9 +1,6 @@
-package cacophony.automata.minimalization
+package cacophony.automata.minimization
 
-import cacophony.automata.DFA
-import cacophony.automata.SimpleDFA
-import cacophony.automata.areEquivalent
-import cacophony.automata.createDFAEquivalenceHelper
+import cacophony.automata.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -11,7 +8,7 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.math.ceil
 import kotlin.random.Random
 
-class DFAMinimalizationTest {
+class DFAMinimizationTest {
     @Test
     fun `DFA accepting empty word and aa is not changed`() {
         val dfa =
@@ -26,7 +23,7 @@ class DFAMinimalizationTest {
                     2 to Unit,
                 ),
             )
-        val minimized = dfa.minimalize()
+        val minimized = dfa.minimize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(3, minimized.getAllStates().size)
     }
@@ -47,7 +44,7 @@ class DFAMinimalizationTest {
                     2 to Unit,
                 ),
             )
-        val minimized = dfa.minimalize()
+        val minimized = dfa.minimize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(1, minimized.getAllStates().size)
     }
@@ -66,7 +63,7 @@ class DFAMinimalizationTest {
                     2 to "Good",
                 ),
             )
-        var minimized = dfa.minimalize()
+        var minimized = dfa.minimize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(2, minimized.getAllStates().size)
 
@@ -82,7 +79,7 @@ class DFAMinimalizationTest {
                     2 to "NoGood",
                 ),
             )
-        minimized = dfa.minimalize()
+        minimized = dfa.minimize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(3, minimized.getAllStates().size)
 
@@ -100,7 +97,7 @@ class DFAMinimalizationTest {
                     4 to "Good",
                 ),
             )
-        minimized = dfa.minimalize()
+        minimized = dfa.minimize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(3, minimized.getAllStates().size)
     }
@@ -120,7 +117,7 @@ class DFAMinimalizationTest {
                     1 to Unit,
                 ),
             )
-        val minimized = dfa.minimalize()
+        val minimized = dfa.minimize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(2, minimized.getAllStates().size)
     }
@@ -159,13 +156,13 @@ class DFAMinimalizationTest {
                     15 to Unit,
                 ),
             )
-        val minimized = dfa.minimalize()
+        val minimized = dfa.minimize()
         assertTrue(areEquivalent(dfa, minimized))
         assertEquals(16, minimized.getAllStates().size)
     }
 
-    private fun <E> checkThatMinimalizedDFAIsEquivalent(dfa: DFA<E, Char, Unit>) {
-        val minDfa = dfa.minimalize()
+    private fun <E> checkThatMinimizedDFAIsEquivalent(dfa: DFA<E, Char, Unit>) {
+        val minDfa = dfa.minimize()
         val helper = createDFAEquivalenceHelper(dfa, minDfa)
 
         for (state in minDfa.getAllStates()) {
@@ -194,11 +191,11 @@ class DFAMinimalizationTest {
         return equivalenceClassesMap.values.toSet()
     }
 
-    private fun <E> checkThatMinimalizedDFAIsMinimal(dfa: DFA<E, Char, Unit>) {
+    private fun <E> checkThatMinimizedDFAIsMinimal(dfa: DFA<E, Char, Unit>) {
         val equivalenceClassesExpected = bruteDFAStatesEquivalenceClasses(dfa.withAliveReachableStates())
         val equivalenceClassesActual =
             dfa
-                .minimalize()
+                .minimize()
                 .getAllStates()
                 .map { it.originalStates.toSet() }
                 .toMutableSet()
@@ -209,12 +206,12 @@ class DFAMinimalizationTest {
     private fun <E> checkRandomDFA(dfa: DFA<E, Char, Unit>) {
         if ((dfa.getAliveStates() intersect dfa.getReachableStates()).isEmpty()) {
             // Generated DFA is invalid.
-            assertThrows<IllegalArgumentException> { dfa.minimalize() }
+            assertThrows<IllegalArgumentException> { dfa.minimize() }
             return
         }
 
-        checkThatMinimalizedDFAIsEquivalent(dfa)
-        checkThatMinimalizedDFAIsMinimal(dfa)
+        checkThatMinimizedDFAIsEquivalent(dfa)
+        checkThatMinimizedDFAIsMinimal(dfa)
     }
 
     private fun generateRandomDFA(

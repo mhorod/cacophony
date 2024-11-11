@@ -3,86 +3,89 @@ package cacophony.grammars
 import cacophony.automata.DFA
 import java.util.ArrayDeque
 
-fun <StateType, SymbolType, ResultType> findFollow(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
-    nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
-    first: StateToSymbolsMap<StateType, SymbolType, ResultType>,
-): Map<SymbolType, Set<SymbolType>> =
-    getDefaultFollowSetsForRelevantSymbols(automata) + FactContext(automata, nullable, first).followForSymbols
+fun <StateT, SymbolT, ResultT> findFollow(
+    automata: Map<SymbolT, DFA<StateT, SymbolT, ResultT>>,
+    nullable: Collection<DFAStateReference<StateT, SymbolT, ResultT>>,
+    first: StateToSymbolsMap<StateT, SymbolT, ResultT>,
+): Map<SymbolT, Set<SymbolT>> = getDefaultFollowSetsForRelevantSymbols(automata) + FactContext(automata, nullable, first).followForSymbols
 
-fun <StateType, SymbolType, ResultType> findExtendedFollowForStateReferences(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
-    nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
-    first: StateToSymbolsMap<StateType, SymbolType, ResultType>,
-): StateToSymbolsMap<StateType, SymbolType, ResultType> {
+fun <StateT, SymbolT, ResultT> findExtendedFollowForStateReferences(
+    automata: Map<SymbolT, DFA<StateT, SymbolT, ResultT>>,
+    nullable: Collection<DFAStateReference<StateT, SymbolT, ResultT>>,
+    first: StateToSymbolsMap<StateT, SymbolT, ResultT>,
+): StateToSymbolsMap<StateT, SymbolT, ResultT> {
     val followForSymbols = findFollow(automata, nullable, first)
-    return automata.flatMap { (symbol, automaton) ->
-        val followSet = followForSymbols[symbol]!!
-        automaton.getAllStates().map { Pair(it at automaton, followSet) }
-    }.toMap()
+    return automata
+        .flatMap { (symbol, automaton) ->
+            val followSet = followForSymbols[symbol]!!
+            automaton.getAllStates().map { Pair(it at automaton, followSet) }
+        }.toMap()
 }
 
-private infix fun <StateType, SymbolType, ResultType> StateType.at(
-    automaton: DFA<StateType, SymbolType, ResultType>,
-): DFAStateReference<StateType, SymbolType, ResultType> = DFAStateReference(this, automaton)
+private infix fun <StateT, SymbolT, ResultT> StateT.at(
+    automaton: DFA<StateT, SymbolT, ResultT>,
+): DFAStateReference<StateT, SymbolT, ResultT> = DFAStateReference(this, automaton)
 
-private sealed class Fact<out StateType, out SymbolType, out ResultType> {
-    data class Follows<SymbolType>(val follower: SymbolType, val followed: SymbolType) :
-        Fact<Nothing, SymbolType, Nothing>()
+private sealed class Fact<out StateT, out SymbolT, out ResultT> {
+    data class Follows<SymbolT>(
+        val follower: SymbolT,
+        val followed: SymbolT,
+    ) : Fact<Nothing, SymbolT, Nothing>()
 
-    data class FirstPlusOf<StateType, SymbolType, ResultType>(
-        val symbol: SymbolType,
-        val state: DFAStateReference<StateType, SymbolType, ResultType>,
-    ) : Fact<StateType, SymbolType, ResultType>()
+    data class FirstPlusOf<StateT, SymbolT, ResultT>(
+        val symbol: SymbolT,
+        val state: DFAStateReference<StateT, SymbolT, ResultT>,
+    ) : Fact<StateT, SymbolT, ResultT>()
 }
 
-private infix fun <SymbolType> SymbolType.follows(followed: SymbolType): Fact.Follows<SymbolType> = Fact.Follows(this, followed)
+private infix fun <SymbolT> SymbolT.follows(followed: SymbolT): Fact.Follows<SymbolT> = Fact.Follows(this, followed)
 
-private infix fun <StateType, SymbolType, ResultType> SymbolType.firstPlusOf(
-    state: DFAStateReference<StateType, SymbolType, ResultType>,
-): Fact.FirstPlusOf<StateType, SymbolType, ResultType> = Fact.FirstPlusOf(this, state)
+private infix fun <StateT, SymbolT, ResultT> SymbolT.firstPlusOf(
+    state: DFAStateReference<StateT, SymbolT, ResultT>,
+): Fact.FirstPlusOf<StateT, SymbolT, ResultT> = Fact.FirstPlusOf(this, state)
 
-private class FactContext<StateType, SymbolType, ResultType>(
-    private val automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
-    private val nullable: Collection<DFAStateReference<StateType, SymbolType, ResultType>>,
-    private val first: StateToSymbolsMap<StateType, SymbolType, ResultType>,
+private class FactContext<StateT, SymbolT, ResultT>(
+    private val automata: Map<SymbolT, DFA<StateT, SymbolT, ResultT>>,
+    private val nullable: Collection<DFAStateReference<StateT, SymbolT, ResultT>>,
+    private val first: StateToSymbolsMap<StateT, SymbolT, ResultT>,
 ) {
-    val followForSymbols: Map<SymbolType, Set<SymbolType>>
+    val followForSymbols: Map<SymbolT, Set<SymbolT>>
 
-    private val facts: MutableSet<Fact<StateType, SymbolType, ResultType>> = mutableSetOf()
-    private val toProcess: ArrayDeque<Fact<StateType, SymbolType, ResultType>> = ArrayDeque()
+    private val facts: MutableSet<Fact<StateT, SymbolT, ResultT>> = mutableSetOf()
+    private val toProcess: ArrayDeque<Fact<StateT, SymbolT, ResultT>> = ArrayDeque()
 
-    private val acceptingStates: Map<SymbolType, Set<DFAStateReference<StateType, SymbolType, ResultType>>> =
+    private val acceptingStates: Map<SymbolT, Set<DFAStateReference<StateT, SymbolT, ResultT>>> =
         automata.mapValues { (_, automaton) ->
-            automaton.getAllStates().filter { automaton.isAccepting(it) }.map { it at automaton }.toSet()
+            automaton
+                .getAllStates()
+                .filter { automaton.isAccepting(it) }
+                .map { it at automaton }
+                .toSet()
         }
 
     private val enteringTransitions:
-        Map<
-            DFAStateReference<StateType, SymbolType, ResultType>,
-            Collection<Pair<DFAStateReference<StateType, SymbolType, ResultType>, SymbolType>>,
-            > =
+        Map<DFAStateReference<StateT, SymbolT, ResultT>, Collection<Pair<DFAStateReference<StateT, SymbolT, ResultT>, SymbolT>>> =
         automata.values
             .flatMap { automaton ->
                 automaton
                     .getProductions()
                     .map { (args, result) -> Pair(result at automaton, Pair(args.first at automaton, args.second)) }
-            }
-            .groupBy({ it.first }, { it.second })
+            }.groupBy({ it.first }, { it.second })
 
     init {
         determineFacts()
         followForSymbols =
             facts
-                .filterIsInstance<Fact.Follows<SymbolType>>()
+                .filterIsInstance<Fact.Follows<SymbolT>>()
                 .groupBy({ it.followed }, { it.follower })
                 .mapValues { it.value.toSet() }
     }
 
     private fun determineFacts() {
         initializeFacts()
-        while (!toProcess.isEmpty())
+        while (!toProcess.isEmpty()) {
             process(toProcess.removeFirst())
+        }
     }
 
     private fun initializeFacts() =
@@ -95,7 +98,7 @@ private class FactContext<StateType, SymbolType, ResultType>(
             },
         )
 
-    private fun process(fact: Fact<StateType, SymbolType, ResultType>) =
+    private fun process(fact: Fact<StateT, SymbolT, ResultT>) =
         discoverAll(
             when (fact) {
                 is Fact.FirstPlusOf -> implicationsOfFirstPlusOf(fact)
@@ -103,34 +106,31 @@ private class FactContext<StateType, SymbolType, ResultType>(
             },
         )
 
-    private fun implicationsOfFirstPlusOf(
-        fact: Fact.FirstPlusOf<StateType, SymbolType, ResultType>,
-    ): Collection<Fact<StateType, SymbolType, ResultType>> =
+    private fun implicationsOfFirstPlusOf(fact: Fact.FirstPlusOf<StateT, SymbolT, ResultT>): Collection<Fact<StateT, SymbolT, ResultT>> =
         enteringTransitions
             .getOrDefault(fact.state, emptyList())
             .flatMap { (state, symbol) ->
                 listOf(fact.symbol follows symbol) + (if (isNullable(symbol)) listOf(fact.symbol firstPlusOf state) else emptyList())
             }
 
-    private fun implicationsOfFollows(fact: Fact.Follows<SymbolType>): Collection<Fact<StateType, SymbolType, ResultType>> =
+    private fun implicationsOfFollows(fact: Fact.Follows<SymbolT>): Collection<Fact<StateT, SymbolT, ResultT>> =
         acceptingStates
             .getOrDefault(fact.followed, emptySet())
             .map { fact.follower firstPlusOf it }
 
-    private fun discoverAll(facts: Collection<Fact<StateType, SymbolType, ResultType>>) = facts.forEach { discover(it) }
+    private fun discoverAll(facts: Collection<Fact<StateT, SymbolT, ResultT>>) = facts.forEach { discover(it) }
 
-    private fun discover(fact: Fact<StateType, SymbolType, ResultType>) {
+    private fun discover(fact: Fact<StateT, SymbolT, ResultT>) {
         if (facts.add(fact)) {
             toProcess.add(fact)
         }
     }
 
-    private fun isNullable(symbol: SymbolType): Boolean = automata[symbol]?.let { nullable.contains(it.getStartingState() at it) } ?: false
+    private fun isNullable(symbol: SymbolT): Boolean = automata[symbol]?.let { nullable.contains(it.getStartingState() at it) } ?: false
 }
 
-private fun <SymbolType> getDefaultFollowSetsForRelevantSymbols(
-    automata: Map<SymbolType, DFA<*, SymbolType, *>>,
-): Map<SymbolType, Set<SymbolType>> = getRelevantSymbols(automata).associateWith { emptySet() }
+private fun <SymbolT> getDefaultFollowSetsForRelevantSymbols(automata: Map<SymbolT, DFA<*, SymbolT, *>>): Map<SymbolT, Set<SymbolT>> =
+    getRelevantSymbols(automata).associateWith { emptySet() }
 
-private fun <SymbolType> getRelevantSymbols(automata: Map<SymbolType, DFA<*, SymbolType, *>>): Set<SymbolType> =
+private fun <SymbolT> getRelevantSymbols(automata: Map<SymbolT, DFA<*, SymbolT, *>>): Set<SymbolT> =
     automata.keys union automata.values.flatMap { it.getProductions().keys.map { (_, symbol) -> symbol } }.toSet()

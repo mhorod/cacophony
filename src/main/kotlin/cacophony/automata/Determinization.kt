@@ -4,7 +4,7 @@ import kotlin.collections.mutableMapOf
 import kotlin.collections.mutableSetOf
 import kotlin.collections.setOf
 
-public fun <StateType, AtomType> determinize(nfa: NFA<StateType, AtomType>): DFA<Int, AtomType, Unit> =
+fun <StateT, AtomT> determinize(nfa: NFA<StateT, AtomT>): DFA<Int, AtomT, Unit> =
     determinize(
         nfa,
         nfa.getProductions().keys.fold(mutableSetOf()) { atoms, (_, atom) ->
@@ -13,14 +13,14 @@ public fun <StateType, AtomType> determinize(nfa: NFA<StateType, AtomType>): DFA
         },
     )
 
-private fun <StateType, AtomType> determinize(
-    nfa: NFA<StateType, AtomType>,
-    atoms: Iterable<AtomType>,
-): DFA<Int, AtomType, Unit> {
-    val startingState: Set<StateType> = nfa.epsilonClosure(setOf(nfa.getStartingState()))
+private fun <StateT, AtomT> determinize(
+    nfa: NFA<StateT, AtomT>,
+    atoms: Iterable<AtomT>,
+): DFA<Int, AtomT, Unit> {
+    val startingState: Set<StateT> = nfa.epsilonClosure(setOf(nfa.getStartingState()))
     val createdStates = mutableSetOf(startingState)
     val worklist = ArrayDeque(listOf(startingState))
-    val dfaProductions = mutableMapOf<Set<StateType>, MutableMap<AtomType, Set<StateType>>>()
+    val dfaProductions = mutableMapOf<Set<StateT>, MutableMap<AtomT, Set<StateT>>>()
 
     while (!worklist.isEmpty()) {
         val states = worklist.removeFirst()
@@ -44,12 +44,12 @@ private fun <StateType, AtomType> determinize(
     val productions =
         dfaProductions
             .flatMap { (state, edges) ->
-                edges.map { Pair(setToInt[state]!!, it.key) to setToInt[it.value]!! }
+                edges.map { setToInt[state]!! via it.key to setToInt[it.value]!! }
             }.toMap()
     return SimpleDFA(setToInt[startingState]!!, productions, results)
 }
 
-private fun <StateType> NFA<StateType, *>.epsilonClosure(states: Collection<StateType>): MutableSet<StateType> {
+private fun <StateT> NFA<StateT, *>.epsilonClosure(states: Collection<StateT>): MutableSet<StateT> {
     val queue = ArrayDeque(states)
     val visited = states.toMutableSet()
 
@@ -64,10 +64,10 @@ private fun <StateType> NFA<StateType, *>.epsilonClosure(states: Collection<Stat
     return visited
 }
 
-private fun <StateType, AtomType> NFA<StateType, AtomType>.getSetEdge(
-    states: Set<StateType>,
-    symbol: AtomType,
-): Set<StateType> =
+private fun <StateT, AtomT> NFA<StateT, AtomT>.getSetEdge(
+    states: Set<StateT>,
+    symbol: AtomT,
+): Set<StateT> =
     this.epsilonClosure(states).let { closure ->
         this.epsilonClosure(closure.flatMap { this.getProductions(it, symbol) }.toSet())
     }

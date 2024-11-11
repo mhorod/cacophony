@@ -23,6 +23,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             emptySet(),
+                            mutableSetOf(),
                             0,
                             emptySet(),
                         ),
@@ -49,6 +50,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.UNUSED)),
+                            mutableSetOf(),
                             0,
                             emptySet(),
                         ),
@@ -76,6 +78,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
+                            mutableSetOf(),
                             0,
                             emptySet(),
                         ),
@@ -104,6 +107,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.WRITE)),
+                            mutableSetOf(),
                             0,
                             emptySet(),
                         ),
@@ -133,6 +137,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ_WRITE)),
+                            mutableSetOf(),
                             0,
                             emptySet(),
                         ),
@@ -161,6 +166,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             emptySet(),
+                            mutableSetOf(),
                             0,
                             emptySet(),
                         ),
@@ -168,6 +174,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             ParentLink(funF, false),
                             emptySet(),
+                            mutableSetOf(),
                             1,
                             emptySet(),
                         ),
@@ -197,6 +204,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.UNUSED)),
+                            mutableSetOf(),
                             0,
                             setOf(varA),
                         ),
@@ -204,6 +212,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             ParentLink(funF, true),
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
+                            mutableSetOf(),
                             1,
                             emptySet(),
                         ),
@@ -242,6 +251,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             setOf(AnalyzedVariable(varA, funFoo, VariableUseType.UNUSED)),
+                            mutableSetOf(),
                             0,
                             setOf(varA),
                         ),
@@ -249,6 +259,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             ParentLink(funFoo, true),
                             emptySet(),
+                            mutableSetOf(),
                             1,
                             emptySet(),
                         ),
@@ -256,6 +267,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             ParentLink(funG, true),
                             setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
+                            mutableSetOf(),
                             2,
                             emptySet(),
                         ),
@@ -263,6 +275,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             ParentLink(funI, false),
                             emptySet(),
+                            mutableSetOf(),
                             2,
                             emptySet(),
                         ),
@@ -270,6 +283,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             ParentLink(funFoo, true),
                             emptySet(),
+                            mutableSetOf(),
                             1,
                             emptySet(),
                         ),
@@ -277,6 +291,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             emptySet(),
+                            mutableSetOf(),
                             0,
                             emptySet(),
                         ),
@@ -308,6 +323,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             null,
                             setOf(AnalyzedVariable(fooVarA, funFoo, VariableUseType.READ)),
+                            mutableSetOf(),
                             0,
                             emptySet(),
                         ),
@@ -315,6 +331,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             ParentLink(funFoo, false),
                             setOf(AnalyzedVariable(barVarA, funBar, VariableUseType.WRITE)),
+                            mutableSetOf(),
                             1,
                             emptySet(),
                         ),
@@ -347,6 +364,7 @@ class FunctionAnalysisTest {
                     AnalyzedFunction(
                         null,
                         setOf(AnalyzedVariable(argA, funF, VariableUseType.READ)),
+                        mutableSetOf(),
                         0,
                         emptySet(),
                     ),
@@ -385,6 +403,7 @@ class FunctionAnalysisTest {
                             AnalyzedVariable(argA, funF, VariableUseType.UNUSED),
                             AnalyzedVariable(argB, funF, VariableUseType.UNUSED),
                         ),
+                        mutableSetOf(),
                         0,
                         setOf(argA, argB),
                     ),
@@ -395,6 +414,7 @@ class FunctionAnalysisTest {
                             AnalyzedVariable(argA, funF, VariableUseType.READ),
                             AnalyzedVariable(argB, funF, VariableUseType.WRITE),
                         ),
+                        mutableSetOf(),
                         1,
                         emptySet(),
                     ),

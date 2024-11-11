@@ -2,17 +2,17 @@ package cacophony.grammars
 
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
-import cacophony.automata.minimalization.via
+import cacophony.automata.via
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class FindFollowTest {
     private fun <T> results(vararg results: T) = results.associateWith { }
 
-    private fun <StateType, AtomType> productions() = mapOf<Pair<StateType, AtomType>, StateType>()
+    private fun <StateT, AtomT> productions() = mapOf<Pair<StateT, AtomT>, StateT>()
 
-    private fun <StateType, SymbolType, ResultType> stateToSymbols(
-        vararg results: Pair<Pair<StateType, DFA<StateType, SymbolType, ResultType>>, Set<SymbolType>>,
+    private fun <StateT, SymbolT, ResultT> stateToSymbols(
+        vararg results: Pair<Pair<StateT, DFA<StateT, SymbolT, ResultT>>, Set<SymbolT>>,
     ) = results.associate { it }
 
     @Test
@@ -31,9 +31,9 @@ class FindFollowTest {
         val first =
             stateToSymbols(
                 // direct productions
-                Pair(0, dfaA) to setOf('a'),
-                Pair(1, dfaA) to setOf('b'),
-                Pair(2, dfaA) to emptySet(),
+                0 via dfaA to setOf('a'),
+                1 via dfaA to setOf('b'),
+                2 via dfaA to emptySet(),
             )
 
         // when
@@ -78,11 +78,11 @@ class FindFollowTest {
                         'B', // direct production
                         'c', // transitive from B -> cd
                     ),
-                Pair(1, dfaA) to setOf('b'), // direct production
-                Pair(2, dfaA) to emptySet(), // accepting state
-                Pair(0, dfaB) to setOf('c'), // direct production
-                Pair(1, dfaB) to setOf('d'), // direct production
-                Pair(2, dfaB) to emptySet(), // accepting state
+                1 via dfaA to setOf('b'), // direct production
+                2 via dfaA to emptySet(), // accepting state
+                0 via dfaB to setOf('c'), // direct production
+                1 via dfaB to setOf('d'), // direct production
+                2 via dfaB to emptySet(), // accepting state
             )
 
         // when
@@ -132,10 +132,10 @@ class FindFollowTest {
         val nullable = setOf(Pair(1, dfaA), Pair(1, dfaB), Pair(2, dfaC)) // accepting states
         val first =
             stateToSymbols(
-                Pair(0, dfaA) to setOf('a'), // direct production
-                Pair(1, dfaA) to emptySet(), // accepting state
-                Pair(0, dfaB) to setOf('b', 'c'), // direct productions
-                Pair(1, dfaB) to emptySet(), // accepting state
+                0 via dfaA to setOf('a'), // direct production
+                1 via dfaA to emptySet(), // accepting state
+                0 via dfaB to setOf('b', 'c'), // direct productions
+                1 via dfaB to emptySet(), // accepting state
                 Pair(0, dfaC) to
                     setOf(
                         'A', // direct production
@@ -147,7 +147,7 @@ class FindFollowTest {
                         'b', // transitive from B -> b
                         'c', // transitive from B -> c
                     ),
-                Pair(2, dfaC) to emptySet(), // accepting state
+                2 via dfaC to emptySet(), // accepting state
             )
 
         // when
@@ -191,12 +191,12 @@ class FindFollowTest {
         val nullable = setOf(Pair(0, dfaA), Pair(2, dfaB), Pair(1, dfaC), Pair(2, dfaD)) // accepting states
         val first =
             stateToSymbols(
-                Pair(0, dfaA) to emptySet(), // accepting state
-                Pair(0, dfaB) to setOf('A'), // direct production
-                Pair(1, dfaB) to setOf('b'), // direct production
-                Pair(2, dfaB) to emptySet(), // accepting state
-                Pair(0, dfaC) to setOf('c'), // direct production
-                Pair(1, dfaC) to emptySet(), // accepting state
+                0 via dfaA to emptySet(), // accepting state
+                0 via dfaB to setOf('A'), // direct production
+                1 via dfaB to setOf('b'), // direct production
+                2 via dfaB to emptySet(), // accepting state
+                0 via dfaC to setOf('c'), // direct production
+                1 via dfaC to emptySet(), // accepting state
                 Pair(0, dfaD) to
                     setOf(
                         'C', // direct production
@@ -208,7 +208,7 @@ class FindFollowTest {
                         'A', // transitive from B -> A
                         'b', // transitive from B -> Ab with nullable A
                     ),
-                Pair(2, dfaD) to emptySet(), // accepting state
+                2 via dfaD to emptySet(), // accepting state
             )
 
         // when

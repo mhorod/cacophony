@@ -1,5 +1,3 @@
-@file:Suppress("ktlint")
-
 package cacophony.semantic
 
 import cacophony.semantic.syntaxtree.*
@@ -417,7 +415,6 @@ class TypeCheckerTest {
         verify { diagnostics wasNot called }
     }
 
-
     @Test
     fun `ok - if without else, true branch Unit, VariableUse at test`() {
         val varDef = Definition.VariableDeclaration(lc, "flag", null, Literal.BoolLiteral(lc, true))
@@ -758,7 +755,6 @@ class TypeCheckerTest {
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
         verify { diagnostics wasNot called }
     }
-
 
     @Test
     fun `ok - sub=`() {
@@ -1155,7 +1151,6 @@ class TypeCheckerTest {
         }
         confirmVerified(diagnostics)
     }
-
 
     @Test
     fun `error - equals on Unit`() {

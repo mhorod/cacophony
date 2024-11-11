@@ -1,5 +1,6 @@
 package cacophony.semantic
 
+import cacophony.controlflow.Variable
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.utils.getReachableFrom
@@ -15,6 +16,7 @@ data class ParentLink(
 data class AnalyzedFunction(
     val parentLink: ParentLink?,
     val variables: Set<AnalyzedVariable>,
+    val auxVariables: MutableSet<Variable.AuxVariable>,
     val staticDepth: Int,
     val variablesUsedInNestedFunctions: Set<Definition>,
 )
@@ -84,7 +86,7 @@ fun makeAnalyzedFunction(
     val variables =
         analyzedVariables[function]
             ?: throw IllegalStateException("Analyzed function is missing variable information")
-    return AnalyzedFunction(parentLink, variables, staticRelations.staticDepth, variablesUsedInNestedFunctions)
+    return AnalyzedFunction(parentLink, variables, mutableSetOf(), staticRelations.staticDepth, variablesUsedInNestedFunctions)
 }
 
 fun makeAnalyzedVariable(

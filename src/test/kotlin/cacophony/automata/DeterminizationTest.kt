@@ -47,9 +47,9 @@ class DeterminizationTest {
             makeNFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to listOf(1, 3),
-                    Pair(2, 'a') to listOf(2),
-                    Pair(3, 'b') to listOf(3),
+                    1 via 'a' to listOf(1, 3),
+                    2 via 'a' to listOf(2),
+                    3 via 'b' to listOf(3),
                 ),
                 mapOf(
                     3 to listOf(1),
@@ -68,8 +68,8 @@ class DeterminizationTest {
             makeNFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to listOf(3),
-                    Pair(3, 'b') to listOf(3),
+                    1 via 'a' to listOf(3),
+                    3 via 'b' to listOf(3),
                 ),
                 mapOf(
                     1 to listOf(2, 3),
@@ -89,14 +89,14 @@ class DeterminizationTest {
             makeNFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to listOf(1),
-                    Pair(1, 'b') to listOf(1),
+                    1 via 'a' to listOf(1),
+                    1 via 'b' to listOf(1),
                 ),
                 mapOf(),
                 1,
             )
 
-        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), mapOf(1 to Unit))
+        val expected = SimpleDFA(1, mapOf(1 via 'a' to 1, 1 via 'b' to 1), mapOf(1 to Unit))
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())
     }
@@ -108,22 +108,22 @@ class DeterminizationTest {
             makeNFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to listOf(1, 2, 3),
-                    Pair(1, 'b') to listOf(1, 2, 3),
-                    Pair(2, 'a') to listOf(1, 2, 3),
-                    Pair(2, 'b') to listOf(1, 2, 3),
-                    Pair(3, 'a') to listOf(1, 2, 3),
-                    Pair(3, 'b') to listOf(1, 2, 3),
-                    Pair(4, 'a') to listOf(4, 5),
-                    Pair(4, 'b') to listOf(4, 5),
-                    Pair(5, 'a') to listOf(4, 5),
-                    Pair(5, 'b') to listOf(4, 5),
+                    1 via 'a' to listOf(1, 2, 3),
+                    1 via 'b' to listOf(1, 2, 3),
+                    2 via 'a' to listOf(1, 2, 3),
+                    2 via 'b' to listOf(1, 2, 3),
+                    3 via 'a' to listOf(1, 2, 3),
+                    3 via 'b' to listOf(1, 2, 3),
+                    4 via 'a' to listOf(4, 5),
+                    4 via 'b' to listOf(4, 5),
+                    5 via 'a' to listOf(4, 5),
+                    5 via 'b' to listOf(4, 5),
                 ),
                 mapOf(1 to listOf(2, 4), 2 to listOf(4), 3 to listOf(4)),
                 2,
             )
 
-        val expected = SimpleDFA(1, mapOf(Pair(1, 'a') to 1, Pair(1, 'b') to 1), mapOf(1 to Unit))
+        val expected = SimpleDFA(1, mapOf(1 via 'a' to 1, 1 via 'b' to 1), mapOf(1 to Unit))
         val actual = determinize(nfa)
         assertTrue(areEquivalent(actual, expected), actual.toString())
     }
@@ -135,31 +135,31 @@ class DeterminizationTest {
             makeNFA(
                 1,
                 mapOf(
-                    Pair(1, 'a') to listOf(-4),
-                    Pair(1, 'b') to listOf(2, -2),
-                    Pair(1, 'c') to listOf(3, -3, 100, -4),
-                    Pair(2, 'a') to listOf(3, 100),
-                    Pair(2, 'c') to listOf(7),
-                    Pair(3, 'a') to listOf(4),
-                    Pair(4, 'a') to listOf(5),
-                    Pair(5, 'a') to listOf(0, 1),
-                    Pair(6, 'a') to listOf(0),
-                    Pair(7, 'a') to listOf(4, 101),
-                    Pair(7, 'b') to listOf(8, 5),
-                    Pair(8, 'a') to listOf(0),
-                    Pair(100, 'a') to listOf(4, 101),
-                    Pair(101, 'a') to listOf(5, 102),
-                    Pair(102, 'a') to listOf(0, -3),
-                    Pair(0, 'x') to listOf(-2),
-                    Pair(-2, 'a') to listOf(-3, -4),
-                    Pair(-2, 'b') to listOf(-3),
-                    Pair(-2, 'c') to listOf(-3, -2),
-                    Pair(-3, 'a') to listOf(-3, -4),
-                    Pair(-3, 'b') to listOf(-3),
-                    Pair(-3, 'c') to listOf(-3, -2),
-                    Pair(-4, 'a') to listOf(-3, -4),
-                    Pair(-4, 'b') to listOf(-3),
-                    Pair(-4, 'c') to listOf(-3, -2),
+                    1 via 'a' to listOf(-4),
+                    1 via 'b' to listOf(2, -2),
+                    1 via 'c' to listOf(3, -3, 100, -4),
+                    2 via 'a' to listOf(3, 100),
+                    2 via 'c' to listOf(7),
+                    3 via 'a' to listOf(4),
+                    4 via 'a' to listOf(5),
+                    5 via 'a' to listOf(0, 1),
+                    6 via 'a' to listOf(0),
+                    7 via 'a' to listOf(4, 101),
+                    7 via 'b' to listOf(8, 5),
+                    8 via 'a' to listOf(0),
+                    100 via 'a' to listOf(4, 101),
+                    101 via 'a' to listOf(5, 102),
+                    102 via 'a' to listOf(0, -3),
+                    0 via 'x' to listOf(-2),
+                    -2 via 'a' to listOf(-3, -4),
+                    -2 via 'b' to listOf(-3),
+                    -2 via 'c' to listOf(-3, -2),
+                    -3 via 'a' to listOf(-3, -4),
+                    -3 via 'b' to listOf(-3),
+                    -3 via 'c' to listOf(-3, -2),
+                    -4 via 'a' to listOf(-3, -4),
+                    -4 via 'b' to listOf(-3),
+                    -4 via 'c' to listOf(-3, -2),
                 ),
                 mapOf(0 to listOf(1, 0), 1 to listOf(-2, -3), 101 to listOf(-2, 4)),
                 1,
@@ -169,15 +169,15 @@ class DeterminizationTest {
             SimpleDFA(
                 1,
                 mapOf(
-                    Pair(1, 'b') to 2,
-                    Pair(1, 'c') to 4,
-                    Pair(2, 'a') to 4,
-                    Pair(2, 'c') to 3,
-                    Pair(3, 'a') to 5,
-                    Pair(3, 'b') to 6,
-                    Pair(4, 'a') to 5,
-                    Pair(5, 'a') to 6,
-                    Pair(6, 'a') to 1,
+                    1 via 'b' to 2,
+                    1 via 'c' to 4,
+                    2 via 'a' to 4,
+                    2 via 'c' to 3,
+                    3 via 'a' to 5,
+                    3 via 'b' to 6,
+                    4 via 'a' to 5,
+                    5 via 'a' to 6,
+                    6 via 'a' to 1,
                 ),
                 mapOf(
                     1 to Unit,

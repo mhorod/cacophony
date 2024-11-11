@@ -5,12 +5,11 @@ import cacophony.END_OF_LINE_CHAR
 import cacophony.automata.DFA
 import cacophony.automata.buildNFAFromRegex
 import cacophony.automata.determinize
-import cacophony.automata.minimalization.ContractedDFAState
-import cacophony.automata.minimalization.minimalize
-import cacophony.diagnostics.Diagnostics
-import cacophony.diagnostics.LexerDiagnostics
+import cacophony.automata.minimization.ContractedDFAState
+import cacophony.automata.minimization.minimize
 import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex
+import cacophony.utils.Diagnostics
 import cacophony.utils.Input
 
 class RegularLanguageLexer<TC : Enum<TC>>(
@@ -21,12 +20,12 @@ class RegularLanguageLexer<TC : Enum<TC>>(
         // Factory accepting list of DFAs.
         // Param is list of pairs (token_category, DFA). Pairs are provided in descending order of category priority.
         fun <TC : Enum<TC>> fromAutomata(automata: List<Pair<TC, DFA<Int, Char, Unit>>>): RegularLanguageLexer<TC> {
-            // DFA minimalization is a RegularLanguageLexer implementation detail.
-            val minimalizedAutomata = automata.map { (category, automaton) -> Pair(category, automaton.minimalize()) }
+            // DFA minimization is a RegularLanguageLexer implementation detail.
+            val minimizedAutomata = automata.map { (category, automaton) -> Pair(category, automaton.minimize()) }
 
             return RegularLanguageLexer(
-                minimalizedAutomata.toMap(),
-                minimalizedAutomata.mapIndexed { index, (category, _) -> Pair(category, index) }.toMap(),
+                minimizedAutomata.toMap(),
+                minimizedAutomata.mapIndexed { index, (category, _) -> Pair(category, index) }.toMap(),
             )
         }
 

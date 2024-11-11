@@ -6,6 +6,7 @@
 4 < 2;
 4 > 2;
 4 == 2;
+-42;
 
 # boolean operators
 false && true;
@@ -21,5 +22,6 @@ let y: Bool = (4 < 5) || (4 > 5);
 # using arithmetic operators with variables
 let a: Int = 2;
 let b: Int = 1;
-let c: Int = 3;
-let d: Int = (a * c) + b;
+let c: Int = -3;
+let d: Int = -(a * c) + b;
+

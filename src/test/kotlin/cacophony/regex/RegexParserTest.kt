@@ -11,9 +11,9 @@ import org.junit.jupiter.api.assertThrows
 
 class RegexParserTest {
     // Checks _exact_ structure, i.e. returns false for (a|b) and (b|a).
-    private fun <AtomType> algebraicRegexEquals(
-        x: AlgebraicRegex<AtomType>,
-        y: AlgebraicRegex<AtomType>,
+    private fun <AtomT> algebraicRegexEquals(
+        x: AlgebraicRegex<AtomT>,
+        y: AlgebraicRegex<AtomT>,
     ): Boolean {
         when (x) {
             is AtomicRegex ->
@@ -23,8 +23,7 @@ class RegexParserTest {
             is ConcatenationRegex ->
                 if (y is ConcatenationRegex) {
                     return x.internalRegexes.size == y.internalRegexes.size &&
-                        x.internalRegexes.zip(y.internalRegexes).all {
-                                (a, b) ->
+                        x.internalRegexes.zip(y.internalRegexes).all { (a, b) ->
                             algebraicRegexEquals(a, b)
                         }
                 }
@@ -35,8 +34,7 @@ class RegexParserTest {
             is UnionRegex ->
                 if (y is UnionRegex) {
                     return x.internalRegexes.size == y.internalRegexes.size &&
-                        x.internalRegexes.zip(y.internalRegexes).all {
-                                (a, b) ->
+                        x.internalRegexes.zip(y.internalRegexes).all { (a, b) ->
                             algebraicRegexEquals(a, b)
                         }
                 }
@@ -44,8 +42,8 @@ class RegexParserTest {
         return false
     }
 
-    private fun <AtomType> algebraicRegexToString(ar: AlgebraicRegex<AtomType>): String {
-        return when (ar) {
+    private fun <AtomT> algebraicRegexToString(ar: AlgebraicRegex<AtomT>): String =
+        when (ar) {
             is AtomicRegex -> ar.symbol.toString()
             is ConcatenationRegex ->
                 ar.internalRegexes.joinToString(
@@ -61,11 +59,10 @@ class RegexParserTest {
                     ")",
                 ) { algebraicRegexToString(it) }
         }
-    }
 
-    private fun <AtomType> assertEqualAlgebraicRegex(
-        result: AlgebraicRegex<AtomType>,
-        expected: AlgebraicRegex<AtomType>,
+    private fun <AtomT> assertEqualAlgebraicRegex(
+        result: AlgebraicRegex<AtomT>,
+        expected: AlgebraicRegex<AtomT>,
     ) {
         assert(algebraicRegexEquals(result, expected)) {
             println("result: ${algebraicRegexToString(result)}\nexpect: ${algebraicRegexToString(expected)}")
@@ -132,14 +129,15 @@ class RegexParserTest {
         val result = parseRegex(keywords.joinToString("""|"""))
         val expected: AlgebraicRegex<Char> =
             UnionRegex(
-                *keywords.map {
-                    ConcatenationRegex(
-                        *it.map {
-                                c ->
-                            AtomicRegex(c)
-                        }.toTypedArray(),
-                    )
-                }.toTypedArray(),
+                *keywords
+                    .map {
+                        ConcatenationRegex(
+                            *it
+                                .map { c ->
+                                    AtomicRegex(c)
+                                }.toTypedArray(),
+                        )
+                    }.toTypedArray(),
             )
         assertEqualAlgebraicRegex(result, expected)
     }

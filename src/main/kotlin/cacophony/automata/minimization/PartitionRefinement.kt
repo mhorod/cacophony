@@ -1,4 +1,4 @@
-package cacophony.automata.minimalization
+package cacophony.automata.minimization
 
 // Represents a set of the partition and allow for quick comparisons
 data class PartitionId(
