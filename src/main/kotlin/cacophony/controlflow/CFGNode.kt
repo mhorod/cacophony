@@ -38,110 +38,115 @@ sealed interface CFGNode {
 
     sealed interface LValue : CFGNode
 
-    class Return :
+    data object Return :
         Unconditional,
         Leaf
 
-    class Call(
+    data class Call(
         val declaration: Definition.FunctionDeclaration,
     ) : Unconditional,
         Leaf
 
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
-    class Push(
+    data class Push(
         val value: CFGNode,
     ) : Unconditional
 
     // NOTE: Pop may be unnecessary since it can be done via Assignment
-    class Pop(
+    data class Pop(
         val regvar: Register,
     ) : Unconditional,
         Leaf
 
-    class Assignment(
+    data class Assignment(
         val destination: Register,
         val value: CFGNode,
     ) : Unconditional
 
-    class VariableUse(
+    data class VariableUse(
         val regvar: Register,
     ) : Unconditional,
         Leaf,
         LValue
 
-    class MemoryAccess(
+    data class MemoryAccess(
         val destination: CFGNode,
     ) : Unconditional,
         LValue
 
-    class Constant(
+    data class MemoryWrite(
+        val destination: MemoryAccess,
+        val value: CFGNode,
+    ) : Unconditional
+
+    data class Constant(
         val value: Int,
     ) : Unconditional,
         Leaf
 
-    class Sequence(
+    data class Sequence(
         val nodes: List<CFGNode>,
     ) : Unconditional
 
     sealed interface ArithmeticOperator : Unconditional
 
-    class Addition(
+    data class Addition(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
-    class Subtraction(
+    data class Subtraction(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
-    class Multiplication(
+    data class Multiplication(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
-    class Division(
+    data class Division(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
-    class Modulo(
+    data class Modulo(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
     sealed interface LogicalOperator : CFGNode
 
-    class LogicalNot(
+    data class LogicalNot(
         val value: CFGNode,
     ) : LogicalOperator
 
-    class Equals(
+    data class Equals(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
 
-    class NotEquals(
+    data class NotEquals(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
 
-    class Less(
+    data class Less(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
 
-    class Greater(
+    data class Greater(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
 
-    class LessEqual(
+    data class LessEqual(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
 
-    class GreaterEqual(
+    data class GreaterEqual(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
