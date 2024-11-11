@@ -213,71 +213,76 @@ class FunctionHandlerTest {
             assertThat(getArgumentRegisters(getCallNodes(args, null, false))).isEqualTo(expected)
         }
 
-        // TODO: Uncomment these tests after #122 is merged
-//        @Test
-//        fun `function calling child`() {
-//            val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
-//            val childHandler = handlers[0]
-//            val parentHandler = handlers[1]
-//
-//            val staticLinkNode = childHandler.generateCallFrom(
-//                parentHandler,
-//                emptyList(),
-//                null,
-//            )[0]
-//
-//            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
-//            val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
-//            val expected = CFGNode.MemoryWrite(
-//                CFGNode.MemoryAccess(staticLinkAccess),
-//                CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
-//            )
-//
-//            assertThat(staticLinkNode).isEqualTo(expected)
-//        }
-//
-//        @Test
-//        fun `function calling itself works`() {
-//            val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
-//            val childHandler = handlers[0]
-//
-//            val staticLinkNode = childHandler.generateCallFrom(
-//                childHandler,
-//                emptyList(),
-//                null,
-//            )[0]
-//
-//            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
-//            val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
-//            val expected = CFGNode.MemoryWrite(
-//                CFGNode.MemoryAccess(staticLinkAccess),
-//                childHandler.generateVariableAccess(childHandler.getStaticLink()),
-//            )
-//
-//            assertThat(staticLinkNode).isEqualTo(expected)
-//        }
-//
-//        @Test
-//        fun `function calling parent works`() {
-//            val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
-//            val childHandler = handlers[0]
-//            val parentHandler = handlers[1]
-//
-//            val staticLinkNode = parentHandler.generateCallFrom(
-//                childHandler,
-//                emptyList(),
-//                null,
-//            )[0]
-//
-//            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
-//            val staticLinkAccess = childHandler.generateVariableAccess(parentHandler.getStaticLink())
-//            val expected = CFGNode.MemoryWrite(
-//                CFGNode.MemoryAccess(staticLinkAccess),
-//                childHandler.generateVariableAccess(parentHandler.getStaticLink()),
-//            )
-//
-//            assertThat(staticLinkNode).isEqualTo(expected)
-//        }
+        @Test
+        fun `function calling child`() {
+            val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
+            val childHandler = handlers[0]
+            val parentHandler = handlers[1]
+
+            val staticLinkNode =
+                childHandler.generateCallFrom(
+                    parentHandler,
+                    emptyList(),
+                    null,
+                )[0]
+
+            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
+            val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
+            val expected =
+                CFGNode.MemoryWrite(
+                    CFGNode.MemoryAccess(staticLinkAccess),
+                    CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
+                )
+
+            assertThat(staticLinkNode).isEqualTo(expected)
+        }
+
+        @Test
+        fun `function calling itself works`() {
+            val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
+            val childHandler = handlers[0]
+
+            val staticLinkNode =
+                childHandler.generateCallFrom(
+                    childHandler,
+                    emptyList(),
+                    null,
+                )[0]
+
+            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
+            val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
+            val expected =
+                CFGNode.MemoryWrite(
+                    CFGNode.MemoryAccess(staticLinkAccess),
+                    childHandler.generateVariableAccess(childHandler.getStaticLink()),
+                )
+
+            assertThat(staticLinkNode).isEqualTo(expected)
+        }
+
+        @Test
+        fun `function calling parent works`() {
+            val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
+            val childHandler = handlers[0]
+            val parentHandler = handlers[1]
+
+            val staticLinkNode =
+                parentHandler.generateCallFrom(
+                    childHandler,
+                    emptyList(),
+                    null,
+                )[0]
+
+            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
+            val staticLinkAccess = childHandler.generateVariableAccess(parentHandler.getStaticLink())
+            val expected =
+                CFGNode.MemoryWrite(
+                    CFGNode.MemoryAccess(staticLinkAccess),
+                    childHandler.generateVariableAccess(parentHandler.getStaticLink()),
+                )
+
+            assertThat(staticLinkNode).isEqualTo(expected)
+        }
     }
 
     @Test
