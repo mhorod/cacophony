@@ -53,10 +53,6 @@ class FunctionHandlerImpl(
 ) : FunctionHandler {
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
 
-    init {
-        introduceStaticLinksParams()
-    }
-
     private val definitionToVariable = analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
     private val variableAllocation: MutableMap<Variable, VariableAllocation> =
         run {
@@ -77,6 +73,10 @@ class FunctionHandlerImpl(
             }
             res
         }
+
+    init {
+        introduceStaticLinksParams()
+    }
 
     private fun registerVariableAllocation(
         variable: Variable,
@@ -178,16 +178,17 @@ class FunctionHandlerImpl(
         callerFunction: FunctionHandler,
         arguments: List<CFGNode>,
         result: Register?,
-    ): CFGFragment {
+        respectStackAlignment: Boolean,
+    ): List<CFGNode> {
         val nodes: MutableList<CFGNode> = mutableListOf()
         val staticLinkAccess: CFGNode = generateVariableAccess(staticLink)
-        if (analyzedFunction.parentLink?.parent === getFunctionDeclaration()) {
+        if (ancestorFunctionHandlers.isNotEmpty() && callerFunction === ancestorFunctionHandlers[0]) {
             // Function is called from parent which doesn't have access to variable with its static pointer,
             // we need to get it from RBP.
             nodes.add(
                 CFGNode.MemoryWrite(
                     CFGNode.MemoryAccess(staticLinkAccess),
-                    CFGNode.VariableUse(Register.FixedRegister("RBP")),
+                    CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
                 ),
             )
         } else {
@@ -200,8 +201,8 @@ class FunctionHandlerImpl(
             )
         }
 
-        nodes.addAll(generateCall(arguments, result))
-        return mapOf(CFGLabel() to CFGVertex.Final(CFGNode.Sequence(nodes)))
+        nodes.addAll(generateCall(arguments, result, respectStackAlignment))
+        return nodes
     }
 
     override fun generateVariableAccess(variable: Variable): CFGNode {
@@ -225,12 +226,12 @@ class FunctionHandlerImpl(
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     // Static link is created even if parent doesn't exist.
     private fun introduceStaticLinksParams() {
-        // I truly don't know who is responsible for layout of the stack
-        // TODO: uncomment (and fix) after #127 is merged
-//            registerVariable(
-//                staticLink,
-//                VariableAllocation.OnStack(/*what should be there?*/),
-//            )
+        // If we agree on stack frame layout someone may want to modify it to onStack variable with offset 0,
+        // didn't do it now in case someone does the same in other place.
+        registerVariableAllocation(
+            staticLink,
+            VariableAllocation.InRegister(Register.VirtualRegister()),
+        )
         analyzedFunction.auxVariables.add(staticLink)
     }
 }
