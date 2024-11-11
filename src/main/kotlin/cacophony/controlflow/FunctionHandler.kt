@@ -39,6 +39,11 @@ interface FunctionHandler {
 
     fun getVariableAllocation(variable: Variable): VariableAllocation
 
+    fun registerVariableAllocation(
+        variable: Variable,
+        allocation: VariableAllocation,
+    )
+
     // Returns static link to parent
     fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable
 
@@ -82,7 +87,7 @@ class FunctionHandlerImpl(
         introduceStaticLinksParams()
     }
 
-    private fun registerVariableAllocation(
+    override fun registerVariableAllocation(
         variable: Variable,
         allocation: VariableAllocation,
     ) {
@@ -243,8 +248,7 @@ class FunctionHandlerImpl(
                 //   If generateVariableAccess should support the new type, implement new logic here.
                 //   If not, uncomment this else statement and add an appropriate unit test.
                 // else -> throw GenerateVariableAccessException(
-                //   "Cannot generate access to variables other than static links and source variables.",
-                // )
+                //   "Cannot generate access to variables other than static links and source variables.")
             }
 
         if (definedInDeclaration == null) {

@@ -2,7 +2,10 @@ package cacophony.controlflow
 
 import cacophony.semantic.AnalyzedFunction
 import cacophony.semantic.AnalyzedVariable
-import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.ParentLink
+import cacophony.semantic.VariableUseType
+import cacophony.semantic.syntaxtree.*
+import cacophony.utils.Location
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -15,6 +18,8 @@ import org.junit.jupiter.params.provider.ValueSource
 import kotlin.math.max
 
 class FunctionHandlerTest {
+    val mockRange = Location(0) to Location(0)
+
     @Nested
     inner class GenerateCall {
         private fun mockAnalyzedFunction(): AnalyzedFunction =
@@ -63,13 +68,12 @@ class FunctionHandlerTest {
             argumentCount: Int,
             result: Register?,
             alignStack: Boolean,
-        ): List<CFGNode> {
-            return mockFunDeclarationAndFunHandler(argumentCount).generateCall(
+        ): List<CFGNode> =
+            mockFunDeclarationAndFunHandler(argumentCount).generateCall(
                 (1..argumentCount).map { mockk() },
                 result,
                 alignStack,
             )
-        }
 
         private fun getArgumentRegisters(callNodes: List<CFGNode>): List<X64Register> {
             val returnList = mutableListOf<X64Register>()
@@ -84,9 +88,7 @@ class FunctionHandlerTest {
             return returnList
         }
 
-        private fun getPushCount(callNodes: List<CFGNode>): Int {
-            return callNodes.filterIsInstance<CFGNode.Push>().size
-        }
+        private fun getPushCount(callNodes: List<CFGNode>): Int = callNodes.filterIsInstance<CFGNode.Push>().size
 
         private fun getResultDestination(callNodes: List<CFGNode>): Register? {
             var register: Register? = null
@@ -114,7 +116,8 @@ class FunctionHandlerTest {
                     if (node.value is CFGNode.Addition) {
                         val lhs = (node.value as CFGNode.Addition).lhs
                         val rhs = (node.value as CFGNode.Addition).rhs
-                        if (lhs !is CFGNode.VariableUse || lhs.regvar !is Register.FixedRegister ||
+                        if (lhs !is CFGNode.VariableUse ||
+                            lhs.regvar !is Register.FixedRegister ||
                             (lhs.regvar as Register.FixedRegister).hardwareRegister != X64Register.RSP
                         ) {
                             continue
@@ -381,5 +384,393 @@ class FunctionHandlerTest {
         assertEquals(0, allocation1.offset)
         assert(allocation2.register is Register.VirtualRegister)
         assertEquals(8, allocation3.offset)
+    }
+
+    @Test
+    fun `returns correct function declaration`() {
+        // given
+        val fDef =
+            Definition.FunctionDeclaration(
+                mockRange,
+                "f",
+                null,
+                listOf(),
+                Type.Basic(mockRange, "Int"),
+                Empty(mockRange),
+            )
+        val fAnalyzed =
+            AnalyzedFunction(
+                null,
+                setOf(),
+                mutableSetOf(),
+                0,
+                setOf(),
+            )
+        val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+
+        // when
+        val declaration = fHandler.getFunctionDeclaration()
+
+        // then
+        assertThat(declaration).isEqualTo(fDef)
+    }
+
+    @Nested
+    inner class GenerateVariableAccess {
+        @Test
+        fun `generates variable access to its own source variable allocated in a register`() {
+            // let f = [] -> Int => (
+            //     let x = 10; #allocated in virtual register
+            //     x #variable access
+            // )
+
+            // given
+            val xDef = Definition.VariableDeclaration(mockRange, "x", null, Literal.IntLiteral(mockRange, 10))
+            val fDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "f",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    Block(
+                        mockRange,
+                        listOf(
+                            xDef,
+                            VariableUse(mockRange, "x"),
+                        ),
+                    ),
+                )
+            val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
+            val fAnalyzed =
+                AnalyzedFunction(
+                    null,
+                    setOf(xAnalyzed),
+                    mutableSetOf(),
+                    0,
+                    setOf(),
+                )
+            val xAllocation = Register.VirtualRegister()
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val x = fHandler.getVariableFromDefinition(xDef)
+            fHandler.registerVariableAllocation(
+                x,
+                VariableAllocation.InRegister(xAllocation),
+            )
+
+            // when
+            val xAccess = fHandler.generateVariableAccess(x)
+
+            // then
+            assertThat(xAccess).isEqualTo(CFGNode.VariableUse(xAllocation))
+        }
+
+        @Test
+        fun `generates variable access to its own source variable allocated on stack`() {
+            // let f = [] -> Int => (
+            //     let x: Int = 10; #allocated on stack
+            //     x #variable access
+            // )
+
+            // given
+            val xDef = Definition.VariableDeclaration(mockRange, "x", null, Literal.IntLiteral(mockRange, 10))
+            val fDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "f",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    Block(
+                        mockRange,
+                        listOf(
+                            xDef,
+                            VariableUse(mockRange, "x"),
+                        ),
+                    ),
+                )
+            val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
+            val fAnalyzed =
+                AnalyzedFunction(
+                    null,
+                    setOf(xAnalyzed),
+                    mutableSetOf(),
+                    0,
+                    setOf(),
+                )
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val x = fHandler.getVariableFromDefinition(xDef)
+            fHandler.registerVariableAllocation(
+                x,
+                VariableAllocation.OnStack(24),
+            )
+
+            // when
+            val xAccess = fHandler.generateVariableAccess(x)
+
+            // then
+            assertThat(xAccess).isEqualTo(
+                CFGNode.MemoryAccess( // [rbp + 24]
+                    CFGNode.Addition(
+                        CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
+                        CFGNode.Constant(24),
+                    ),
+                ),
+            )
+        }
+
+        @Test
+        fun `generates variable access to source variable of ancestor function`() {
+            // let h = [] -> Int => (
+            //     let x = 10; #allocated on stack
+            //     let g = [] -> Int => (
+            //         let f = [] -> Int => (
+            //             x #variable access
+            //         );
+            //     );
+            // )
+
+            // given
+            val xDef = Definition.VariableDeclaration(mockRange, "x", null, Literal.IntLiteral(mockRange, 10))
+            val fDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "f",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    VariableUse(mockRange, "x"),
+                )
+            val gDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "g",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    fDef,
+                )
+            val hDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "h",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    Block(mockRange, listOf(xDef, gDef)),
+                )
+
+            val xAnalyzed = AnalyzedVariable(xDef, hDef, VariableUseType.READ_WRITE)
+            val fAnalyzed =
+                AnalyzedFunction(
+                    ParentLink(gDef, true),
+                    setOf(xAnalyzed),
+                    mutableSetOf(),
+                    2,
+                    setOf(),
+                )
+            val gAnalyzed =
+                AnalyzedFunction(
+                    ParentLink(hDef, true),
+                    setOf(xAnalyzed),
+                    mutableSetOf(),
+                    1,
+                    setOf(xDef),
+                )
+            val hAnalyzed =
+                AnalyzedFunction(
+                    null,
+                    setOf(xAnalyzed),
+                    mutableSetOf(),
+                    0,
+                    setOf(xDef),
+                )
+            val hHandler = FunctionHandlerImpl(hDef, hAnalyzed, listOf())
+            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, listOf(hHandler))
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf(gHandler, hHandler))
+
+            val x = hHandler.getVariableFromDefinition(xDef)
+            hHandler.registerVariableAllocation(
+                x,
+                VariableAllocation.OnStack(24),
+            )
+            gHandler.registerVariableAllocation(
+                gHandler.getStaticLink(),
+                VariableAllocation.OnStack(8),
+            )
+            fHandler.registerVariableAllocation(
+                fHandler.getStaticLink(),
+                VariableAllocation.OnStack(32),
+            )
+
+            // when
+            val xAccess = fHandler.generateVariableAccess(x)
+
+            // then
+            assertThat(xAccess).isEqualTo(
+                CFGNode.MemoryAccess( // [[[rbp + 32] + 8] + 24]
+                    CFGNode.Addition(
+                        CFGNode.MemoryAccess(
+                            CFGNode.Addition(
+                                CFGNode.MemoryAccess(
+                                    CFGNode.Addition(
+                                        CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
+                                        CFGNode.Constant(32),
+                                    ),
+                                ),
+                                CFGNode.Constant(8),
+                            ),
+                        ),
+                        CFGNode.Constant(24),
+                    ),
+                ),
+            )
+        }
+
+        @Test
+        fun `generates variable access to its own static link`() {
+            // let f = [] -> Int => 42 #request static link of f
+
+            // given
+            val fDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "f",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    Literal.IntLiteral(mockRange, 42),
+                )
+            val fAnalyzed =
+                AnalyzedFunction(
+                    null,
+                    setOf(),
+                    mutableSetOf(),
+                    0,
+                    setOf(),
+                )
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            fHandler.registerVariableAllocation(
+                fHandler.getStaticLink(),
+                VariableAllocation.OnStack(16),
+            )
+
+            // when
+            val staticLinkAccess = fHandler.generateVariableAccess(fHandler.getStaticLink())
+
+            // then
+            assertThat(staticLinkAccess).isEqualTo(
+                CFGNode.MemoryAccess( // [rbp + 16]
+                    CFGNode.Addition(
+                        CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
+                        CFGNode.Constant(16),
+                    ),
+                ),
+            )
+        }
+
+        @Test
+        fun `generates variable access to static link of its ancestor`() {
+            // let g = [] -> Int => (
+            //   let f = [] -> Int => 42 #request static link of g
+            //                           #should recursively request static link of f
+            // );
+
+            // given
+            val fDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "f",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    Literal.IntLiteral(mockRange, 42),
+                )
+            val gDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "g",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    fDef,
+                )
+            val fAnalyzed =
+                AnalyzedFunction(
+                    ParentLink(gDef, true),
+                    setOf(),
+                    mutableSetOf(),
+                    1,
+                    setOf(),
+                )
+            val gAnalyzed =
+                AnalyzedFunction(
+                    null,
+                    setOf(),
+                    mutableSetOf(),
+                    0,
+                    setOf(),
+                )
+            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, listOf())
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf(gHandler))
+            gHandler.registerVariableAllocation(
+                gHandler.getStaticLink(),
+                VariableAllocation.OnStack(48),
+            )
+            fHandler.registerVariableAllocation(
+                fHandler.getStaticLink(),
+                VariableAllocation.OnStack(16),
+            )
+
+            // when
+            val staticLinkAccess = fHandler.generateVariableAccess(gHandler.getStaticLink())
+
+            // then
+            assertThat(staticLinkAccess).isEqualTo(
+                CFGNode.MemoryAccess( // [[rbp + 16] + 48]
+                    CFGNode.Addition(
+                        CFGNode.MemoryAccess(
+                            CFGNode.Addition(
+                                CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
+                                CFGNode.Constant(16),
+                            ),
+                        ),
+                        CFGNode.Constant(48),
+                    ),
+                ),
+            )
+        }
+
+        @Test
+        fun `throws if requested access to variable that is not accessible`() {
+            // given
+            val fDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "f",
+                    null,
+                    listOf(),
+                    Type.Basic(mockRange, "Int"),
+                    Literal.IntLiteral(mockRange, 42),
+                )
+            val fAnalyzed =
+                AnalyzedFunction(
+                    null,
+                    setOf(),
+                    mutableSetOf(),
+                    0,
+                    setOf(),
+                )
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+
+            // when & then
+            org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {
+                fHandler.generateVariableAccess(
+                    Variable.SourceVariable(
+                        Definition.VariableDeclaration(mockRange, "x", null, Literal.IntLiteral(mockRange, 10)),
+                    ),
+                )
+            }
+        }
     }
 }
