@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package cacophony.diagnostics
 
 class LexerDiagnostics {

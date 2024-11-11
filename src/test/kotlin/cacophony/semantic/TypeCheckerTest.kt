@@ -1,8 +1,10 @@
+@file:Suppress("ktlint")
+
 package cacophony.semantic
 
+import cacophony.semantic.syntaxtree.*
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.TypeCheckerDiagnostics
-import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
@@ -138,15 +140,9 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - empty function declaration with type - () to Unit`() {
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                Type.Functional(lc, emptyList(), testUnit),
-                emptyList(),
-                testUnit,
-                Empty(lc),
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, emptyList(), testUnit), emptyList(), testUnit, Empty(lc)
+        )
         val ast = Block(lc, listOf(funDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -156,15 +152,14 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - empty function declaration without type - (Int) to Unit`() {
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                null,
-                listOf(Definition.FunctionArgument(lc, "x", testInt)),
-                testUnit,
-                Empty(lc),
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc,
+            "f",
+            null,
+            listOf(Definition.FunctionArgument(lc, "x", testInt)),
+            testUnit,
+            Empty(lc),
+        )
         val ast = Block(lc, listOf(funDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -174,15 +169,14 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - empty function declaration with type - (Int) to Unit`() {
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                Type.Functional(lc, listOf(testInt), testUnit),
-                listOf(Definition.FunctionArgument(lc, "x", testInt)),
-                testUnit,
-                Empty(lc),
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc,
+            "f",
+            Type.Functional(lc, listOf(testInt), testUnit),
+            listOf(Definition.FunctionArgument(lc, "x", testInt)),
+            testUnit,
+            Empty(lc),
+        )
         val ast = Block(lc, listOf(funDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -256,15 +250,9 @@ class TypeCheckerTest {
     fun `ok - function declaration - (Int, Bool) to Int with type`() {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt)
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                Type.Functional(lc, listOf(testInt, testBoolean), testInt),
-                listOf(arg1, arg2),
-                testInt,
-                intLiteral,
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, listOf(testInt, testBoolean), testInt), listOf(arg1, arg2), testInt, intLiteral
+        )
         val ast = Block(lc, listOf(funDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.IntegerType, result[arg1])
@@ -276,15 +264,9 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - function declaration - () to Unit with type`() {
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                Type.Functional(lc, emptyList(), Type.Basic(lc, "Unit")),
-                emptyList(),
-                testUnit,
-                Empty(lc),
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, emptyList(), Type.Basic(lc, "Unit")), emptyList(), testUnit, Empty(lc)
+        )
         val ast = Block(lc, listOf(funDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -430,6 +412,7 @@ class TypeCheckerTest {
         verify { diagnostics wasNot called }
     }
 
+
     @Test
     fun `ok - if without else, true branch Unit, VariableUse at test`() {
         val varDef = Definition.VariableDeclaration(lc, "flag", null, Literal.BoolLiteral(lc, true))
@@ -547,13 +530,9 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - return inside if branch`() {
-        val body =
-            Statement.IfElseStatement(
-                lc,
-                booleanLiteral,
-                Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)),
-                Literal.IntLiteral(lc, 3),
-            )
+        val body = Statement.IfElseStatement(
+            lc, booleanLiteral, Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)), Literal.IntLiteral(lc, 3)
+        )
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, body)
         val ast = Block(lc, listOf(funDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
@@ -564,13 +543,12 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - return inside both branches`() {
-        val body =
-            Statement.IfElseStatement(
-                lc,
-                booleanLiteral,
-                Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)),
-                Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 3)),
-            )
+        val body = Statement.IfElseStatement(
+            lc,
+            booleanLiteral,
+            Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)),
+            Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 3))
+        )
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, body)
         val ast = Block(lc, listOf(funDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
@@ -581,24 +559,12 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - return in nested function`() {
-        val innerFunDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                null,
-                emptyList(),
-                testInt,
-                Statement.ReturnStatement(lc, intLiteral),
-            )
-        val outerFunDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "g",
-                null,
-                emptyList(),
-                testBoolean,
-                Block(lc, listOf(innerFunDef, booleanLiteral)),
-            )
+        val innerFunDef = Definition.FunctionDeclaration(
+            lc, "f", null, emptyList(), testInt, Statement.ReturnStatement(lc, intLiteral)
+        )
+        val outerFunDef = Definition.FunctionDeclaration(
+            lc, "g", null, emptyList(), testBoolean, Block(lc, listOf(innerFunDef, booleanLiteral))
+        )
         val ast = Block(lc, listOf(outerFunDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[innerFunDef])
@@ -742,6 +708,7 @@ class TypeCheckerTest {
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
         verify { diagnostics wasNot called }
     }
+
 
     @Test
     fun `ok - sub=`() {
@@ -980,15 +947,9 @@ class TypeCheckerTest {
 
     @Test
     fun `error - unknown type at argument declaration`() {
-        val funDec =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                null,
-                listOf(Definition.FunctionArgument(lc, "a", Type.Basic(lc, "Type"))),
-                testUnit,
-                Empty(lc),
-            )
+        val funDec = Definition.FunctionDeclaration(
+            lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", Type.Basic(lc, "Type"))), testUnit, Empty(lc)
+        )
         val ast = Block(lc, listOf(funDec))
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) { diagnostics.report(TypeCheckerDiagnostics.UnknownType, any<Pair<Location, Location>>()) }
@@ -999,24 +960,16 @@ class TypeCheckerTest {
     fun `error - function declaration type mismatch - types`() {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt)
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                Type.Functional(lc, listOf(testBoolean, testInt), testInt),
-                listOf(arg1, arg2),
-                testInt,
-                intLiteral,
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, listOf(testBoolean, testInt), testInt), listOf(arg1, arg2), testInt, intLiteral
+        )
         val ast = Block(lc, listOf(funDef))
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
                 TypeCheckerDiagnostics.TypeMismatch(
-                    "[Bool, Int] -> Int",
-                    "[Int, Bool] -> Int",
-                ),
-                any<Pair<Location, Location>>(),
+                    "[Bool, Int] -> Int", "[Int, Bool] -> Int"
+                ), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1024,24 +977,16 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - function declaration type mismatch - number of args`() {
-        val funDef =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                Type.Functional(lc, listOf(testInt), Type.Basic(lc, "Unit")),
-                emptyList(),
-                testUnit,
-                Empty(lc),
-            )
+        val funDef = Definition.FunctionDeclaration(
+            lc, "f", Type.Functional(lc, listOf(testInt), Type.Basic(lc, "Unit")), emptyList(), testUnit, Empty(lc)
+        )
         val ast = Block(lc, listOf(funDef))
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
                 TypeCheckerDiagnostics.TypeMismatch(
-                    "[Int] -> Unit",
-                    "[] -> Unit",
-                ),
-                any<Pair<Location, Location>>(),
+                    "[Int] -> Unit", "[] -> Unit"
+                ), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1054,8 +999,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1068,8 +1012,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1082,31 +1025,23 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.ExpectedFunction,
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.ExpectedFunction, any<Pair<Location, Location>>()
             )
         }
     }
 
     @Test
     fun `error - wrong argument type`() {
-        val funDec =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                null,
-                listOf(Definition.FunctionArgument(lc, "a", testInt)),
-                testUnit,
-                Empty(lc),
-            )
+        val funDec = Definition.FunctionDeclaration(
+            lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", testInt)), testUnit, Empty(lc)
+        )
         val funUse = VariableUse(lc, "f")
         val body = FunctionCall(lc, funUse, listOf(booleanLiteral))
         val ast = Block(lc, listOf(funDec, body))
         checkTypes(ast, diagnostics, mapOf(funUse to funDec))
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1119,8 +1054,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.ExpectedLValueReference,
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.ExpectedLValueReference, any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1135,8 +1069,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1149,8 +1082,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1163,12 +1095,12 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
     }
+
 
     @Test
     fun `error - equals on Unit`() {
@@ -1177,8 +1109,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.UnsupportedOperation("Unit", "== operator"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.UnsupportedOperation("Unit", "== operator"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1191,8 +1122,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.UnsupportedOperation("Unit", "!= operator"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.UnsupportedOperation("Unit", "!= operator"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1205,8 +1135,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.UnsupportedOperation("Bool", "unary - operator"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.UnsupportedOperation("Bool", "unary - operator"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1219,8 +1148,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.UnsupportedOperation("Int", "unary ! operator"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.UnsupportedOperation("Int", "unary ! operator"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1233,8 +1161,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1247,8 +1174,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.NoCommonType("Int", "Bool"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.NoCommonType("Int", "Bool"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1261,8 +1187,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.NoCommonType("Int", "Unit"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.NoCommonType("Int", "Unit"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1275,8 +1200,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.MisplacedReturn,
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.MisplacedReturn, any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1284,21 +1208,14 @@ class TypeCheckerTest {
 
     @Test
     fun `error - return with wrong type`() {
-        val funDec =
-            Definition.FunctionDeclaration(
-                lc,
-                "f",
-                null,
-                emptyList(),
-                testInt,
-                Statement.ReturnStatement(lc, booleanLiteral),
-            )
+        val funDec = Definition.FunctionDeclaration(
+            lc, "f", null, emptyList(), testInt, Statement.ReturnStatement(lc, booleanLiteral)
+        )
         val ast = Block(lc, listOf(funDec))
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1311,8 +1228,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Bool", "Unit"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Unit"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1325,8 +1241,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.ExpectedLValueReference,
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.ExpectedLValueReference, any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1341,8 +1256,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1357,8 +1271,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, mapOf(varUse to varDec))
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1371,8 +1284,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1385,8 +1297,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1399,8 +1310,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
@@ -1413,8 +1323,7 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
             diagnostics.report(
-                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"),
-                any<Pair<Location, Location>>(),
+                TypeCheckerDiagnostics.TypeMismatch("Bool", "Int"), any<Pair<Location, Location>>()
             )
         }
         confirmVerified(diagnostics)
