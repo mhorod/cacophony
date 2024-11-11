@@ -65,13 +65,17 @@ private fun <StateA, StateB, AtomT, ResultT> initializeDistinguishableStates(
     return distinguishable
 }
 
-private fun <State, AtomT> getSymbols(productions: Map<Pair<State, AtomT>, State>): Set<AtomT> = productions.keys.map { it.second }.toSet()
+private fun <StateT, AtomT> getSymbols(productions: Map<Pair<StateT, AtomT>, StateT>): Set<AtomT> =
+    productions.keys
+        .map {
+            it.second
+        }.toSet()
 
-private fun <State, AtomT> invertProductions(
-    dfa: DFA<State, AtomT, *>,
+private fun <StateT, AtomT> invertProductions(
+    dfa: DFA<StateT, AtomT, *>,
     symbols: Set<AtomT>,
-): Map<Pair<State?, AtomT>, Set<State?>> {
-    val inverted = mutableMapOf<Pair<State?, AtomT>, MutableSet<State?>>()
+): Map<Pair<StateT?, AtomT>, Set<StateT?>> {
+    val inverted = mutableMapOf<Pair<StateT?, AtomT>, MutableSet<StateT?>>()
     for (symbol in symbols) {
         for (state in dfa.getAllStates()) {
             val newState = dfa.getProduction(state, symbol)
