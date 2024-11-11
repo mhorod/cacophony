@@ -562,6 +562,7 @@
         "useType": "UNUSED"
       }
     ],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
   }

@@ -3,30 +3,35 @@
   "(Location(value\u003d0), Location(value\u003d127))": {
     "__class__": "AnalyzedFunction",
     "variables": [],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
   },
   "(Location(value\u003d156), Location(value\u003d200))": {
     "__class__": "AnalyzedFunction",
     "variables": [],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
   },
   "(Location(value\u003d260), Location(value\u003d306))": {
     "__class__": "AnalyzedFunction",
     "variables": [],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
   },
   "(Location(value\u003d321), Location(value\u003d361))": {
     "__class__": "AnalyzedFunction",
     "variables": [],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
   },
   "(Location(value\u003d401), Location(value\u003d459))": {
     "__class__": "AnalyzedFunction",
     "variables": [],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
   },
@@ -956,6 +961,7 @@
         "useType": "READ"
       }
     ],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
   },
@@ -1620,6 +1626,7 @@
         "useType": "UNUSED"
       }
     ],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": [
       {
@@ -2270,6 +2277,7 @@
         "useType": "READ"
       }
     ],
+    "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
   }

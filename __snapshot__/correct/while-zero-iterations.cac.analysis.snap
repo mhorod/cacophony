@@ -3,6 +3,7 @@
   "(Location(value\u003d0), Location(value\u003d37))": {
     "__class__": "AnalyzedFunction",
     "variables": [],
+    "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
   }
