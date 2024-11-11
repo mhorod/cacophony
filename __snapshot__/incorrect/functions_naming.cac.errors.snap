@@ -21,18 +21,19 @@
   {
     "__class__": "ReportedError",
     "message": {
-      "__class__": "ChildrenEmpty",
-      "symbolName": "START"
+      "__class__": "UnexpectedToken",
+      "tokenName": "INT_LITERAL",
+      "symbolName": "DECLARATION_LEVEL"
     },
     "range": {
       "__class__": "Pair",
       "first": {
         "__class__": "Location",
-        "value": 141
+        "value": 103
       },
       "second": {
         "__class__": "Location",
-        "value": 141
+        "value": 106
       }
     }
   }

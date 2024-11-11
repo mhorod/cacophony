@@ -17,23 +17,5 @@
         "value": 258
       }
     }
-  },
-  {
-    "__class__": "ReportedError",
-    "message": {
-      "__class__": "ChildrenEmpty",
-      "symbolName": "ATOM_LEVEL"
-    },
-    "range": {
-      "__class__": "Pair",
-      "first": {
-        "__class__": "Location",
-        "value": 503
-      },
-      "second": {
-        "__class__": "Location",
-        "value": 503
-      }
-    }
   }
 ]

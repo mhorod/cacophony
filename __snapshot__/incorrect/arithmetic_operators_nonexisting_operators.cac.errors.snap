@@ -17,23 +17,5 @@
         "value": 42
       }
     }
-  },
-  {
-    "__class__": "ReportedError",
-    "message": {
-      "__class__": "ChildrenEmpty",
-      "symbolName": "EQUALITY_LEVEL"
-    },
-    "range": {
-      "__class__": "Pair",
-      "first": {
-        "__class__": "Location",
-        "value": 73
-      },
-      "second": {
-        "__class__": "Location",
-        "value": 73
-      }
-    }
   }
 ]

@@ -18,7 +18,7 @@ class CacophonyParser : Parser<CacophonyGrammarSymbol> {
     ): ParseTree<CacophonyGrammarSymbol> = innerParser.process(terminals, diagnostics)
 
     companion object {
-        val syncSymbols = setOf<CacophonyGrammarSymbol>()
+        val syncSymbols = setOf(CacophonyGrammarSymbol.SEMICOLON)
         val grammar = CacophonyGrammar.grammar
     }
 }
