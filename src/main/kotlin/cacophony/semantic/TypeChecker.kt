@@ -51,9 +51,9 @@ private class Typer(
                         var voided = false
                         for (expr in expression.expressions) {
                             val type = typeExpression(expr)
-                            if (type is BuiltinType.VoidType) voided = true
+                            if (type is TypeExpr.VoidType) voided = true
                         }
-                        if (voided) BuiltinType.VoidType else result[expression.expressions.last()]
+                        if (voided) TypeExpr.VoidType else result[expression.expressions.last()]
                     }
                 }
                 is Definition.VariableDeclaration -> {
@@ -179,7 +179,7 @@ private class Typer(
                     }
                     BuiltinType.BooleanType
                 }
-                is Statement.BreakStatement -> BuiltinType.VoidType
+                is Statement.BreakStatement -> TypeExpr.VoidType
                 is Statement.IfElseStatement -> {
                     val trueBranchType = typeExpression(expression.doExpression)
                     val falseBranchType =
@@ -214,7 +214,7 @@ private class Typer(
                         error.typeMismatchError(functionContext.last(), returnedType, expression.range)
                         return null
                     }
-                    BuiltinType.VoidType
+                    TypeExpr.VoidType
                 }
                 is Statement.WhileStatement -> {
                     typeExpression(expression.doExpression)
@@ -370,6 +370,8 @@ sealed class TypeExpr(
     }
 
     override fun hashCode(): Int = name.hashCode()
+
+    object VoidType : TypeExpr("Void")
 }
 
 sealed class BuiltinType private constructor(
@@ -380,8 +382,6 @@ sealed class BuiltinType private constructor(
     object IntegerType : BuiltinType("Int")
 
     object UnitType : BuiltinType("Unit")
-
-    object VoidType : BuiltinType("Void")
 }
 
 class FunctionType(
@@ -397,6 +397,6 @@ fun isSubtype(
     subtype: TypeExpr,
     type: TypeExpr,
 ): Boolean {
-    if (subtype == BuiltinType.VoidType) return true
+    if (subtype == TypeExpr.VoidType) return true
     return subtype.name == type.name
 }

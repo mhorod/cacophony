@@ -2,7 +2,9 @@ package cacophony.utils
 
 import java.io.File
 
-class FileInput(filePath: String) : Input {
+class FileInput(
+    filePath: String,
+) : Input {
     private val file = File(filePath)
     private val lines = file.readLines().toMutableList()
     private val lineBeginPos = mutableListOf<Int>()
@@ -49,9 +51,7 @@ class FileInput(filePath: String) : Input {
     private fun encodeLocation(
         lineInd: Int,
         pos: Int,
-    ): Location {
-        return Location(lineBeginPos[lineInd] + pos)
-    }
+    ): Location = Location(lineBeginPos[lineInd] + pos)
 
     // Returns first after last position if not in range.
     private fun decodeLocation(loc: Location): Pair<Int, Int> {
@@ -70,9 +70,7 @@ class FileInput(filePath: String) : Input {
         return nextChar
     }
 
-    override fun peek(): Char? {
-        return getCharAtPosition(curLineInd, curPos)
-    }
+    override fun peek(): Char? = getCharAtPosition(curLineInd, curPos)
 
     override fun skip(c: Char) {
         while ((peek() != null) and (peek() != c)) {
@@ -80,9 +78,7 @@ class FileInput(filePath: String) : Input {
         }
     }
 
-    override fun getLocation(): Location {
-        return encodeLocation(curLineInd, curPos)
-    }
+    override fun getLocation(): Location = encodeLocation(curLineInd, curPos)
 
     override fun setLocation(loc: Location) {
         val (lineInd, pos) = decodeLocation(loc)
@@ -100,6 +96,8 @@ class FileInput(filePath: String) : Input {
         locBegin: Location,
         locEnd: Location,
     ): String {
+        if (locBegin == locEnd) return locationToString(locBegin)
+
         val (lineIndBegin, posBegin) = decodeLocation(locBegin)
         val (lineIndEnd, posEnd) = decodeLocation(locEnd)
 

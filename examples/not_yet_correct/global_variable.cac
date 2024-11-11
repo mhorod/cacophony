@@ -1,0 +1,5 @@
+let global = false;
+let confusing = [x: Int] -> Bool =>
+    global = true; # careful! this is syntactically correct but the indentation is confusing
+    false; # this expression does not belong to the `confusing` function
+confusing[5]; # sets `global` to `true` and returns it
