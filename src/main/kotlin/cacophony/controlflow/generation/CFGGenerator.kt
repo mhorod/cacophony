@@ -5,7 +5,8 @@ import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.FunctionHandler
 import cacophony.controlflow.Register
-import cacophony.controlflow.SourceVariable
+import cacophony.controlflow.Variable
+import cacophony.controlflow.X64Register
 import cacophony.semantic.FunctionAnalysisResult
 import cacophony.semantic.ResolvedVariables
 import cacophony.semantic.UseTypeAnalysisResult
@@ -43,7 +44,7 @@ internal class CFGGenerator(
 
     private fun generateFunctionCFG(function: Definition.FunctionDeclaration): SubCFG {
         val bodyCFG = visit(function.body, EvalMode.Value)
-        val returnValueRegister = CFGNode.VariableUse(Register.Fixed.RAX)
+        val returnValueRegister = CFGNode.VariableUse(Register.FixedRegister(X64Register.RAX))
         val extended = extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
         val returnVertex = addVertex(CFGNode.Return)
         extended.exit.connect(returnVertex.label)
@@ -65,7 +66,7 @@ internal class CFGGenerator(
             is SubCFG.Immediate ->
                 when (mode) {
                     is EvalMode.Value -> {
-                        val register = Register.Virtual()
+                        val register = Register.VirtualRegister()
                         val tmpWrite = CFGNode.Assignment(CFGNode.VariableUse(register), subCFG.access)
                         val tmpRead = CFGNode.VariableUse(register)
                         val vertex = addVertex(tmpWrite)
@@ -151,7 +152,7 @@ internal class CFGGenerator(
         val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
         val functionHandler = getFunctionHandler(function)
 
-        val resultRegister = if (mode is EvalMode.Value) Register.Virtual() else null
+        val resultRegister = if (mode is EvalMode.Value) Register.VirtualRegister() else null
 
         val callCFG = functionHandler.generateCall(argumentNodes.map { it.access }, resultRegister)
         TODO()
@@ -266,7 +267,7 @@ internal class CFGGenerator(
     ): SubCFG {
         if (expression.testExpression is Literal.BoolLiteral) return shortenTrivialIfStatement(expression, mode)
 
-        val resultValueRegister = CFGNode.VariableUse(Register.Virtual())
+        val resultValueRegister = CFGNode.VariableUse(Register.VirtualRegister())
         val trueCFG = extendWithAssignment(visit(expression.doExpression, mode), resultValueRegister, mode)
         val falseCFG =
             extendWithAssignment(
@@ -327,7 +328,7 @@ internal class CFGGenerator(
         mode: EvalMode,
     ): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value)
-        val resultAssignment = CFGNode.Assignment(CFGNode.VariableUse(Register.Fixed.RAX), valueCFG.access)
+        val resultAssignment = CFGNode.Assignment(CFGNode.VariableUse(Register.FixedRegister(X64Register.RAX)), valueCFG.access)
         val returnSequence = CFGNode.Sequence(listOf(resultAssignment, CFGNode.Return))
         return SubCFG.Immediate(returnSequence)
     }
@@ -345,7 +346,7 @@ internal class CFGGenerator(
     ): SubCFG {
         val definition = resolvedVariables[expression] ?: error("Unresolved variable $expression")
         val variableAccess =
-            SubCFG.Immediate(getFunctionHandler(function).generateVariableAccess(SourceVariable(definition)))
+            SubCFG.Immediate(getFunctionHandler(function).generateVariableAccess(Variable.SourceVariable(definition)))
         return when (mode) {
             is EvalMode.Value -> variableAccess
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
