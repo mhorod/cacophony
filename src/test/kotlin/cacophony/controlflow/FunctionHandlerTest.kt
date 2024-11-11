@@ -30,7 +30,7 @@ class FunctionHandlerTest {
 
         private fun mockFunDeclarationAndFunHandlerWithParents(
             argumentCount: Int,
-            chainLength: Int
+            chainLength: Int,
         ): List<FunctionHandlerImpl> =
             run {
                 val functionHandlers = mutableListOf<FunctionHandlerImpl>()
