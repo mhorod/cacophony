@@ -37,4 +37,8 @@ class TypeCheckerDiagnostics {
     data object MisplacedReturn : DiagnosticMessage {
         override fun getMessage() = "Return outside function body"
     }
+
+    data object BreakOutsideWhile : DiagnosticMessage {
+        override fun getMessage() = "Break outside while loop body"
+    }
 }

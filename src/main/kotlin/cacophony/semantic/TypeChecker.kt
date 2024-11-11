@@ -40,6 +40,7 @@ private class Typer(
     val typedVariables: MutableMap<Definition, TypeExpr> = mutableMapOf()
     val functionContext = ArrayDeque<TypeExpr>()
     val error = ErrorHandler(diagnostics)
+    var whileDepth = 0
 
     fun typeExpression(expression: Expression): TypeExpr? {
         val expressionType: TypeExpr? =
@@ -179,7 +180,13 @@ private class Typer(
                     }
                     BuiltinType.BooleanType
                 }
-                is Statement.BreakStatement -> TypeExpr.VoidType
+                is Statement.BreakStatement -> {
+                    if (whileDepth == 0) {
+                        error.breakOutsideWhile(expression.range)
+                        return null
+                    }
+                    TypeExpr.VoidType
+                }
                 is Statement.IfElseStatement -> {
                     val trueBranchType = typeExpression(expression.doExpression)
                     val falseBranchType =
@@ -217,7 +224,9 @@ private class Typer(
                     TypeExpr.VoidType
                 }
                 is Statement.WhileStatement -> {
+                    whileDepth++
                     typeExpression(expression.doExpression)
+                    whileDepth--
                     val conditionType = typeExpression(expression.testExpression) ?: return null
                     if (!isSubtype(conditionType, BuiltinType.BooleanType)) {
                         error.typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
@@ -357,6 +366,10 @@ private class ErrorHandler(
     fun returnOutsideFunction(range: Pair<Location, Location>) {
         diagnostics.report(TypeCheckerDiagnostics.MisplacedReturn, range)
     }
+
+    fun breakOutsideWhile(range: Pair<Location, Location>) {
+        diagnostics.report(TypeCheckerDiagnostics.BreakOutsideWhile, range)
+    }
 }
 
 sealed class TypeExpr(
@@ -388,10 +401,6 @@ class FunctionType(
     val args: List<TypeExpr>,
     val result: TypeExpr,
 ) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
-
-class UserDefinedType(
-    name: String,
-) : TypeExpr(name)
 
 fun isSubtype(
     subtype: TypeExpr,

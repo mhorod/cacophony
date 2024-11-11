@@ -74,7 +74,7 @@ class ExamplesTest {
         assertThat(diagnostics.getErrors()).isEmpty()
     }
 
-    // TODO: Fix duplicated function params and break outside of while
+    // TODO: Fix duplicated function params
     @ParameterizedTest
     @MethodSource("incorrectExamples")
     @Disabled

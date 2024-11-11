@@ -251,7 +251,12 @@ class TypeCheckerTest {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt())
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean())
         val funDef = Definition.FunctionDeclaration(
-            lc, "f", Type.Functional(lc, listOf(testInt(), testBoolean()), testInt()), listOf(arg1, arg2), testInt(), intLiteral
+            lc,
+            "f",
+            Type.Functional(lc, listOf(testInt(), testBoolean()), testInt()),
+            listOf(arg1, arg2),
+            testInt(),
+            intLiteral
         )
         val ast = Block(lc, listOf(funDef))
         val result = checkTypes(ast, diagnostics, emptyMap())
@@ -574,22 +579,67 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - break is Void`() {
-        val statement = Statement.BreakStatement(lc)
-        val ast = Block(lc, listOf(statement))
+        val body1 = Block(lc, listOf(Statement.BreakStatement(lc)))
+        val while1 = Statement.WhileStatement(lc, Literal.BoolLiteral(lc, false), body1)
+        val body2 = Block(lc, listOf(while1, Statement.BreakStatement(lc)))
+        val while2 = Statement.WhileStatement(lc, Literal.BoolLiteral(lc, false), body2)
+        val ast = Block(lc, listOf(while2))
         val result = checkTypes(ast, diagnostics, emptyMap())
-        assertTypeEquals(TypeExpr.VoidType, result[statement])
-        assertTypeEquals(TypeExpr.VoidType, result[ast])
+        assertTypeEquals(TypeExpr.VoidType, result[body1])
+        assertTypeEquals(BuiltinType.UnitType, result[while1])
+        assertTypeEquals(TypeExpr.VoidType, result[body2])
+        assertTypeEquals(BuiltinType.UnitType, result[while2])
+        assertTypeEquals(BuiltinType.UnitType, result[ast])
         verify { diagnostics wasNot called }
     }
 
     @Test
     fun `ok - break in else branch`() {
         val breakStatement = Statement.BreakStatement(lc)
-        val ast = Block(lc, listOf(Statement.IfElseStatement(lc, booleanLiteral, intLiteral, breakStatement)))
+        val ifElseStatement = Statement.IfElseStatement(lc, booleanLiteral, intLiteral, breakStatement)
+        val testLiteral = Literal.BoolLiteral(lc, true)
+        val whileStatement = Statement.WhileStatement(lc, testLiteral, ifElseStatement)
+        val ast = Block(lc, listOf(whileStatement))
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(TypeExpr.VoidType, result[breakStatement])
-        assertTypeEquals(BuiltinType.IntegerType, result[ast])
+        assertTypeEquals(BuiltinType.IntegerType, result[ifElseStatement])
+        assertTypeEquals(BuiltinType.UnitType, result[ast])
         verify { diagnostics wasNot called }
+    }
+
+    @Test
+    fun `error - bare break statement`() {
+        val statement = Statement.BreakStatement(lc)
+        val ast = Block(lc, listOf(statement))
+        checkTypes(ast, diagnostics, emptyMap())
+        verify(exactly = 1) {
+            diagnostics.report(TypeCheckerDiagnostics.BreakOutsideWhile, any<Pair<Location, Location>>())
+        }
+        confirmVerified(diagnostics)
+    }
+
+    @Test
+    fun `error - break outside loop`() {
+        val while1 = Statement.WhileStatement(lc, Literal.BoolLiteral(lc, false), Empty(lc))
+        val while2 = Statement.WhileStatement(lc, Literal.BoolLiteral(lc, false), while1)
+        val ast = Block(lc, listOf(while2, Statement.BreakStatement(lc)))
+        checkTypes(ast, diagnostics, emptyMap())
+        verify(exactly = 1) {
+            diagnostics.report(TypeCheckerDiagnostics.BreakOutsideWhile, any<Pair<Location, Location>>())
+        }
+        confirmVerified(diagnostics)
+    }
+
+    @Test
+    fun `error - break inside loop test condition`() {
+        val testBlock = Block(lc, listOf(Statement.BreakStatement(lc), Literal.BoolLiteral(lc, false)))
+        val whileStatement = Statement.WhileStatement(lc, testBlock, Empty(lc))
+        val ast = Block(lc, listOf(whileStatement))
+        checkTypes(ast, diagnostics, emptyMap())
+        verify(exactly = 1) {
+            diagnostics.report(TypeCheckerDiagnostics.BreakOutsideWhile, any<Pair<Location, Location>>())
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
@@ -961,7 +1011,12 @@ class TypeCheckerTest {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt())
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean())
         val funDef = Definition.FunctionDeclaration(
-            lc, "f", Type.Functional(lc, listOf(testBoolean(), testInt()), testInt()), listOf(arg1, arg2), testInt(), intLiteral
+            lc,
+            "f",
+            Type.Functional(lc, listOf(testBoolean(), testInt()), testInt()),
+            listOf(arg1, arg2),
+            testInt(),
+            intLiteral
         )
         val ast = Block(lc, listOf(funDef))
         checkTypes(ast, diagnostics, emptyMap())
