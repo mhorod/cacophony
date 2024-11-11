@@ -1,7 +1,6 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
-import cacophony.semantic.FunctionAnalysisResult
 import cacophony.semantic.ResolvedVariables
 import cacophony.semantic.UseTypeAnalysisResult
 import cacophony.semantic.syntaxtree.Block
@@ -17,13 +16,12 @@ import cacophony.semantic.syntaxtree.VariableUse
 
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
-    analyzedFunctions: FunctionAnalysisResult,
     analyzedUseTypes: UseTypeAnalysisResult,
     private val function: Definition.FunctionDeclaration,
     private val functionHandlers: Map<Definition.FunctionDeclaration, FunctionHandler>,
 ) {
     private val cfg = CFG()
-    private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedFunctions, analyzedUseTypes)
+    private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
     private val operatorHandler = OperatorHandler(cfg, this, sideEffectAnalyzer)
     private val assignmentHandler = AssignmentHandler(cfg, this)
 
@@ -192,11 +190,7 @@ internal class CFGGenerator(
             is OperatorBinary.Assignment -> visitAssignment(expression, mode, context)
             is OperatorBinary.ArithmeticOperator -> operatorHandler.visitArithmeticOperator(expression, mode, context)
             is OperatorBinary.ArithmeticAssignmentOperator ->
-                operatorHandler.visitArithmeticAssignmentOperator(
-                    expression,
-                    mode,
-                )
-
+                operatorHandler.visitArithmeticAssignmentOperator(expression, mode, context)
             is OperatorBinary.LogicalOperator -> operatorHandler.visitLogicalOperator(expression, mode, context)
         }
 
@@ -206,56 +200,8 @@ internal class CFGGenerator(
         context: Context,
     ): SubCFG =
         when (expression) {
-            is OperatorUnary.Negation -> visitNegationOperator(expression, mode, context)
-            is OperatorUnary.Minus -> visitMinusOperator(expression, mode, context)
-        }
-
-    private fun visitMinusOperator(
-        expression: OperatorUnary.Minus,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG =
-        when (mode) {
-            is EvalMode.Conditional -> error("Minus is not a conditional operator")
-            is EvalMode.SideEffect -> visit(expression.expression, EvalMode.SideEffect, context)
-            is EvalMode.Value -> {
-                when (val expressionCFG = visit(expression.expression, EvalMode.Value, context)) {
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionCFG.access))
-                    is SubCFG.Extracted ->
-                        SubCFG.Extracted(
-                            expressionCFG.entry,
-                            expressionCFG.exit,
-                            CFGNode.Minus(expressionCFG.access),
-                        )
-                }
-            }
-        }
-
-    private fun visitNegationOperator(
-        expression: OperatorUnary.Negation,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG =
-        when (mode) {
-            is EvalMode.Conditional ->
-                visit(
-                    expression.expression,
-                    EvalMode.Conditional(mode.falseEntry, mode.trueEntry, mode.exit),
-                    context,
-                )
-
-            is EvalMode.SideEffect -> visit(expression.expression, EvalMode.SideEffect, context)
-            is EvalMode.Value -> {
-                when (val expressionCFG = visit(expression.expression, EvalMode.Value, context)) {
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Negation(expressionCFG.access))
-                    is SubCFG.Extracted ->
-                        SubCFG.Extracted(
-                            expressionCFG.entry,
-                            expressionCFG.exit,
-                            CFGNode.Negation(expressionCFG.access),
-                        )
-                }
-            }
+            is OperatorUnary.Negation -> operatorHandler.visitNegationOperator(expression, mode, context)
+            is OperatorUnary.Minus -> operatorHandler.visitMinusOperator(expression, mode, context)
         }
 
     private fun visitIfElseStatement(
@@ -378,7 +324,9 @@ internal class CFGGenerator(
 
     internal fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
 
-    internal fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler {
+    internal fun resolveVariable(variable: VariableUse) = resolvedVariables[variable] ?: error("Unresolved variable $variable")
+
+    private fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler {
         return functionHandlers[function] ?: error("Function $function has no handler")
     }
 }

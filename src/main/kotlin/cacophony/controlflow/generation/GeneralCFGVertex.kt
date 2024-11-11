@@ -2,45 +2,40 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
+import cacophony.controlflow.CFGVertex
 
-sealed class GeneralCFGVertex(val node: CFGNode, val label: CFGLabel) {
-    class UnconditionalVertex(node: CFGNode, label: CFGLabel) : GeneralCFGVertex(node, label) {
+internal sealed class GeneralCFGVertex(val label: CFGLabel) {
+    internal abstract fun toVertex(): CFGVertex
+
+    internal class UnconditionalVertex(private val node: CFGNode.Unconditional, label: CFGLabel) : GeneralCFGVertex(label) {
         private var outgoing: CFGLabel? = null
 
-        fun connect(label: CFGLabel) {
+        internal fun connect(label: CFGLabel) {
             check(outgoing == null) { "Vertex is already connected" }
+            outgoing = label
         }
 
-        fun getConnection(): CFGLabel {
-            check(outgoing != null) { "Vertex is not connected" }
-            return outgoing!!
-        }
+        override fun toVertex(): CFGVertex.Jump = CFGVertex.Jump(node, outgoing!!)
     }
 
-    class ConditionalVertex(node: CFGNode, label: CFGLabel) : GeneralCFGVertex(node, label) {
+    internal class ConditionalVertex(private val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label) {
         private var outgoingTrue: CFGLabel? = null
         private var outgoingFalse: CFGLabel? = null
 
-        fun connectTrue(label: CFGLabel) {
+        internal fun connectTrue(label: CFGLabel) {
             check(outgoingTrue == null) { "Vertex true output is already connected" }
             outgoingTrue = label
         }
 
-        fun connectFalse(label: CFGLabel) {
+        internal fun connectFalse(label: CFGLabel) {
             check(outgoingFalse == null) { "Vertex false output is already connected" }
             outgoingFalse = label
         }
 
-        fun getTrueConnection(): CFGLabel {
-            check(outgoingTrue != null && outgoingFalse != null) { "Vertex outputs are not fully connected" }
-            return outgoingTrue!!
-        }
-
-        fun getFalseConnection(): CFGLabel {
-            check(outgoingTrue != null && outgoingFalse != null) { "Vertex outputs are not fully connected" }
-            return outgoingFalse!!
-        }
+        override fun toVertex() = CFGVertex.Conditional(node, outgoingTrue!!, outgoingFalse!!)
     }
 
-    class FinalVertex(node: CFGNode, label: CFGLabel) : GeneralCFGVertex(node, label)
+    internal class FinalVertex(private val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label) {
+        override fun toVertex() = CFGVertex.Final(node)
+    }
 }

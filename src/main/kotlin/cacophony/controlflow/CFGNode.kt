@@ -10,7 +10,7 @@ sealed class CFGVertex(
     abstract fun dependents(): List<CFGLabel>
 
     class Conditional(
-        tree: CFGNode.LogicalOperator,
+        tree: CFGNode,
         val trueDestination: CFGLabel,
         val falseDestination: CFGLabel,
     ) : CFGVertex(tree) {
@@ -85,30 +85,42 @@ sealed interface CFGNode {
 
     sealed interface ArithmeticOperator : Unconditional
 
+    sealed interface ArithmeticAssignmentOperator : ArithmeticOperator
+
     data class Addition(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
+
+    data class AdditionAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator
 
     data class Subtraction(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
+    data class SubtractionAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator
+
     data class Multiplication(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
+
+    data class MultiplicationAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator
 
     data class Division(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
+    data class DivisionAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator
+
     data class Modulo(
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : ArithmeticOperator
+
+    class ModuloAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator
 
     class Minus(val value: CFGNode) : ArithmeticOperator
 
@@ -147,8 +159,6 @@ sealed interface CFGNode {
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
-
-    class Negation(val value: CFGNode) : ArithmeticOperator
 
     companion object {
         val UNIT = Constant(0)

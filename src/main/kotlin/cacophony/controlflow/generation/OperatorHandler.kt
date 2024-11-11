@@ -2,7 +2,10 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.Register
+import cacophony.controlflow.Variable
 import cacophony.semantic.syntaxtree.OperatorBinary
+import cacophony.semantic.syntaxtree.OperatorUnary
+import cacophony.semantic.syntaxtree.VariableUse
 
 internal class OperatorHandler(
     private val cfg: CFG,
@@ -84,11 +87,40 @@ internal class OperatorHandler(
         return SubCFG.Extracted(entry, exit, access)
     }
 
+    private fun makeAssignOperatorNode(
+        expression: OperatorBinary.ArithmeticAssignmentOperator,
+        lhs: CFGNode.LValue,
+        rhs: CFGNode,
+    ): CFGNode.Unconditional =
+        when (expression) {
+            is OperatorBinary.AdditionAssignment -> CFGNode.AdditionAssignment(lhs, rhs)
+            is OperatorBinary.DivisionAssignment -> CFGNode.DivisionAssignment(lhs, rhs)
+            is OperatorBinary.ModuloAssignment -> CFGNode.ModuloAssignment(lhs, rhs)
+            is OperatorBinary.MultiplicationAssignment -> CFGNode.MultiplicationAssignment(lhs, rhs)
+            is OperatorBinary.SubtractionAssignment -> CFGNode.SubtractionAssignment(lhs, rhs)
+        }
+
     internal fun visitArithmeticAssignmentOperator(
         expression: OperatorBinary.ArithmeticAssignmentOperator,
         mode: EvalMode,
+        context: Context,
     ): SubCFG {
-        TODO()
+        // TODO: consider generalizing assigning so it works not only for variables
+        val variableUse =
+            expression.lhs as? VariableUse
+                ?: error("Expected variable use in assignment lhs, got ${expression.lhs}")
+        val definition = cfgGenerator.resolveVariable(variableUse)
+        val variableAccess = cfgGenerator.getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
+        val rhs = cfgGenerator.visit(expression.rhs, EvalMode.Value, context)
+        val operatorNode = makeAssignOperatorNode(expression, variableAccess, rhs.access)
+        return when (rhs) {
+            is SubCFG.Immediate -> SubCFG.Immediate(operatorNode)
+            is SubCFG.Extracted -> {
+                val assignmentVertex = cfg.addUnconditionalVertex(operatorNode)
+                rhs.exit.connect(assignmentVertex.label)
+                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(variableAccess, mode))
+            }
+        }
     }
 
     internal fun visitLogicalOperator(
@@ -221,4 +253,52 @@ internal class OperatorHandler(
             }
         }
     }
+
+    internal fun visitMinusOperator(
+        expression: OperatorUnary.Minus,
+        mode: EvalMode,
+        context: Context,
+    ): SubCFG =
+        when (mode) {
+            is EvalMode.Conditional -> error("Minus is not a conditional operator")
+            is EvalMode.SideEffect -> cfgGenerator.visit(expression.expression, EvalMode.SideEffect, context)
+            is EvalMode.Value -> {
+                when (val expressionCFG = cfgGenerator.visit(expression.expression, EvalMode.Value, context)) {
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionCFG.access))
+                    is SubCFG.Extracted ->
+                        SubCFG.Extracted(
+                            expressionCFG.entry,
+                            expressionCFG.exit,
+                            CFGNode.Minus(expressionCFG.access),
+                        )
+                }
+            }
+        }
+
+    internal fun visitNegationOperator(
+        expression: OperatorUnary.Negation,
+        mode: EvalMode,
+        context: Context,
+    ): SubCFG =
+        when (mode) {
+            is EvalMode.Conditional ->
+                cfgGenerator.visit(
+                    expression.expression,
+                    EvalMode.Conditional(mode.falseEntry, mode.trueEntry, mode.exit),
+                    context,
+                )
+
+            is EvalMode.SideEffect -> cfgGenerator.visit(expression.expression, EvalMode.SideEffect, context)
+            is EvalMode.Value -> {
+                when (val expressionCFG = cfgGenerator.visit(expression.expression, EvalMode.Value, context)) {
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.LogicalNot(expressionCFG.access))
+                    is SubCFG.Extracted ->
+                        SubCFG.Extracted(
+                            expressionCFG.entry,
+                            expressionCFG.exit,
+                            CFGNode.LogicalNot(expressionCFG.access),
+                        )
+                }
+            }
+        }
 }

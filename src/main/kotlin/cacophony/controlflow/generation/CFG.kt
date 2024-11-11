@@ -7,7 +7,7 @@ import cacophony.controlflow.CFGNode
 internal class CFG {
     private val cfg = mutableMapOf<CFGLabel, GeneralCFGVertex>()
 
-    internal fun addUnconditionalVertex(node: CFGNode): GeneralCFGVertex.UnconditionalVertex {
+    internal fun addUnconditionalVertex(node: CFGNode.Unconditional): GeneralCFGVertex.UnconditionalVertex {
         val vertex = GeneralCFGVertex.UnconditionalVertex(node, CFGLabel())
         cfg[vertex.label] = vertex
         return vertex
@@ -25,7 +25,5 @@ internal class CFG {
         return vertex
     }
 
-    internal fun getCFGFragment(): CFGFragment {
-        TODO()
-    }
+    internal fun getCFGFragment(): CFGFragment = cfg.mapValues { (_, value) -> value.toVertex() }
 }
