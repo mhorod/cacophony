@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 
 class NFAConstructorTest {
-    private class NFAWalker<NFAState>(
-        val nfa: NFA<NFAState, Char>,
+    private class NFAWalker<StateT>(
+        val nfa: NFA<StateT, Char>,
     ) {
-        private fun epsClosure(states: Set<NFAState>): Set<NFAState> {
+        private fun epsClosure(states: Set<StateT>): Set<StateT> {
             var states = states
             while (true) {
-                var newStates: Set<NFAState> = setOf()
+                var newStates: Set<StateT> = setOf()
                 for (state in states) {
                     val epsNeighbors = nfa.getEpsilonProductions()[state] ?: emptyList()
                     newStates = newStates union epsNeighbors
@@ -26,11 +26,11 @@ class NFAConstructorTest {
         }
 
         private fun step(
-            states: Set<NFAState>,
+            states: Set<StateT>,
             symbol: Char,
-        ): Set<NFAState> {
+        ): Set<StateT> {
             val states = epsClosure(states)
-            var newStates: Set<NFAState> = setOf()
+            var newStates: Set<StateT> = setOf()
             for (state in states) {
                 newStates = newStates union nfa.getProductions(state, symbol)
             }

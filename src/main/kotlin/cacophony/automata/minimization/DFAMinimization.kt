@@ -11,25 +11,23 @@ private fun <E> PartitionRefinement<E>.smallerSet(
 
 // This is class and not dataclass to make equals() and hashcode() test for object identity,
 // which is sufficient in our case and makes sure there are no checks for the list equality.
-class ContractedDFAState<DFAState>(
-    states: List<DFAState>,
+class ContractedDFAState<StateT>(
+    states: List<StateT>,
 ) {
-    val originalStates: List<DFAState> = states
+    val originalStates: List<StateT> = states
 
     override fun toString(): String = "ContractedDFAState(originalStates=$originalStates)"
 }
 
 // Returns a minimized copy of this DFA, with dead/unreachable states removed.
 // Throws IllegalArgumentException if DFA is invalid (i.e. it does not accept any word).
-fun <DFAState, AtomT, ResultT> DFA<DFAState, AtomT, ResultT>.minimize(): DFA<ContractedDFAState<DFAState>, AtomT, ResultT> =
+fun <StateT, AtomT, ResultT> DFA<StateT, AtomT, ResultT>.minimize(): DFA<ContractedDFAState<StateT>, AtomT, ResultT> =
     minimizeImpl(
         withAliveReachableStates(),
     )
 
 // minimize() helper function. Assumes dfa contains only alive and reachable states.
-private fun <DFAState, AtomT, ResultT> minimizeImpl(
-    dfa: DFA<DFAState, AtomT, ResultT>,
-): DFA<ContractedDFAState<DFAState>, AtomT, ResultT> {
+private fun <StateT, AtomT, ResultT> minimizeImpl(dfa: DFA<StateT, AtomT, ResultT>): DFA<ContractedDFAState<StateT>, AtomT, ResultT> {
     val preimagesCalculator = DFAPreimagesCalculator(dfa)
 
     val refineStructure = PartitionRefinement(dfa.getAllStates())
@@ -43,7 +41,7 @@ private fun <DFAState, AtomT, ResultT> minimizeImpl(
 
     while (queue.isNotEmpty()) {
         val partitionId = queue.first().also { queue.remove(it) }
-        val preimages: Map<AtomT, Set<DFAState>> = preimagesCalculator.getPreimages(refineStructure.getElements(partitionId))
+        val preimages: Map<AtomT, Set<StateT>> = preimagesCalculator.getPreimages(refineStructure.getElements(partitionId))
 
         for (preimageClass in preimages.values) {
             for ((oldId, newId) in refineStructure.refine(preimageClass)) {
@@ -56,7 +54,7 @@ private fun <DFAState, AtomT, ResultT> minimizeImpl(
         }
     }
 
-    val toNewState: MutableMap<DFAState, ContractedDFAState<DFAState>> = HashMap()
+    val toNewState: MutableMap<StateT, ContractedDFAState<StateT>> = HashMap()
     val allNewStates =
         refineStructure.getAllPartitions().map {
             val newState = ContractedDFAState(it.toList())

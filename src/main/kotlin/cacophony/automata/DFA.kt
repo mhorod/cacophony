@@ -1,27 +1,27 @@
 package cacophony.automata
 
-interface DFA<DFAState, AtomT, ResultT> {
+interface DFA<StateT, AtomT, ResultT> {
     // Returns starting state
-    fun getStartingState(): DFAState
+    fun getStartingState(): StateT
 
     // Checks if provided state is accepting
-    fun isAccepting(state: DFAState): Boolean
+    fun isAccepting(state: StateT): Boolean
 
     // Returns specific result
-    fun result(state: DFAState): ResultT?
+    fun result(state: StateT): ResultT?
 
     // Returns all DFA states
-    fun getAllStates(): List<DFAState>
+    fun getAllStates(): List<StateT>
 
     // Returns state produced from provided state and symbol, or null if it doesn't exist.
     fun getProduction(
-        state: DFAState,
+        state: StateT,
         symbol: AtomT,
-    ): DFAState?
+    ): StateT?
 
     // Returns all productions.
     // Returned value is map accepting current state and symbol, and returning new state, which may not exist.
-    fun getProductions(): Map<Pair<DFAState, AtomT>, DFAState>
+    fun getProductions(): Map<Pair<StateT, AtomT>, StateT>
 }
 
 class SimpleDFA<StateT, AtomT, ResultT>(
