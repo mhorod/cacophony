@@ -1,11 +1,11 @@
 package cacophony.grammars
 
 import cacophony.automata.DFA
-import cacophony.automata.minimalization.reverse
+import cacophony.automata.reverse
 
-fun <StateType, SymbolType, ResultType> findNullable(
-    automata: Map<SymbolType, DFA<StateType, SymbolType, ResultType>>,
-): Set<DFAStateReference<StateType, SymbolType, ResultType>> {
+fun <StateT, SymbolT, ResultT> findNullable(
+    automata: Map<SymbolT, DFA<StateT, SymbolT, ResultT>>,
+): Set<DFAStateReference<StateT, SymbolT, ResultT>> {
     val reversed = automata.mapValues { (_, dfa) -> reverse(dfa) }
     val toProcess =
         automata
@@ -13,12 +13,12 @@ fun <StateType, SymbolType, ResultType> findNullable(
                 automaton.getAllStates().map { it to symbol }
             }.filter { (state, symbol) -> automata[symbol]!!.isAccepting(state) }
             .toMutableList()
-    val nullableSymbols = mutableSetOf<SymbolType>()
+    val nullableSymbols = mutableSetOf<SymbolT>()
     val conditionalNullable =
-        with(mutableMapOf<SymbolType, MutableSet<Pair<StateType, SymbolType>>>()) {
+        with(mutableMapOf<SymbolT, MutableSet<Pair<StateT, SymbolT>>>()) {
             withDefault { key -> getOrPut(key) { mutableSetOf() } }
         }
-    val nullable = mutableSetOf<Pair<StateType, SymbolType>>()
+    val nullable = mutableSetOf<Pair<StateT, SymbolT>>()
     while (toProcess.isNotEmpty()) {
         val (state, symbol) = toProcess.removeLast()
         if ((state to symbol) in nullable) continue

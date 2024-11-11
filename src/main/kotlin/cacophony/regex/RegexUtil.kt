@@ -7,33 +7,43 @@ import cacophony.utils.AlgebraicRegex.StarRegex
 import cacophony.utils.AlgebraicRegex.UnionRegex
 
 // This is not CompileException intentionally.
-class RegexSyntaxError(reason: String) : Exception(reason)
+class RegexSyntaxError(
+    reason: String,
+) : Exception(reason)
 
-internal sealed class RegexType : Cloneable {
-    public abstract override fun clone(): RegexType
+internal sealed class RegexT : Cloneable {
+    public abstract override fun clone(): RegexT
 
     abstract fun toAlgebraicRegex(): AlgebraicRegex<Char>
 }
 
-internal class Atom(val symbol: Char) : RegexType() {
+internal class Atom(
+    val symbol: Char,
+) : RegexT() {
     override fun toAlgebraicRegex() = AtomicRegex(symbol)
 
     override fun clone(): Atom = Atom(symbol)
 }
 
-internal class Union(val summands: MutableList<RegexType>) : RegexType() {
+internal class Union(
+    val summands: MutableList<RegexT>,
+) : RegexT() {
     override fun toAlgebraicRegex() = UnionRegex(*summands.map { it.toAlgebraicRegex() }.toTypedArray())
 
     override fun clone(): Union = Union(summands.map { it.clone() }.toMutableList())
 }
 
-internal class Concat(val factors: MutableList<RegexType>) : RegexType() {
+internal class Concat(
+    val factors: MutableList<RegexT>,
+) : RegexT() {
     override fun toAlgebraicRegex() = ConcatenationRegex(*factors.map { it.toAlgebraicRegex() }.toTypedArray())
 
     override fun clone(): Concat = Concat(factors.map { it.clone() }.toMutableList())
 }
 
-internal class Star(val internal: RegexType) : RegexType() {
+internal class Star(
+    private val internal: RegexT,
+) : RegexT() {
     override fun toAlgebraicRegex() = StarRegex(internal.toAlgebraicRegex())
 
     override fun clone(): Star = Star(internal.clone())
@@ -89,6 +99,4 @@ private val SPECIAL_CHARACTER_MAP =
         *"()|*\\".map { Pair(it, Atom(it)) }.toTypedArray(),
     )
 
-internal fun getSpecialCharacterRegex(c: Char): RegexType? {
-    return SPECIAL_CHARACTER_MAP[c]?.clone()
-}
+internal fun getSpecialCharacterRegex(c: Char): RegexT? = SPECIAL_CHARACTER_MAP[c]?.clone()

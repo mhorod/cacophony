@@ -13,30 +13,30 @@ class ParserConstructorError(
     reason: String,
 ) : Exception(reason)
 
-class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
-    private val nextAction: Map<SymbolType, Map<DFAStateReference<StateType, SymbolType, Production<SymbolType>>, SymbolType?>>,
-    private val startSymbol: SymbolType,
-    private val automata: Map<SymbolType, DFA<StateType, SymbolType, Production<SymbolType>>>,
-    private val syncSymbols: Collection<SymbolType>,
-) : Parser<SymbolType> {
+class LLOneParser<StateT, SymbolT : Enum<SymbolT>>(
+    private val nextAction: Map<SymbolT, Map<DFAStateReference<StateT, SymbolT, Production<SymbolT>>, SymbolT?>>,
+    private val startSymbol: SymbolT,
+    private val automata: Map<SymbolT, DFA<StateT, SymbolT, Production<SymbolT>>>,
+    private val syncSymbols: Collection<SymbolT>,
+) : Parser<SymbolT> {
     companion object {
         // Constructs LLOneParser with computed nextAction map.
         // nextAction gives symbol on the production that we should use next
         // depending on the current input symbol and dfa state.
         // null denotes no suitable production, then we should try to accept.
         // Throws if grammar is not LL(1).
-        inline fun <StateType, reified SymbolType : Enum<SymbolType>> fromAnalyzedGrammar(
-            analyzedGrammar: AnalyzedGrammar<StateType, SymbolType>,
-        ): LLOneParser<StateType, SymbolType> {
+        inline fun <StateT, reified SymbolT : Enum<SymbolT>> fromAnalyzedGrammar(
+            analyzedGrammar: AnalyzedGrammar<StateT, SymbolT>,
+        ): LLOneParser<StateT, SymbolT> {
             // Currently the logic is as follows:
-            // 1. Loop over all DFAStateReference and inputSymbol: SymbolType.
+            // 1. Loop over all DFAStateReference and inputSymbol: SymbolT.
             // 2. For each production with some symbol P, using nullable, first and follow on the start state of the DFA for P
             //    find all suitable productions (if there is no DFA for P, meaning P is terminal, production is suitable iff P == inputSymbol).
             // 3. If there are at least 2 suitable productions then our grammar is not LL(1).
             // 4. If there is exactly one then ok.
             // 5. If there are none, in process() we should try to accept in current DFA, else it is a parsing error.
-            val nextAction: Map<SymbolType, MutableMap<DFAStateReference<StateType, SymbolType, Production<SymbolType>>, SymbolType?>> =
-                enumValues<SymbolType>().toList().associateWith { mutableMapOf() }
+            val nextAction: Map<SymbolT, MutableMap<DFAStateReference<StateT, SymbolT, Production<SymbolT>>, SymbolT?>> =
+                enumValues<SymbolT>().toList().associateWith { mutableMapOf() }
 
             analyzedGrammar.automata.forEach { (dfaLabel, dfa) ->
                 // dfa: automaton for the grammar symbol
@@ -46,11 +46,11 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
 
                     val curStateRef = DFAStateReference(curState, dfa)
 
-                    enumValues<SymbolType>().forEach { inputSymbol ->
+                    enumValues<SymbolT>().forEach { inputSymbol ->
                         // inputSymbol: symbol from the input
 
-                        val suitableSymbols = mutableListOf<SymbolType>()
-                        enumValues<SymbolType>().forEach prod@{ prodSymbol ->
+                        val suitableSymbols = mutableListOf<SymbolT>()
+                        enumValues<SymbolT>().forEach prod@{ prodSymbol ->
                             // prodSymbol: symbol in the production
 
                             dfa.getProduction(curState, prodSymbol) ?: return@prod
@@ -94,9 +94,9 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
     }
 
     override fun process(
-        terminals: List<ParseTree.Leaf<SymbolType>>,
+        terminals: List<ParseTree.Leaf<SymbolT>>,
         diagnostics: Diagnostics,
-    ): ParseTree<SymbolType> {
+    ): ParseTree<SymbolT> {
         if (terminals.isEmpty()) {
             throw ParsingException("Unable to parse empty input.")
         }
@@ -114,7 +114,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
             }
         }
 
-        fun topDownParse(symbol: SymbolType): ParseTree<SymbolType> {
+        fun topDownParse(symbol: SymbolT): ParseTree<SymbolT> {
             if (symbol == terminal.token.category) {
                 return terminal.also {
                     if (terminalIterator.hasNext()) {
@@ -125,7 +125,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                 }
             }
 
-            val children = mutableListOf<ParseTree<SymbolType>>()
+            val children = mutableListOf<ParseTree<SymbolT>>()
 
             val dfa = automata[symbol]!!
             var state = dfa.getStartingState()

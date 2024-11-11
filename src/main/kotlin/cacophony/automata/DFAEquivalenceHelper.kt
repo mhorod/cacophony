@@ -9,46 +9,42 @@ interface DFAEquivalenceHelper<StateA, StateB> {
     fun areEquivalent(
         a: StateA,
         b: StateB,
-    ): Boolean {
-        return !areDistinguishable(a, b)
-    }
+    ): Boolean = !areDistinguishable(a, b)
 }
 
-fun <StateA, StateB, AtomType, ResultType> areEquivalent(
-    dfaA: DFA<StateA, AtomType, ResultType>,
-    dfaB: DFA<StateB, AtomType, ResultType>,
-): Boolean {
-    return createDFAEquivalenceHelper(dfaA, dfaB).areEquivalent(dfaA.getStartingState(), dfaB.getStartingState())
-}
+fun <StateA, StateB, AtomT, ResultT> areEquivalent(
+    dfaA: DFA<StateA, AtomT, ResultT>,
+    dfaB: DFA<StateB, AtomT, ResultT>,
+): Boolean = createDFAEquivalenceHelper(dfaA, dfaB).areEquivalent(dfaA.getStartingState(), dfaB.getStartingState())
 
-fun <StateA, StateB, AtomType, ResultType> createDFAEquivalenceHelper(
-    dfaA: DFA<StateA, AtomType, ResultType>,
-    dfaB: DFA<StateB, AtomType, ResultType>,
+fun <StateA, StateB, AtomT, ResultT> createDFAEquivalenceHelper(
+    dfaA: DFA<StateA, AtomT, ResultT>,
+    dfaB: DFA<StateB, AtomT, ResultT>,
 ): DFAEquivalenceHelper<StateA, StateB> {
     val distinguishable = initializeDistinguishableStates(dfaA, dfaB)
     return object : DFAEquivalenceHelper<StateA, StateB> {
         override fun areDistinguishable(
             a: StateA,
             b: StateB,
-        ): Boolean {
-            return distinguishable.contains(Pair(a, b))
-        }
+        ): Boolean = distinguishable.contains(Pair(a, b))
     }
 }
 
-private fun <StateA, StateB, AtomType, ResultType> initializeDistinguishableStates(
-    dfaA: DFA<StateA, AtomType, ResultType>,
-    dfaB: DFA<StateB, AtomType, ResultType>,
+private fun <StateA, StateB, AtomT, ResultT> initializeDistinguishableStates(
+    dfaA: DFA<StateA, AtomT, ResultT>,
+    dfaB: DFA<StateB, AtomT, ResultT>,
 ): Set<Pair<StateA?, StateB?>> {
     val symbols = getSymbols(dfaA.getProductions()) union getSymbols(dfaB.getProductions())
     val invA = invertProductions(dfaA, symbols)
     val invB = invertProductions(dfaB, symbols)
     val distinguishable = mutableSetOf<Pair<StateA?, StateB?>>()
-    for (a in dfaA.getAllStates())
-        for (b in dfaB.getAllStates())
+    for (a in dfaA.getAllStates()) {
+        for (b in dfaB.getAllStates()) {
             if (dfaA.result(a) != dfaB.result(b)) {
                 distinguishable.add(Pair(a, b))
             }
+        }
+    }
     dfaA.getAllStates().filter { dfaA.isAccepting(it) }.forEach { distinguishable.add(Pair(it, null)) }
     dfaB.getAllStates().filter { dfaB.isAccepting(it) }.forEach { distinguishable.add(Pair(null, it)) }
     val toVisit = ArrayDeque(distinguishable)
@@ -69,15 +65,17 @@ private fun <StateA, StateB, AtomType, ResultType> initializeDistinguishableStat
     return distinguishable
 }
 
-private fun <State, AtomType> getSymbols(productions: Map<Pair<State, AtomType>, State>): Set<AtomType> {
-    return productions.keys.map { it.second }.toSet()
-}
+private fun <StateT, AtomT> getSymbols(productions: Map<Pair<StateT, AtomT>, StateT>): Set<AtomT> =
+    productions.keys
+        .map {
+            it.second
+        }.toSet()
 
-private fun <State, AtomType> invertProductions(
-    dfa: DFA<State, AtomType, *>,
-    symbols: Set<AtomType>,
-): Map<Pair<State?, AtomType>, Set<State?>> {
-    val inverted = mutableMapOf<Pair<State?, AtomType>, MutableSet<State?>>()
+private fun <StateT, AtomT> invertProductions(
+    dfa: DFA<StateT, AtomT, *>,
+    symbols: Set<AtomT>,
+): Map<Pair<StateT?, AtomT>, Set<StateT?>> {
+    val inverted = mutableMapOf<Pair<StateT?, AtomT>, MutableSet<StateT?>>()
     for (symbol in symbols) {
         for (state in dfa.getAllStates()) {
             val newState = dfa.getProduction(state, symbol)

@@ -3,10 +3,10 @@ package cacophony.utils
 import kotlin.math.min
 
 // Returns a set of all elements reachable from a collection of nodes in a directed graph.
-fun <VType> getReachableFrom(
-    from: Collection<VType>,
-    graph: Map<VType, Collection<VType>>,
-): Set<VType> {
+fun <VertexT> getReachableFrom(
+    from: Collection<VertexT>,
+    graph: Map<VertexT, Collection<VertexT>>,
+): Set<VertexT> {
     val reachable = from.toMutableSet()
     val workList = from.toMutableList()
     while (workList.isNotEmpty()) {
@@ -21,8 +21,8 @@ fun <VType> getReachableFrom(
     return reachable
 }
 
-fun <VType> reverseGraph(graph: Map<VType, Collection<VType>>): Map<VType, Set<VType>> {
-    val reversed: MutableMap<VType, MutableSet<VType>> = mutableMapOf()
+fun <VertexT> reverseGraph(graph: Map<VertexT, Collection<VertexT>>): Map<VertexT, Set<VertexT>> {
+    val reversed: MutableMap<VertexT, MutableSet<VertexT>> = mutableMapOf()
     for ((u, vs) in graph) {
         for (v in vs) {
             reversed.getOrPut(v) { mutableSetOf() }.add(u)
@@ -32,8 +32,8 @@ fun <VType> reverseGraph(graph: Map<VType, Collection<VType>>): Map<VType, Set<V
 }
 
 // Returns a transitive closure of a directed graph.
-fun <VType> getTransitiveClosure(graph: Map<VType, Collection<VType>>): Map<VType, Set<VType>> {
-    val closure: MutableMap<VType, Set<VType>> = mutableMapOf()
+fun <VertexT> getTransitiveClosure(graph: Map<VertexT, Collection<VertexT>>): Map<VertexT, Set<VertexT>> {
+    val closure: MutableMap<VertexT, Set<VertexT>> = mutableMapOf()
     for (component in getStronglyConnectedComponents(graph)) {
         val reachable =
             component union component.flatMap { graph[it] ?: emptyList() }.flatMap { closure[it] ?: emptyList() }
@@ -43,8 +43,8 @@ fun <VType> getTransitiveClosure(graph: Map<VType, Collection<VType>>): Map<VTyp
 }
 
 // Returns a "proper" transitive closure of a directed graph (i.e. ignoring paths of length zero).
-fun <VType> getProperTransitiveClosure(graph: Map<VType, Collection<VType>>): Map<VType, Set<VType>> {
-    val closure: MutableMap<VType, Set<VType>> = mutableMapOf()
+fun <VertexT> getProperTransitiveClosure(graph: Map<VertexT, Collection<VertexT>>): Map<VertexT, Set<VertexT>> {
+    val closure: MutableMap<VertexT, Set<VertexT>> = mutableMapOf()
     for (component in getStronglyConnectedComponents(graph)) {
         val step = component.flatMap { graph[it] ?: emptyList() }
         val reachable = step union step.flatMap { closure[it] ?: emptyList() }
@@ -54,23 +54,24 @@ fun <VType> getProperTransitiveClosure(graph: Map<VType, Collection<VType>>): Ma
 }
 
 // Returns a list of strongly connected components of a graph in a reverse topological order.
-fun <VType> getStronglyConnectedComponents(graph: Map<VType, Collection<VType>>): List<List<VType>> {
-    val components: MutableList<List<VType>> = mutableListOf()
-    val componentIndex: MutableMap<VType, Int> = mutableMapOf()
-    val sizeMap: MutableMap<VType, Int> = mutableMapOf()
-    val stack: MutableList<VType> = mutableListOf()
+fun <VertexT> getStronglyConnectedComponents(graph: Map<VertexT, Collection<VertexT>>): List<List<VertexT>> {
+    val components: MutableList<List<VertexT>> = mutableListOf()
+    val componentIndex: MutableMap<VertexT, Int> = mutableMapOf()
+    val sizeMap: MutableMap<VertexT, Int> = mutableMapOf()
+    val stack: MutableList<VertexT> = mutableListOf()
 
     val dfs =
         DeepRecursiveFunction { v ->
             var low = stack.size
             sizeMap[v] = stack.size
             stack.add(v)
-            for (e in graph[v] ?: emptyList())
+            for (e in graph[v] ?: emptyList()) {
                 if (componentIndex[e] == null) {
                     low = min(low, sizeMap.getOrElse(e) { callRecursive(e) })
                 }
+            }
             if (low == sizeMap[v]) {
-                val component: MutableList<VType> = mutableListOf()
+                val component: MutableList<VertexT> = mutableListOf()
                 while (stack.size > sizeMap[v]!!) {
                     val u = stack.removeLast()
                     componentIndex[u] = components.size
