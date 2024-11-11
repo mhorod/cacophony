@@ -1054,7 +1054,7 @@ class LLOneParserTest {
                 listOf(SymbolAryt.RPAREN),
             )
 
-        assertThatExceptionOfType(ParsingException::class.java).isThrownBy {
+        assertThatExceptionOfType(Exception::class.java).isThrownBy {
             parser.process(terminals, diagnostics)
         }
 

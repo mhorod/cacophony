@@ -139,7 +139,7 @@ class LLOneParser<StateType, SymbolType : Enum<SymbolType>>(
                             children.add(topDownParse(nextSymbol))
                         } catch (e: ParsingException) {
                             if (!eof && dfa.getProduction(state, terminal.token.category) == null) {
-                                throw e
+                                throw diagnostics.fatal()
                             } else {}
                         }
                     } ?: run {
