@@ -1,5 +1,3 @@
-@file:Suppress("ktlint")
-
 package cacophony.semantic
 
 import cacophony.semantic.syntaxtree.*
@@ -53,15 +51,22 @@ class TypeCheckerTest {
         }
     }
 
-    private fun getDiagnostic() = object : Diagnostics {
-        var msg: String? = null
+    private fun getDiagnostic() =
+        object : Diagnostics {
+            var msg: String? = null
 
-        override fun report(message: String, location: Location) {}
+            override fun report(
+                message: String,
+                location: Location,
+            ) {}
 
-        override fun report(message: String, range: Pair<Location, Location>) {
-            msg = message
+            override fun report(
+                message: String,
+                range: Pair<Location, Location>,
+            ) {
+                msg = message
+            }
         }
-    }
 
     private val testUnit = Type.Basic(lc, "Unit")
     private val testInt = Type.Basic(lc, "Int")
@@ -279,7 +284,15 @@ class TypeCheckerTest {
     fun `ok - function declaration - (Int, Boolean) to Int with type`() {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt)
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(Type.Basic(lc, "Int"), Type.Basic(lc, "Boolean")), Type.Basic(lc, "Int")), listOf(arg1, arg2), testInt, intLiteral)
+        val funDef =
+            Definition.FunctionDeclaration(
+                lc,
+                "f",
+                Type.Functional(lc, listOf(Type.Basic(lc, "Int"), Type.Basic(lc, "Boolean")), Type.Basic(lc, "Int")),
+                listOf(arg1, arg2),
+                testInt,
+                intLiteral,
+            )
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
@@ -292,7 +305,15 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - function declaration - () to Unit with type`() {
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, emptyList(), Type.Basic(lc, "Unit")), emptyList(), testUnit, Empty(lc))
+        val funDef =
+            Definition.FunctionDeclaration(
+                lc,
+                "f",
+                Type.Functional(lc, emptyList(), Type.Basic(lc, "Unit")),
+                emptyList(),
+                testUnit,
+                Empty(lc),
+            )
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
@@ -449,7 +470,6 @@ class TypeCheckerTest {
         assertNull(diagnostics.msg)
     }
 
-
     @Test
     fun `ok - if without else, true branch Unit, VariableUse at test`() {
         val varDef = Definition.VariableDeclaration(lc, "flag", null, Literal.BoolLiteral(lc, true))
@@ -564,7 +584,13 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - return inside if branch`() {
-        val body = Statement.IfElseStatement(lc, booleanLiteral, Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)), Literal.IntLiteral(lc,3))
+        val body =
+            Statement.IfElseStatement(
+                lc,
+                booleanLiteral,
+                Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)),
+                Literal.IntLiteral(lc, 3),
+            )
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, body)
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
@@ -576,7 +602,13 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - return inside both branches`() {
-        val body = Statement.IfElseStatement(lc, booleanLiteral, Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)), Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 3)))
+        val body =
+            Statement.IfElseStatement(
+                lc,
+                booleanLiteral,
+                Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 2)),
+                Statement.ReturnStatement(lc, Literal.IntLiteral(lc, 3)),
+            )
         val funDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, body)
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
@@ -589,7 +621,15 @@ class TypeCheckerTest {
     @Test
     fun `ok - return in nested function`() {
         val innerFunDef = Definition.FunctionDeclaration(lc, "f", null, emptyList(), testInt, Statement.ReturnStatement(lc, intLiteral))
-        val outerFunDef = Definition.FunctionDeclaration(lc, "g", null, emptyList(), testBoolean, Block(lc, listOf(innerFunDef, booleanLiteral)))
+        val outerFunDef =
+            Definition.FunctionDeclaration(
+                lc,
+                "g",
+                null,
+                emptyList(),
+                testBoolean,
+                Block(lc, listOf(innerFunDef, booleanLiteral)),
+            )
         val ast = Block(lc, listOf(outerFunDef))
         val diagnostics = getDiagnostic()
         val result = checkTypes(ast, diagnostics, emptyMap())
@@ -748,7 +788,6 @@ class TypeCheckerTest {
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
         assertNull(diagnostics.msg)
     }
-
 
     @Test
     fun `ok - sub=`() {
@@ -1003,7 +1042,15 @@ class TypeCheckerTest {
 
     @Test
     fun `error - unknown type at argument declaration`() {
-        val funDec = Definition.FunctionDeclaration(lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", Type.Basic(lc, "Type"))), testUnit, Empty(lc))
+        val funDec =
+            Definition.FunctionDeclaration(
+                lc,
+                "f",
+                null,
+                listOf(Definition.FunctionArgument(lc, "a", Type.Basic(lc, "Type"))),
+                testUnit,
+                Empty(lc),
+            )
         val ast = Block(lc, listOf(funDec))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
@@ -1014,7 +1061,15 @@ class TypeCheckerTest {
     fun `error - function declaration type mismatch - types`() {
         val arg1 = Definition.FunctionArgument(lc, "x", testInt)
         val arg2 = Definition.FunctionArgument(lc, "y", testBoolean)
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(Type.Basic(lc, "Boolean"), Type.Basic(lc, "Int")), Type.Basic(lc, "Int")), listOf(arg1, arg2), testInt, intLiteral)
+        val funDef =
+            Definition.FunctionDeclaration(
+                lc,
+                "f",
+                Type.Functional(lc, listOf(Type.Basic(lc, "Boolean"), Type.Basic(lc, "Int")), Type.Basic(lc, "Int")),
+                listOf(arg1, arg2),
+                testInt,
+                intLiteral,
+            )
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
@@ -1023,7 +1078,15 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - function declaration type mismatch - number of args`() {
-        val funDef = Definition.FunctionDeclaration(lc, "f", Type.Functional(lc, listOf(testInt), Type.Basic(lc, "Unit")), emptyList(), testUnit, Empty(lc))
+        val funDef =
+            Definition.FunctionDeclaration(
+                lc,
+                "f",
+                Type.Functional(lc, listOf(testInt), Type.Basic(lc, "Unit")),
+                emptyList(),
+                testUnit,
+                Empty(lc),
+            )
         val ast = Block(lc, listOf(funDef))
         val diagnostics = getDiagnostic()
         checkTypes(ast, diagnostics, emptyMap())
@@ -1059,7 +1122,15 @@ class TypeCheckerTest {
 
     @Test
     fun `error - wrong argument type`() {
-        val funDec = Definition.FunctionDeclaration(lc, "f", null, listOf(Definition.FunctionArgument(lc, "a", testInt)), testUnit, Empty(lc))
+        val funDec =
+            Definition.FunctionDeclaration(
+                lc,
+                "f",
+                null,
+                listOf(Definition.FunctionArgument(lc, "a", testInt)),
+                testUnit,
+                Empty(lc),
+            )
         val funUse = VariableUse(lc, "f")
         val body = FunctionCall(lc, funUse, listOf(booleanLiteral))
         val ast = Block(lc, listOf(funDec, body))
@@ -1080,7 +1151,7 @@ class TypeCheckerTest {
     @Test
     fun `error - mismatch assignment`() {
         val varDec = Definition.VariableDeclaration(lc, "x", testBoolean, booleanLiteral)
-        val varUse = VariableUse(lc ,"x")
+        val varUse = VariableUse(lc, "x")
         val body = OperatorBinary.Assignment(lc, varUse, intLiteral)
         val ast = Block(lc, listOf(varDec, body))
         val diagnostics = getDiagnostic()
@@ -1105,7 +1176,6 @@ class TypeCheckerTest {
         checkTypes(ast, diagnostics, emptyMap())
         assertEquals("Type mismatch: expected Boolean, found Int", diagnostics.msg)
     }
-
 
     @Test
     fun `error - equals on Unit`() {
