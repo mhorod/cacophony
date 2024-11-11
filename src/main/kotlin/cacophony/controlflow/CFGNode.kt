@@ -110,7 +110,7 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
-    class Minus(val value: CFGNode): ArithmeticOperator
+    class Minus(val value: CFGNode) : ArithmeticOperator
 
     sealed interface LogicalOperator : CFGNode
 
@@ -148,7 +148,7 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator
 
-    class Negation(val value: CFGNode): ArithmeticOperator
+    class Negation(val value: CFGNode) : ArithmeticOperator
 
     companion object {
         val UNIT = Constant(0)

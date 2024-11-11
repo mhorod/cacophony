@@ -92,14 +92,21 @@ class CFGGenerator(
     }
 
     fun getCFGFragment(): CFGFragment {
-        TODO("pepela")
+        TODO("todo")
     }
 
     fun run(expression: Definition.FunctionDeclaration) {
-//        val writeReturnValue = CFGNode.Assignment(Register.Fixed.RAX, visit(expression.body, EvalMode.VALUE))
-//        val returnLabel = addVertex(CFGVertex.Final(CFGNode.Return()))
-//        addVertex(CFGVertex.Jump(writeReturnValue, returnLabel))
+        val cfg = generateFunctionCFG(expression)
         TODO("sus")
+    }
+
+    private fun generateFunctionCFG(function: Definition.FunctionDeclaration): SubCFG {
+        val bodyCFG = visit(function.body, EvalMode.Value)
+        val returnValueRegister = CFGNode.VariableUse(Register.Fixed.RAX)
+        val extended = extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
+        val returnVertex = addVertex(CFGNode.Return)
+        extended.exit.connect(returnVertex.label)
+        return SubCFG.Extracted(extended.entry, returnVertex, returnValueRegister)
     }
 
     private fun hasClashingSideEffects(
@@ -200,7 +207,7 @@ class CFGGenerator(
                 .map { ensureExtracted(visit(it, EvalMode.Value), EvalMode.Value) }
 
         val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
-        val functionHandler = functionHandlers[function]!!
+        val functionHandler = getFunctionHandler(function)
 
         val resultRegister = if (mode is EvalMode.Value) Register.Virtual() else null
 
@@ -227,29 +234,14 @@ class CFGGenerator(
         op: OperatorBinary.ArithmeticOperator,
         lhs: CFGNode,
         rhs: CFGNode,
-    ): CFGNode.Unconditional = when (op) {
-        is OperatorBinary.Addition -> CFGNode.Addition(lhs, rhs)
-        is OperatorBinary.Division -> CFGNode.Division(lhs, rhs)
-        is OperatorBinary.Modulo -> CFGNode.Modulo(lhs, rhs)
-        is OperatorBinary.Multiplication -> CFGNode.Multiplication(lhs, rhs)
-        is OperatorBinary.Subtraction -> CFGNode.Subtraction(lhs, rhs)
-    }
-
-    private fun joinedEntry(
-        lhs: SubCFG,
-        rhs: SubCFG,
-    ): GeneralCFGVertex {
-        return when {
-            lhs is SubCFG.Extracted && rhs is SubCFG.Extracted -> {
-                lhs.exit.connect(rhs.entry.label)
-                lhs.entry
-            }
-
-            lhs is SubCFG.Extracted -> lhs.entry
-            rhs is SubCFG.Extracted -> rhs.entry
-            else -> error("Unexpected state")
+    ): CFGNode.Unconditional =
+        when (op) {
+            is OperatorBinary.Addition -> CFGNode.Addition(lhs, rhs)
+            is OperatorBinary.Division -> CFGNode.Division(lhs, rhs)
+            is OperatorBinary.Modulo -> CFGNode.Modulo(lhs, rhs)
+            is OperatorBinary.Multiplication -> CFGNode.Multiplication(lhs, rhs)
+            is OperatorBinary.Subtraction -> CFGNode.Subtraction(lhs, rhs)
         }
-    }
 
     private fun noOpOr(
         value: CFGNode.Unconditional,
@@ -296,32 +288,27 @@ class CFGGenerator(
     private fun visitArithmeticOperator(
         expression: OperatorBinary.ArithmeticOperator,
         mode: EvalMode,
-    ): SubCFG = {
+    ): SubCFG =
         when (mode) {
             is EvalMode.Conditional -> error("Arithmetic operator $expression cannot be used as conditional")
             is EvalMode.SideEffect -> TODO()
-            is EvalMode.Value -> {
-                val lhs = visit(expression.lhs, EvalMode.Value)
-                val rhs = visit(expression.rhs, EvalMode.Value)
+            is EvalMode.Value -> visitArithmeticOperatorAsValue(expression)
+        }
 
-                if (!hasClashingSideEffects(expression.lhs, expression.rhs)) {
-                    if (lhs is SubCFG.Immediate && rhs is SubCFG.Immediate) {
-                        return SubCFG.Immeddiate(makeOperatorNode(expression, lhs.access, rhs.access))
-                    } else {
-                        val extractedLhs = ensureExtracted(lhs, EvalMode.Value)
+    private fun visitArithmeticOperatorAsValue(expression: OperatorBinary.ArithmeticOperator): SubCFG {
+        val lhs = visit(expression.lhs, EvalMode.Value)
+        val rhs = visit(expression.rhs, EvalMode.Value)
 
-                        val opVertex = addVertex(makeOperatorNode(expression, lhs.access, rhs.access))
+        if (!hasClashingSideEffects(expression.lhs, expression.rhs)) {
+            if (lhs is SubCFG.Immediate && rhs is SubCFG.Immediate) {
+                return SubCFG.Immediate(makeOperatorNode(expression, lhs.access, rhs.access))
+            } else {
+                val extractedLhs = ensureExtracted(lhs, EvalMode.Value)
 
-                        // lhs --> (rhs) --> opVertex
-                        if (rhs is SubCFG.Extracted) {
-
-                        } else {
-                        }
-                    }
-                } else {
-                }
+                val opVertex = addVertex(makeOperatorNode(expression, lhs.access, rhs.access))
             }
         }
+        return TODO()
     }
 
     private fun visitArithmeticAssignmentOperator(
@@ -447,39 +434,42 @@ class CFGGenerator(
             is OperatorUnary.Minus -> visitMinusOperator(expression, mode)
         }
 
-    private fun visitMinusOperator(expression: OperatorUnary.Minus, mode: CFGGenerator.EvalMode): CFGGenerator.SubCFG =
+    private fun visitMinusOperator(
+        expression: OperatorUnary.Minus,
+        mode: EvalMode,
+    ): SubCFG =
         when (mode) {
             is EvalMode.Conditional -> error("Minus is not a conditional operator")
             is EvalMode.SideEffect -> visit(expression.expression, EvalMode.SideEffect)
             is EvalMode.Value -> {
-                val expressionCFG = visit(expression.expression, EvalMode.Value)
-                when (expressionCFG) {
+                when (val expressionCFG = visit(expression.expression, EvalMode.Value)) {
                     is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionCFG.access))
-                    is SubCFG.Extracted -> SubCFG.Extracted(
-                        expressionCFG.entry,
-                        expressionCFG.exit,
-                        CFGNode.Minus(expressionCFG.access)
-                    )
+                    is SubCFG.Extracted ->
+                        SubCFG.Extracted(
+                            expressionCFG.entry,
+                            expressionCFG.exit,
+                            CFGNode.Minus(expressionCFG.access),
+                        )
                 }
             }
         }
 
     private fun visitNegationOperator(
         expression: OperatorUnary.Negation,
-        mode: CFGGenerator.EvalMode
-    ): CFGGenerator.SubCFG =
+        mode: EvalMode,
+    ): SubCFG =
         when (mode) {
             is EvalMode.Conditional -> visit(expression.expression, EvalMode.Conditional(mode.falseCFG, mode.trueCFG))
             is EvalMode.SideEffect -> visit(expression.expression, EvalMode.SideEffect)
             is EvalMode.Value -> {
-                val expressionCFG = visit(expression.expression, EvalMode.Value)
-                when (expressionCFG) {
+                when (val expressionCFG = visit(expression.expression, EvalMode.Value)) {
                     is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Negation(expressionCFG.access))
-                    is SubCFG.Extracted -> SubCFG.Extracted(
-                        expressionCFG.entry,
-                        expressionCFG.exit,
-                        CFGNode.Negation(expressionCFG.access)
-                    )
+                    is SubCFG.Extracted ->
+                        SubCFG.Extracted(
+                            expressionCFG.entry,
+                            expressionCFG.exit,
+                            CFGNode.Negation(expressionCFG.access),
+                        )
                 }
             }
         }
@@ -488,9 +478,6 @@ class CFGGenerator(
         expression: Statement.BreakStatement,
         mode: EvalMode,
     ): SubCFG {
-//        val exitLabel = CFGLabel()
-//        val entryLabel = addVertex(CFGVertex.Jump(CFGNode.NoOp, exitLabel))
-//        return SubCFG.Extracted(entryLabel, exitLabel, CFGNode.NoOp)
         TODO()
     }
 
@@ -511,7 +498,9 @@ class CFGGenerator(
 
         val conditionalCFG = visit(expression.testExpression, EvalMode.Conditional(trueCFG, falseCFG))
 
-        return if (mode !is EvalMode.Value) conditionalCFG else {
+        return if (mode !is EvalMode.Value) {
+            conditionalCFG
+        } else {
             val extractedConditionalCFG = ensureExtracted(conditionalCFG, mode)
             SubCFG.Extracted(extractedConditionalCFG.entry, extractedConditionalCFG.exit, resultValueRegister)
         }
@@ -539,9 +528,7 @@ class CFGGenerator(
         expression: Statement.IfElseStatement,
         mode: EvalMode,
     ): SubCFG {
-        if (expression.testExpression !is Literal.BoolLiteral) {
-            throw IllegalStateException("Expected testExpression to be BoolLiteral")
-        }
+        check(expression.testExpression is Literal.BoolLiteral) { "Expected testExpression to be BoolLiteral" }
 
         return if (expression.testExpression.value) {
             visit(expression.doExpression, mode)
