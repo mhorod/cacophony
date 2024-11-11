@@ -61,7 +61,7 @@ sealed interface CFGNode {
         Leaf
 
     data class Assignment(
-        val destination: Register,
+        val destination: LValue,
         val value: CFGNode,
     ) : Unconditional
 
@@ -120,9 +120,9 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
-    class ModuloAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator
+    data class ModuloAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator
 
-    class Minus(val value: CFGNode) : ArithmeticOperator
+    data class Minus(val value: CFGNode) : ArithmeticOperator
 
     sealed interface LogicalOperator : CFGNode, Unconditional
 
