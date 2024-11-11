@@ -206,11 +206,9 @@ private class VarUseVisitor(
         val calledFunction = resolvedVariables[expr.function]
         if (calledFunction is Definition.FunctionDeclaration) {
             val map =
-                functionAnalysis[calledFunction]!!.variables.filterNot {
+                useTypeAnalysis[calledFunction.body]!!.getMap().filterNot {
                     // had to use staticDepth because of called functions that use variables not visible in current scope
-                    functionAnalysis[it.definedIn]!!.staticDepth > staticDepth
-                }.associate {
-                    it.declaration to it.useType
+                    it.key in calledFunction.arguments
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
         } else {
