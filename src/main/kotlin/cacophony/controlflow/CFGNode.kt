@@ -112,7 +112,7 @@ sealed interface CFGNode {
 
     class Minus(val value: CFGNode) : ArithmeticOperator
 
-    sealed interface LogicalOperator : CFGNode
+    sealed interface LogicalOperator : CFGNode, Unconditional
 
     data class LogicalNot(
         val value: CFGNode,

@@ -12,14 +12,10 @@ fun generateCFG(
     analyzedFunctions: FunctionAnalysisResult,
     analyzedUseTypes: UseTypeAnalysisResult,
     functionHandlers: Map<Definition.FunctionDeclaration, FunctionHandler>,
-): CFGFragment {
-    val fragments =
-        functionHandlers.map { (function, _) ->
-            generateFunctionCFG(function, functionHandlers, resolvedVariables, analyzedFunctions, analyzedUseTypes)
-        }
-
-    return fragments.flatMap { it.entries }.associate { it.toPair() }
-}
+): Map<Definition.FunctionDeclaration, CFGFragment> =
+    functionHandlers.mapValues { (function, _) ->
+        generateFunctionCFG(function, functionHandlers, resolvedVariables, analyzedFunctions, analyzedUseTypes)
+    }
 
 private fun generateFunctionCFG(
     function: Definition.FunctionDeclaration,
@@ -29,6 +25,5 @@ private fun generateFunctionCFG(
     analyzedUseTypes: UseTypeAnalysisResult,
 ): CFGFragment {
     val generator = CFGGenerator(resolvedVariables, analyzedFunctions, analyzedUseTypes, function, functionHandlers)
-    generator.run(function)
-    return generator.getCFGFragment()
+    return generator.generateFunctionCFG()
 }

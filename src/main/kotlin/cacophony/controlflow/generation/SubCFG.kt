@@ -22,7 +22,7 @@ internal sealed interface SubCFG {
      */
     data class Extracted(
         val entry: GeneralCFGVertex,
-        val exit: GeneralCFGVertex,
+        val exit: GeneralCFGVertex.UnconditionalVertex,
         override val access: CFGNode.Unconditional,
     ) : SubCFG {
         infix fun merge(rhs: Extracted): Extracted {

@@ -1,7 +1,6 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGFragment
-import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.FunctionHandler
 import cacophony.controlflow.Register
@@ -23,38 +22,23 @@ import cacophony.semantic.syntaxtree.VariableUse
 
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
-    private val analyzedFunctions: FunctionAnalysisResult,
-    private val analyzedUseTypes: UseTypeAnalysisResult,
+    analyzedFunctions: FunctionAnalysisResult,
+    analyzedUseTypes: UseTypeAnalysisResult,
     private val function: Definition.FunctionDeclaration,
     private val functionHandlers: Map<Definition.FunctionDeclaration, FunctionHandler>,
 ) {
-    private val cfg = mutableMapOf<CFGLabel, GeneralCFGVertex>()
+    private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedFunctions, analyzedUseTypes)
-    private val operatorHandler = OperatorHandler(this, sideEffectAnalyzer)
-    private val assignmentHandler = AssignmentHandler(this)
+    private val operatorHandler = OperatorHandler(cfg, this, sideEffectAnalyzer)
+    private val assignmentHandler = AssignmentHandler(cfg, this)
 
-    fun getCFGFragment(): CFGFragment {
-        TODO("todo")
-    }
-
-    fun run(expression: Definition.FunctionDeclaration) {
-        val cfg = generateFunctionCFG(expression)
-        TODO("sus")
-    }
-
-    private fun generateFunctionCFG(function: Definition.FunctionDeclaration): SubCFG {
+    internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value)
         val returnValueRegister = CFGNode.VariableUse(Register.FixedRegister(X64Register.RAX))
         val extended = extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
-        val returnVertex = addVertex(CFGNode.Return)
+        val returnVertex = cfg.addFinalVertex(CFGNode.Return)
         extended.exit.connect(returnVertex.label)
-        return SubCFG.Extracted(extended.entry, returnVertex, returnValueRegister)
-    }
-
-    internal fun addVertex(node: CFGNode): GeneralCFGVertex {
-        val vertex = GeneralCFGVertex(node, CFGLabel())
-        cfg[vertex.label] = vertex
-        return vertex
+        return cfg.getCFGFragment()
     }
 
     internal fun ensureExtracted(
@@ -69,12 +53,12 @@ internal class CFGGenerator(
                         val register = Register.VirtualRegister()
                         val tmpWrite = CFGNode.Assignment(CFGNode.VariableUse(register), subCFG.access)
                         val tmpRead = CFGNode.VariableUse(register)
-                        val vertex = addVertex(tmpWrite)
+                        val vertex = cfg.addUnconditionalVertex(tmpWrite)
                         SubCFG.Extracted(vertex, vertex, tmpRead)
                     }
 
                     else -> {
-                        val vertex = addVertex(subCFG.access)
+                        val vertex = cfg.addUnconditionalVertex(subCFG.access)
                         SubCFG.Extracted(vertex, vertex, CFGNode.NoOp)
                     }
                 }
@@ -276,7 +260,7 @@ internal class CFGGenerator(
                 mode,
             )
 
-        val exit = addVertex(CFGNode.NoOp)
+        val exit = cfg.addUnconditionalVertex(CFGNode.NoOp)
         trueCFG.exit.connect(exit.label)
         falseCFG.exit.connect(exit.label)
 
@@ -291,15 +275,15 @@ internal class CFGGenerator(
     }
 
     private fun extendWithAssignment(
-        cfg: SubCFG,
+        subCFG: SubCFG,
         destination: CFGNode.LValue,
         mode: EvalMode,
     ): SubCFG.Extracted {
-        val extractedCFG = ensureExtracted(cfg, mode)
+        val extractedCFG = ensureExtracted(subCFG, mode)
         return when (mode) {
             is EvalMode.Value -> {
                 val writeResultNode = CFGNode.Assignment(destination, extractedCFG.access)
-                val writeResultVertex = addVertex(writeResultNode)
+                val writeResultVertex = cfg.addUnconditionalVertex(writeResultNode)
                 extractedCFG.exit.connect(writeResultVertex.label)
                 SubCFG.Extracted(extractedCFG.entry, writeResultVertex, destination)
             }

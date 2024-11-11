@@ -24,6 +24,6 @@ internal sealed interface EvalMode {
     data class Conditional(
         val trueCFG: SubCFG.Extracted,
         val falseCFG: SubCFG.Extracted,
-        val exit: GeneralCFGVertex,
+        val exit: GeneralCFGVertex.UnconditionalVertex,
     ) : EvalMode
 }

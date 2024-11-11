@@ -4,11 +4,39 @@ import cacophony.controlflow.CFGNode
 import cacophony.semantic.syntaxtree.OperatorBinary
 
 internal class OperatorHandler(
+    private val cfg: CFG,
     private val cfgGenerator: CFGGenerator,
     private val sideEffectAnalyzer: SideEffectAnalyzer,
 ) {
+    internal fun visitArithmeticOperator(
+        expression: OperatorBinary.ArithmeticOperator,
+        mode: EvalMode,
+    ): SubCFG = visitBinaryOperator(expression, mode)
+
+    private fun visitBinaryOperator(
+        expression: OperatorBinary,
+        mode: EvalMode,
+    ): SubCFG {
+        val lhsCFG = cfgGenerator.visit(expression.lhs, mode)
+        val rhsCFG = cfgGenerator.visit(expression.rhs, mode)
+        val access =
+            when (mode) {
+                is EvalMode.Conditional -> error("Arithmetic operator $expression cannot be used as conditional")
+                is EvalMode.SideEffect -> CFGNode.NoOp
+                is EvalMode.Value -> makeOperatorNode(expression, lhsCFG.access, rhsCFG.access)
+            }
+        val safeLhs =
+            if (sideEffectAnalyzer.hasClashingSideEffects(expression.lhs, expression.rhs)) {
+                // If there are clashing side effects, lhs must be extracted to a separate vertex
+                cfgGenerator.ensureExtracted(lhsCFG, mode)
+            } else {
+                lhsCFG
+            }
+        return join(safeLhs, rhsCFG, access)
+    }
+
     private fun makeOperatorNode(
-        op: OperatorBinary.ArithmeticOperator,
+        op: OperatorBinary,
         lhs: CFGNode,
         rhs: CFGNode,
     ): CFGNode.Unconditional =
@@ -18,100 +46,39 @@ internal class OperatorHandler(
             is OperatorBinary.Modulo -> CFGNode.Modulo(lhs, rhs)
             is OperatorBinary.Multiplication -> CFGNode.Multiplication(lhs, rhs)
             is OperatorBinary.Subtraction -> CFGNode.Subtraction(lhs, rhs)
+            is OperatorBinary.Equals -> CFGNode.Equals(lhs, rhs)
+            is OperatorBinary.Greater -> CFGNode.Greater(lhs, rhs)
+            is OperatorBinary.GreaterEqual -> CFGNode.GreaterEqual(lhs, rhs)
+            is OperatorBinary.Less -> CFGNode.Less(lhs, rhs)
+            is OperatorBinary.LessEqual -> CFGNode.LessEqual(lhs, rhs)
+            is OperatorBinary.NotEquals -> CFGNode.NotEquals(lhs, rhs)
+            is OperatorBinary.LogicalAnd -> error("LogicalAnd operator has to be handled separately")
+            is OperatorBinary.LogicalOr -> error("LogicalOr operator has to be handled separately")
+            else -> error("Other operators have to be handled separately")
         }
 
-    internal fun visitArithmeticOperator(
-        expression: OperatorBinary.ArithmeticOperator,
-        mode: EvalMode,
-    ): SubCFG =
-        when (mode) {
-            is EvalMode.Conditional -> error("Arithmetic operator $expression cannot be used as conditional")
-            is EvalMode.SideEffect -> visitArithmeticOperatorAsSideEffects(expression)
-            is EvalMode.Value -> visitArithmeticOperatorAsValue(expression)
-        }
-
-    private fun visitArithmeticOperatorAsSideEffects(expression: OperatorBinary.ArithmeticOperator): SubCFG {
-        val lhs = cfgGenerator.visit(expression.lhs, EvalMode.SideEffect)
-        val rhs = cfgGenerator.visit(expression.lhs, EvalMode.SideEffect)
-
-        return if (sideEffectAnalyzer.hasClashingSideEffects(expression.lhs, expression.rhs)) {
-            generateArithmeticOperatorAsNonClashingSideEffects(expression, lhs, rhs)
-        } else {
-            generateArithmeticOperatorAsClashingSideEffects(expression, lhs, rhs)
-        }
-    }
-
-    private fun visitArithmeticOperatorAsValue(expression: OperatorBinary.ArithmeticOperator): SubCFG {
-        val lhs = cfgGenerator.visit(expression.lhs, EvalMode.Value)
-        val rhs = cfgGenerator.visit(expression.rhs, EvalMode.Value)
-
-        return if (sideEffectAnalyzer.hasClashingSideEffects(expression.lhs, expression.rhs)) {
-            generateArithmeticOperatorAsValueWithClashingSideEffects(expression, lhs, rhs)
-        } else {
-            generateArithmeticOperatorAsValueWithoutClashingSideEffects(expression, lhs, rhs)
-        }
-    }
-
-    private fun generateArithmeticOperatorAsValueWithClashingSideEffects(
-        op: OperatorBinary.ArithmeticOperator,
+    /**
+     * Joins `lhs` and `rhs` into one sequence of vertices with the provided `access` as the result value computation
+     */
+    private fun join(
         lhs: SubCFG,
         rhs: SubCFG,
+        access: CFGNode.Unconditional,
     ): SubCFG {
-        // If there are clashing side effects, lhs must execute first
-        val extractedLhs = cfgGenerator.ensureExtracted(lhs, EvalMode.Value)
-        val exit =
-            when (rhs) {
-                // If rhs can be computed immediately, we don't need any more dependencies
-                is SubCFG.Immediate -> extractedLhs.exit
-                is SubCFG.Extracted -> {
-                    // Otherwise we connect the dependencies sequentially
-                    extractedLhs.exit.connect(rhs.entry.label)
-                    rhs.exit
+        val (entry, exit) =
+            when {
+                lhs is SubCFG.Extracted && rhs is SubCFG.Extracted -> {
+                    // If both lhs and rhs are extracted to separate subgraphs, we connect those subgraphs sequentially
+                    lhs.exit.connect(rhs.entry.label)
+                    Pair(lhs.entry, rhs.exit)
                 }
+                // If only one of lhs and rhs is extracted to a separate subgraph then we only need it as a dependency (exit and entry)
+                // and the other one is computed immediately when computing the result
+                lhs is SubCFG.Extracted -> Pair(lhs.entry, lhs.exit)
+                rhs is SubCFG.Extracted -> Pair(rhs.entry, rhs.exit)
+                else -> return SubCFG.Immediate(access)
             }
-        return SubCFG.Extracted(extractedLhs.entry, exit, makeOperatorNode(op, extractedLhs.access, rhs.access))
-    }
-
-    private fun generateArithmeticOperatorAsValueWithoutClashingSideEffects(
-        op: OperatorBinary.ArithmeticOperator,
-        lhs: SubCFG,
-        rhs: SubCFG,
-    ): SubCFG {
-        return if (lhs is SubCFG.Immediate && rhs is SubCFG.Immediate) {
-            // If both lhs and rhs can be computed immediately then arithmetic operator can also be
-            SubCFG.Immediate(makeOperatorNode(op, lhs.access, rhs.access))
-        } else {
-            val (entry, exit) =
-                when {
-                    lhs is SubCFG.Extracted && rhs is SubCFG.Extracted -> {
-                        // If both lhs and rhs are extracted to separate subgraphs, we connect those subgraphs sequentially
-                        lhs.exit.connect(rhs.entry.label)
-                        Pair(lhs.entry, rhs.exit)
-                    }
-                    // If only one of lhs and rhs is extracted to a separate subgraph then we only need it as a dependency (exit and entry)
-                    // and the other one is computed immediately when computing the result
-                    lhs is SubCFG.Extracted -> Pair(lhs.entry, lhs.exit)
-                    rhs is SubCFG.Extracted -> Pair(rhs.entry, rhs.exit)
-                    else -> error("Either lhs or rhs has to be extracted in this branch")
-                }
-            SubCFG.Extracted(entry, exit, makeOperatorNode(op, lhs.access, rhs.access))
-        }
-    }
-
-    private fun generateArithmeticOperatorAsNonClashingSideEffects(
-        op: OperatorBinary.ArithmeticOperator,
-        lhs: SubCFG,
-        rhs: SubCFG,
-    ): SubCFG {
-        TODO()
-    }
-
-    private fun generateArithmeticOperatorAsClashingSideEffects(
-        op: OperatorBinary.ArithmeticOperator,
-        lhs: SubCFG,
-        rhs: SubCFG,
-    ): SubCFG {
-        TODO()
+        return SubCFG.Extracted(entry, exit, access)
     }
 
     internal fun visitArithmeticAssignmentOperator(
@@ -136,7 +103,19 @@ internal class OperatorHandler(
         expression: OperatorBinary.LogicalOperator,
         mode: EvalMode,
     ): SubCFG {
-        TODO("Not yet implemented")
+        val valueCFG = visitBinaryOperator(expression, mode)
+        return when (mode) {
+            is EvalMode.Conditional -> {
+                val conditionVertex = cfg.addConditionalVertex(valueCFG.access)
+                if (valueCFG is SubCFG.Extracted) {
+                    valueCFG.exit.connect(conditionVertex.label)
+                }
+                conditionVertex.connectTrue(mode.trueCFG.entry.label)
+                conditionVertex.connectFalse(mode.falseCFG.entry.label)
+                SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
+            }
+            else -> valueCFG
+        }
     }
 
     private fun visitLogicalOrOperator(

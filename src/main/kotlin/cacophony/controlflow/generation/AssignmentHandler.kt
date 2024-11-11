@@ -5,7 +5,7 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Expression
 
-internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
+internal class AssignmentHandler(private val cfg: CFG, private val cfgGenerator: CFGGenerator) {
     internal fun generateAssignment(
         variable: Definition,
         value: Expression,
@@ -18,7 +18,7 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
         return when (valueCFG) {
             is SubCFG.Immediate -> SubCFG.Immediate(variableWrite)
             is SubCFG.Extracted -> {
-                val writeVertex = cfgGenerator.addVertex(variableWrite)
+                val writeVertex = cfg.addUnconditionalVertex(variableWrite)
                 valueCFG.exit.connect(writeVertex.label)
                 SubCFG.Extracted(
                     valueCFG.entry,
