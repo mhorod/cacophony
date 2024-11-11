@@ -10,10 +10,11 @@ internal class AssignmentHandler(private val cfg: CFG, private val cfgGenerator:
         variable: Definition,
         value: Expression,
         mode: EvalMode,
+        context: Context,
         propagate: Boolean,
     ): SubCFG {
         val variableAccess = cfgGenerator.getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(variable))
-        val valueCFG = cfgGenerator.visit(value, EvalMode.Value)
+        val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)
         val variableWrite = CFGNode.Assignment(variableAccess, valueCFG.access)
         return when (valueCFG) {
             is SubCFG.Immediate -> SubCFG.Immediate(variableWrite)

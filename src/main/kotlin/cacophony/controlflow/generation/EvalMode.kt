@@ -17,13 +17,13 @@ internal sealed interface EvalMode {
     /**
      * Indicates that the (boolean) expression is used as a condition of if-then-else or while
      *
-     * @property trueCFG Subgraph executed when the expression is evaluated to true
-     * @property falseCFG Subgraph executed when the expression is evaluated to false
+     * @property trueEntry Entry point to jump to when the expression is evaluated to true
+     * @property falseEntry Entry point to jump to when the expression is evaluated to false
      * @property exit Joined exit point of both branches i.e. where to jump after executing either of them
      */
     data class Conditional(
-        val trueCFG: SubCFG.Extracted,
-        val falseCFG: SubCFG.Extracted,
+        val trueEntry: GeneralCFGVertex,
+        val falseEntry: GeneralCFGVertex,
         val exit: GeneralCFGVertex.UnconditionalVertex,
     ) : EvalMode
 }

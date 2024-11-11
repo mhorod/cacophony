@@ -3,7 +3,7 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 
-internal sealed class GeneralCFGVertex(val node: CFGNode, val label: CFGLabel) {
+sealed class GeneralCFGVertex(val node: CFGNode, val label: CFGLabel) {
     class UnconditionalVertex(node: CFGNode, label: CFGLabel) : GeneralCFGVertex(node, label) {
         private var outgoing: CFGLabel? = null
 
