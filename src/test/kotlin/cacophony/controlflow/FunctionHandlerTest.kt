@@ -239,7 +239,7 @@ class FunctionHandlerTest {
             // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
             val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
             val expected =
-                CFGNode.MemoryWrite(
+                CFGNode.Assignment(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
                 )
@@ -262,7 +262,7 @@ class FunctionHandlerTest {
             // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
             val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
             val expected =
-                CFGNode.MemoryWrite(
+                CFGNode.Assignment(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     childHandler.generateVariableAccess(childHandler.getStaticLink()),
                 )
@@ -286,7 +286,7 @@ class FunctionHandlerTest {
             // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
             val staticLinkAccess = childHandler.generateVariableAccess(parentHandler.getStaticLink())
             val expected =
-                CFGNode.MemoryWrite(
+                CFGNode.Assignment(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     childHandler.generateVariableAccess(parentHandler.getStaticLink()),
                 )

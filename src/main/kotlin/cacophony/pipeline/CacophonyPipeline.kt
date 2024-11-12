@@ -38,7 +38,7 @@ class CacophonyPipeline(
     // run the full pipeline
     fun process(input: Input): FunctionAnalysisResult = analyzeFunctions(input)
 
-    private fun lex(input: Input): List<Token<TokenCategorySpecific>> {
+    fun lex(input: Input): List<Token<TokenCategorySpecific>> {
         val tokens =
             try {
                 assertEmptyDiagnosticsAfter { lexer.process(input, diagnostics) }
@@ -50,7 +50,7 @@ class CacophonyPipeline(
         return tokens
     }
 
-    private fun parse(input: Input): ParseTree<CacophonyGrammarSymbol> {
+    fun parse(input: Input): ParseTree<CacophonyGrammarSymbol> {
         val terminals = lex(input).map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
         val parseTree =
             try {
@@ -76,7 +76,7 @@ class CacophonyPipeline(
         return ast
     }
 
-    private fun resolveNames(ast: AST): NameResolutionResult {
+    fun resolveNames(ast: AST): NameResolutionResult {
         val result =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.resolveNames(ast, diagnostics) }
@@ -93,7 +93,7 @@ class CacophonyPipeline(
         return resolveOverloads(ast, nr)
     }
 
-    private fun resolveOverloads(
+    fun resolveOverloads(
         ast: AST,
         nr: NameResolutionResult,
     ): ResolvedVariables {
@@ -123,7 +123,7 @@ class CacophonyPipeline(
         return types
     }
 
-    private fun generateCallGraph(
+    fun generateCallGraph(
         ast: AST,
         resolvedVariables: ResolvedVariables,
     ): CallGraph {
@@ -138,14 +138,14 @@ class CacophonyPipeline(
         return callGraph
     }
 
-    private fun analyzeFunctions(input: Input): FunctionAnalysisResult = analyzeFunctions(generateAST(input))
+    fun analyzeFunctions(input: Input): FunctionAnalysisResult = analyzeFunctions(generateAST(input))
 
-    private fun analyzeFunctions(ast: AST): FunctionAnalysisResult {
+    fun analyzeFunctions(ast: AST): FunctionAnalysisResult {
         val resolvedFunctions = resolveOverloads(ast)
         return analyzeFunctions(ast, resolvedFunctions)
     }
 
-    private fun analyzeFunctions(
+    fun analyzeFunctions(
         ast: AST,
         resolvedVariables: ResolvedVariables,
     ): FunctionAnalysisResult {
@@ -162,7 +162,7 @@ class CacophonyPipeline(
         return analyzeFunctions(ast, resolvedVariables, types, callGraph)
     }
 
-    private fun analyzeFunctions(
+    fun analyzeFunctions(
         ast: AST,
         resolvedVariables: ResolvedVariables,
         types: TypeCheckingResult,

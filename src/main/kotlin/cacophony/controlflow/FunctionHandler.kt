@@ -230,7 +230,7 @@ class FunctionHandlerImpl(
         }
     }
 
-    override fun generateVariableAccess(variable: Variable): CFGNode {
+    override fun generateVariableAccess(variable: Variable): CFGNode.LValue {
         val definedInDeclaration =
             when (variable) {
                 is Variable.SourceVariable -> {

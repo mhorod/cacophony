@@ -2,6 +2,7 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
+import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.semantic.UseTypeAnalysisResult
 import cacophony.semantic.VariableUseType
@@ -30,6 +31,15 @@ class CFGGenerationKtTest {
             TODO()
         }
 
+        override fun generateCallFrom(
+            callerFunction: FunctionHandler,
+            arguments: List<CFGNode>,
+            result: Register?,
+            respectStackAlignment: Boolean,
+        ): List<CFGNode> {
+            TODO()
+        }
+
         override fun generateVariableAccess(variable: Variable): CFGNode.LValue =
             CFGNode.VariableUse(
                 when (variable) {
@@ -39,6 +49,17 @@ class CFGGenerationKtTest {
             )
 
         override fun getVariableAllocation(variable: Variable): VariableAllocation {
+            TODO()
+        }
+
+        override fun registerVariableAllocation(
+            variable: Variable,
+            allocation: VariableAllocation,
+        ) {
+            TODO()
+        }
+
+        override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable {
             TODO()
         }
 
@@ -121,14 +142,14 @@ class CFGGenerationKtTest {
                     then 12
                     else 24;
         """
-        val pipeline = CacophonyPipeline(mockk())
-        val ast = pipeline.generateAST(StringInput(program))
+        val input = StringInput(program)
+        val pipeline = CacophonyPipeline(CacophonyDiagnostics(input))
+        val ast = pipeline.generateAST(input)
         val functions = pipeline.analyzeFunctions(ast)
 
         val useTypeMap: UseTypeAnalysisResult =
             emptyMap<Expression, Map<Definition, VariableUseType>>().withDefault { emptyMap() }
 
-        val handler = TestFunctionHandler()
         val handlers = functions.mapValues { TestFunctionHandler() }
 
         val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
@@ -138,14 +159,14 @@ class CFGGenerationKtTest {
     @Test
     fun `test cfg on nested ifs in condition`() {
         val program = "let f = [] -> Int => if if true then false else true then 10 else 20;"
-        val pipeline = CacophonyPipeline(mockk())
-        val ast = pipeline.generateAST(StringInput(program))
+        val input = StringInput(program)
+        val pipeline = CacophonyPipeline(CacophonyDiagnostics(input))
+        val ast = pipeline.generateAST(input)
         val functions = pipeline.analyzeFunctions(ast)
 
         val useTypeMap: UseTypeAnalysisResult =
             emptyMap<Expression, Map<Definition, VariableUseType>>().withDefault { emptyMap() }
 
-        val handler = TestFunctionHandler()
         val handlers = functions.mapValues { TestFunctionHandler() }
 
         val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
@@ -160,8 +181,9 @@ class CFGGenerationKtTest {
                     then (if (if false then false else true) then 11 else 12)
                     else (if true then 13  else 15);
         """
-        val pipeline = CacophonyPipeline(mockk())
-        val ast = pipeline.generateAST(StringInput(program))
+        val input = StringInput(program)
+        val pipeline = CacophonyPipeline(CacophonyDiagnostics(input))
+        val ast = pipeline.generateAST(input)
         val functions = pipeline.analyzeFunctions(ast)
 
         val useTypeMap: UseTypeAnalysisResult =
