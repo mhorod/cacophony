@@ -10,7 +10,7 @@ class VarUseTypeAnalysisTest {
     fun `analysis of empty expression`() {
         val empty = Empty(mockRange())
         val ast = astOf(empty)
-        val result = analyzeVarUseTypes(ast, emptyMap(), emptyMap())
+        val result = analyzeVarUseTypes(ast, emptyMap())
         assertThat(result).containsExactlyInAnyOrderEntriesOf(
             mapOf(
                 ast to emptyMap(),
@@ -23,7 +23,7 @@ class VarUseTypeAnalysisTest {
     fun `declaration is not usage`() {
         val declaration = variableDeclaration("a", Empty(mockRange()))
         val ast = astOf(declaration)
-        val result = analyzeVarUseTypes(ast, emptyMap(), emptyMap())
+        val result = analyzeVarUseTypes(ast, emptyMap())
         assertThat(result).containsEntry(
             declaration,
             emptyMap(),
@@ -35,7 +35,7 @@ class VarUseTypeAnalysisTest {
         val declaration = variableDeclaration("a", Empty(mockRange()))
         val varUse = variableUse("a")
         val ast = astOf(declaration, varUse)
-        val result = analyzeVarUseTypes(ast, mapOf(varUse to declaration), emptyMap())
+        val result = analyzeVarUseTypes(ast, mapOf(varUse to declaration))
         assertThat(result).containsAllEntriesOf(
             mapOf(
                 varUse to mapOf(declaration to VariableUseType.READ),
@@ -49,7 +49,7 @@ class VarUseTypeAnalysisTest {
         val declaration = variableDeclaration("a", Empty(mockRange()))
         val varUse = variableUse("a")
         val ast = astOf(declaration, varUse)
-        val result = analyzeVarUseTypes(ast, mapOf(varUse to declaration), emptyMap())
+        val result = analyzeVarUseTypes(ast, mapOf(varUse to declaration))
         assertThat(result).containsAllEntriesOf(
             mapOf(
                 ast to mapOf(),
@@ -63,7 +63,7 @@ class VarUseTypeAnalysisTest {
         val varUse = variableUse("a")
         var block = block(varUse)
         val ast = astOf(declaration, block)
-        val result = analyzeVarUseTypes(ast, mapOf(varUse to declaration), emptyMap())
+        val result = analyzeVarUseTypes(ast, mapOf(varUse to declaration))
         assertThat(result).containsAllEntriesOf(
             mapOf(
                 block to mapOf(declaration to VariableUseType.READ),
@@ -78,7 +78,7 @@ class VarUseTypeAnalysisTest {
         val write = variableWrite(varUse)
         var block = block(write)
         val ast = astOf(declaration, block)
-        val result = analyzeVarUseTypes(ast, mapOf(varUse to declaration), emptyMap())
+        val result = analyzeVarUseTypes(ast, mapOf(varUse to declaration))
         assertThat(result).containsAllEntriesOf(
             mapOf(
                 write to mapOf(declaration to VariableUseType.WRITE),
@@ -102,7 +102,6 @@ class VarUseTypeAnalysisTest {
                     varUse1 to declaration,
                     varUse2 to declaration,
                 ),
-                emptyMap(),
             )
         assertThat(result).containsAllEntriesOf(
             mapOf(
@@ -136,7 +135,6 @@ class VarUseTypeAnalysisTest {
                     yUse to yDeclaration,
                     zUse to zDeclaration,
                 ),
-                emptyMap(),
             )
         assertThat(result).containsAllEntriesOf(
             mapOf(
@@ -173,23 +171,6 @@ class VarUseTypeAnalysisTest {
                     varUse1 to declaration,
                     varUse2 to declaration,
                 ),
-                mapOf(
-                    outer to
-                        analyzedFunction(
-                            0,
-                            setOf(
-                                AnalyzedVariable(declaration, outer, VariableUseType.UNUSED),
-                            ),
-                        ),
-                    fDeclaration to
-                        analyzedFunction(
-                            1,
-                            setOf(
-                                AnalyzedVariable(declaration, outer, VariableUseType.READ_WRITE),
-                                AnalyzedVariable(argument, fDeclaration, VariableUseType.UNUSED),
-                            ),
-                        ),
-                ),
             )
         assertThat(result).containsAllEntriesOf(
             mapOf(
@@ -214,22 +195,6 @@ class VarUseTypeAnalysisTest {
                 mapOf(
                     aUse to declaration,
                     fUse to fDeclaration,
-                ),
-                mapOf(
-                    outer to
-                        analyzedFunction(
-                            0,
-                            setOf(
-                                AnalyzedVariable(declaration, outer, VariableUseType.READ),
-                            ),
-                        ),
-                    fDeclaration to
-                        analyzedFunction(
-                            1,
-                            setOf(
-                                AnalyzedVariable(argument, fDeclaration, VariableUseType.UNUSED),
-                            ),
-                        ),
                 ),
             )
         assertThat(result).containsAllEntriesOf(
@@ -262,22 +227,6 @@ class VarUseTypeAnalysisTest {
                     varUse1 to declaration,
                     varUse2 to declaration,
                     fUse to fDeclaration,
-                ),
-                mapOf(
-                    outer to
-                        analyzedFunction(
-                            0,
-                            setOf(
-                                AnalyzedVariable(declaration, outer, VariableUseType.UNUSED),
-                            ),
-                        ),
-                    fDeclaration to
-                        analyzedFunction(
-                            1,
-                            setOf(
-                                AnalyzedVariable(declaration, outer, VariableUseType.READ_WRITE),
-                            ),
-                        ),
                 ),
             )
         assertThat(result).containsAllEntriesOf(
@@ -314,30 +263,6 @@ class VarUseTypeAnalysisTest {
                     bUse to bDeclaration,
                     fUse to fDeclaration,
                     gUse to gDeclaration,
-                ),
-                mapOf(
-                    outer to
-                        analyzedFunction(
-                            0,
-                            setOf(
-                                AnalyzedVariable(aDeclaration, outer, VariableUseType.UNUSED),
-                            ),
-                        ),
-                    fDeclaration to
-                        analyzedFunction(
-                            1,
-                            setOf(
-                                AnalyzedVariable(bDeclaration, fDeclaration, VariableUseType.UNUSED),
-                            ),
-                        ),
-                    gDeclaration to
-                        analyzedFunction(
-                            2,
-                            setOf(
-                                AnalyzedVariable(aDeclaration, outer, VariableUseType.READ),
-                                AnalyzedVariable(bDeclaration, fDeclaration, VariableUseType.READ),
-                            ),
-                        ),
                 ),
             )
         println(result[fDeclaration.body])

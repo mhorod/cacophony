@@ -7,9 +7,8 @@ typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseTyp
 fun analyzeVarUseTypes(
     ast: AST,
     resolvedVariables: ResolvedVariables,
-    functionAnalysis: FunctionAnalysisResult,
 ): UseTypeAnalysisResult {
-    val visitor = VarUseVisitor(resolvedVariables, functionAnalysis)
+    val visitor = VarUseVisitor(resolvedVariables)
     visitor.visit(ast)
     return visitor.getAnalysisResult()
 }
@@ -57,7 +56,6 @@ private class UseTypesForExpression(
 
 private class VarUseVisitor(
     val resolvedVariables: ResolvedVariables,
-    val functionAnalysis: FunctionAnalysisResult,
 ) {
     private val useTypeAnalysis = mutableMapOf<Expression, UseTypesForExpression>()
     private val scopeStack = ArrayDeque<MutableSet<Definition>>()
