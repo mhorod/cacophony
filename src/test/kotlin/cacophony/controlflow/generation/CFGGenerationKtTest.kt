@@ -69,35 +69,6 @@ class CFGGenerationKtTest {
         }
     }
 
-    private fun printCFGAsGraphviz(cfg: CFGFragment) {
-        var nextId = 0
-        val ids = cfg.vertices.mapValues { nextId++ }
-
-        println("strict digraph {")
-        cfg.vertices.forEach { (label, vertex) ->
-            val id = ids[label]
-            if (label == cfg.initialLabel) {
-                println("  node$id [label=\"${vertex.tree}\", style=\"filled\", fillcolor=\"green\"]")
-            } else if (vertex is CFGVertex.Final) {
-                println("  node$id [label=\"${vertex.tree}\", style=\"filled\", fillcolor=\"red\"]")
-            } else {
-                println("  node$id [label=\"${vertex.tree}\"]")
-            }
-
-            when (vertex) {
-                is CFGVertex.Conditional -> {
-                    println("  node$id -> node${ids[vertex.trueDestination]} [color=\"green\"]")
-                    println("  node$id -> node${ids[vertex.falseDestination]} [color=\"red\"]")
-                }
-                is CFGVertex.Jump -> println("  node$id -> node${ids[vertex.destination]}")
-                is CFGVertex.Final -> { /* final has no edges */ }
-            }
-            println()
-        }
-
-        println("}")
-    }
-
     @Test
     fun `test cfg generation of simple additions`() {
         val location = Location(0)
@@ -112,8 +83,9 @@ class CFGGenerationKtTest {
         val handler = TestFunctionHandler()
         val handlers = mapOf(function to handler)
 
-        val cfg = generateCFG(emptyMap(), useTypeMap, handlers)[function]!!
-        printCFGAsGraphviz(cfg)
+        val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
+
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -130,8 +102,8 @@ class CFGGenerationKtTest {
         val handler = TestFunctionHandler()
         val handlers = mapOf(function to handler)
 
-        val cfg = generateCFG(emptyMap(), useTypeMap, handlers)[function]!!
-        printCFGAsGraphviz(cfg)
+        val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -154,7 +126,7 @@ class CFGGenerationKtTest {
         val handlers = functions.mapValues { TestFunctionHandler() }
 
         val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -171,7 +143,7 @@ class CFGGenerationKtTest {
         val handlers = functions.mapValues { TestFunctionHandler() }
 
         val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -193,7 +165,7 @@ class CFGGenerationKtTest {
         val handlers = functions.mapValues { TestFunctionHandler() }
 
         val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -217,7 +189,7 @@ class CFGGenerationKtTest {
         val handlers = mapOf(fDef to handler)
         val resolvedVariables = mapOf(xUse to xDef)
         val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -245,7 +217,8 @@ class CFGGenerationKtTest {
         val handlers = mapOf(fDef to handler)
         val resolvedVariables = mapOf(xUse to xDef)
         val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -282,7 +255,7 @@ class CFGGenerationKtTest {
         val handlers = mapOf(fDef to handler)
         val resolvedVariables = mapOf(xUseLeft to xDef, xUseRight to xDef)
         val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -302,7 +275,8 @@ class CFGGenerationKtTest {
         val handlers = mapOf(fDef to handler)
         val resolvedVariables = mapOf<VariableUse, Definition.VariableDeclaration>()
         val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -331,7 +305,8 @@ class CFGGenerationKtTest {
         val handlers = mapOf(fDef to handler)
         val resolvedVariables = mapOf(xUse to xDef)
         val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -366,7 +341,8 @@ class CFGGenerationKtTest {
         val handlers = mapOf(fDef to handler)
         val resolvedVariables = mapOf(xUse to xDef, xUseCondition to xDef)
         val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+
+        println(programCfgToGraphviz(cfg))
     }
 
     @Test
@@ -411,6 +387,7 @@ class CFGGenerationKtTest {
         val handlers = mapOf(fDef to handler)
         val resolvedVariables = mapOf(xUse to xDef, xUseWhileCondition to xDef, xUseIfCondition to xDef)
         val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
-        printCFGAsGraphviz(cfg.values.first())
+
+        println(programCfgToGraphviz(cfg))
     }
 }
