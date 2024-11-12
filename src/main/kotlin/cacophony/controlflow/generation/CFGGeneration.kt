@@ -18,7 +18,7 @@ fun generateCFG(
     return result
 }
 
-private fun generateFunctionCFG(
+internal fun generateFunctionCFG(
     function: Definition.FunctionDeclaration,
     functionHandlers: Map<Definition.FunctionDeclaration, FunctionHandler>,
     resolvedVariables: ResolvedVariables,

@@ -1,3 +1,5 @@
 package cacophony.controlflow
 
-typealias CFGFragment = Map<CFGLabel, CFGVertex>
+typealias CFGVertices = Map<CFGLabel, CFGVertex>
+
+data class CFGFragment(val vertices: CFGVertices, val initialLabel: CFGLabel)

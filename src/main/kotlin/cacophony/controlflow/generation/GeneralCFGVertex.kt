@@ -15,7 +15,7 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel) {
             outgoing = label
         }
 
-        override fun toVertex(): CFGVertex.Jump = CFGVertex.Jump(node, outgoing!!)
+        override fun toVertex(): CFGVertex.Jump = CFGVertex.Jump(node, outgoing ?: CFGLabel())
     }
 
     internal class ConditionalVertex(private val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label) {
@@ -32,7 +32,7 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel) {
             outgoingFalse = label
         }
 
-        override fun toVertex() = CFGVertex.Conditional(node, outgoingTrue!!, outgoingFalse!!)
+        override fun toVertex(): CFGVertex.Conditional = CFGVertex.Conditional(node, outgoingTrue!!, outgoingFalse!!)
     }
 
     internal class FinalVertex(private val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label) {

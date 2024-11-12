@@ -1,6 +1,6 @@
 package cacophony.controlflow.generation
 
-import cacophony.controlflow.CFGFragment
+import cacophony.controlflow.CFGVertices
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 
@@ -25,5 +25,5 @@ internal class CFG {
         return vertex
     }
 
-    internal fun getCFGFragment(): CFGFragment = cfg.mapValues { (_, value) -> value.toVertex() }
+    internal fun getCFGVertices(): CFGVertices = cfg.mapValues { (_, value) -> value.toVertex() }
 }

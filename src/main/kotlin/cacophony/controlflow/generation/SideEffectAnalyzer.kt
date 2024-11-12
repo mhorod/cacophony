@@ -13,10 +13,10 @@ internal class SideEffectAnalyzer(
         e2: Expression,
     ): Boolean {
         val firstWrites = writtenVariables(e1)
-        val firstUses = analyzedUseTypes[e1]!!.keys
+        val firstUses = analyzedUseTypes.getValue(e1).keys
 
         val secondWrites = writtenVariables(e2)
-        val secondUses = analyzedUseTypes[e2]!!.keys
+        val secondUses = analyzedUseTypes.getValue(e2).keys
 
         return (firstUses intersect secondWrites).isNotEmpty() || (secondUses intersect firstWrites).isNotEmpty()
     }
@@ -24,7 +24,7 @@ internal class SideEffectAnalyzer(
     fun hasSideEffects(expression: Expression): Boolean = writtenVariables(expression).isNotEmpty()
 
     private fun writtenVariables(expression: Expression): Set<Definition> =
-        analyzedUseTypes[expression]!!.entries
+        analyzedUseTypes.getValue(expression)
             .filter { it.value == VariableUseType.WRITE || it.value == VariableUseType.READ_WRITE }
             .map { it.key }.toSet()
 }

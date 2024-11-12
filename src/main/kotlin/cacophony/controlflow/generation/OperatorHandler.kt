@@ -23,20 +23,25 @@ internal class OperatorHandler(
         mode: EvalMode,
         context: Context,
     ): SubCFG {
+
+        println("Expression: $expression clashes? ${sideEffectAnalyzer.hasClashingSideEffects(expression.lhs, expression.rhs)}")
+
         val lhsCFG = cfgGenerator.visit(expression.lhs, mode, context)
         val rhsCFG = cfgGenerator.visit(expression.rhs, mode, context)
-        val access =
-            when (mode) {
-                is EvalMode.Conditional -> error("Arithmetic operator $expression cannot be used as conditional")
-                is EvalMode.SideEffect -> CFGNode.NoOp
-                is EvalMode.Value -> makeOperatorNode(expression, lhsCFG.access, rhsCFG.access)
-            }
+
         val safeLhs =
             if (sideEffectAnalyzer.hasClashingSideEffects(expression.lhs, expression.rhs)) {
                 // If there are clashing side effects, lhs must be extracted to a separate vertex
                 cfgGenerator.ensureExtracted(lhsCFG, mode)
             } else {
                 lhsCFG
+            }
+
+        val access =
+            when (mode) {
+                is EvalMode.Conditional -> error("Arithmetic operator $expression cannot be used as conditional")
+                is EvalMode.SideEffect -> CFGNode.NoOp
+                is EvalMode.Value -> makeOperatorNode(expression, safeLhs.access, rhsCFG.access)
             }
         return join(safeLhs, rhsCFG, access)
     }
