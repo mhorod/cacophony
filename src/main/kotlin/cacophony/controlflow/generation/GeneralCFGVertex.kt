@@ -4,10 +4,17 @@ import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.CFGVertex
 
-internal sealed class GeneralCFGVertex(val label: CFGLabel) {
+internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNode) {
     internal abstract fun toVertex(): CFGVertex
 
-    internal class UnconditionalVertex(private val node: CFGNode.Unconditional, label: CFGLabel) : GeneralCFGVertex(label) {
+    internal abstract fun replaceLabel(
+        label: CFGLabel,
+        newLabel: CFGLabel,
+    )
+
+    internal abstract fun getConnections(): List<CFGLabel>
+
+    internal class UnconditionalVertex(override val node: CFGNode.Unconditional, label: CFGLabel) : GeneralCFGVertex(label, node) {
         private var outgoing: CFGLabel? = null
 
         internal fun connect(label: CFGLabel) {
@@ -15,10 +22,20 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel) {
             outgoing = label
         }
 
+        override fun getConnections() = listOf(outgoing ?: error("Vertex $this is not connected"))
+
+        override fun replaceLabel(
+            label: CFGLabel,
+            newLabel: CFGLabel,
+        ) {
+            println("Replacing label $outgoing =?= $label with $newLabel")
+            if (outgoing == label) outgoing = newLabel
+        }
+
         override fun toVertex(): CFGVertex.Jump = CFGVertex.Jump(node, outgoing ?: CFGLabel())
     }
 
-    internal class ConditionalVertex(private val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label) {
+    internal class ConditionalVertex(override val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label, node) {
         private var outgoingTrue: CFGLabel? = null
         private var outgoingFalse: CFGLabel? = null
 
@@ -32,10 +49,31 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel) {
             outgoingFalse = label
         }
 
+        override fun getConnections() =
+            listOf(
+                outgoingTrue ?: error("Vertex $this true output is not connected"),
+                outgoingFalse ?: error("Vertex $this false output is not connected"),
+            )
+
+        override fun replaceLabel(
+            label: CFGLabel,
+            newLabel: CFGLabel,
+        ) {
+            if (outgoingTrue == label) outgoingTrue = newLabel
+            if (outgoingFalse == label) outgoingFalse = newLabel
+        }
+
         override fun toVertex(): CFGVertex.Conditional = CFGVertex.Conditional(node, outgoingTrue!!, outgoingFalse!!)
     }
 
-    internal class FinalVertex(private val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label) {
+    internal class FinalVertex(override val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label, node) {
         override fun toVertex() = CFGVertex.Final(node)
+
+        override fun replaceLabel(
+            label: CFGLabel,
+            newLabel: CFGLabel,
+        ) = Unit
+
+        override fun getConnections() = emptyList<CFGLabel>()
     }
 }

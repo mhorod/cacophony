@@ -31,7 +31,7 @@ internal class CFGGenerator(
         val extended = extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)
         extended.exit.connect(returnVertex.label)
-        return CFGFragment(cfg.getCFGVertices(), extended.entry.label)
+        return cfg.cfgFragment(extended.entry.label)
     }
 
     internal fun ensureExtracted(
