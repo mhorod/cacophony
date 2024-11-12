@@ -7,18 +7,15 @@ import cacophony.semantic.UseTypeAnalysisResult
 import cacophony.semantic.VariableUseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.Type
 import cacophony.utils.Location
 import cacophony.utils.StringInput
 import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
-import kotlin.math.exp
-
 class CFGGenerationKtTest {
-    class TestFunctionHandler: FunctionHandler {
+    class TestFunctionHandler : FunctionHandler {
         val varRegisters = mutableMapOf<Definition.VariableDeclaration, Register>()
 
         override fun getFunctionDeclaration(): Definition.FunctionDeclaration {
@@ -33,12 +30,13 @@ class CFGGenerationKtTest {
             TODO()
         }
 
-        override fun generateVariableAccess(variable: Variable): CFGNode.LValue = CFGNode.VariableUse(
-            when (variable) {
-                is Variable.AuxVariable -> Register.VirtualRegister()
-                is Variable.SourceVariable -> varRegisters[variable.definition]!!
-            }
-        )
+        override fun generateVariableAccess(variable: Variable): CFGNode.LValue =
+            CFGNode.VariableUse(
+                when (variable) {
+                    is Variable.AuxVariable -> Register.VirtualRegister()
+                    is Variable.SourceVariable -> varRegisters[variable.definition]!!
+                },
+            )
 
         override fun getVariableAllocation(variable: Variable): VariableAllocation {
             TODO()
@@ -56,12 +54,13 @@ class CFGGenerationKtTest {
         println("strict digraph {")
         cfg.vertices.forEach { (label, vertex) ->
             val id = ids[label]
-            if (label == cfg.initialLabel)
+            if (label == cfg.initialLabel) {
                 println("  node$id [label=\"${vertex.tree}\", style=\"filled\", fillcolor=\"green\"]")
-            else if (vertex is CFGVertex.Final)
+            } else if (vertex is CFGVertex.Final) {
                 println("  node$id [label=\"${vertex.tree}\", style=\"filled\", fillcolor=\"red\"]")
-            else
+            } else {
                 println("  node$id [label=\"${vertex.tree}\"]")
+            }
 
             when (vertex) {
                 is CFGVertex.Conditional -> {
@@ -115,22 +114,26 @@ class CFGGenerationKtTest {
 
     @Test
     fun `test cfg on if with deep condition`() {
-        val program = "let f = [] -> Int => if (false || (false || (false || (false || (false || (false || (false || true))))))) && (true && (true && (true && (true && (true && (true && (true && (false)))))))) then 12 else 24;"
+        val program = """
+            let f = [] -> Int =>
+                if (false || (false || (false || (false || (false || (false || (false || true)))))))
+                    && (true && (true && (true && (true && (true && (true && (true && (false))))))))
+                    then 12
+                    else 24;
+        """
         val pipeline = CacophonyPipeline(mockk())
         val ast = pipeline.generateAST(StringInput(program))
         val functions = pipeline.analyzeFunctions(ast)
 
-
         val useTypeMap: UseTypeAnalysisResult =
             emptyMap<Expression, Map<Definition, VariableUseType>>().withDefault { emptyMap() }
 
-        val handler = TestFunctionHandler(  )
+        val handler = TestFunctionHandler()
         val handlers = functions.mapValues { TestFunctionHandler() }
 
         val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
         printCFGAsGraphviz(cfg.values.first())
     }
-
 
     @Test
     fun `test cfg on nested ifs in condition`() {
@@ -139,11 +142,10 @@ class CFGGenerationKtTest {
         val ast = pipeline.generateAST(StringInput(program))
         val functions = pipeline.analyzeFunctions(ast)
 
-
         val useTypeMap: UseTypeAnalysisResult =
             emptyMap<Expression, Map<Definition, VariableUseType>>().withDefault { emptyMap() }
 
-        val handler = TestFunctionHandler(  )
+        val handler = TestFunctionHandler()
         val handlers = functions.mapValues { TestFunctionHandler() }
 
         val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
@@ -152,16 +154,19 @@ class CFGGenerationKtTest {
 
     @Test
     fun `test cfg on nested ifs in branches`() {
-        val program = "let f = [] -> Int => if true then (if (if false then false else true) then 11 else 12) else (if true then 13  else 15);"
+        val program = """
+            let f = [] -> Int =>
+                if true
+                    then (if (if false then false else true) then 11 else 12)
+                    else (if true then 13  else 15);
+        """
         val pipeline = CacophonyPipeline(mockk())
         val ast = pipeline.generateAST(StringInput(program))
         val functions = pipeline.analyzeFunctions(ast)
 
-
         val useTypeMap: UseTypeAnalysisResult =
             emptyMap<Expression, Map<Definition, VariableUseType>>().withDefault { emptyMap() }
 
-        val handler = TestFunctionHandler(  )
         val handlers = functions.mapValues { TestFunctionHandler() }
 
         val cfg = generateCFG(emptyMap(), useTypeMap, handlers)
@@ -177,12 +182,12 @@ class CFGGenerationKtTest {
         val fBlock = block(xDef, xWrite)
         val fDef = functionDeclaration("f", fBlock)
 
-        val useTypeMap: UseTypeAnalysisResult = mapOf(
-            fBlock to mapOf(xDef to VariableUseType.READ_WRITE),
-            xDef to mapOf(xDef to VariableUseType.WRITE),
-            xWrite to mapOf(xDef to VariableUseType.WRITE),
-        )
-
+        val useTypeMap: UseTypeAnalysisResult =
+            mapOf(
+                fBlock to mapOf(xDef to VariableUseType.READ_WRITE),
+                xDef to mapOf(xDef to VariableUseType.WRITE),
+                xWrite to mapOf(xDef to VariableUseType.WRITE),
+            )
 
         val handler = TestFunctionHandler()
         handler.varRegisters[xDef] = Register.FixedRegister(X64Register.RSI)
@@ -203,14 +208,14 @@ class CFGGenerationKtTest {
         val fBlock = block(xDef, ifThenElse)
         val fDef = functionDeclaration("f", fBlock)
 
-        val useTypeMap: UseTypeAnalysisResult = mapOf(
-            fBlock to mapOf(xDef to VariableUseType.READ_WRITE),
-            xDef to mapOf(xDef to VariableUseType.WRITE),
-            ifThenElse to mapOf(xDef to VariableUseType.READ),
-            thenBranch to emptyMap(),
-            elseBranch to emptyMap()
-        )
-
+        val useTypeMap: UseTypeAnalysisResult =
+            mapOf(
+                fBlock to mapOf(xDef to VariableUseType.READ_WRITE),
+                xDef to mapOf(xDef to VariableUseType.WRITE),
+                ifThenElse to mapOf(xDef to VariableUseType.READ),
+                thenBranch to emptyMap(),
+                elseBranch to emptyMap(),
+            )
 
         val handler = TestFunctionHandler()
         handler.varRegisters[xDef] = Register.FixedRegister(X64Register.RSI)
@@ -238,14 +243,15 @@ class CFGGenerationKtTest {
         val fBlock = block(xDef, addition)
         val fDef = functionDeclaration("f", fBlock)
 
-        val useTypeMap: UseTypeAnalysisResult = mapOf(
-            fBlock to mapOf(xDef to VariableUseType.WRITE),
-            xDef to mapOf(xDef to VariableUseType.WRITE),
-            xWriteLeft to mapOf(xDef to VariableUseType.WRITE),
-            xWriteRight to mapOf(xDef to VariableUseType.WRITE),
-            addition to mapOf(xDef to VariableUseType.WRITE),
-            two to emptyMap(),
-            three to emptyMap(),
+        val useTypeMap: UseTypeAnalysisResult =
+            mapOf(
+                fBlock to mapOf(xDef to VariableUseType.WRITE),
+                xDef to mapOf(xDef to VariableUseType.WRITE),
+                xWriteLeft to mapOf(xDef to VariableUseType.WRITE),
+                xWriteRight to mapOf(xDef to VariableUseType.WRITE),
+                addition to mapOf(xDef to VariableUseType.WRITE),
+                two to emptyMap(),
+                three to emptyMap(),
             )
 
         val handler = TestFunctionHandler()

@@ -1,8 +1,8 @@
 package cacophony.controlflow.generation
 
-import cacophony.controlflow.CFGVertices
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
+import cacophony.controlflow.CFGVertices
 
 internal class CFG {
     private val cfg = mutableMapOf<CFGLabel, GeneralCFGVertex>()

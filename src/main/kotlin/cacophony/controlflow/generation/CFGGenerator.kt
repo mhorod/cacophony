@@ -159,19 +159,20 @@ internal class CFGGenerator(
         mode: EvalMode,
     ): SubCFG =
         when (mode) {
-            is EvalMode.Value -> SubCFG.Immediate(
-                when (literal) {
-                    is Literal.BoolLiteral -> if (literal.value) CFGNode.TRUE else CFGNode.FALSE
-                    is Literal.IntLiteral -> CFGNode.Constant(literal.value)
-                },
-            )
+            is EvalMode.Value ->
+                SubCFG.Immediate(
+                    when (literal) {
+                        is Literal.BoolLiteral -> if (literal.value) CFGNode.TRUE else CFGNode.FALSE
+                        is Literal.IntLiteral -> CFGNode.Constant(literal.value)
+                    },
+                )
 
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
 
             is EvalMode.Conditional -> {
                 check(literal is Literal.BoolLiteral) { "Non-boolean literal cannot be used as a condition" }
 
-                val target = if(literal.value) mode.trueEntry else mode.falseEntry
+                val target = if (literal.value) mode.trueEntry else mode.falseEntry
                 SubCFG.Extracted(target, mode.exit, CFGNode.NoOp)
             }
         }
@@ -217,11 +218,13 @@ internal class CFGGenerator(
         mode: EvalMode,
         context: Context,
     ): SubCFG {
-        if (expression.testExpression is Literal.BoolLiteral) return shortenTrivialIfStatement(
-            expression,
-            mode,
-            context
-        )
+        if (expression.testExpression is Literal.BoolLiteral) {
+            return shortenTrivialIfStatement(
+                expression,
+                mode,
+                context,
+            )
+        }
 
         val resultValueRegister = CFGNode.VariableUse(Register.VirtualRegister())
         val trueCFG = extendWithAssignment(visit(expression.doExpression, mode, context), resultValueRegister, mode)
@@ -256,12 +259,13 @@ internal class CFGGenerator(
             is EvalMode.Value -> {
                 val writeResultNode = CFGNode.Assignment(destination, subCFG.access)
                 val writeResultVertex = cfg.addUnconditionalVertex(writeResultNode)
-                val entry = if (subCFG is SubCFG.Extracted) {
-                    subCFG.exit.connect(writeResultVertex.label)
-                    subCFG.entry
-                } else {
-                    writeResultVertex
-                }
+                val entry =
+                    if (subCFG is SubCFG.Extracted) {
+                        subCFG.exit.connect(writeResultVertex.label)
+                        subCFG.entry
+                    } else {
+                        writeResultVertex
+                    }
                 SubCFG.Extracted(entry, writeResultVertex, destination)
             }
 
@@ -341,8 +345,7 @@ internal class CFGGenerator(
 
     internal fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
 
-    internal fun resolveVariable(variable: VariableUse) =
-        resolvedVariables[variable] ?: error("Unresolved variable $variable")
+    internal fun resolveVariable(variable: VariableUse) = resolvedVariables[variable] ?: error("Unresolved variable $variable")
 
     private fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler {
         return functionHandlers[function] ?: error("Function $function has no handler")

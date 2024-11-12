@@ -23,7 +23,6 @@ internal class OperatorHandler(
         mode: EvalMode,
         context: Context,
     ): SubCFG {
-
         println("Expression: $expression clashes? ${sideEffectAnalyzer.hasClashingSideEffects(expression.lhs, expression.rhs)}")
 
         val lhsCFG = cfgGenerator.visit(expression.lhs, mode, context)

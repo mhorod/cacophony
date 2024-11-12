@@ -76,10 +76,11 @@ sealed interface CFGNode {
     ) : LValue,
         Leaf {
         @OptIn(ExperimentalStdlibApi::class)
-        override fun toString(): String = when (regvar) {
-            is Register.FixedRegister -> regvar.hardwareRegister.toString()
-            is Register.VirtualRegister -> "VReg(${regvar.hashCode().toHexString()})"
-        }
+        override fun toString(): String =
+            when (regvar) {
+                is Register.FixedRegister -> regvar.hardwareRegister.toString()
+                is Register.VirtualRegister -> "VReg(${regvar.hashCode().toHexString()})"
+            }
     }
 
     data class MemoryAccess(
