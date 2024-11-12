@@ -4,6 +4,12 @@ import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.CFGVertex
 
+/**
+ * Represents a mutable vertex of the Control Flow Graph
+ *
+ * @property label Unique label of this vertex
+ * @property node CFG Node computed by this vertex
+ */
 internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNode) {
     internal abstract fun toVertex(): CFGVertex
 
@@ -14,6 +20,9 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
 
     internal abstract fun getConnections(): List<CFGLabel>
 
+    /**
+     * Vertex that executes unconditional computation that then continues at another vertex
+     */
     internal class UnconditionalVertex(override val node: CFGNode.Unconditional, label: CFGLabel) : GeneralCFGVertex(label, node) {
         private var outgoing: CFGLabel? = null
 
@@ -35,6 +44,9 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
         override fun toVertex(): CFGVertex.Jump = CFGVertex.Jump(node, outgoing ?: CFGLabel())
     }
 
+    /**
+     * Vertex that checks a condition given by its node and then jumps to either true or false branch
+     */
     internal class ConditionalVertex(override val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label, node) {
         private var outgoingTrue: CFGLabel? = null
         private var outgoingFalse: CFGLabel? = null
@@ -66,6 +78,9 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
         override fun toVertex(): CFGVertex.Conditional = CFGVertex.Conditional(node, outgoingTrue!!, outgoingFalse!!)
     }
 
+    /**
+     * Final vertex of a computation, that doesn't continue at other vertices
+     */
     internal class FinalVertex(override val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label, node) {
         override fun toVertex() = CFGVertex.Final(node)
 

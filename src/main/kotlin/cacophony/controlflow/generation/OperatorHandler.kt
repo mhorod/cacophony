@@ -7,6 +7,9 @@ import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.VariableUse
 
+/**
+ * Converts operators into CFG
+ */
 internal class OperatorHandler(
     private val cfg: CFG,
     private val cfgGenerator: CFGGenerator,

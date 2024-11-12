@@ -5,6 +5,9 @@ import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 import cacophony.utils.getReachableFrom
 
+/**
+ * Internal mutable representation of CFG that is being built
+ */
 internal class CFG {
     private val cfg = mutableMapOf<CFGLabel, GeneralCFGVertex>()
 
@@ -57,16 +60,14 @@ internal class CFG {
         cfg.values.forEach { vertex ->
 
             vertex.getConnections().forEach {
-                ingoingEdges.computeIfAbsent(it, { _ -> mutableListOf() }).add(vertex)
+                ingoingEdges.computeIfAbsent(it) { _ -> mutableListOf() }.add(vertex)
             }
         }
 
         cfg.entries.forEach { (label, vertex) ->
             run {
-                println("$vertex with node ${vertex.node}")
                 if (vertex is GeneralCFGVertex.UnconditionalVertex && vertex.node is CFGNode.NoOp) {
                     val edges = ingoingEdges.getOrDefault(label, listOf())
-                    println("this is nop with ingoing edges: $edges")
                     edges.forEach { v -> v.replaceLabel(label, vertex.getConnections().first()) }
                 }
             }

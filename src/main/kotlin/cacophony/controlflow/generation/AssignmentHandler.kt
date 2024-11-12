@@ -5,6 +5,9 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Expression
 
+/**
+ * Converts assignment into CFG
+ */
 internal class AssignmentHandler(private val cfg: CFG, private val cfgGenerator: CFGGenerator) {
     internal fun generateAssignment(
         variable: Definition,

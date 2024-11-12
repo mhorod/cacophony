@@ -4,33 +4,9 @@ import cacophony.semantic.syntaxtree.Definition
 
 class CFGLabel
 
-sealed class CFGVertex(
-    val tree: CFGNode,
-) {
-    abstract fun dependents(): List<CFGLabel>
-
-    class Conditional(
-        tree: CFGNode,
-        val trueDestination: CFGLabel,
-        val falseDestination: CFGLabel,
-    ) : CFGVertex(tree) {
-        override fun dependents() = listOf(trueDestination, falseDestination)
-    }
-
-    class Jump(
-        tree: CFGNode.Unconditional,
-        val destination: CFGLabel,
-    ) : CFGVertex(tree) {
-        override fun dependents() = listOf(destination)
-    }
-
-    class Final(
-        tree: CFGNode,
-    ) : CFGVertex(tree) {
-        override fun dependents() = emptyList<CFGLabel>()
-    }
-}
-
+/**
+ * Single computation tree that has no control-flow or data-flow dependencies
+ */
 sealed interface CFGNode {
     sealed interface Unconditional : CFGNode
 
