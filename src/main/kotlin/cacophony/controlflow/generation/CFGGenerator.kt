@@ -77,25 +77,21 @@ internal class CFGGenerator(
         mode: EvalMode,
         context: Context,
     ): SubCFG =
-        if (mode is EvalMode.SideEffect && !sideEffectAnalyzer.hasSideEffects(expression)) {
-            SubCFG.Immediate(CFGNode.NoOp)
-        } else {
-            when (expression) {
-                is Block -> visitBlock(expression, mode, context)
-                is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
-                is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
-                is Empty -> visitEmpty(mode)
-                is FunctionCall -> visitFunctionCall(expression, mode, context)
-                is Literal -> visitLiteral(expression, mode)
-                is OperatorBinary -> visitOperatorBinary(expression, mode, context)
-                is OperatorUnary -> visitOperatorUnary(expression, mode, context)
-                is Statement.BreakStatement -> visitBreakStatement(context)
-                is Statement.IfElseStatement -> visitIfElseStatement(expression, mode, context)
-                is Statement.ReturnStatement -> visitReturnStatement(expression, context)
-                is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
-                is VariableUse -> visitVariableUse(expression, mode)
-                else -> error("Unexpected expression for CFG generation: $expression")
-            }
+        when (expression) {
+            is Block -> visitBlock(expression, mode, context)
+            is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
+            is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
+            is Empty -> visitEmpty(mode)
+            is FunctionCall -> visitFunctionCall(expression, mode, context)
+            is Literal -> visitLiteral(expression, mode)
+            is OperatorBinary -> visitOperatorBinary(expression, mode, context)
+            is OperatorUnary -> visitOperatorUnary(expression, mode, context)
+            is Statement.BreakStatement -> visitBreakStatement(context)
+            is Statement.IfElseStatement -> visitIfElseStatement(expression, mode, context)
+            is Statement.ReturnStatement -> visitReturnStatement(expression, context)
+            is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
+            is VariableUse -> visitVariableUse(expression, mode)
+            else -> error("Unexpected expression for CFG generation: $expression")
         }
 
     private fun visitBlock(
@@ -106,7 +102,6 @@ internal class CFGGenerator(
         val last = expression.expressions.lastOrNull() ?: return SubCFG.Immediate(noOpOrUnit(mode))
         val prerequisiteSubCFGs =
             expression.expressions.dropLast(1)
-                .filter { sideEffectAnalyzer.hasSideEffects(it) }
                 .map { ensureExtracted(visit(it, EvalMode.SideEffect, context), EvalMode.SideEffect) }
         val valueCFG = ensureExtracted(visit(last, mode, context), mode)
         return prerequisiteSubCFGs.foldRight(valueCFG) { subCFG, path -> subCFG merge path }
@@ -319,9 +314,12 @@ internal class CFGGenerator(
     private fun visitBreakStatement(context: Context): SubCFG {
         check(context.currentLoopExit != null) { "Break has to be inside while loop" }
         val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
-
         vertex.connect(context.currentLoopExit.label)
-        return SubCFG.Extracted(vertex, vertex, CFGNode.NoOp)
+        // Break "breaks" control flow by jumping to a given label.
+        // This means there's no real exit from the break statement, so we introduce an unreachable one
+        //  that can be connected to expressions following the break statement
+        val artificialExit = cfg.addUnconditionalVertex(CFGNode.NoOp)
+        return SubCFG.Extracted(vertex, artificialExit, CFGNode.NoOp)
     }
 
     private fun visitVariableUse(

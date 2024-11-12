@@ -11,7 +11,7 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel) {
         private var outgoing: CFGLabel? = null
 
         internal fun connect(label: CFGLabel) {
-            check(outgoing == null) { "Vertex is already connected" }
+            check(outgoing == null) { "Vertex $this is already connected" }
             outgoing = label
         }
 

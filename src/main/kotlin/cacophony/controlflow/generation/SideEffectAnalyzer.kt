@@ -21,8 +21,6 @@ internal class SideEffectAnalyzer(
         return (firstUses intersect secondWrites).isNotEmpty() || (secondUses intersect firstWrites).isNotEmpty()
     }
 
-    fun hasSideEffects(expression: Expression): Boolean = writtenVariables(expression).isNotEmpty()
-
     private fun writtenVariables(expression: Expression): Set<Definition> =
         analyzedUseTypes.getValue(expression)
             .filter { it.value == VariableUseType.WRITE || it.value == VariableUseType.READ_WRITE }

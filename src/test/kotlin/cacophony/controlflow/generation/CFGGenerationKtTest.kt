@@ -9,6 +9,7 @@ import cacophony.semantic.VariableUseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Expression
 import cacophony.semantic.syntaxtree.Type
+import cacophony.semantic.syntaxtree.VariableUse
 import cacophony.utils.Location
 import cacophony.utils.StringInput
 import io.mockk.mockk
@@ -85,8 +86,8 @@ class CFGGenerationKtTest {
 
             when (vertex) {
                 is CFGVertex.Conditional -> {
-                    println("  node$id -> node${ids[vertex.trueDestination]}")
-                    println("  node$id -> node${ids[vertex.falseDestination]}")
+                    println("  node$id -> node${ids[vertex.trueDestination]} [color=\"green\"]")
+                    println("  node$id -> node${ids[vertex.falseDestination]} [color=\"red\"]")
                 }
                 is CFGVertex.Jump -> println("  node$id -> node${ids[vertex.destination]}")
                 is CFGVertex.Final -> { /* final has no edges */ }
@@ -280,6 +281,135 @@ class CFGGenerationKtTest {
         handler.varRegisters[xDef] = Register.FixedRegister(X64Register.RSI)
         val handlers = mapOf(fDef to handler)
         val resolvedVariables = mapOf(xUseLeft to xDef, xUseRight to xDef)
+        val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
+        printCFGAsGraphviz(cfg.values.first())
+    }
+
+    @Test
+    fun `test cfg of simple while loop with no side effects`() {
+        // let f = [] => while (true) do 20
+
+        val whileLoop = whileLoop(lit(true), lit(20))
+
+        val fDef = functionDeclaration("f", whileLoop)
+
+        val useTypeMap: UseTypeAnalysisResult =
+            mapOf(
+                whileLoop to emptyMap(),
+            )
+
+        val handler = TestFunctionHandler()
+        val handlers = mapOf(fDef to handler)
+        val resolvedVariables = mapOf<VariableUse, Definition.VariableDeclaration>()
+        val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
+        printCFGAsGraphviz(cfg.values.first())
+    }
+
+    @Test
+    fun `test cfg of simple while loop`() {
+        // let f = [] => (let x = 10; while (true) do x = 20)
+        val xDef = variableDeclaration("x", lit(10))
+
+        val xUse = variableUse("x")
+        val xWrite = variableWrite(xUse, lit(20))
+
+        val whileLoop = whileLoop(lit(true), xWrite)
+
+        val fBlock = block(xDef, whileLoop)
+        val fDef = functionDeclaration("f", fBlock)
+
+        val useTypeMap: UseTypeAnalysisResult =
+            mapOf(
+                xDef to mapOf(xDef to VariableUseType.READ_WRITE),
+                fBlock to mapOf(xDef to VariableUseType.WRITE),
+                whileLoop to mapOf(xDef to VariableUseType.WRITE),
+                xWrite to mapOf(xDef to VariableUseType.WRITE),
+            )
+
+        val handler = TestFunctionHandler()
+        handler.varRegisters[xDef] = Register.FixedRegister(X64Register.RSI)
+        val handlers = mapOf(fDef to handler)
+        val resolvedVariables = mapOf(xUse to xDef)
+        val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
+        printCFGAsGraphviz(cfg.values.first())
+    }
+
+    @Test
+    fun `test cfg of simple while loop with condition`() {
+        // let f = [] => (let x = 10; while (x != 20) do x = 20)
+        val xDef = variableDeclaration("x", lit(10))
+
+        val xUse = variableUse("x")
+        val xWrite = variableWrite(xUse, lit(20))
+
+        val twenty = lit(20)
+        val xUseCondition = variableUse("x")
+        val whileCondition = xUseCondition neq twenty
+        val whileLoop = whileLoop(whileCondition, xWrite)
+
+        val fBlock = block(xDef, whileLoop)
+        val fDef = functionDeclaration("f", fBlock)
+
+        val useTypeMap: UseTypeAnalysisResult =
+            mapOf(
+                xDef to mapOf(xDef to VariableUseType.READ_WRITE),
+                fBlock to mapOf(xDef to VariableUseType.WRITE),
+                whileLoop to mapOf(xDef to VariableUseType.WRITE),
+                whileCondition to mapOf(xDef to VariableUseType.READ),
+                xUseCondition to mapOf(xDef to VariableUseType.READ),
+                xWrite to mapOf(xDef to VariableUseType.WRITE),
+                twenty to emptyMap(),
+            )
+
+        val handler = TestFunctionHandler()
+        handler.varRegisters[xDef] = Register.FixedRegister(X64Register.RSI)
+        val handlers = mapOf(fDef to handler)
+        val resolvedVariables = mapOf(xUse to xDef, xUseCondition to xDef)
+        val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
+        printCFGAsGraphviz(cfg.values.first())
+    }
+
+    @Test
+    fun `test cfg of simple while loop with break`() {
+        // let f = [] => (let x = 10; while (x != 20) do (if x == 30 then break else x = 20))
+        val xDef = variableDeclaration("x", lit(10))
+
+        val xUse = variableUse("x")
+        val xWrite = variableWrite(xUse, lit(20))
+
+        val twenty = lit(20)
+        val xUseWhileCondition = variableUse("x")
+        val whileCondition = xUseWhileCondition neq twenty
+        val xUseIfCondition = variableUse("x")
+        val thirty = lit(30)
+        val ifCondition = xUseIfCondition eq thirty
+        val breakStatement = breakStatement()
+        val whileBody = ifThenElse(ifCondition, breakStatement, xWrite)
+        val whileLoop = whileLoop(whileCondition, whileBody)
+
+        val fBlock = block(xDef, whileLoop)
+        val fDef = functionDeclaration("f", fBlock)
+
+        val useTypeMap: UseTypeAnalysisResult =
+            mapOf(
+                xDef to mapOf(xDef to VariableUseType.READ_WRITE),
+                fBlock to mapOf(xDef to VariableUseType.WRITE),
+                whileLoop to mapOf(xDef to VariableUseType.WRITE),
+                whileCondition to mapOf(xDef to VariableUseType.READ),
+                xUseWhileCondition to mapOf(xDef to VariableUseType.READ),
+                xUseIfCondition to mapOf(xDef to VariableUseType.READ),
+                xWrite to mapOf(xDef to VariableUseType.WRITE),
+                ifCondition to mapOf(xDef to VariableUseType.WRITE),
+                whileBody to mapOf(xDef to VariableUseType.WRITE),
+                twenty to emptyMap(),
+                thirty to emptyMap(),
+                breakStatement to emptyMap(),
+            )
+
+        val handler = TestFunctionHandler()
+        handler.varRegisters[xDef] = Register.FixedRegister(X64Register.RSI)
+        val handlers = mapOf(fDef to handler)
+        val resolvedVariables = mapOf(xUse to xDef, xUseWhileCondition to xDef, xUseIfCondition to xDef)
         val cfg = generateCFG(resolvedVariables, useTypeMap, handlers)
         printCFGAsGraphviz(cfg.values.first())
     }

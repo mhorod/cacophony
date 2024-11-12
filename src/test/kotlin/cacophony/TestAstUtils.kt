@@ -107,3 +107,10 @@ fun ifThenElse(
     trueExpr: Expression,
     falseExpr: Expression,
 ) = Statement.IfElseStatement(mockRange(), condition, trueExpr, falseExpr)
+
+fun whileLoop(
+    testExpression: Expression,
+    doExpression: Expression,
+) = Statement.WhileStatement(mockRange(), testExpression, doExpression)
+
+fun breakStatement() = Statement.BreakStatement(mockRange())
