@@ -4,6 +4,8 @@ import cacophony.semantic.syntaxtree.Definition
 
 class CFGLabel
 
+class SlotLabel
+
 sealed class CFGVertex(
     val tree: CFGNode,
 ) {
@@ -150,4 +152,23 @@ sealed interface CFGNode {
         val lhs: CFGNode,
         val rhs: CFGNode,
     ) : LogicalOperator
+
+    sealed interface Slot : CFGNode {
+        val label: SlotLabel
+    }
+
+    data class RegisterSlot(
+        override val label: SlotLabel,
+        val register: Register,
+    ) : Slot
+
+    data class ValueSlot(
+        override val label: SlotLabel,
+        val value: CFGNode,
+    ) : Slot
+
+    data class ConstantSlot(
+        override val label: SlotLabel,
+        val predicate: (Int) -> Boolean,
+    ) : Slot
 }
