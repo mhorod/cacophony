@@ -61,19 +61,14 @@ private class VarUseVisitor(
 ) {
     private val useTypeAnalysis = mutableMapOf<Expression, UseTypesForExpression>()
     private val scopeStack = ArrayDeque<MutableSet<Definition>>()
-    var staticDepth = -1
 
     fun visit(ast: AST) = visitExpression(ast)
 
     fun getAnalysisResult(): UseTypeAnalysisResult = useTypeAnalysis.mapValues { it.value.getMap() }
 
     private fun visitExpression(expr: Expression) {
-        when (expr) {
-            is Definition -> {
-                scopeStack.lastOrNull()?.add(expr)
-            }
-            else -> {
-            }
+        if (expr is Definition) {
+            scopeStack.lastOrNull()?.add(expr)
         }
         when (expr) {
             is Block -> visitBlock(expr)
@@ -211,15 +206,13 @@ private class VarUseVisitor(
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
         } else {
-            throw IllegalStateException("Left side of function call is not a function declaration")
+            error("Left side of function call is not a function declaration")
         }
     }
 
     private fun visitFunctionDeclaration(expr: Definition.FunctionDeclaration) {
         // we don't want to merge with declaration body, as it need to be called to use the variables
-        staticDepth += 1
         visitExpression(expr.body)
-        staticDepth -= 1
         useTypeAnalysis[expr] = UseTypesForExpression.empty()
     }
 
