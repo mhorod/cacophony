@@ -4,6 +4,8 @@ import cacophony.semantic.syntaxtree.Definition
 
 class CFGLabel
 
+class SlotLabel
+
 /**
  * Single computation tree that has no control-flow or data-flow dependencies
  */
@@ -194,4 +196,23 @@ sealed interface CFGNode {
         val FALSE = Constant(0)
         val TRUE = Constant(1)
     }
+
+    sealed interface Slot : CFGNode {
+        val label: SlotLabel
+    }
+
+    data class RegisterSlot(
+        override val label: SlotLabel,
+        val register: Register,
+    ) : Slot
+
+    data class ValueSlot(
+        override val label: SlotLabel,
+        val value: CFGNode,
+    ) : Slot
+
+    data class ConstantSlot(
+        override val label: SlotLabel,
+        val predicate: (Int) -> Boolean,
+    ) : Slot
 }
