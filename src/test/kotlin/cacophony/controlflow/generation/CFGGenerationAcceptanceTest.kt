@@ -13,62 +13,9 @@ import cacophony.semantic.syntaxtree.VariableUse
 import cacophony.utils.Location
 import cacophony.utils.StringInput
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class CFGGenerationKtTest {
-    class TestFunctionHandler : FunctionHandler {
-        val varRegisters = mutableMapOf<Definition.VariableDeclaration, Register>()
-
-        override fun getFunctionDeclaration(): Definition.FunctionDeclaration {
-            TODO()
-        }
-
-        override fun generateCall(
-            arguments: List<CFGNode>,
-            result: Register?,
-            respectStackAlignment: Boolean,
-        ): List<CFGNode> {
-            TODO()
-        }
-
-        override fun generateCallFrom(
-            callerFunction: FunctionHandler,
-            arguments: List<CFGNode>,
-            result: Register?,
-            respectStackAlignment: Boolean,
-        ): List<CFGNode> {
-            TODO()
-        }
-
-        override fun generateVariableAccess(variable: Variable): CFGNode.LValue =
-            CFGNode.VariableUse(
-                when (variable) {
-                    is Variable.AuxVariable -> Register.VirtualRegister()
-                    is Variable.SourceVariable -> varRegisters[variable.definition]!!
-                },
-            )
-
-        override fun getVariableAllocation(variable: Variable): VariableAllocation {
-            TODO()
-        }
-
-        override fun registerVariableAllocation(
-            variable: Variable,
-            allocation: VariableAllocation,
-        ) {
-            TODO()
-        }
-
-        override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable {
-            TODO()
-        }
-
-        override fun getVariableFromDefinition(varDef: Definition): Variable {
-            TODO()
-        }
-    }
-
+class CFGGenerationAcceptanceTest {
     @Test
     fun `test cfg generation of simple additions`() {
         val location = Location(0)
