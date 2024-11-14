@@ -23,21 +23,21 @@ sealed class CFGVertex(
     }
 
     class Jump(
-        tree: CFGNode.Unconditional,
+        tree: CFGNode,
         val destination: CFGLabel,
     ) : CFGVertex(tree) {
         override fun dependents() = listOf(destination)
     }
 
     class Final(
-        tree: CFGNode.Unconditional,
+        tree: CFGNode,
     ) : CFGVertex(tree) {
         override fun dependents() = emptyList<CFGLabel>()
     }
 }
 
 sealed interface CFGNode {
-    sealed interface Unconditional : CFGNode
+//    sealed interface Unconditional : CFGNode
 
     sealed interface Value : CFGNode
 
@@ -46,59 +46,58 @@ sealed interface CFGNode {
     sealed interface LValue : CFGNode
 
     data object Return :
-        Unconditional,
         Leaf
 
     data class Call(
         val declaration: Definition.FunctionDeclaration,
-    ) : Unconditional,
+    ) :
         Leaf
 
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
     data class Push(
         val value: CFGNode,
-    ) : Unconditional
+    ) : CFGNode
 
     // NOTE: Pop may be unnecessary since it can be done via Assignment
     data class Pop(
         val regvar: Register,
-    ) : Unconditional,
+    ) :
         Leaf
 
     data class Assignment(
         val destination: Register,
         val value: CFGNode,
-    ) : Unconditional
+    ) : CFGNode
 
     data class VariableUse(
         val regvar: Register,
-    ) : Unconditional,
+    ) :
         Leaf,
         LValue,
         Value
 
     data class MemoryAccess(
         val destination: CFGNode,
-    ) : Unconditional,
+    ) :
         LValue,
         Value
 
     data class MemoryWrite(
         val destination: MemoryAccess,
         val value: CFGNode,
-    ) : Unconditional
+    ) : CFGNode
 
     data class Constant(
         val value: Int,
-    ) : Unconditional,
+    ) :
         Leaf,
         Value
 
     data class Sequence(
         val nodes: List<CFGNode>,
-    ) : Unconditional
+    ) : CFGNode
 
-    sealed interface ArithmeticOperator : Unconditional, Value
+    sealed interface ArithmeticOperator : CFGNode
 
     data class Addition(
         val lhs: CFGNode,
