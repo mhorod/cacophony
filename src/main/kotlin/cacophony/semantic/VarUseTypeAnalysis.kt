@@ -7,8 +7,9 @@ typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseTyp
 fun analyzeVarUseTypes(
     ast: AST,
     resolvedVariables: ResolvedVariables,
+    functionAnalysis: FunctionAnalysisResult,
 ): UseTypeAnalysisResult {
-    val visitor = VarUseVisitor(resolvedVariables)
+    val visitor = VarUseVisitor(resolvedVariables, functionAnalysis)
     visitor.visit(ast)
     return visitor.getAnalysisResult()
 }
@@ -56,6 +57,7 @@ private class UseTypesForExpression(
 
 private class VarUseVisitor(
     val resolvedVariables: ResolvedVariables,
+    val functionAnalysis: FunctionAnalysisResult,
 ) {
     private val useTypeAnalysis = mutableMapOf<Expression, UseTypesForExpression>()
     private val scopeStack = ArrayDeque<MutableSet<Definition>>()
@@ -204,9 +206,8 @@ private class VarUseVisitor(
         val calledFunction = resolvedVariables[expr.function]
         if (calledFunction is Definition.FunctionDeclaration) {
             val map =
-                useTypeAnalysis[calledFunction.body]!!.getMap().filterNot {
-                    // had to use staticDepth because of called functions that use variables not visible in current scope
-                    it.key in calledFunction.arguments
+                functionAnalysis[calledFunction]!!.variables.associate {
+                    it.declaration to it.useType
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
         } else {
