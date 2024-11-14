@@ -84,7 +84,7 @@ sealed interface CFGNode {
     data class Constant(
         val value: Int,
     ) : Unconditional,
-        Leaf
+        Leaf,
 
     data class Sequence(
         val nodes: List<CFGNode>,
