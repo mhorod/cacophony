@@ -32,7 +32,7 @@ class TestFunctionHandler : FunctionHandler {
     }
 
     override fun generateVariableAccess(variable: Variable): CFGNode.LValue =
-        CFGNode.VariableUse(
+        CFGNode.RegisterUse(
             when (variable) {
                 is Variable.AuxVariable -> Register.VirtualRegister()
                 is Variable.SourceVariable -> varRegisters[variable.definition]!!

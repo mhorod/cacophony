@@ -185,7 +185,7 @@ internal class OperatorHandler(
 
                 val exit = cfg.addUnconditionalVertex(CFGNode.NoOp)
 
-                val access = CFGNode.VariableUse(Register.VirtualRegister())
+                val access = CFGNode.RegisterUse(Register.VirtualRegister())
                 val writeTrue = cfg.addUnconditionalVertex(CFGNode.Assignment(access, CFGNode.TRUE))
                 writeTrue.connect(exit.label)
 
@@ -233,7 +233,7 @@ internal class OperatorHandler(
 
                 val exit = cfg.addUnconditionalVertex(CFGNode.NoOp)
 
-                val access = CFGNode.VariableUse(Register.VirtualRegister())
+                val access = CFGNode.RegisterUse(Register.VirtualRegister())
                 val writeFalse = cfg.addUnconditionalVertex(CFGNode.Assignment(access, CFGNode.FALSE))
                 writeFalse.connect(exit.label)
 

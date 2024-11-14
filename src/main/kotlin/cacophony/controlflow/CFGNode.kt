@@ -43,7 +43,7 @@ sealed interface CFGNode {
 
     // NOTE: Pop may be unnecessary since it can be done via Assignment
     data class Pop(
-        val regvar: Register,
+        val register: RegisterUse,
     ) :
         Leaf
 
@@ -54,15 +54,16 @@ sealed interface CFGNode {
         override fun toString(): String = "($destination = $value)"
     }
 
-    data class VariableUse(
-        val regvar: Register,
+    data class RegisterUse(
+        val register: Register,
     ) : LValue,
+        Value,
         Leaf {
         @OptIn(ExperimentalStdlibApi::class)
         override fun toString(): String =
-            when (regvar) {
-                is Register.FixedRegister -> regvar.hardwareRegister.toString()
-                is Register.VirtualRegister -> "VReg(${regvar.hashCode().toHexString()})"
+            when (register) {
+                is Register.FixedRegister -> register.hardwareRegister.toString()
+                is Register.VirtualRegister -> "VReg(${register.hashCode().toHexString()})"
             }
     }
 
@@ -72,7 +73,7 @@ sealed interface CFGNode {
 
     data class Constant(
         val value: Int,
-    ) : CFGNode,
+    ) : Value,
         Leaf {
         override fun toString(): String = value.toString()
     }
@@ -83,7 +84,7 @@ sealed interface CFGNode {
         override fun toString(): String = nodes.joinToString("; ") { it.toString() }
     }
 
-    sealed interface ArithmeticOperator : CFGNode
+    sealed interface ArithmeticOperator : Value
 
     sealed interface ArithmeticAssignmentOperator : ArithmeticOperator
 
@@ -146,7 +147,7 @@ sealed interface CFGNode {
         override fun toString(): String = "(-$value)"
     }
 
-    sealed interface LogicalOperator : CFGNode
+    sealed interface LogicalOperator : Value
 
     data class LogicalNot(
         val value: CFGNode,
@@ -209,16 +210,14 @@ sealed interface CFGNode {
 
     data class RegisterSlot(
         override val label: RegisterLabel,
-//        val register: Register,
-    ) : Slot
+    ) : Slot, LValue
 
     data class ValueSlot(
         override val label: ValueLabel,
-//        val value: CFGNode,
-    ) : Slot
+    ) : Slot, Value
 
     data class ConstantSlot(
         override val label: ConstantLabel,
         val predicate: (Int) -> Boolean,
-    ) : Slot
+    ) : Slot, Value
 }
