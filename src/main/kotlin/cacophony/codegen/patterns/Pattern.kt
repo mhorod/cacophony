@@ -2,11 +2,17 @@ package cacophony.codegen.patterns
 
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionLabel
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.Register
-import cacophony.controlflow.SlotLabel
+import cacophony.controlflow.*
 
-typealias SlotFill = Map<SlotLabel, CFGNode>
+data class SlotFill(
+    val valueFill: Map<ValueLabel, CFGNode.Value>,
+    val registerFill: Map<RegisterLabel, Register>,
+    val registerFill: Map<RegisterLabel, Register>,
+) {
+
+}
+//typealias ValueSlotFill = Map<SlotLabel, CFGNode.Value>
+//typealias RegisterFill = Map<SlotLabel, Register>
 
 sealed class Pattern(val tree: CFGNode)
 

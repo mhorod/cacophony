@@ -4,7 +4,10 @@ import cacophony.semantic.syntaxtree.Definition
 
 class CFGLabel
 
-class SlotLabel
+sealed interface SlotLabel
+class RegisterLabel: SlotLabel
+class ValueLabel: SlotLabel
+class ConstantLabel: SlotLabel
 
 sealed class CFGVertex(
     val tree: CFGNode,
@@ -35,6 +38,8 @@ sealed class CFGVertex(
 
 sealed interface CFGNode {
     sealed interface Unconditional : CFGNode
+
+    sealed interface Value : CFGNode
 
     sealed interface Leaf : CFGNode
 
@@ -69,12 +74,14 @@ sealed interface CFGNode {
         val regvar: Register,
     ) : Unconditional,
         Leaf,
-        LValue
+        LValue,
+        Value
 
     data class MemoryAccess(
         val destination: CFGNode,
     ) : Unconditional,
-        LValue
+        LValue,
+        Value
 
     data class MemoryWrite(
         val destination: MemoryAccess,
@@ -85,12 +92,13 @@ sealed interface CFGNode {
         val value: Int,
     ) : Unconditional,
         Leaf,
+        Value
 
     data class Sequence(
         val nodes: List<CFGNode>,
     ) : Unconditional
 
-    sealed interface ArithmeticOperator : Unconditional
+    sealed interface ArithmeticOperator : Unconditional, Value
 
     data class Addition(
         val lhs: CFGNode,
@@ -117,7 +125,7 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator
 
-    sealed interface LogicalOperator : CFGNode
+    sealed interface LogicalOperator : CFGNode, Value
 
     data class LogicalNot(
         val value: CFGNode,
@@ -153,22 +161,23 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator
 
+    /* TODO: document */
     sealed interface Slot : CFGNode {
         val label: SlotLabel
     }
 
     data class RegisterSlot(
-        override val label: SlotLabel,
-        val register: Register,
+        override val label: RegisterLabel,
+//        val register: Register,
     ) : Slot
 
     data class ValueSlot(
-        override val label: SlotLabel,
-        val value: CFGNode,
+        override val label: ValueLabel,
+//        val value: CFGNode,
     ) : Slot
 
     data class ConstantSlot(
-        override val label: SlotLabel,
+        override val label: ConstantLabel,
         val predicate: (Int) -> Boolean,
     ) : Slot
 }
