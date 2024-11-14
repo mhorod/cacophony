@@ -371,10 +371,7 @@ class FunctionAnalysisTest {
                 funF to
                     AnalyzedFunction(
                         null,
-                        setOf(
-                            AnalyzedVariable(argA, funF, VariableUseType.UNUSED),
-                            AnalyzedVariable(argB, funF, VariableUseType.UNUSED),
-                        ),
+                        setOf(),
                         mutableSetOf(),
                         0,
                         setOf(argA, argB),

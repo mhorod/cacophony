@@ -62,7 +62,7 @@ fun variableWrite(variableUse: VariableUse) =
 
 fun block(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 
-fun call(variableUse: VariableUse) = FunctionCall(mockRange(), variableUse, emptyList())
+fun call(variableUse: VariableUse, vararg arguments: Expression) = FunctionCall(mockRange(), variableUse, arguments.toList())
 
 fun astOf(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 
@@ -75,6 +75,7 @@ fun analyzedFunction(
 ) = AnalyzedFunction(
     null,
     variables,
+    mutableSetOf(),
     staticDepth,
     emptySet(),
 )
