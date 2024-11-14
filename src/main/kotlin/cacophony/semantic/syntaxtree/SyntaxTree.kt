@@ -323,6 +323,16 @@ sealed class OperatorBinary(
     val lhs: Expression,
     val rhs: Expression,
 ) : Expression(range) {
+    sealed class ArithmeticOperator(range: Pair<Location, Location>, lhs: Expression, rhs: Expression) : OperatorBinary(range, lhs, rhs)
+
+    sealed class ArithmeticAssignmentOperator(range: Pair<Location, Location>, lhs: Expression, rhs: Expression) : OperatorBinary(
+        range,
+        lhs,
+        rhs,
+    )
+
+    sealed class LogicalOperator(range: Pair<Location, Location>, lhs: Expression, rhs: Expression) : OperatorBinary(range, lhs, rhs)
+
     override fun toString() = this::class.simpleName!!
 
     override fun children() = listOf(lhs, rhs)
@@ -337,7 +347,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Multiplication
     }
 
@@ -345,7 +355,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Division
     }
 
@@ -353,7 +363,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Modulo
     }
 
@@ -361,7 +371,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Addition
     }
 
@@ -369,7 +379,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Subtraction
     }
 
@@ -377,7 +387,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : LogicalOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Less
     }
 
@@ -385,7 +395,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : LogicalOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Greater
     }
 
@@ -393,7 +403,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : LogicalOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is LessEqual
     }
 
@@ -401,7 +411,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : LogicalOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is GreaterEqual
     }
 
@@ -409,7 +419,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : LogicalOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Equals
     }
 
@@ -417,7 +427,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : LogicalOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is NotEquals
     }
 
@@ -425,7 +435,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : LogicalOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is LogicalAnd
     }
 
@@ -433,7 +443,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : LogicalOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is LogicalOr
     }
 
@@ -449,7 +459,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticAssignmentOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is AdditionAssignment
     }
 
@@ -457,7 +467,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticAssignmentOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is SubtractionAssignment
     }
 
@@ -465,7 +475,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticAssignmentOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is MultiplicationAssignment
     }
 
@@ -473,7 +483,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticAssignmentOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is DivisionAssignment
     }
 
@@ -481,7 +491,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Expression,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs) {
+    ) : ArithmeticAssignmentOperator(range, lhs, rhs) {
         override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is ModuloAssignment
     }
 }

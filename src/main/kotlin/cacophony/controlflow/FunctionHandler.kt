@@ -35,7 +35,7 @@ interface FunctionHandler {
         respectStackAlignment: Boolean = true,
     ): List<CFGNode>
 
-    fun generateVariableAccess(variable: Variable): CFGNode
+    fun generateVariableAccess(variable: Variable): CFGNode.LValue
 
     fun getVariableAllocation(variable: Variable): VariableAllocation
 
@@ -114,7 +114,7 @@ class FunctionHandlerImpl(
             // we push two copies of RSP to the stack and either leave them both there,
             // or remove one of them via RSP assignment
             val oldRSP = Register.VirtualRegister()
-            nodes.add(CFGNode.Assignment(oldRSP, CFGNode.VariableUse(Register.FixedRegister(X64Register.RSP))))
+            nodes.add(CFGNode.Assignment(CFGNode.VariableUse(oldRSP), CFGNode.VariableUse(Register.FixedRegister(X64Register.RSP))))
 
             nodes.add(CFGNode.Push(CFGNode.VariableUse(oldRSP)))
             nodes.add(CFGNode.Push(CFGNode.VariableUse(oldRSP)))
@@ -124,7 +124,7 @@ class FunctionHandlerImpl(
             // into two cases depending on the parity of stackArguments.size
             nodes.add(
                 CFGNode.Assignment(
-                    Register.FixedRegister(X64Register.RSP),
+                    CFGNode.VariableUse(Register.FixedRegister(X64Register.RSP)),
                     CFGNode.Addition(
                         CFGNode.VariableUse(Register.FixedRegister(X64Register.RSP)),
                         CFGNode.Modulo(
@@ -141,10 +141,10 @@ class FunctionHandlerImpl(
 
         // in what order should we evaluate arguments? gcc uses reversed order
         for ((argument, register) in registerArguments) {
-            nodes.add(CFGNode.Assignment(Register.FixedRegister(register), argument))
+            nodes.add(CFGNode.Assignment(CFGNode.VariableUse(Register.FixedRegister(register)), argument))
         }
         for ((argument, register) in stackArguments) {
-            nodes.add(CFGNode.Assignment(register, argument))
+            nodes.add(CFGNode.Assignment(CFGNode.VariableUse(register), argument))
         }
 
         // is this indirection necessary?
@@ -157,7 +157,7 @@ class FunctionHandlerImpl(
         if (stackArguments.isNotEmpty()) {
             nodes.add(
                 CFGNode.Assignment(
-                    Register.FixedRegister(X64Register.RSP),
+                    CFGNode.VariableUse(Register.FixedRegister(X64Register.RSP)),
                     CFGNode.Addition(
                         CFGNode.VariableUse(Register.FixedRegister(X64Register.RSP)),
                         CFGNode.Constant(8 * stackArguments.size),
@@ -174,7 +174,7 @@ class FunctionHandlerImpl(
         }
 
         if (result != null) {
-            nodes.add(CFGNode.Assignment(result, CFGNode.VariableUse(Register.FixedRegister(X64Register.RAX))))
+            nodes.add(CFGNode.Assignment(CFGNode.VariableUse(result), CFGNode.VariableUse(Register.FixedRegister(X64Register.RAX))))
         }
 
         return nodes
@@ -195,7 +195,7 @@ class FunctionHandlerImpl(
             // Function is called from parent which doesn't have access to variable with its static pointer,
             // we need to get it from RBP.
             nodes.add(
-                CFGNode.MemoryWrite(
+                CFGNode.Assignment(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
                 ),
@@ -203,7 +203,7 @@ class FunctionHandlerImpl(
         } else {
             // It's called from nested function, therefore caller should have access to staticLink.
             nodes.add(
-                CFGNode.MemoryWrite(
+                CFGNode.Assignment(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     callerFunction.generateVariableAccess(staticLink),
                 ),
@@ -230,7 +230,7 @@ class FunctionHandlerImpl(
         }
     }
 
-    override fun generateVariableAccess(variable: Variable): CFGNode {
+    override fun generateVariableAccess(variable: Variable): CFGNode.LValue {
         val definedInDeclaration =
             when (variable) {
                 is Variable.SourceVariable -> {

@@ -78,8 +78,11 @@ class FunctionHandlerTest {
         private fun getArgumentRegisters(callNodes: List<CFGNode>): List<X64Register> {
             val returnList = mutableListOf<X64Register>()
             for (node in callNodes) {
-                if (node is CFGNode.Assignment && node.destination is Register.FixedRegister) {
-                    val register = (node.destination as Register.FixedRegister).hardwareRegister
+                if (node is CFGNode.Assignment &&
+                    node.destination is CFGNode.VariableUse &&
+                    node.destination.regvar is Register.FixedRegister
+                ) {
+                    val register = node.destination.regvar.hardwareRegister
                     if (register != X64Register.RSP) {
                         returnList.add(register)
                     }
@@ -90,8 +93,8 @@ class FunctionHandlerTest {
 
         private fun getPushCount(callNodes: List<CFGNode>): Int = callNodes.filterIsInstance<CFGNode.Push>().size
 
-        private fun getResultDestination(callNodes: List<CFGNode>): Register? {
-            var register: Register? = null
+        private fun getResultDestination(callNodes: List<CFGNode>): CFGNode.LValue? {
+            var register: CFGNode.LValue? = null
             for (node in callNodes) {
                 if (node is CFGNode.Assignment && node.value is CFGNode.VariableUse) {
                     val reg = (node.value as CFGNode.VariableUse).regvar
@@ -109,8 +112,11 @@ class FunctionHandlerTest {
             var hasPopToRSP = false
 
             for (node in callNodes) {
-                if (node is CFGNode.Assignment && node.destination is Register.FixedRegister) {
-                    if ((node.destination as Register.FixedRegister).hardwareRegister != X64Register.RSP) {
+                if (node is CFGNode.Assignment &&
+                    node.destination is CFGNode.VariableUse &&
+                    node.destination.regvar is Register.FixedRegister
+                ) {
+                    if (node.destination.regvar.hardwareRegister != X64Register.RSP) {
                         continue
                     }
                     if (node.value is CFGNode.Addition) {
@@ -155,14 +161,18 @@ class FunctionHandlerTest {
         fun `value is returned if requested and stack is aligned`() {
             val register = Register.VirtualRegister()
             val nodes = getCallNodes(0, register, true)
-            assertThat(getResultDestination(nodes)).isEqualTo(register)
+            val resultDestination = getResultDestination(nodes)
+            assertThat(resultDestination).isInstanceOf(CFGNode.VariableUse::class.java)
+            assertThat((resultDestination as CFGNode.VariableUse).regvar).isEqualTo(register)
         }
 
         @Test
         fun `value is returned if requested and stack is not aligned`() {
             val register = Register.VirtualRegister()
             val nodes = getCallNodes(0, register, false)
-            assertThat(getResultDestination(nodes)).isEqualTo(register)
+            val resultDestination = getResultDestination(nodes)
+            assertThat(resultDestination).isInstanceOf(CFGNode.VariableUse::class.java)
+            assertThat((resultDestination as CFGNode.VariableUse).regvar).isEqualTo(register)
         }
 
         @Test
@@ -229,7 +239,7 @@ class FunctionHandlerTest {
             // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
             val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
             val expected =
-                CFGNode.MemoryWrite(
+                CFGNode.Assignment(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     CFGNode.VariableUse(Register.FixedRegister(X64Register.RBP)),
                 )
@@ -252,7 +262,7 @@ class FunctionHandlerTest {
             // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
             val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
             val expected =
-                CFGNode.MemoryWrite(
+                CFGNode.Assignment(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     childHandler.generateVariableAccess(childHandler.getStaticLink()),
                 )
@@ -276,7 +286,7 @@ class FunctionHandlerTest {
             // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
             val staticLinkAccess = childHandler.generateVariableAccess(parentHandler.getStaticLink())
             val expected =
-                CFGNode.MemoryWrite(
+                CFGNode.Assignment(
                     CFGNode.MemoryAccess(staticLinkAccess),
                     childHandler.generateVariableAccess(parentHandler.getStaticLink()),
                 )

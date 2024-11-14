@@ -1,5 +1,6 @@
 package cacophony.semantic
 
+import cacophony.*
 import cacophony.semantic.syntaxtree.Empty
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
