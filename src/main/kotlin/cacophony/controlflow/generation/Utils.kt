@@ -3,8 +3,8 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.CFGNode
 
 internal fun noOpOr(
-    value: CFGNode.Unconditional,
+    value: CFGNode,
     mode: EvalMode,
-): CFGNode.Unconditional = if (mode is EvalMode.Value) value else CFGNode.NoOp
+): CFGNode = if (mode is EvalMode.Value) value else CFGNode.NoOp
 
-internal fun noOpOrUnit(mode: EvalMode): CFGNode.Unconditional = noOpOr(CFGNode.UNIT, mode)
+internal fun noOpOrUnit(mode: EvalMode): CFGNode = noOpOr(CFGNode.UNIT, mode)

@@ -4,29 +4,34 @@ import cacophony.semantic.syntaxtree.Definition
 
 class CFGLabel
 
-class SlotLabel
+sealed interface SlotLabel
+
+class RegisterLabel : SlotLabel
+
+class ValueLabel : SlotLabel
+
+class ConstantLabel : SlotLabel
 
 /**
  * Single computation tree that has no control-flow or data-flow dependencies
  */
 sealed interface CFGNode {
-    sealed interface Unconditional : CFGNode
+    sealed interface Value : CFGNode
 
     sealed interface Leaf : CFGNode
 
-    sealed interface LValue : Unconditional
+    sealed interface LValue : CFGNode
 
-    data object NoOp : Unconditional, Leaf {
+    data object NoOp : Leaf {
         override fun toString(): String = "nop"
     }
 
     data object Return :
-        Unconditional,
         Leaf
 
     data class Call(
         val declaration: Definition.FunctionDeclaration,
-    ) : Unconditional,
+    ) :
         Leaf {
         override fun toString(): String = "call ${declaration.identifier}"
     }
@@ -34,30 +39,31 @@ sealed interface CFGNode {
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
     data class Push(
         val value: CFGNode,
-    ) : Unconditional
+    ) : CFGNode
 
     // NOTE: Pop may be unnecessary since it can be done via Assignment
     data class Pop(
-        val regvar: Register,
-    ) : Unconditional,
+        val register: RegisterUse,
+    ) :
         Leaf
 
     data class Assignment(
         val destination: LValue,
         val value: CFGNode,
-    ) : Unconditional {
+    ) : CFGNode {
         override fun toString(): String = "($destination = $value)"
     }
 
-    data class VariableUse(
-        val regvar: Register,
+    data class RegisterUse(
+        val register: Register,
     ) : LValue,
+        Value,
         Leaf {
         @OptIn(ExperimentalStdlibApi::class)
         override fun toString(): String =
-            when (regvar) {
-                is Register.FixedRegister -> regvar.hardwareRegister.toString()
-                is Register.VirtualRegister -> "VReg(${regvar.hashCode().toHexString()})"
+            when (register) {
+                is Register.FixedRegister -> register.hardwareRegister.toString()
+                is Register.VirtualRegister -> "VReg(${register.hashCode().toHexString()})"
             }
     }
 
@@ -67,18 +73,18 @@ sealed interface CFGNode {
 
     data class Constant(
         val value: Int,
-    ) : Unconditional,
+    ) : Value,
         Leaf {
         override fun toString(): String = value.toString()
     }
 
     data class Sequence(
         val nodes: List<CFGNode>,
-    ) : Unconditional {
+    ) : CFGNode {
         override fun toString(): String = nodes.joinToString("; ") { it.toString() }
     }
 
-    sealed interface ArithmeticOperator : Unconditional
+    sealed interface ArithmeticOperator : Value
 
     sealed interface ArithmeticAssignmentOperator : ArithmeticOperator
 
@@ -141,7 +147,7 @@ sealed interface CFGNode {
         override fun toString(): String = "(-$value)"
     }
 
-    sealed interface LogicalOperator : CFGNode, Unconditional
+    sealed interface LogicalOperator : Value
 
     data class LogicalNot(
         val value: CFGNode,
@@ -197,22 +203,21 @@ sealed interface CFGNode {
         val TRUE = Constant(1)
     }
 
+    // TODO: document
     sealed interface Slot : CFGNode {
         val label: SlotLabel
     }
 
     data class RegisterSlot(
-        override val label: SlotLabel,
-        val register: Register,
-    ) : Slot
+        override val label: RegisterLabel,
+    ) : Slot, LValue
 
     data class ValueSlot(
-        override val label: SlotLabel,
-        val value: CFGNode,
-    ) : Slot
+        override val label: ValueLabel,
+    ) : Slot, Value
 
     data class ConstantSlot(
-        override val label: SlotLabel,
+        override val label: ConstantLabel,
         val predicate: (Int) -> Boolean,
-    ) : Slot
+    ) : Slot, Value
 }

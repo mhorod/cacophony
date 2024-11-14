@@ -11,7 +11,7 @@ import cacophony.utils.getReachableFrom
 internal class CFG {
     private val cfg = mutableMapOf<CFGLabel, GeneralCFGVertex>()
 
-    internal fun addUnconditionalVertex(node: CFGNode.Unconditional): GeneralCFGVertex.UnconditionalVertex {
+    internal fun addUnconditionalVertex(node: CFGNode): GeneralCFGVertex.UnconditionalVertex {
         val vertex = GeneralCFGVertex.UnconditionalVertex(node, CFGLabel())
         cfg[vertex.label] = vertex
         return vertex

@@ -30,7 +30,7 @@ internal class CFGGenerator(
 
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
-        val returnValueRegister = CFGNode.VariableUse(Register.FixedRegister(X64Register.RAX))
+        val returnValueRegister = CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX))
         val extended = extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)
         extended.exit.connect(returnVertex.label)
@@ -47,8 +47,8 @@ internal class CFGGenerator(
                 when (mode) {
                     is EvalMode.Value -> {
                         val register = Register.VirtualRegister()
-                        val tmpWrite = CFGNode.Assignment(CFGNode.VariableUse(register), subCFG.access)
-                        val tmpRead = CFGNode.VariableUse(register)
+                        val tmpWrite = CFGNode.Assignment(CFGNode.RegisterUse(register), subCFG.access)
+                        val tmpRead = CFGNode.RegisterUse(register)
                         val vertex = cfg.addUnconditionalVertex(tmpWrite)
                         SubCFG.Extracted(vertex, vertex, tmpRead)
                     }
@@ -148,7 +148,7 @@ internal class CFGGenerator(
 
         extractedArguments.exit.connect(callVertex.label)
 
-        val resultAccess = resultRegister?.let { CFGNode.VariableUse(it) } ?: CFGNode.NoOp
+        val resultAccess = resultRegister?.let { CFGNode.RegisterUse(it) } ?: CFGNode.NoOp
         return SubCFG.Extracted(extractedArguments.entry, callVertex, resultAccess)
     }
 
@@ -224,7 +224,7 @@ internal class CFGGenerator(
             )
         }
 
-        val resultValueRegister = CFGNode.VariableUse(Register.VirtualRegister())
+        val resultValueRegister = CFGNode.RegisterUse(Register.VirtualRegister())
         val trueCFG = extendWithAssignment(visit(expression.doExpression, mode, context), resultValueRegister, mode)
         val falseCFG =
             extendWithAssignment(
@@ -293,7 +293,7 @@ internal class CFGGenerator(
     ): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
-            CFGNode.Assignment(CFGNode.VariableUse(Register.FixedRegister(X64Register.RAX)), valueCFG.access)
+            CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX)), valueCFG.access)
         val returnSequence = CFGNode.Sequence(listOf(resultAssignment, CFGNode.Return))
         return SubCFG.Immediate(returnSequence)
     }

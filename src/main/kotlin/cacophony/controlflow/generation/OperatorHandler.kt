@@ -50,7 +50,7 @@ internal class OperatorHandler(
         op: OperatorBinary,
         lhs: CFGNode,
         rhs: CFGNode,
-    ): CFGNode.Unconditional =
+    ): CFGNode =
         when (op) {
             is OperatorBinary.Addition -> CFGNode.Addition(lhs, rhs)
             is OperatorBinary.Division -> CFGNode.Division(lhs, rhs)
@@ -74,7 +74,7 @@ internal class OperatorHandler(
     private fun join(
         lhs: SubCFG,
         rhs: SubCFG,
-        access: CFGNode.Unconditional,
+        access: CFGNode,
     ): SubCFG {
         val (entry, exit) =
             when {
@@ -96,7 +96,7 @@ internal class OperatorHandler(
         expression: OperatorBinary.ArithmeticAssignmentOperator,
         lhs: CFGNode.LValue,
         rhs: CFGNode,
-    ): CFGNode.Unconditional =
+    ): CFGNode =
         when (expression) {
             is OperatorBinary.AdditionAssignment -> CFGNode.AdditionAssignment(lhs, rhs)
             is OperatorBinary.DivisionAssignment -> CFGNode.DivisionAssignment(lhs, rhs)
@@ -185,7 +185,7 @@ internal class OperatorHandler(
 
                 val exit = cfg.addUnconditionalVertex(CFGNode.NoOp)
 
-                val access = CFGNode.VariableUse(Register.VirtualRegister())
+                val access = CFGNode.RegisterUse(Register.VirtualRegister())
                 val writeTrue = cfg.addUnconditionalVertex(CFGNode.Assignment(access, CFGNode.TRUE))
                 writeTrue.connect(exit.label)
 
@@ -233,7 +233,7 @@ internal class OperatorHandler(
 
                 val exit = cfg.addUnconditionalVertex(CFGNode.NoOp)
 
-                val access = CFGNode.VariableUse(Register.VirtualRegister())
+                val access = CFGNode.RegisterUse(Register.VirtualRegister())
                 val writeFalse = cfg.addUnconditionalVertex(CFGNode.Assignment(access, CFGNode.FALSE))
                 writeFalse.connect(exit.label)
 

@@ -7,12 +7,12 @@ import cacophony.controlflow.CFGNode
  * @property access Pure access to the value produced by the graph
  */
 internal sealed interface SubCFG {
-    val access: CFGNode.Unconditional
+    val access: CFGNode
 
     /**
      * Indicates that no control flow vertex was created during expression translation
      */
-    data class Immediate(override val access: CFGNode.Unconditional) : SubCFG
+    data class Immediate(override val access: CFGNode) : SubCFG
 
     /**
      * Indicates that expression was translated to a graph of CFG vertices.
@@ -23,7 +23,7 @@ internal sealed interface SubCFG {
     data class Extracted(
         val entry: GeneralCFGVertex,
         val exit: GeneralCFGVertex.UnconditionalVertex,
-        override val access: CFGNode.Unconditional,
+        override val access: CFGNode,
     ) : SubCFG {
         infix fun merge(rhs: Extracted): Extracted {
             exit.connect(rhs.entry.label)

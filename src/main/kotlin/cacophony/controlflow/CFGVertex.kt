@@ -17,7 +17,7 @@ sealed class CFGVertex(
     }
 
     class Jump(
-        tree: CFGNode.Unconditional,
+        tree: CFGNode,
         val destination: CFGLabel,
     ) : CFGVertex(tree) {
         override fun dependents() = listOf(destination)

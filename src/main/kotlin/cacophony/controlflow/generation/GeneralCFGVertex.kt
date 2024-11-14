@@ -23,7 +23,7 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
     /**
      * Vertex that executes unconditional computation that then continues at another vertex
      */
-    internal class UnconditionalVertex(override val node: CFGNode.Unconditional, label: CFGLabel) : GeneralCFGVertex(label, node) {
+    internal class UnconditionalVertex(override val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label, node) {
         private var outgoing: CFGLabel? = null
 
         internal fun connect(label: CFGLabel) {
