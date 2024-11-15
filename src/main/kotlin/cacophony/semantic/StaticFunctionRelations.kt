@@ -106,6 +106,12 @@ private class StaticFunctionsRelationsVisitor {
     private fun visitBinaryOperator(expr: OperatorBinary) {
         when (expr) {
             is OperatorBinary.Assignment -> visitAssignment(expr)
+            is OperatorBinary.AdditionAssignment,
+            is OperatorBinary.SubtractionAssignment,
+            is OperatorBinary.MultiplicationAssignment,
+            is OperatorBinary.DivisionAssignment,
+            is OperatorBinary.ModuloAssignment,
+            -> visitCompoundAssignment(expr)
             else -> {
                 visitExpression(expr.lhs)
                 visitExpression(expr.rhs)
@@ -118,11 +124,26 @@ private class StaticFunctionsRelationsVisitor {
             is VariableUse -> visitVariableWrite(expr.lhs)
             else -> visitExpression(expr.lhs)
         }
+        visitExpression(expr.rhs)
+    }
+
+    private fun visitCompoundAssignment(expr: OperatorBinary) {
+        when (expr.lhs) {
+            is VariableUse -> visitVariableReadWrite(expr.lhs)
+            else -> visitExpression(expr.lhs)
+        }
+        visitExpression(expr.rhs)
     }
 
     private fun visitVariableWrite(expr: VariableUse) {
         functionStack.lastOrNull()?.let {
             relations[it]?.usedVariables?.add(UsedVariable(expr, VariableUseType.WRITE))
+        }
+    }
+
+    private fun visitVariableReadWrite(expr: VariableUse) {
+        functionStack.lastOrNull()?.let {
+            relations[it]?.usedVariables?.add(UsedVariable(expr, VariableUseType.READ_WRITE))
         }
     }
 
