@@ -22,6 +22,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funF to
                         AnalyzedFunction(
+                            funF,
                             null,
                             emptySet(),
                             mutableSetOf(),
@@ -49,6 +50,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funF to
                         AnalyzedFunction(
+                            funF,
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.UNUSED)),
                             mutableSetOf(),
@@ -77,6 +79,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funF to
                         AnalyzedFunction(
+                            funF,
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
                             mutableSetOf(),
@@ -106,6 +109,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funF to
                         AnalyzedFunction(
+                            funF,
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.WRITE)),
                             mutableSetOf(),
@@ -136,6 +140,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funF to
                         AnalyzedFunction(
+                            funF,
                             null,
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ_WRITE)),
                             mutableSetOf(),
@@ -165,6 +170,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funF to
                         AnalyzedFunction(
+                            funF,
                             null,
                             emptySet(),
                             mutableSetOf(),
@@ -173,6 +179,7 @@ class FunctionAnalysisTest {
                         ),
                     funG to
                         AnalyzedFunction(
+                            funG,
                             ParentLink(funF, false),
                             emptySet(),
                             mutableSetOf(),
@@ -203,6 +210,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funF to
                         AnalyzedFunction(
+                            funF,
                             null,
                             setOf(),
                             mutableSetOf(),
@@ -211,6 +219,7 @@ class FunctionAnalysisTest {
                         ),
                     funG to
                         AnalyzedFunction(
+                            funG,
                             ParentLink(funF, true),
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
                             mutableSetOf(),
@@ -250,6 +259,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funFoo to
                         AnalyzedFunction(
+                            funFoo,
                             null,
                             setOf(),
                             mutableSetOf(),
@@ -258,6 +268,7 @@ class FunctionAnalysisTest {
                         ),
                     funG to
                         AnalyzedFunction(
+                            funG,
                             ParentLink(funFoo, true),
                             emptySet(),
                             mutableSetOf(),
@@ -266,6 +277,7 @@ class FunctionAnalysisTest {
                         ),
                     funH to
                         AnalyzedFunction(
+                            funH,
                             ParentLink(funG, true),
                             setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
@@ -274,6 +286,7 @@ class FunctionAnalysisTest {
                         ),
                     funJ to
                         AnalyzedFunction(
+                            funJ,
                             ParentLink(funI, false),
                             emptySet(),
                             mutableSetOf(),
@@ -282,6 +295,7 @@ class FunctionAnalysisTest {
                         ),
                     funI to
                         AnalyzedFunction(
+                            funI,
                             ParentLink(funFoo, true),
                             emptySet(),
                             mutableSetOf(),
@@ -290,6 +304,7 @@ class FunctionAnalysisTest {
                         ),
                     funMain to
                         AnalyzedFunction(
+                            funMain,
                             null,
                             emptySet(),
                             mutableSetOf(),
@@ -322,6 +337,7 @@ class FunctionAnalysisTest {
                 mapOf(
                     funFoo to
                         AnalyzedFunction(
+                            funFoo,
                             null,
                             setOf(
                                 // AnalyzedVariable(fooVarA, funFoo, VariableUseType.READ)
@@ -332,6 +348,7 @@ class FunctionAnalysisTest {
                         ),
                     funBar to
                         AnalyzedFunction(
+                            funBar,
                             ParentLink(funFoo, false),
                             setOf(
                                 // AnalyzedVariable(barVarA, funBar, VariableUseType.WRITE),
@@ -370,6 +387,7 @@ class FunctionAnalysisTest {
             mapOf(
                 funF to
                     AnalyzedFunction(
+                        funF,
                         null,
                         setOf(),
                         mutableSetOf(),
@@ -378,6 +396,7 @@ class FunctionAnalysisTest {
                     ),
                 funG to
                     AnalyzedFunction(
+                        funG,
                         ParentLink(funF, true),
                         setOf(
                             AnalyzedVariable(argA, funF, VariableUseType.READ),

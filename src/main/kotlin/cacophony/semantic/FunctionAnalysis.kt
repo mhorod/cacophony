@@ -14,13 +14,28 @@ data class ParentLink(
     val used: Boolean,
 )
 
+/**
+ * Analyzed function properties
+ *
+ * @property function Function declaration
+ * @property parentLink Link to wrapping function
+ * @property variables All variables read, written, or declared in the function
+ * @property auxVariables All auxiliary variables created in the function
+ * @property staticDepth Depth of the function - how deeply nested it is
+ * @property variablesUsedInNestedFunctions Variables declared in this function that are used in nested functions
+ */
 data class AnalyzedFunction(
+    val function: Definition.FunctionDeclaration,
     val parentLink: ParentLink?,
     val variables: Set<AnalyzedVariable>,
     val auxVariables: MutableSet<Variable.AuxVariable>,
     val staticDepth: Int,
     val variablesUsedInNestedFunctions: Set<Definition>,
-)
+) {
+    fun declaredVariables() = variables.filter { it.definedIn == function }
+
+    fun outerVariables() = variables.filter { it.definedIn != function }
+}
 
 data class AnalyzedVariable(
     val declaration: Definition,
@@ -92,7 +107,14 @@ fun makeAnalyzedFunction(
     val variables =
         analyzedVariables[function]
             ?: throw IllegalStateException("Analyzed function is missing variable information")
-    return AnalyzedFunction(parentLink, variables, mutableSetOf(), staticRelations.staticDepth, variablesUsedInNestedFunctions)
+    return AnalyzedFunction(
+        function,
+        parentLink,
+        variables,
+        mutableSetOf(),
+        staticRelations.staticDepth,
+        variablesUsedInNestedFunctions,
+    )
 }
 
 fun makeAnalyzedVariable(
@@ -151,22 +173,18 @@ private fun analyzedVariables(
     resolvedVariables: ResolvedVariables,
     variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDeclaration>,
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
-) = relations.mapValues { (function, staticRelations) ->
+) = relations.mapValues { (_, staticRelations) ->
     getAnalyzedVariables(
-        function,
         staticRelations.usedVariables,
         resolvedVariables,
-        relations,
         variableDeclarationFunctions,
         argumentFunctions,
     )
 }
 
 private fun getAnalyzedVariables(
-    function: Definition.FunctionDeclaration,
     usedVariables: Set<UsedVariable>,
     resolvedVariables: ResolvedVariables,
-    relations: StaticFunctionRelationsMap,
     variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDeclaration>,
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
 ): Set<AnalyzedVariable> {

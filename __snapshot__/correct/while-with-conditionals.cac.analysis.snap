@@ -2,6 +2,52 @@
   "__class__": "LinkedHashMap",
   "(Location(value\u003d0), Location(value\u003d43))": {
     "__class__": "AnalyzedFunction",
+    "function": {
+      "__class__": "FunctionDeclaration",
+      "arguments": [],
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Bool",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 31
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 34
+          }
+        }
+      },
+      "body": {
+        "__class__": "BoolLiteral",
+        "value": false,
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 39
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 43
+          }
+        }
+      },
+      "identifier": "it_is_time_to_stop",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 0
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 43
+        }
+      }
+    },
     "variables": [],
     "auxVariables": [],
     "staticDepth": 0,
@@ -9,6 +55,67 @@
   },
   "(Location(value\u003d46), Location(value\u003d75))": {
     "__class__": "AnalyzedFunction",
+    "function": {
+      "__class__": "FunctionDeclaration",
+      "arguments": [],
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Unit",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 66
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 69
+          }
+        }
+      },
+      "body": {
+        "__class__": "Block",
+        "expressions": [
+          {
+            "__class__": "Empty",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 74
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 74
+              }
+            }
+          }
+        ],
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 74
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 75
+          }
+        }
+      },
+      "identifier": "not_yet",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 46
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 75
+        }
+      }
+    },
     "variables": [],
     "auxVariables": [],
     "staticDepth": 0,

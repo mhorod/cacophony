@@ -2,6 +2,83 @@
   "__class__": "LinkedHashMap",
   "(Location(value\u003d0), Location(value\u003d27))": {
     "__class__": "AnalyzedFunction",
+    "function": {
+      "__class__": "FunctionDeclaration",
+      "arguments": [
+        {
+          "__class__": "FunctionArgument",
+          "type": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 12
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 14
+              }
+            }
+          },
+          "identifier": "x",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 9
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 14
+            }
+          }
+        }
+      ],
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Int",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 20
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 22
+          }
+        }
+      },
+      "body": {
+        "__class__": "VariableUse",
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 27
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 27
+          }
+        }
+      },
+      "identifier": "f",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 0
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 27
+        }
+      }
+    },
     "variables": [
       {
         "__class__": "AnalyzedVariable",

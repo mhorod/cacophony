@@ -176,11 +176,13 @@ class VarUseTypeAnalysisTest {
                 mapOf(
                     outer to
                         analyzedFunction(
+                            outer,
                             0,
                             setOf(),
                         ),
                     fDeclaration to
                         analyzedFunction(
+                            fDeclaration,
                             1,
                             setOf(
                                 AnalyzedVariable(declaration, outer, VariableUseType.READ_WRITE),
@@ -215,11 +217,13 @@ class VarUseTypeAnalysisTest {
                 mapOf(
                     outer to
                         analyzedFunction(
+                            outer,
                             0,
                             setOf(),
                         ),
                     fDeclaration to
                         analyzedFunction(
+                            fDeclaration,
                             1,
                             setOf(),
                         ),
@@ -259,11 +263,13 @@ class VarUseTypeAnalysisTest {
                 mapOf(
                     outer to
                         analyzedFunction(
+                            outer,
                             0,
                             setOf(),
                         ),
                     fDeclaration to
                         analyzedFunction(
+                            fDeclaration,
                             1,
                             setOf(
                                 AnalyzedVariable(declaration, outer, VariableUseType.READ_WRITE),
@@ -309,11 +315,13 @@ class VarUseTypeAnalysisTest {
                 mapOf(
                     outer to
                         analyzedFunction(
+                            outer,
                             0,
                             setOf(),
                         ),
                     fDeclaration to
                         analyzedFunction(
+                            fDeclaration,
                             1,
                             setOf(
                                 AnalyzedVariable(aDeclaration, outer, VariableUseType.READ),
@@ -321,6 +329,7 @@ class VarUseTypeAnalysisTest {
                         ),
                     gDeclaration to
                         analyzedFunction(
+                            gDeclaration,
                             2,
                             setOf(
                                 AnalyzedVariable(aDeclaration, outer, VariableUseType.READ),

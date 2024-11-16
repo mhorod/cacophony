@@ -73,9 +73,11 @@ fun callGraph(vararg calls: Pair<Definition.FunctionDeclaration, Definition.Func
     calls.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
 
 fun analyzedFunction(
+    function: Definition.FunctionDeclaration,
     staticDepth: Int,
     variables: Set<AnalyzedVariable>,
 ) = AnalyzedFunction(
+    function,
     null,
     variables,
     mutableSetOf(),

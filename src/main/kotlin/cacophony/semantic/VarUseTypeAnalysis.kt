@@ -201,7 +201,7 @@ private class VarUseVisitor(
         val calledFunction = resolvedVariables[expr.function]
         if (calledFunction is Definition.FunctionDeclaration) {
             val map =
-                functionAnalysis[calledFunction]!!.variables.associate {
+                functionAnalysis[calledFunction]!!.outerVariables().associate {
                     it.declaration to it.useType
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))

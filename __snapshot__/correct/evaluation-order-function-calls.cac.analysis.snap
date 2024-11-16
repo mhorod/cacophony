@@ -2,6 +2,171 @@
   "__class__": "LinkedHashMap",
   "(Location(value\u003d0), Location(value\u003d43))": {
     "__class__": "AnalyzedFunction",
+    "function": {
+      "__class__": "FunctionDeclaration",
+      "arguments": [
+        {
+          "__class__": "FunctionArgument",
+          "type": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 12
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 14
+              }
+            }
+          },
+          "identifier": "x",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 9
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 14
+            }
+          }
+        },
+        {
+          "__class__": "FunctionArgument",
+          "type": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 20
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 22
+              }
+            }
+          },
+          "identifier": "z",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 17
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 22
+            }
+          }
+        }
+      ],
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Int",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 28
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 30
+          }
+        }
+      },
+      "body": {
+        "__class__": "Addition",
+        "lhs": {
+          "__class__": "Multiplication",
+          "lhs": {
+            "__class__": "VariableUse",
+            "identifier": "x",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 35
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 35
+              }
+            }
+          },
+          "rhs": {
+            "__class__": "VariableUse",
+            "identifier": "z",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 39
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 39
+              }
+            }
+          },
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 35
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 39
+            }
+          }
+        },
+        "rhs": {
+          "__class__": "IntLiteral",
+          "value": 1,
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 43
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 43
+            }
+          }
+        },
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 35
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 43
+          }
+        }
+      },
+      "identifier": "f",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 0
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 43
+        }
+      }
+    },
     "variables": [
       {
         "__class__": "AnalyzedVariable",

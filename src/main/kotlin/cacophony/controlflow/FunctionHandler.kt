@@ -92,7 +92,7 @@ class FunctionHandlerImpl(
             val res = mutableMapOf<Variable, VariableAllocation>()
             val usedVars = analyzedFunction.variablesUsedInNestedFunctions
             val regVar =
-                analyzedFunction.variables
+                analyzedFunction.declaredVariables()
                     .map { it.declaration }
                     .toSet()
                     .minus(usedVars)

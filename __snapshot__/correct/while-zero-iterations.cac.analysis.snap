@@ -2,6 +2,67 @@
   "__class__": "LinkedHashMap",
   "(Location(value\u003d0), Location(value\u003d37))": {
     "__class__": "AnalyzedFunction",
+    "function": {
+      "__class__": "FunctionDeclaration",
+      "arguments": [],
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Unit",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 28
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 31
+          }
+        }
+      },
+      "body": {
+        "__class__": "Block",
+        "expressions": [
+          {
+            "__class__": "Empty",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 36
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 36
+              }
+            }
+          }
+        ],
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 36
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 37
+          }
+        }
+      },
+      "identifier": "important_stuff",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 0
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 37
+        }
+      }
+    },
     "variables": [],
     "auxVariables": [],
     "staticDepth": 0,
