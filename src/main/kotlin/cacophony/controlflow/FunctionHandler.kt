@@ -5,9 +5,32 @@ import cacophony.controlflow.CFGNode.Constant
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.semantic.AnalyzedFunction
+import cacophony.semantic.FunctionAnalysisResult
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.utils.CompileException
+
+fun generateFunctionHandlers(analyzedFunctions: FunctionAnalysisResult): Map<FunctionDeclaration, FunctionHandler> {
+    val handlers = mutableMapOf<FunctionDeclaration, FunctionHandler>()
+    val order = analyzedFunctions.entries.sortedBy { it.value.staticDepth }
+    val ancestorHandlers = mutableMapOf<FunctionDeclaration, List<FunctionHandler>>()
+
+    for ((function, analyzedFunction) in order) {
+        if (analyzedFunction.parentLink == null) {
+            handlers[function] = FunctionHandlerImpl(function, analyzedFunction, emptyList())
+        } else {
+            val parentHandler =
+                handlers[analyzedFunction.parentLink.parent]
+                    ?: throw CompileException("Parent function handler not found")
+            val functionAncestorHandlers =
+                listOf(parentHandler) + (ancestorHandlers[analyzedFunction.parentLink.parent] ?: emptyList())
+            handlers[function] = FunctionHandlerImpl(function, analyzedFunction, functionAncestorHandlers)
+            ancestorHandlers[function] = functionAncestorHandlers
+        }
+    }
+
+    return handlers
+}
 
 sealed class VariableAllocation {
     class InRegister(
@@ -61,7 +84,8 @@ class FunctionHandlerImpl(
     private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionHandler {
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
-    private val definitionToVariable = analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
+    private val definitionToVariable =
+        analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
 
     private val variableAllocation: MutableMap<Variable, VariableAllocation> =
         run {
@@ -114,7 +138,12 @@ class FunctionHandlerImpl(
             // we push two copies of RSP to the stack and either leave them both there,
             // or remove one of them via RSP assignment
             val oldRSP = Register.VirtualRegister()
-            nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(oldRSP), CFGNode.RegisterUse(Register.FixedRegister(X64Register.RSP))))
+            nodes.add(
+                CFGNode.Assignment(
+                    CFGNode.RegisterUse(oldRSP),
+                    CFGNode.RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                ),
+            )
 
             nodes.add(CFGNode.Push(CFGNode.RegisterUse(oldRSP)))
             nodes.add(CFGNode.Push(CFGNode.RegisterUse(oldRSP)))
@@ -174,7 +203,12 @@ class FunctionHandlerImpl(
         }
 
         if (result != null) {
-            nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(result), CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX))))
+            nodes.add(
+                CFGNode.Assignment(
+                    CFGNode.RegisterUse(result),
+                    CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX)),
+                ),
+            )
         }
 
         return nodes
@@ -236,6 +270,7 @@ class FunctionHandlerImpl(
                 is Variable.SourceVariable -> {
                     analyzedFunction.variables.find { it.declaration == variable.definition }?.definedIn
                 }
+
                 is Variable.AuxVariable.StaticLinkVariable -> {
                     if (getStaticLink() == variable) {
                         function
@@ -262,6 +297,7 @@ class FunctionHandlerImpl(
             is VariableAllocation.InRegister -> {
                 RegisterUse(variableAllocation.register)
             }
+
             is VariableAllocation.OnStack -> {
                 MemoryAccess(
                     Addition(

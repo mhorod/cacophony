@@ -37,7 +37,6 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
             label: CFGLabel,
             newLabel: CFGLabel,
         ) {
-            println("Replacing label $outgoing =?= $label with $newLabel")
             if (outgoing == label) outgoing = newLabel
         }
 

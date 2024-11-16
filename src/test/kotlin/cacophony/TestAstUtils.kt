@@ -114,3 +114,5 @@ fun whileLoop(
 ) = Statement.WhileStatement(mockRange(), testExpression, doExpression)
 
 fun breakStatement() = Statement.BreakStatement(mockRange())
+
+fun returnStatement(value: Expression) = Statement.ReturnStatement(mockRange(), value)

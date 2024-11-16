@@ -31,7 +31,17 @@ internal class CFGGenerator(
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
         val returnValueRegister = CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX))
-        val extended = extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
+
+        val extended =
+            when (bodyCFG) {
+                is SubCFG.Extracted -> extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
+                is SubCFG.Immediate -> {
+                    val node = CFGNode.Assignment(returnValueRegister, bodyCFG.access)
+                    val vertex = cfg.addUnconditionalVertex(node)
+                    SubCFG.Extracted(vertex, vertex, returnValueRegister)
+                }
+            }
+
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)
         extended.exit.connect(returnVertex.label)
         return cfg.cfgFragment(extended.entry.label)
@@ -294,8 +304,15 @@ internal class CFGGenerator(
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
             CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX)), valueCFG.access)
-        val returnSequence = CFGNode.Sequence(listOf(resultAssignment, CFGNode.Return))
-        return SubCFG.Immediate(returnSequence)
+
+        val resultAssignmentVertex = cfg.addUnconditionalVertex(resultAssignment)
+        val returnVertex = cfg.addFinalVertex(CFGNode.Return)
+        resultAssignmentVertex.connect(returnVertex.label)
+
+        // Similarily to break, return creates an artificial exit
+        val artificialExit = cfg.addUnconditionalVertex(CFGNode.NoOp)
+
+        return SubCFG.Extracted(resultAssignmentVertex, artificialExit, CFGNode.NoOp)
     }
 
     private fun visitWhileStatement(

@@ -177,10 +177,6 @@ private fun getAnalyzedVariables(
                 resolvedVariables[it.variable] is Definition.FunctionArgument
         }
         .map { makeAnalyzedVariable(it, resolvedVariables, variableDeclarationFunctions, argumentFunctions) }
-        .toSet()
-        .filter {
-            relations[it.definedIn]!!.staticDepth < relations[function]!!.staticDepth
-        }
         .groupBy { it.declaration }
         .map {
             val useType = variableUseType(it.value.map { variable -> variable.useType })
