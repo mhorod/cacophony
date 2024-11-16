@@ -24,7 +24,7 @@ class ASTGenerationTests {
             fail("Expected AST:\n$expectedStr\nActual AST:\n$actualStr")
         } else {
             fail(
-                "${expected.range}\n${actual.range}\nprintTree(expected) is equal to printTree(actual), but expected and actual are not equivalent",
+                "printTree(expected) is equal to printTree(actual), but expected and actual are not equivalent",
             )
         }
     }
