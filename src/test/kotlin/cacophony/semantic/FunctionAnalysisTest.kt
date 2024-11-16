@@ -258,7 +258,7 @@ class FunctionAnalysisTest {
             analyzeFunctions(
                 ast,
                 mapOf(varAUse to varA),
-                callGraph(funI to funG, funMain to funFoo, funH),
+                callGraph(funI to funG, funMain to funFoo, funG to funH),
             )
 
         // then
@@ -276,8 +276,8 @@ class FunctionAnalysisTest {
                         ),
                     funG to
                         AnalyzedFunction(
-                            ParentLink(funFoo, false),
-                            emptySet(),
+                            ParentLink(funFoo, true),
+                            setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             2,
                             emptySet(),
@@ -300,8 +300,8 @@ class FunctionAnalysisTest {
                         ),
                     funI to
                         AnalyzedFunction(
-                            ParentLink(funFoo, false),
-                            emptySet(),
+                            ParentLink(funFoo, true),
+                            setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             2,
                             emptySet(),

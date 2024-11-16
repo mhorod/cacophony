@@ -89,6 +89,8 @@ fun programResolvedName(ast: Block) =
             to program(ast)
     )
 
+fun programStaticRelation() = StaticFunctionRelations(null, 0, emptySet(), emptySet())
+
 fun programFunctionAnalysis(ast: Block) =
     (
         ast.expressions[0] as Definition.FunctionDeclaration

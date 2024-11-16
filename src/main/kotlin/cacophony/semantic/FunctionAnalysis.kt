@@ -4,6 +4,7 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.utils.getProperTransitiveClosure
+import cacophony.utils.reverseGraph
 
 typealias FunctionAnalysisResult = Map<Definition.FunctionDeclaration, AnalyzedFunction>
 
@@ -34,9 +35,24 @@ fun analyzeFunctions(
     val relations = findStaticFunctionRelations(ast)
     val variableDeclarationFunctions = getVariableDeclarationFunctions(relations)
     val argumentFunctions = getArgumentFunctions(relations)
+    val parentGraph =
+        relations.mapValues { (_, staticRelations) ->
+            staticRelations.parent?.let { setOf(it) } ?: emptySet()
+        }
+    val callGraphClosedRelations =
+        staticFunctionRelationsClosure(
+            relations,
+            callGraph,
+        )
+    // we need information if children declaration uses outside variables because of static links
+    val childrenGraphClosedRelations =
+        staticFunctionRelationsClosure(
+            callGraphClosedRelations,
+            reverseGraph(parentGraph),
+        )
     val analyzedVariables =
         analyzedVariables(
-            staticFunctionRelationsClosure(relations, callGraph),
+            childrenGraphClosedRelations,
             resolvedVariables,
             variableDeclarationFunctions,
             argumentFunctions,
@@ -175,9 +191,9 @@ private fun variableUseType(useTypes: List<VariableUseType>) =
 
 private fun staticFunctionRelationsClosure(
     staticFunctionRelations: StaticFunctionRelationsMap,
-    callGraph: CallGraph,
+    graph: Map<Definition.FunctionDeclaration, Set<Definition.FunctionDeclaration>>,
 ): StaticFunctionRelationsMap {
-    val closure = getProperTransitiveClosure(callGraph)
+    val closure = getProperTransitiveClosure(graph)
     val newMap = staticFunctionRelations.toMutableMap()
     staticFunctionRelations.forEach {
         val newUsedVariables = it.value.usedVariables.toMutableSet()
