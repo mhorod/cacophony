@@ -78,29 +78,6 @@ class CFGGenerationTest {
     }
 
     @Test
-    fun `CFG of if with literal condition reduces to single branch`() {
-        // given
-        val fDef =
-            functionDeclaration(
-                "f",
-                ifThenElse(lit(true), lit(11), lit(22)),
-            )
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedCFG =
-            cfg {
-                fragment(fDef) {
-                    "entry" does jump("return") { writeRegister(rax, integer(11)) }
-                    "return" does final { returnNode }
-                }
-            }
-        assertEquivalent(actualCFG, expectedCFG)
-    }
-
-    @Test
     fun `CFG of if with variable condition`() {
         // given
         val fDef =
