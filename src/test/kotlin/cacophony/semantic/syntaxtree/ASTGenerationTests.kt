@@ -2,7 +2,6 @@ package cacophony.semantic.syntaxtree
 
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
-import cacophony.semantic.wrapInFunction
 import cacophony.utils.*
 import io.mockk.every
 import io.mockk.mockk
@@ -54,6 +53,41 @@ class ASTGenerationTests {
         }
     }
 
+    private fun mockWrapInFunction(originalAST: AST): AST {
+        val program =
+            Definition.FunctionDeclaration(
+                anyLocation(),
+                "<program>",
+                Type.Functional(
+                    anyLocation(),
+                    emptyList(),
+                    Type.Basic(anyLocation(), "Unit"),
+                ),
+                emptyList(),
+                Type.Basic(anyLocation(), "Unit"),
+                Block(
+                    anyLocation(),
+                    listOf(
+                        originalAST,
+                        Empty(anyLocation()),
+                    ),
+                ),
+            )
+        val programCall =
+            FunctionCall(
+                anyLocation(),
+                VariableUse(anyLocation(), "<program>"),
+                emptyList(),
+            )
+        return Block(
+            anyLocation(),
+            listOf(
+                program,
+                programCall,
+            ),
+        )
+    }
+
     private fun computeAST(content: String): AST {
         val (ast, _, exc) = computeASTAndDiagnostics(content)
         return ast ?: throw exc!!
@@ -91,7 +125,7 @@ class ASTGenerationTests {
     fun `bool literal`() {
         val actual = computeAST("true")
         val expected = Literal.BoolLiteral(locationPair(0, 3), true)
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -104,7 +138,7 @@ class ASTGenerationTests {
                     Empty(anyLocation()),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -131,7 +165,7 @@ class ASTGenerationTests {
                     literal(true),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -145,7 +179,7 @@ class ASTGenerationTests {
                     Empty(locationPair(3, 3)),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -161,7 +195,7 @@ class ASTGenerationTests {
                     Literal.BoolLiteral(locationPair(19, 22), true),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -185,7 +219,7 @@ class ASTGenerationTests {
                     Empty(anyLocation()),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -227,7 +261,7 @@ class ASTGenerationTests {
                     ),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -251,7 +285,7 @@ class ASTGenerationTests {
                 ),
                 literal(5),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -272,7 +306,7 @@ class ASTGenerationTests {
                 ),
                 literal(3),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -286,7 +320,7 @@ class ASTGenerationTests {
                     0,
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -300,7 +334,7 @@ class ASTGenerationTests {
                     true,
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -332,7 +366,7 @@ class ASTGenerationTests {
                     ),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -364,7 +398,7 @@ class ASTGenerationTests {
                     ),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -396,7 +430,7 @@ class ASTGenerationTests {
                     ),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -428,7 +462,7 @@ class ASTGenerationTests {
                     ),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -460,7 +494,7 @@ class ASTGenerationTests {
                     ),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -484,7 +518,7 @@ class ASTGenerationTests {
                 ),
                 literal(true),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -507,7 +541,7 @@ class ASTGenerationTests {
                     Empty(anyLocation()),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -531,7 +565,7 @@ class ASTGenerationTests {
                     Empty(anyLocation()),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -544,7 +578,7 @@ class ASTGenerationTests {
                 literal(false),
                 null,
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -562,7 +596,7 @@ class ASTGenerationTests {
                     literal(2),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 
     @Test
@@ -589,6 +623,6 @@ class ASTGenerationTests {
                     ),
                 ),
             )
-        assertEquivalentAST(wrapInFunction(expected), actual)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
 }

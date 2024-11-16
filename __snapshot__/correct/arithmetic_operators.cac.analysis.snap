@@ -1,3 +1,10 @@
 {
-  "__class__": "LinkedHashMap"
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d-1), Location(value\u003d441))": {
+    "__class__": "AnalyzedFunction",
+    "variables": [],
+    "auxVariables": [],
+    "staticDepth": 0,
+    "variablesUsedInNestedFunctions": []
+  }
 }

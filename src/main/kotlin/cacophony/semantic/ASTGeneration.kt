@@ -292,7 +292,7 @@ private fun generateASTInternal(
     return Empty(range = Pair(Location(0), Location(0)))
 }
 
-internal fun wrapInFunction(originalAST: AST): AST {
+private fun wrapInFunction(originalAST: AST): AST {
     val beforeStart = Location(-1)
     val behindEnd = Location(originalAST.range.second.value + 1)
     val program =

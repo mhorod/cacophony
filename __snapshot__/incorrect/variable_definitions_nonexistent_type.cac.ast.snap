@@ -2,61 +2,198 @@
   "__class__": "Block",
   "expressions": [
     {
-      "__class__": "VariableDeclaration",
+      "__class__": "FunctionDeclaration",
       "type": {
+        "__class__": "Functional",
+        "argumentsType": [],
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Unit",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": -1
+          },
+          "second": {
+            "__class__": "Location",
+            "value": -1
+          }
+        }
+      },
+      "arguments": [],
+      "returnType": {
         "__class__": "Basic",
-        "identifier": "Car",
+        "identifier": "Unit",
         "range": {
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 44
+            "value": -1
           },
           "second": {
             "__class__": "Location",
-            "value": 46
+            "value": -1
           }
         }
       },
-      "value": {
-        "__class__": "IntLiteral",
-        "value": 2,
+      "body": {
+        "__class__": "Block",
+        "expressions": [
+          {
+            "__class__": "Block",
+            "expressions": [
+              {
+                "__class__": "VariableDeclaration",
+                "type": {
+                  "__class__": "Basic",
+                  "identifier": "Car",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 44
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 46
+                    }
+                  }
+                },
+                "value": {
+                  "__class__": "IntLiteral",
+                  "value": 2,
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 50
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 50
+                    }
+                  }
+                },
+                "identifier": "car",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 35
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 50
+                  }
+                }
+              },
+              {
+                "__class__": "Empty",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 50
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 50
+                  }
+                }
+              }
+            ],
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 35
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 51
+              }
+            }
+          },
+          {
+            "__class__": "Empty",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 52
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 52
+              }
+            }
+          }
+        ],
         "range": {
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 50
+            "value": 0
           },
           "second": {
             "__class__": "Location",
-            "value": 50
+            "value": 52
           }
         }
       },
-      "identifier": "car",
+      "identifier": "\u003cprogram\u003e",
       "range": {
         "__class__": "Pair",
         "first": {
           "__class__": "Location",
-          "value": 35
+          "value": -1
         },
         "second": {
           "__class__": "Location",
-          "value": 50
+          "value": 52
         }
       }
     },
     {
-      "__class__": "Empty",
+      "__class__": "FunctionCall",
+      "function": {
+        "__class__": "VariableUse",
+        "identifier": "\u003cprogram\u003e",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 52
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 52
+          }
+        }
+      },
+      "arguments": [],
       "range": {
         "__class__": "Pair",
         "first": {
           "__class__": "Location",
-          "value": 50
+          "value": 52
         },
         "second": {
           "__class__": "Location",
-          "value": 50
+          "value": 52
         }
       }
     }
@@ -65,11 +202,11 @@
     "__class__": "Pair",
     "first": {
       "__class__": "Location",
-      "value": 35
+      "value": -1
     },
     "second": {
       "__class__": "Location",
-      "value": 51
+      "value": 52
     }
   }
 }
