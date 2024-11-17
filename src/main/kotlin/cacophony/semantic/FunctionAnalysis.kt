@@ -175,7 +175,7 @@ private fun analyzedVariables(
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
 ) = relations.mapValues { (_, staticRelations) ->
     getAnalyzedVariables(
-        staticRelations.usedVariables,
+        staticRelations,
         resolvedVariables,
         variableDeclarationFunctions,
         argumentFunctions,
@@ -183,18 +183,24 @@ private fun analyzedVariables(
 }
 
 private fun getAnalyzedVariables(
-    usedVariables: Set<UsedVariable>,
+    staticRelations: StaticFunctionRelations,
     resolvedVariables: ResolvedVariables,
     variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDeclaration>,
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
 ): Set<AnalyzedVariable> {
-    return usedVariables
+    return staticRelations.usedVariables
         .asSequence()
         .filter {
             resolvedVariables[it.variable] is Definition.VariableDeclaration ||
                 resolvedVariables[it.variable] is Definition.FunctionArgument
         }
         .map { makeAnalyzedVariable(it, resolvedVariables, variableDeclarationFunctions, argumentFunctions) }
+        .toSet()
+        .union(
+            staticRelations.declaredVariables.map {
+                AnalyzedVariable(it, variableDeclarationFunctions[it]!!, VariableUseType.UNUSED)
+            },
+        )
         .groupBy { it.declaration }
         .map {
             val useType = variableUseType(it.value.map { variable -> variable.useType })

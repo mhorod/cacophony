@@ -3,6 +3,7 @@ package cacophony.controlflow.generation
 import cacophony.block
 import cacophony.cfg
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
+import cacophony.controlflow.programCfgToGraphviz
 import cacophony.eq
 import cacophony.functionDeclaration
 import cacophony.ifThenElse
@@ -13,9 +14,11 @@ import cacophony.lor
 import cacophony.rax
 import cacophony.registerUse
 import cacophony.returnNode
+import cacophony.returnStatement
 import cacophony.trueValue
 import cacophony.variableDeclaration
 import cacophony.variableUse
+import cacophony.whileLoop
 import cacophony.writeRegister
 import org.junit.jupiter.api.Test
 
@@ -101,7 +104,13 @@ class CFGConditionalSimplificationTest {
             cfg {
                 fragment(fDef) {
                     "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
-                    "write result to rax" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result"))) }
+                    "write result to rax" does
+                        jump("return") {
+                            writeRegister(
+                                rax,
+                                registerUse(virtualRegister("result")),
+                            )
+                        }
                     "return" does final { returnNode }
                 }
             }
@@ -138,7 +147,13 @@ class CFGConditionalSimplificationTest {
             cfg {
                 fragment(fDef) {
                     "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
-                    "write result to rax" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result"))) }
+                    "write result to rax" does
+                        jump("return") {
+                            writeRegister(
+                                rax,
+                                registerUse(virtualRegister("result")),
+                            )
+                        }
                     "return" does final { returnNode }
                 }
             }
@@ -178,9 +193,27 @@ class CFGConditionalSimplificationTest {
                         conditional("write 11 to result", "write 22 to result") {
                             registerUse(virtualRegister("x"))
                         }
-                    "write 11 to result" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
-                    "write 22 to result" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
-                    "write result to rax" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result"))) }
+                    "write 11 to result" does
+                        jump("write result to rax") {
+                            writeRegister(
+                                virtualRegister("result"),
+                                integer(11),
+                            )
+                        }
+                    "write 22 to result" does
+                        jump("write result to rax") {
+                            writeRegister(
+                                virtualRegister("result"),
+                                integer(22),
+                            )
+                        }
+                    "write result to rax" does
+                        jump("return") {
+                            writeRegister(
+                                rax,
+                                registerUse(virtualRegister("result")),
+                            )
+                        }
                     "return" does final { returnNode }
                 }
             }
@@ -220,9 +253,27 @@ class CFGConditionalSimplificationTest {
                         conditional("write 11 to result", "write 22 to result") {
                             registerUse(virtualRegister("x"))
                         }
-                    "write 11 to result" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
-                    "write 22 to result" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
-                    "write result to rax" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result"))) }
+                    "write 11 to result" does
+                        jump("write result to rax") {
+                            writeRegister(
+                                virtualRegister("result"),
+                                integer(11),
+                            )
+                        }
+                    "write 22 to result" does
+                        jump("write result to rax") {
+                            writeRegister(
+                                virtualRegister("result"),
+                                integer(22),
+                            )
+                        }
+                    "write result to rax" does
+                        jump("return") {
+                            writeRegister(
+                                rax,
+                                registerUse(virtualRegister("result")),
+                            )
+                        }
                     "return" does final { returnNode }
                 }
             }
@@ -269,10 +320,80 @@ class CFGConditionalSimplificationTest {
             cfg {
                 fragment(fDef) {
                     "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
-                    "write result to rax" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result"))) }
+                    "write result to rax" does
+                        jump("return") {
+                            writeRegister(
+                                rax,
+                                registerUse(virtualRegister("result")),
+                            )
+                        }
                     "return" does final { returnNode }
                 }
             }
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `while loop with true condition never exits`() {
+        // given
+        val fDef =
+            functionDeclaration(
+                "f",
+                block(
+                    whileLoop(lit(true), variableDeclaration("x", lit(10))),
+                    variableDeclaration("y", lit(20)),
+                ),
+            )
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+
+        // then
+        val expectedCFG =
+            cfg {
+                fragment(fDef) {
+                    "entry" does
+                        jump("entry") {
+                            writeRegister(virtualRegister("x"), integer(10))
+                        }
+                }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `while loop with false condition never enters`() {
+        // given
+        val fDef =
+            functionDeclaration(
+                "f",
+                block(
+                    whileLoop(lit(false), variableDeclaration("x", lit(10))),
+                    variableDeclaration("y", lit(20)),
+                    returnStatement(variableUse("y")),
+                ),
+            )
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+
+        // then
+        val expectedCFG =
+            cfg {
+                fragment(fDef) {
+                    "entry" does
+                        jump("write result to rax") {
+                            writeRegister(virtualRegister("y"), integer(20))
+                        }
+                    "write result to rax" does
+                        jump("return") {
+                            writeRegister(rax, registerUse(virtualRegister("y")))
+                        }
+                    "return" does final { returnNode }
+                }
+            }
+        println(programCfgToGraphviz(actualCFG))
         assertEquivalent(actualCFG, expectedCFG)
     }
 }
