@@ -72,10 +72,10 @@ fun astOf(vararg expressions: Expression) =
         mockRange(),
         listOf(
             functionDeclaration(
-                "<program>",
+                MAIN_FUNCTION_IDENTIFIER,
                 Block(mockRange(), expressions.toList()),
             ),
-            call(variableUse("<program>")),
+            call(variableUse(MAIN_FUNCTION_IDENTIFIER)),
         ),
     )
 
@@ -93,7 +93,7 @@ fun programStaticRelation() = StaticFunctionRelations(null, 0, emptySet(), empty
 
 fun programFunctionAnalysis(ast: Block) =
     (
-        ast.expressions[0] as Definition.FunctionDeclaration
+        program(ast)
             to analyzedFunction(0, emptySet())
     )
 
@@ -101,7 +101,7 @@ fun programFunctionAnalysis(
     ast: Block,
     variablesUsedInNestedFunctions: Set<Definition>,
 ) = (
-    ast.expressions[0] as Definition.FunctionDeclaration
+    program(ast)
         to
         AnalyzedFunction(
             null,

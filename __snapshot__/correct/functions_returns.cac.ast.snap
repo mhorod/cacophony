@@ -1463,16 +1463,46 @@
                 }
               },
               {
-                "__class__": "Empty",
+                "__class__": "ReturnStatement",
+                "value": {
+                  "__class__": "Block",
+                  "expressions": [
+                    {
+                      "__class__": "Empty",
+                      "range": {
+                        "__class__": "Pair",
+                        "first": {
+                          "__class__": "Location",
+                          "value": 1334
+                        },
+                        "second": {
+                          "__class__": "Location",
+                          "value": 1334
+                        }
+                      }
+                    }
+                  ],
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 1334
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 1335
+                    }
+                  }
+                },
                 "range": {
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 1244
+                    "value": 1327
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 1244
+                    "value": 1335
                   }
                 }
               }
@@ -1485,7 +1515,7 @@
               },
               "second": {
                 "__class__": "Location",
-                "value": 1245
+                "value": 1335
               }
             }
           },
@@ -1495,11 +1525,11 @@
               "__class__": "Pair",
               "first": {
                 "__class__": "Location",
-                "value": 1246
+                "value": 1336
               },
               "second": {
                 "__class__": "Location",
-                "value": 1246
+                "value": 1336
               }
             }
           }
@@ -1512,7 +1542,7 @@
           },
           "second": {
             "__class__": "Location",
-            "value": 1246
+            "value": 1336
           }
         }
       },
@@ -1525,7 +1555,7 @@
         },
         "second": {
           "__class__": "Location",
-          "value": 1246
+          "value": 1336
         }
       }
     },
@@ -1538,11 +1568,11 @@
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 1246
+            "value": 1336
           },
           "second": {
             "__class__": "Location",
-            "value": 1246
+            "value": 1336
           }
         }
       },
@@ -1551,11 +1581,11 @@
         "__class__": "Pair",
         "first": {
           "__class__": "Location",
-          "value": 1246
+          "value": 1336
         },
         "second": {
           "__class__": "Location",
-          "value": 1246
+          "value": 1336
         }
       }
     }
@@ -1568,7 +1598,7 @@
     },
     "second": {
       "__class__": "Location",
-      "value": 1246
+      "value": 1336
     }
   }
 }

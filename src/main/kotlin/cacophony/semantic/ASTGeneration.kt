@@ -10,6 +10,8 @@ import cacophony.utils.Location
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
+const val MAIN_FUNCTION_IDENTIFIER = "<program>"
+
 private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): CacophonyGrammarSymbol =
     when (parseTree) {
         is ParseTree.Leaf -> parseTree.token.category
@@ -298,7 +300,7 @@ private fun wrapInFunction(originalAST: AST): AST {
     val program =
         Definition.FunctionDeclaration(
             Pair(beforeStart, behindEnd),
-            "<program>",
+            MAIN_FUNCTION_IDENTIFIER,
             Type.Functional(
                 Pair(beforeStart, beforeStart),
                 emptyList(),
@@ -317,7 +319,7 @@ private fun wrapInFunction(originalAST: AST): AST {
     val programCall =
         FunctionCall(
             Pair(behindEnd, behindEnd),
-            VariableUse(Pair(behindEnd, behindEnd), "<program>"),
+            VariableUse(Pair(behindEnd, behindEnd), MAIN_FUNCTION_IDENTIFIER),
             emptyList(),
         )
     return Block(
