@@ -1,5 +1,6 @@
 package cacophony.controlflow.generation
 
+import cacophony.addeq
 import cacophony.block
 import cacophony.cfg
 import cacophony.controlflow.CFGFragment
@@ -14,13 +15,17 @@ import cacophony.functionDeclaration
 import cacophony.ifThenElse
 import cacophony.integer
 import cacophony.lit
+import cacophony.lt
+import cacophony.mod
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.rax
 import cacophony.registerUse
 import cacophony.returnNode
 import cacophony.returnStatement
+import cacophony.unit
 import cacophony.variableDeclaration
 import cacophony.variableUse
+import cacophony.whileLoop
 import cacophony.writeRegister
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
@@ -114,6 +119,50 @@ class CFGGenerationTest {
                     "returnFalse" does final { returnNode }
                 }
             }
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `CFG of while loop with variable condition`() {
+        // given
+        val fDef =
+            functionDeclaration(
+                "f",
+                block(
+                    variableDeclaration("x", lit(0)),
+                    whileLoop(
+                        // condition
+                        variableUse("x") lt lit(10),
+                        // body
+                        variableUse("x") addeq lit(1),
+                    ),
+                ),
+            )
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+
+        // then
+        val expectedCFG =
+            cfg {
+                fragment(fDef) {
+                    "entry" does
+                        jump("condition") {
+                            writeRegister(virtualRegister("x"), integer(0))
+                        }
+                    "condition" does
+                        conditional("body", "exit") {
+                            readRegister("x") lt integer(10)
+                        }
+                    "body" does
+                        jump("condition") {
+                            readRegister("x") addeq integer(1)
+                        }
+                    "exit" does jump("return") { writeRegister(rax, unit) }
+                    "return" does final { returnNode }
+                }
+            }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 }

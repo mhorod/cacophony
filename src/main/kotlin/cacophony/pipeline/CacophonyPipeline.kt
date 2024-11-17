@@ -173,6 +173,10 @@ class CacophonyPipeline(
         return result
     }
 
+    fun generateControlFlowGraph(input: Input): ProgramCFG {
+        return generateControlFlowGraph(generateAST(input))
+    }
+
     fun generateControlFlowGraph(ast: AST): ProgramCFG {
         val resolvedVariables = resolveOverloads(ast)
         val callGraph = generateCallGraph(ast, resolvedVariables)

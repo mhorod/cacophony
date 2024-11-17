@@ -157,6 +157,8 @@ infix fun Expression.gt(rhs: Expression) = OperatorBinary.Greater(mockRange(), t
 
 fun lnot(expr: Expression) = OperatorUnary.Negation(mockRange(), expr)
 
+infix fun Expression.addeq(rhs: Expression) = OperatorBinary.AdditionAssignment(mockRange(), this, rhs)
+
 fun lit(int: Int) = Literal.IntLiteral(mockRange(), int)
 
 fun lit(bool: Boolean) = Literal.BoolLiteral(mockRange(), bool)
@@ -166,6 +168,11 @@ fun ifThenElse(
     trueExpr: Expression,
     falseExpr: Expression,
 ) = Statement.IfElseStatement(mockRange(), condition, trueExpr, falseExpr)
+
+fun ifThen(
+    condition: Expression,
+    trueExpr: Expression,
+) = Statement.IfElseStatement(mockRange(), condition, trueExpr, null)
 
 fun whileLoop(
     testExpression: Expression,

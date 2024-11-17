@@ -31,6 +31,10 @@ private fun assertFragmentIsEquivalent(
 private class FragmentEquivalenceVisitor {
     private val labelMapping = mutableMapOf<CFGLabel, CFGLabel>()
     private val registerMapping = mutableMapOf<Register, Register>()
+
+    private val reverseLabelMapping = mutableMapOf<CFGLabel, CFGLabel>()
+    private val reverseRegisterMapping = mutableMapOf<Register, Register>()
+
     private val visited = mutableSetOf<CFGVertex>()
 
     private var actualCFG = mapOf<CFGLabel, CFGVertex>()
@@ -290,8 +294,11 @@ private class FragmentEquivalenceVisitor {
     ) {
         if (labelMapping[actual] != null && labelMapping[actual] != expected) {
             throw AssertionError("Label mismatch, expected $actual to be $expected, but was ${labelMapping[actual]}")
+        } else if (reverseLabelMapping[expected] != null && reverseLabelMapping[expected] != actual) {
+            throw AssertionError("Label mismatch, expected $expected to be $actual, but was ${reverseLabelMapping[expected]}")
         } else {
             labelMapping[actual] = expected
+            reverseLabelMapping[expected] = actual
         }
     }
 
@@ -306,8 +313,11 @@ private class FragmentEquivalenceVisitor {
 
         if (registerMapping[actual] != null && registerMapping[actual] != expected) {
             throw AssertionError("Virtual register mismatch, expected $actual to be $expected, but was ${registerMapping[actual]}")
+        } else if (reverseRegisterMapping[expected] != null && reverseRegisterMapping[expected] != actual) {
+            throw AssertionError("Virtual register mismatch, expected $expected to be $actual, but was ${reverseRegisterMapping[expected]}")
         } else {
             registerMapping[actual] = expected
+            reverseRegisterMapping[expected] = actual
         }
     }
 }

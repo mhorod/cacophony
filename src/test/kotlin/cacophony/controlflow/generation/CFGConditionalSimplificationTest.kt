@@ -3,7 +3,6 @@ package cacophony.controlflow.generation
 import cacophony.block
 import cacophony.cfg
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.programCfgToGraphviz
 import cacophony.eq
 import cacophony.functionDeclaration
 import cacophony.ifThenElse
@@ -16,6 +15,7 @@ import cacophony.registerUse
 import cacophony.returnNode
 import cacophony.returnStatement
 import cacophony.trueValue
+import cacophony.utils.StringInput
 import cacophony.variableDeclaration
 import cacophony.variableUse
 import cacophony.whileLoop
@@ -393,7 +393,83 @@ class CFGConditionalSimplificationTest {
                     "return" does final { returnNode }
                 }
             }
-        println(programCfgToGraphviz(actualCFG))
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `deep condition made of true, false, and, or simplifies to single branch`() {
+        // given
+        val program = """
+            let f = [] -> Int =>
+                if (false || (false || (false || (false || (false || (false || (false || true)))))))
+                    && (true && (true && (true && (true && (true && (true && (true && (false))))))))
+                    then 12
+                    else 24;
+        """
+        val input = StringInput(program)
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(input)
+
+        // then
+        val expectedCFG =
+            cfg {
+                fragment(actualCFG.keys.first()) {
+                    "entry" does jump("write result to rax") { writeRegister("result", integer(24)) }
+                    "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
+                    "return" does final { returnNode }
+                }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `condition with nested ifs simplifies to single branch`() {
+        // given
+        val program = "let f = [] -> Int => if if true then false else true then 10 else 20;"
+        val input = StringInput(program)
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(input)
+
+        // then
+        val expectedCFG =
+            cfg {
+                fragment(actualCFG.keys.first()) {
+                    "entry" does jump("write result to rax") { writeRegister("result", integer(20)) }
+                    "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
+                    "return" does final { returnNode }
+                }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `condition if ifs nested in branches simplifies to single branch`() {
+        // given
+        val program = """
+            let f = [] -> Int =>
+                if true
+                    then (if (if false then false else true) then 11 else 12)
+                    else (if true then 13  else 15);
+        """
+        val input = StringInput(program)
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(input)
+
+        // then
+        val expectedCFG =
+            cfg {
+                fragment(actualCFG.keys.first()) {
+                    "entry" does jump("write result to rax") { writeRegister("result", integer(11)) }
+                    "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
+                    "return" does final { returnNode }
+                }
+            }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 }
