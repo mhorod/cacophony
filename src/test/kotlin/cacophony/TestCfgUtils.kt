@@ -117,6 +117,13 @@ class CFGBuilder {
     fun virtualRegister(name: String): Register {
         return registers.getOrPut(name) { Register.VirtualRegister() }
     }
+
+    fun writeRegister(
+        name: String,
+        node: CFGNode,
+    ) = writeRegister(virtualRegister(name), node)
+
+    fun readRegister(name: String) = registerUse(virtualRegister(name))
 }
 
 fun cfg(init: CFGBuilder.() -> Unit): ProgramCFG {
