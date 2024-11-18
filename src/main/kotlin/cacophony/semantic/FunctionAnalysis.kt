@@ -32,11 +32,9 @@ data class AnalyzedFunction(
     val variablesUsedInNestedFunctions: Set<Definition>,
 ) {
 
-    private val declaredVariables = lazy { variables.filter { it.definedIn == function } }
-    fun declaredVariables() = declaredVariables.value
+    fun declaredVariables() = variables.filter { it.definedIn == function }
 
-    private val outerVariables = lazy { variables.filter { it.definedIn != function } }
-    fun outerVariables() = outerVariables.value
+    fun outerVariables() = variables.filter { it.definedIn != function }
 }
 
 data class AnalyzedVariable(
