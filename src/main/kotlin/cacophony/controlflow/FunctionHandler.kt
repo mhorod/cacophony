@@ -56,6 +56,10 @@ class FunctionHandlerImpl(
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionHandler {
+    companion object {
+        const val REGISTER_SIZE = 8
+    }
+
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable = analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
 
@@ -71,10 +75,11 @@ class FunctionHandlerImpl(
             regVar.forEach { varDef ->
                 res[definitionToVariable[varDef]!!] = VariableAllocation.InRegister(Register.VirtualRegister())
             }
-            var offset = 8
+            // offset starts at 8, since static link is placed at offset 0
+            var offset = REGISTER_SIZE
             usedVars.forEach { varDef ->
                 res[definitionToVariable[varDef]!!] = VariableAllocation.OnStack(offset)
-                offset += 8
+                offset += REGISTER_SIZE
             }
             res
         }
@@ -228,7 +233,7 @@ fun generateCall(
                     CFGNode.Modulo(
                         Addition(
                             RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                            Constant(stackArguments.size % 2 * 8),
+                            Constant(stackArguments.size % 2 * FunctionHandlerImpl.REGISTER_SIZE),
                         ),
                         Constant(16),
                     ),
@@ -258,7 +263,7 @@ fun generateCall(
                 RegisterUse(Register.FixedRegister(X64Register.RSP)),
                 CFGNode.Addition(
                     RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                    CFGNode.Constant(8 * stackArguments.size),
+                    CFGNode.Constant(FunctionHandlerImpl.REGISTER_SIZE * stackArguments.size),
                 ),
             ),
         )

@@ -21,6 +21,33 @@ class FunctionHandlerTest {
 
     @Nested
     inner class GenerateCall {
+        private fun checkStaticLinkInGenerateCallFrom(
+            callee: FunctionHandler,
+            caller: FunctionHandler,
+            expectedStaticLink: CFGNode,
+        ) {
+            mockkStatic(::generateCall)
+            callee.generateCallFrom(
+                caller,
+                emptyList(),
+                null,
+                false,
+            )
+
+            verify {
+                generateCall(
+                    any(),
+                    listOf(
+                        expectedStaticLink,
+                    ),
+                    any(),
+                    false,
+                )
+            }
+
+            unmockkStatic(::generateCall)
+        }
+
         private fun mockAnalyzedFunction(): AnalyzedFunction =
             run {
                 val analyzedFunction = mockk<AnalyzedFunction>()
@@ -153,7 +180,7 @@ class FunctionHandlerTest {
         fun `function call argument count mismatch throws error`() {
             val handler = mockFunDeclarationAndFunHandler(1)
 
-            assertThatThrownBy { generateCall(handler.getFunctionDeclaration(), listOf(), null) }
+            assertThatThrownBy { generateCall(handler.getFunctionDeclaration(), emptyList(), null) }
                 .isInstanceOf(IllegalArgumentException::class.java)
         }
 
@@ -228,54 +255,22 @@ class FunctionHandlerTest {
             val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
             val childHandler = handlers[0]
             val parentHandler = handlers[1]
-
-            mockkStatic(::generateCall)
-            childHandler.generateCallFrom(
+            checkStaticLinkInGenerateCallFrom(
+                childHandler,
                 parentHandler,
-                emptyList(),
-                null,
-                false,
+                CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
             )
-
-            verify {
-                generateCall(
-                    any(),
-                    listOf(
-                        CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
-                    ),
-                    any(),
-                    false,
-                )
-            }
-
-            unmockkStatic(::generateCall)
         }
 
         @Test
         fun `function calling itself works`() {
             val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
             val childHandler = handlers[0]
-
-            mockkStatic(::generateCall)
-            childHandler.generateCallFrom(
+            checkStaticLinkInGenerateCallFrom(
                 childHandler,
-                emptyList(),
-                null,
-                false,
+                childHandler,
+                CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP))),
             )
-
-            verify {
-                generateCall(
-                    any(),
-                    listOf(
-                        CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP))),
-                    ),
-                    any(),
-                    false,
-                )
-            }
-
-            unmockkStatic(::generateCall)
         }
 
         @Test
@@ -283,27 +278,11 @@ class FunctionHandlerTest {
             val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
             val childHandler = handlers[0]
             val parentHandler = handlers[1]
-
-            mockkStatic(::generateCall)
-            parentHandler.generateCallFrom(
+            checkStaticLinkInGenerateCallFrom(
+                parentHandler,
                 childHandler,
-                emptyList(),
-                null,
-                false,
+                CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)))),
             )
-
-            verify {
-                generateCall(
-                    any(),
-                    listOf(
-                        CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)))),
-                    ),
-                    any(),
-                    false,
-                )
-            }
-
-            unmockkStatic(::generateCall)
         }
     }
 
@@ -421,19 +400,19 @@ class FunctionHandlerTest {
                 mockRange,
                 "f",
                 null,
-                listOf(),
+                emptyList(),
                 Type.Basic(mockRange, "Int"),
                 Empty(mockRange),
             )
         val fAnalyzed =
             AnalyzedFunction(
                 null,
-                setOf(),
+                emptySet(),
                 mutableSetOf(),
                 0,
-                setOf(),
+                emptySet(),
             )
-        val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+        val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
 
         // when
         val declaration = fHandler.getFunctionDeclaration()
@@ -458,7 +437,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Block(
                         mockRange,
@@ -475,10 +454,10 @@ class FunctionHandlerTest {
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
             val xAllocation = Register.VirtualRegister()
-            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
             val x = fHandler.getVariableFromDefinition(xDef)
             fHandler.registerVariableAllocation(
                 x,
@@ -506,7 +485,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Block(
                         mockRange,
@@ -523,9 +502,9 @@ class FunctionHandlerTest {
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
             val x = fHandler.getVariableFromDefinition(xDef)
             fHandler.registerVariableAllocation(
                 x,
@@ -565,7 +544,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     VariableUse(mockRange, "x"),
                 )
@@ -574,7 +553,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "g",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     fDef,
                 )
@@ -583,7 +562,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "h",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Block(mockRange, listOf(xDef, gDef)),
                 )
@@ -595,7 +574,7 @@ class FunctionHandlerTest {
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     2,
-                    setOf(),
+                    emptySet(),
                 )
             val gAnalyzed =
                 AnalyzedFunction(
@@ -613,7 +592,7 @@ class FunctionHandlerTest {
                     0,
                     setOf(xDef),
                 )
-            val hHandler = FunctionHandlerImpl(hDef, hAnalyzed, listOf())
+            val hHandler = FunctionHandlerImpl(hDef, hAnalyzed, emptyList())
             val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, listOf(hHandler))
             val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf(gHandler, hHandler))
 
@@ -652,19 +631,19 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val fAnalyzed =
                 AnalyzedFunction(
                     null,
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
 
             // when
             val staticLinkAccess = fHandler.generateVariableAccess(fHandler.getStaticLink())
@@ -694,7 +673,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
@@ -703,27 +682,27 @@ class FunctionHandlerTest {
                     mockRange,
                     "g",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     fDef,
                 )
             val fAnalyzed =
                 AnalyzedFunction(
                     ParentLink(gDef, true),
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     1,
-                    setOf(),
+                    emptySet(),
                 )
             val gAnalyzed =
                 AnalyzedFunction(
                     null,
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, listOf())
+            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, emptyList())
             val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf(gHandler))
 
             // when
@@ -756,7 +735,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "h",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
@@ -765,50 +744,50 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
-                    FunctionCall(mockRange, VariableUse(mockRange, "h"), listOf()),
+                    FunctionCall(mockRange, VariableUse(mockRange, "h"), emptyList()),
                 )
             val gDef =
                 Definition.FunctionDeclaration(
                     mockRange,
                     "g",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Block(mockRange, listOf(hDef, fDef)),
                 )
             val hAnalyzed =
                 AnalyzedFunction(
                     ParentLink(gDef, true),
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     1,
-                    setOf(),
+                    emptySet(),
                 )
             val fAnalyzed =
                 AnalyzedFunction(
                     ParentLink(gDef, true),
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     1,
-                    setOf(),
+                    emptySet(),
                 )
             val gAnalyzed =
                 AnalyzedFunction(
                     null,
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, listOf())
+            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, emptyList())
             val hHandler = FunctionHandlerImpl(hDef, hAnalyzed, listOf(gHandler))
             val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf(gHandler))
 
             mockkStatic(::generateCall)
             // when
-            hHandler.generateCallFrom(fHandler, listOf(), null, false)
+            hHandler.generateCallFrom(fHandler, emptyList(), null, false)
             verify {
                 generateCall(
                     any(),
@@ -828,19 +807,19 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val fAnalyzed =
                 AnalyzedFunction(
                     null,
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
 
             // when & then
             org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {
