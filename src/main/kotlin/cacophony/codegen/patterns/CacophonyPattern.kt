@@ -105,7 +105,7 @@ class CacophonyPattern {
         }
     }
 
-    object Equals : ValuePattern, BinaryOpPattern() {
+    object EqualsPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Equals(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
@@ -122,7 +122,7 @@ class CacophonyPattern {
         }
     }
 
-    object NotEquals : ValuePattern, BinaryOpPattern() {
+    object NotEqualsPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.NotEquals(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
@@ -139,7 +139,7 @@ class CacophonyPattern {
         }
     }
 
-    object Less : ValuePattern, BinaryOpPattern() {
+    object LessPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Less(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
@@ -156,7 +156,7 @@ class CacophonyPattern {
         }
     }
 
-    object Greater : ValuePattern, BinaryOpPattern() {
+    object GreaterPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Greater(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
@@ -173,7 +173,7 @@ class CacophonyPattern {
         }
     }
 
-    object LessEqual : ValuePattern, BinaryOpPattern() {
+    object LessEqualPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.LessEqual(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
@@ -190,7 +190,7 @@ class CacophonyPattern {
         }
     }
 
-    object GreaterEqual : ValuePattern, BinaryOpPattern() {
+    object GreaterEqualPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.GreaterEqual(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
@@ -227,9 +227,9 @@ class CacophonyPattern {
         }
     }
 
-    /**********************************
-     * CHAPTER 2. SIDEEFFECT PATTERNS *
-     **********************************/
+    /***********************************
+     * CHAPTER 2. SIDE EFFECT PATTERNS *
+     ***********************************/
 
     object AdditionAssignmentPattern: SideEffectPattern, BinaryOpPattern() {
         override val tree =
@@ -319,7 +319,7 @@ class CacophonyPattern {
         }
     }
 
-    // TODO
+//     TODO
 //    object Call: SideEffectPattern {
 //        override val tree = CFGNode.Return
 //
@@ -329,11 +329,11 @@ class CacophonyPattern {
 //        }
 //    }
 
-    object Push: SideEffectPattern {
-        override val tree = CFGNode.Push(CFGNode.RegisterSlot(registerLabel))
-
-        override fun makeInstance(fill: SlotFill): List<Instruction> {
-            TODO("Not yet implemented")
-        }
-    }
+//    object Push: SideEffectPattern {
+//        override val tree = CFGNode.Push(CFGNode.RegisterSlot(registerLabel))
+//
+//        override fun makeInstance(fill: SlotFill): List<Instruction> {
+//            TODO("Not yet implemented")
+//        }
+//    }
 }

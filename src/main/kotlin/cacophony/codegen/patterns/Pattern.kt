@@ -7,7 +7,7 @@ import cacophony.controlflow.*
 data class SlotFill(
     val valueFill: Map<ValueLabel, CFGNode.Value>,
     val registerFill: Map<RegisterLabel, CFGNode.RegisterUse>,
-    val constantFill: Map<RegisterLabel, CFGNode.Constant>,
+    val constantFill: Map<ConstantLabel, CFGNode.Constant>,
 )
 
 sealed interface Pattern {
