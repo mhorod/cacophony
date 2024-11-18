@@ -45,12 +45,6 @@ sealed class VariableAllocation {
 interface FunctionHandler {
     fun getFunctionDeclaration(): FunctionDeclaration
 
-    fun generateCall(
-        arguments: List<CFGNode>,
-        result: Register?,
-        respectStackAlignment: Boolean = true,
-    ): List<CFGNode>
-
     fun generateCallFrom(
         callerFunction: FunctionHandler,
         arguments: List<CFGNode>,
@@ -71,6 +65,8 @@ interface FunctionHandler {
     fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable
 
     fun getVariableFromDefinition(varDef: Definition): Variable
+
+    fun generateAccessToFramePointer(other: FunctionDeclaration): CFGNode
 }
 
 class GenerateVariableAccessException(
@@ -83,6 +79,10 @@ class FunctionHandlerImpl(
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionHandler {
+    companion object {
+        const val REGISTER_SIZE = 8
+    }
+
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable =
         analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
@@ -92,17 +92,19 @@ class FunctionHandlerImpl(
             val res = mutableMapOf<Variable, VariableAllocation>()
             val usedVars = analyzedFunction.variablesUsedInNestedFunctions
             val regVar =
-                analyzedFunction.declaredVariables()
+                analyzedFunction
+                    .declaredVariables()
                     .map { it.declaration }
                     .toSet()
                     .minus(usedVars)
             regVar.forEach { varDef ->
                 res[definitionToVariable[varDef]!!] = VariableAllocation.InRegister(Register.VirtualRegister())
             }
-            var offset = 0
+            // offset starts at 8, since static link is placed at offset 0
+            var offset = REGISTER_SIZE
             usedVars.forEach { varDef ->
                 res[definitionToVariable[varDef]!!] = VariableAllocation.OnStack(offset)
-                offset += 8
+                offset += REGISTER_SIZE
             }
             res
         }
@@ -120,100 +122,6 @@ class FunctionHandlerImpl(
 
     override fun getFunctionDeclaration(): FunctionDeclaration = function
 
-    override fun generateCall(
-        arguments: List<CFGNode>,
-        result: Register?,
-        respectStackAlignment: Boolean,
-    ): List<CFGNode> {
-        if (function.arguments.size != arguments.size) {
-            throw IllegalArgumentException("Unexpected number of arguments")
-        }
-
-        val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
-        val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
-
-        val nodes: MutableList<CFGNode> = mutableListOf()
-
-        if (respectStackAlignment) {
-            // we push two copies of RSP to the stack and either leave them both there,
-            // or remove one of them via RSP assignment
-            val oldRSP = Register.VirtualRegister()
-            nodes.add(
-                CFGNode.Assignment(
-                    CFGNode.RegisterUse(oldRSP),
-                    CFGNode.RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                ),
-            )
-
-            nodes.add(CFGNode.Push(CFGNode.RegisterUse(oldRSP)))
-            nodes.add(CFGNode.Push(CFGNode.RegisterUse(oldRSP)))
-
-            // in an ideal world we would do something like "and rsp, ~15" or similar; for now this will do
-            // at the very least split the computation of (RSP + stackArguments.size % 2 * 8) % 16
-            // into two cases depending on the parity of stackArguments.size
-            nodes.add(
-                CFGNode.Assignment(
-                    CFGNode.RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                    CFGNode.Addition(
-                        CFGNode.RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                        CFGNode.Modulo(
-                            CFGNode.Addition(
-                                CFGNode.RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                                CFGNode.Constant(stackArguments.size % 2 * 8),
-                            ),
-                            CFGNode.Constant(16),
-                        ),
-                    ),
-                ),
-            )
-        }
-
-        // in what order should we evaluate arguments? gcc uses reversed order
-        for ((argument, register) in registerArguments) {
-            nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(register)), argument))
-        }
-        for ((argument, register) in stackArguments) {
-            nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(register), argument))
-        }
-
-        // is this indirection necessary?
-        for ((_, register) in stackArguments.reversed()) {
-            nodes.add(CFGNode.Push(CFGNode.RegisterUse(register)))
-        }
-
-        nodes.add(CFGNode.Call(function))
-
-        if (stackArguments.isNotEmpty()) {
-            nodes.add(
-                CFGNode.Assignment(
-                    CFGNode.RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                    CFGNode.Addition(
-                        CFGNode.RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                        CFGNode.Constant(8 * stackArguments.size),
-                    ),
-                ),
-            )
-        }
-
-        if (respectStackAlignment) {
-            // we could remove the operations from previous `if (stackArguments.isNotEmpty())` block
-            // via MemoryAccess, but for now the semantics are a bit unclear + it would introduce
-            // a few ifs, which we do not need at this point
-            nodes.add(CFGNode.Pop(RegisterUse(Register.FixedRegister(X64Register.RSP))))
-        }
-
-        if (result != null) {
-            nodes.add(
-                CFGNode.Assignment(
-                    CFGNode.RegisterUse(result),
-                    CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX)),
-                ),
-            )
-        }
-
-        return nodes
-    }
-
     // Wrapper for generateCall that additionally fills staticLink to parent function.
     // Since staticLink is not property of node itself, but rather of its children,
     // if caller is immediate parent, we have to fetch RBP instead.
@@ -223,46 +131,32 @@ class FunctionHandlerImpl(
         result: Register?,
         respectStackAlignment: Boolean,
     ): List<CFGNode> {
-        val nodes: MutableList<CFGNode> = mutableListOf()
-        val staticLinkAccess: CFGNode = generateVariableAccess(staticLink)
-        if (ancestorFunctionHandlers.isNotEmpty() && callerFunction === ancestorFunctionHandlers[0]) {
-            // Function is called from parent which doesn't have access to variable with its static pointer,
-            // we need to get it from RBP.
-            nodes.add(
-                CFGNode.Assignment(
-                    CFGNode.MemoryAccess(staticLinkAccess),
-                    CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
-                ),
-            )
-        } else {
-            // It's called from nested function, therefore caller should have access to staticLink.
-            nodes.add(
-                CFGNode.Assignment(
-                    CFGNode.MemoryAccess(staticLinkAccess),
-                    callerFunction.generateVariableAccess(staticLink),
-                ),
-            )
-        }
+        if (ancestorFunctionHandlers.isEmpty()) throw Exception("Cannot call a top-level function")
+        val staticLinkVar =
+            if (callerFunction === ancestorFunctionHandlers[0]) {
+                RegisterUse(Register.FixedRegister(X64Register.RBP))
+            } else {
+                callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers[0].getFunctionDeclaration())
+            }
 
-        nodes.addAll(generateCall(arguments, result, respectStackAlignment))
-        return nodes
+        return generateCall(function, mutableListOf(staticLinkVar) + arguments, result, respectStackAlignment)
     }
 
-    private fun generateAccessToFramePointer(other: FunctionDeclaration): CFGNode {
+    private fun traverseStaticLink(depth: Int): CFGNode =
+        if (depth == 0) {
+            RegisterUse(Register.FixedRegister(X64Register.RBP))
+        } else {
+            MemoryAccess(traverseStaticLink(depth - 1))
+        }
+
+    override fun generateAccessToFramePointer(other: FunctionDeclaration): CFGNode =
         if (other == function) {
-            return RegisterUse(Register.FixedRegister(X64Register.RBP))
+            traverseStaticLink(0)
         } else {
-            val childOfOtherIndex =
-                ancestorFunctionHandlers
-                    .indexOfFirst { it.getFunctionDeclaration() == other } - 1
-
-            val otherFramePointerVariable =
-                (ancestorFunctionHandlers.getOrNull(childOfOtherIndex) ?: this)
-                    .getStaticLink()
-
-            return generateVariableAccess(otherFramePointerVariable)
+            traverseStaticLink(
+                ancestorFunctionHandlers.indexOfFirst { it.getFunctionDeclaration() == other } + 1,
+            )
         }
-    }
 
     override fun generateVariableAccess(variable: Variable): CFGNode.LValue {
         val definedInDeclaration =
@@ -324,12 +218,94 @@ class FunctionHandlerImpl(
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     // Static link is created even if parent doesn't exist.
     private fun introduceStaticLinksParams() {
-        // If we agree on stack frame layout someone may want to modify it to onStack variable with offset 0,
-        // didn't do it now in case someone does the same in other place.
         registerVariableAllocation(
             staticLink,
-            VariableAllocation.InRegister(Register.VirtualRegister()),
+            VariableAllocation.OnStack(0),
         )
         analyzedFunction.auxVariables.add(staticLink)
     }
+}
+
+fun generateCall(
+    function: FunctionDeclaration,
+    arguments: List<CFGNode>,
+    result: Register?,
+    respectStackAlignment: Boolean = false,
+): List<CFGNode> {
+    if (function.arguments.size + 1 != arguments.size) {
+        throw IllegalArgumentException("Wrong argument count")
+    }
+    val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
+    val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
+
+    val nodes: MutableList<CFGNode> = mutableListOf()
+
+    if (respectStackAlignment) {
+        // we push two copies of RSP to the stack and either leave them both there,
+        // or remove one of them via RSP assignment
+        val oldRSP = Register.VirtualRegister()
+        nodes.add(CFGNode.Assignment(RegisterUse(oldRSP), RegisterUse(Register.FixedRegister(X64Register.RSP))))
+
+        nodes.add(CFGNode.Push(RegisterUse(oldRSP)))
+        nodes.add(CFGNode.Push(RegisterUse(oldRSP)))
+
+        // in an ideal world we would do something like "and rsp, ~15" or similar; for now this will do
+        // at the very least split the computation of (RSP + stackArguments.size % 2 * 8) % 16
+        // into two cases depending on the parity of stackArguments.size
+        nodes.add(
+            CFGNode.Assignment(
+                RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                Addition(
+                    RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                    CFGNode.Modulo(
+                        Addition(
+                            RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                            Constant(stackArguments.size % 2 * FunctionHandlerImpl.REGISTER_SIZE),
+                        ),
+                        Constant(16),
+                    ),
+                ),
+            ),
+        )
+    }
+
+    // in what order should we evaluate arguments? gcc uses reversed order
+    for ((argument, register) in registerArguments) {
+        nodes.add(CFGNode.Assignment(RegisterUse(Register.FixedRegister(register)), argument))
+    }
+    for ((argument, register) in stackArguments) {
+        nodes.add(CFGNode.Assignment(RegisterUse(register), argument))
+    }
+
+    // is this indirection necessary?
+    for ((_, register) in stackArguments.reversed()) {
+        nodes.add(CFGNode.Push(RegisterUse(register)))
+    }
+
+    nodes.add(CFGNode.Call(function))
+
+    if (stackArguments.isNotEmpty()) {
+        nodes.add(
+            CFGNode.Assignment(
+                RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                Addition(
+                    RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                    Constant(FunctionHandlerImpl.REGISTER_SIZE * stackArguments.size),
+                ),
+            ),
+        )
+    }
+
+    if (respectStackAlignment) {
+        // we could remove the operations from previous `if (stackArguments.isNotEmpty())` block
+        // via MemoryAccess, but for now the semantics are a bit unclear + it would introduce
+        // a few ifs, which we do not need at this point
+        nodes.add(CFGNode.Pop(RegisterUse(Register.FixedRegister(X64Register.RSP))))
+    }
+
+    if (result != null) {
+        nodes.add(CFGNode.Assignment(RegisterUse(result), RegisterUse(Register.FixedRegister(X64Register.RAX))))
+    }
+
+    return nodes
 }
