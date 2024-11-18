@@ -1,5 +1,8 @@
 package cacophony.pipeline
 
+import cacophony.controlflow.generateFunctionHandlers
+import cacophony.controlflow.generation.ProgramCFG
+import cacophony.controlflow.generation.generateCFG
 import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
 import cacophony.lexer.CacophonyLexer
@@ -10,6 +13,7 @@ import cacophony.semantic.FunctionAnalysisResult
 import cacophony.semantic.NameResolutionResult
 import cacophony.semantic.ResolvedVariables
 import cacophony.semantic.TypeCheckingResult
+import cacophony.semantic.analyzeVarUseTypes
 import cacophony.semantic.syntaxtree.AST
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
@@ -149,23 +153,13 @@ class CacophonyPipeline(
         ast: AST,
         resolvedVariables: ResolvedVariables,
     ): FunctionAnalysisResult {
-        val types = checkTypes(ast, resolvedVariables)
-        return analyzeFunctions(ast, resolvedVariables, types)
-    }
-
-    fun analyzeFunctions(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-        types: TypeCheckingResult,
-    ): FunctionAnalysisResult {
         val callGraph = generateCallGraph(ast, resolvedVariables)
-        return analyzeFunctions(ast, resolvedVariables, types, callGraph)
+        return analyzeFunctions(ast, resolvedVariables, callGraph)
     }
 
     fun analyzeFunctions(
         ast: AST,
         resolvedVariables: ResolvedVariables,
-        types: TypeCheckingResult,
         callGraph: CallGraph,
     ): FunctionAnalysisResult {
         val result =
@@ -177,5 +171,18 @@ class CacophonyPipeline(
             }
         logger?.logSuccessfulFunctionAnalysis(result)
         return result
+    }
+
+    fun generateControlFlowGraph(input: Input): ProgramCFG {
+        return generateControlFlowGraph(generateAST(input))
+    }
+
+    fun generateControlFlowGraph(ast: AST): ProgramCFG {
+        val resolvedVariables = resolveOverloads(ast)
+        val callGraph = generateCallGraph(ast, resolvedVariables)
+        val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
+        val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
+        val functionHandlers = generateFunctionHandlers(analyzedFunctions)
+        return generateCFG(resolvedVariables, analyzedExpressions, functionHandlers)
     }
 }

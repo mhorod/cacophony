@@ -222,6 +222,7 @@ class VarUseTypeAnalysisTest {
                     programFunctionAnalysis(ast),
                     fDeclaration to
                         analyzedFunction(
+                            fDeclaration,
                             1,
                             setOf(
                                 AnalyzedVariable(declaration, program, VariableUseType.READ_WRITE),
@@ -257,6 +258,7 @@ class VarUseTypeAnalysisTest {
                     programFunctionAnalysis(ast),
                     fDeclaration to
                         analyzedFunction(
+                            fDeclaration,
                             1,
                             setOf(),
                         ),
@@ -298,6 +300,7 @@ class VarUseTypeAnalysisTest {
                     programFunctionAnalysis(ast),
                     fDeclaration to
                         analyzedFunction(
+                            fDeclaration,
                             1,
                             setOf(
                                 AnalyzedVariable(declaration, program, VariableUseType.READ_WRITE),
@@ -345,6 +348,7 @@ class VarUseTypeAnalysisTest {
                     programFunctionAnalysis(ast),
                     fDeclaration to
                         analyzedFunction(
+                            fDeclaration,
                             1,
                             setOf(
                                 AnalyzedVariable(aDeclaration, program, VariableUseType.READ),
@@ -352,6 +356,7 @@ class VarUseTypeAnalysisTest {
                         ),
                     gDeclaration to
                         analyzedFunction(
+                            gDeclaration,
                             2,
                             setOf(
                                 AnalyzedVariable(aDeclaration, program, VariableUseType.READ),

@@ -43,7 +43,7 @@ class ExamplesTest {
             result.ast = pipeline.generateAST(input)
             result.resolvedVariables = pipeline.resolveOverloads(result.ast!!)
             result.types = pipeline.checkTypes(result.ast!!, result.resolvedVariables!!)
-            result.analysisResult = pipeline.analyzeFunctions(result.ast!!, result.resolvedVariables!!, result.types!!)
+            result.analysisResult = pipeline.analyzeFunctions(result.ast!!, result.resolvedVariables!!)
         } catch (_: CompileException) {
         } finally {
             result.errors = diagnostics.extractErrors()
