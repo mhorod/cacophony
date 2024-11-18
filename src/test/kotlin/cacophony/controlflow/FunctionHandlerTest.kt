@@ -55,6 +55,7 @@ class FunctionHandlerTest {
                 every { analyzedFunction.variables } returns emptySet()
                 every { analyzedFunction.auxVariables } returns auxVariables
                 every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+                every { analyzedFunction.declaredVariables() } returns emptyList()
 
                 analyzedFunction
             }
@@ -293,6 +294,7 @@ class FunctionHandlerTest {
         every { analyzedFunction.auxVariables } returns auxVariables
         every { analyzedFunction.variables } returns emptySet()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns emptyList()
 
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
 
@@ -313,6 +315,8 @@ class FunctionHandlerTest {
         every { analyzedFunction.variables } returns setOf(analyzedVariable)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
+
         // run
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
@@ -331,6 +335,8 @@ class FunctionHandlerTest {
         every { analyzedFunction.variables } returns setOf(analyzedVariable)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
+
         // run
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
@@ -350,6 +356,8 @@ class FunctionHandlerTest {
         every { analyzedFunction.variables } returns setOf(analyzedVariable)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(varDef)
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
+
         // run
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
@@ -375,6 +383,8 @@ class FunctionHandlerTest {
         every { analyzedFunction.variables } returns setOf(analyzedVariable1, analyzedVariable2, analyzedVariable3)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(varDef1, varDef3)
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable1, analyzedVariable2, analyzedVariable3)
+
         // run
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
         val variable1 = handler.getVariableFromDefinition(varDef1)
@@ -406,6 +416,7 @@ class FunctionHandlerTest {
             )
         val fAnalyzed =
             AnalyzedFunction(
+                fDef,
                 null,
                 emptySet(),
                 mutableSetOf(),
@@ -450,6 +461,7 @@ class FunctionHandlerTest {
             val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     null,
                     setOf(xAnalyzed),
                     mutableSetOf(),
@@ -498,6 +510,7 @@ class FunctionHandlerTest {
             val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     null,
                     setOf(xAnalyzed),
                     mutableSetOf(),
@@ -570,6 +583,7 @@ class FunctionHandlerTest {
             val xAnalyzed = AnalyzedVariable(xDef, hDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     ParentLink(gDef, true),
                     setOf(xAnalyzed),
                     mutableSetOf(),
@@ -578,6 +592,7 @@ class FunctionHandlerTest {
                 )
             val gAnalyzed =
                 AnalyzedFunction(
+                    gDef,
                     ParentLink(hDef, true),
                     setOf(xAnalyzed),
                     mutableSetOf(),
@@ -586,6 +601,7 @@ class FunctionHandlerTest {
                 )
             val hAnalyzed =
                 AnalyzedFunction(
+                    hDef,
                     null,
                     setOf(xAnalyzed),
                     mutableSetOf(),
@@ -637,6 +653,7 @@ class FunctionHandlerTest {
                 )
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     null,
                     emptySet(),
                     mutableSetOf(),
@@ -688,6 +705,7 @@ class FunctionHandlerTest {
                 )
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     ParentLink(gDef, true),
                     emptySet(),
                     mutableSetOf(),
@@ -696,6 +714,7 @@ class FunctionHandlerTest {
                 )
             val gAnalyzed =
                 AnalyzedFunction(
+                    gDef,
                     null,
                     emptySet(),
                     mutableSetOf(),
@@ -759,6 +778,7 @@ class FunctionHandlerTest {
                 )
             val hAnalyzed =
                 AnalyzedFunction(
+                    hDef,
                     ParentLink(gDef, true),
                     emptySet(),
                     mutableSetOf(),
@@ -767,6 +787,7 @@ class FunctionHandlerTest {
                 )
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     ParentLink(gDef, true),
                     emptySet(),
                     mutableSetOf(),
@@ -775,6 +796,7 @@ class FunctionHandlerTest {
                 )
             val gAnalyzed =
                 AnalyzedFunction(
+                    gDef,
                     null,
                     emptySet(),
                     mutableSetOf(),
@@ -813,6 +835,7 @@ class FunctionHandlerTest {
                 )
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     null,
                     emptySet(),
                     mutableSetOf(),

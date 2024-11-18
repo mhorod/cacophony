@@ -5,9 +5,32 @@ import cacophony.controlflow.CFGNode.Constant
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.semantic.AnalyzedFunction
+import cacophony.semantic.FunctionAnalysisResult
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.utils.CompileException
+
+fun generateFunctionHandlers(analyzedFunctions: FunctionAnalysisResult): Map<FunctionDeclaration, FunctionHandler> {
+    val handlers = mutableMapOf<FunctionDeclaration, FunctionHandler>()
+    val order = analyzedFunctions.entries.sortedBy { it.value.staticDepth }
+    val ancestorHandlers = mutableMapOf<FunctionDeclaration, List<FunctionHandler>>()
+
+    for ((function, analyzedFunction) in order) {
+        if (analyzedFunction.parentLink == null) {
+            handlers[function] = FunctionHandlerImpl(function, analyzedFunction, emptyList())
+        } else {
+            val parentHandler =
+                handlers[analyzedFunction.parentLink.parent]
+                    ?: throw CompileException("Parent function handler not found")
+            val functionAncestorHandlers =
+                listOf(parentHandler) + (ancestorHandlers[analyzedFunction.parentLink.parent] ?: emptyList())
+            handlers[function] = FunctionHandlerImpl(function, analyzedFunction, functionAncestorHandlers)
+            ancestorHandlers[function] = functionAncestorHandlers
+        }
+    }
+
+    return handlers
+}
 
 sealed class VariableAllocation {
     class InRegister(
@@ -61,14 +84,16 @@ class FunctionHandlerImpl(
     }
 
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
-    private val definitionToVariable = analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
+    private val definitionToVariable =
+        analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
 
     private val variableAllocation: MutableMap<Variable, VariableAllocation> =
         run {
             val res = mutableMapOf<Variable, VariableAllocation>()
             val usedVars = analyzedFunction.variablesUsedInNestedFunctions
             val regVar =
-                analyzedFunction.variables
+                analyzedFunction
+                    .declaredVariables()
                     .map { it.declaration }
                     .toSet()
                     .minus(usedVars)
@@ -139,6 +164,7 @@ class FunctionHandlerImpl(
                 is Variable.SourceVariable -> {
                     analyzedFunction.variables.find { it.declaration == variable.definition }?.definedIn
                 }
+
                 is Variable.AuxVariable.StaticLinkVariable -> {
                     if (getStaticLink() == variable) {
                         function
@@ -165,6 +191,7 @@ class FunctionHandlerImpl(
             is VariableAllocation.InRegister -> {
                 RegisterUse(variableAllocation.register)
             }
+
             is VariableAllocation.OnStack -> {
                 MemoryAccess(
                     Addition(
@@ -261,9 +288,9 @@ fun generateCall(
         nodes.add(
             CFGNode.Assignment(
                 RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                CFGNode.Addition(
+                Addition(
                     RegisterUse(Register.FixedRegister(X64Register.RSP)),
-                    CFGNode.Constant(FunctionHandlerImpl.REGISTER_SIZE * stackArguments.size),
+                    Constant(FunctionHandlerImpl.REGISTER_SIZE * stackArguments.size),
                 ),
             ),
         )

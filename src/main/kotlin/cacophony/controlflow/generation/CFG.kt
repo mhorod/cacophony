@@ -56,11 +56,11 @@ internal class CFG {
     }
 
     private fun filterNoOps(entryLabel: CFGLabel) {
-        val ingoingEdges = mutableMapOf<CFGLabel, MutableList<GeneralCFGVertex>>()
+        val ingoingEdges = mutableMapOf<CFGLabel, MutableSet<GeneralCFGVertex>>()
         cfg.values.forEach { vertex ->
 
             vertex.getConnections().forEach {
-                ingoingEdges.computeIfAbsent(it) { _ -> mutableListOf() }.add(vertex)
+                ingoingEdges.computeIfAbsent(it) { _ -> mutableSetOf() }.add(vertex)
             }
         }
 
@@ -68,7 +68,13 @@ internal class CFG {
             run {
                 if (vertex is GeneralCFGVertex.UnconditionalVertex && vertex.node is CFGNode.NoOp) {
                     val edges = ingoingEdges.getOrDefault(label, listOf())
-                    edges.forEach { v -> v.replaceLabel(label, vertex.getConnections().first()) }
+                    val next = vertex.getConnections().first()
+                    edges.forEach {
+                            v ->
+                        v.replaceLabel(label, next)
+                    }
+                    ingoingEdges[next]!!.addAll(edges)
+                    ingoingEdges.remove(label)
                 }
             }
         }

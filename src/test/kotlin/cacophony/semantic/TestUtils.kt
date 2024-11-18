@@ -94,7 +94,7 @@ fun programStaticRelation() = StaticFunctionRelations(null, 0, emptySet(), empty
 fun programFunctionAnalysis(ast: Block) =
     (
         program(ast)
-            to analyzedFunction(0, emptySet())
+            to analyzedFunction(program(ast), 0, emptySet())
     )
 
 fun programFunctionAnalysis(
@@ -104,6 +104,7 @@ fun programFunctionAnalysis(
     program(ast)
         to
         AnalyzedFunction(
+            program(ast),
             null,
             emptySet(),
             mutableSetOf(),
@@ -116,9 +117,11 @@ fun callGraph(vararg calls: Pair<Definition.FunctionDeclaration, Definition.Func
     calls.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
 
 fun analyzedFunction(
+    function: Definition.FunctionDeclaration,
     staticDepth: Int,
     variables: Set<AnalyzedVariable>,
 ) = AnalyzedFunction(
+    function,
     null,
     variables,
     mutableSetOf(),

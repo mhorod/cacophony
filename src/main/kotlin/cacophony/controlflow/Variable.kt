@@ -3,7 +3,7 @@ package cacophony.controlflow
 import cacophony.semantic.syntaxtree.Definition
 
 sealed class Variable {
-    class SourceVariable(
+    data class SourceVariable(
         val definition: Definition,
     ) : Variable()
 
