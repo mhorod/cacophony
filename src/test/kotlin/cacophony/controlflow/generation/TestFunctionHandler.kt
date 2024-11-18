@@ -14,14 +14,6 @@ class TestFunctionHandler : FunctionHandler {
         TODO()
     }
 
-    override fun generateCall(
-        arguments: List<CFGNode>,
-        result: Register?,
-        respectStackAlignment: Boolean,
-    ): List<CFGNode> {
-        TODO()
-    }
-
     override fun generateCallFrom(
         callerFunction: FunctionHandler,
         arguments: List<CFGNode>,
@@ -55,6 +47,10 @@ class TestFunctionHandler : FunctionHandler {
     }
 
     override fun getVariableFromDefinition(varDef: Definition): Variable {
+        TODO()
+    }
+
+    override fun generateAccessToFramePointer(other: Definition.FunctionDeclaration): CFGNode {
         TODO()
     }
 }

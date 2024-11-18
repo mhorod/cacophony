@@ -104,7 +104,8 @@ internal class CFGGenerator(
     ): SubCFG {
         val last = expression.expressions.lastOrNull() ?: return SubCFG.Immediate(noOpOrUnit(mode))
         val prerequisiteSubCFGs =
-            expression.expressions.dropLast(1)
+            expression.expressions
+                .dropLast(1)
                 .map { ensureExtracted(visit(it, EvalMode.SideEffect, context), EvalMode.SideEffect) }
         val valueCFG = ensureExtracted(visit(last, mode, context), mode)
         return prerequisiteSubCFGs.foldRight(valueCFG) { subCFG, path -> subCFG merge path }
@@ -139,7 +140,8 @@ internal class CFGGenerator(
         val callVertex =
             cfg.addUnconditionalVertex(
                 CFGNode.Sequence(
-                    functionHandler.generateCall(
+                    generateCall(
+                        function,
                         argumentNodes.map { it.access },
                         resultRegister,
                     ),
@@ -252,8 +254,8 @@ internal class CFGGenerator(
         subCFG: SubCFG,
         destination: CFGNode.LValue,
         mode: EvalMode,
-    ): SubCFG.Extracted {
-        return when (mode) {
+    ): SubCFG.Extracted =
+        when (mode) {
             is EvalMode.Value -> {
                 val writeResultNode = CFGNode.Assignment(destination, subCFG.access)
                 val writeResultVertex = cfg.addUnconditionalVertex(writeResultNode)
@@ -269,7 +271,6 @@ internal class CFGGenerator(
 
             else -> ensureExtracted(subCFG, mode)
         }
-    }
 
     private fun shortenTrivialIfStatement(
         expression: Statement.IfElseStatement,
@@ -348,7 +349,6 @@ internal class CFGGenerator(
 
     internal fun resolveVariable(variable: VariableUse) = resolvedVariables[variable] ?: error("Unresolved variable $variable")
 
-    private fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler {
-        return functionHandlers[function] ?: error("Function $function has no handler")
-    }
+    private fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler =
+        functionHandlers[function] ?: error("Function $function has no handler")
 }
