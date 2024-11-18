@@ -23,5 +23,17 @@
   "(Location(value\u003d0), Location(value\u003d36))": {
     "__class__": "UnitType",
     "name": "Unit"
+  },
+  "(Location(value\u003d37), Location(value\u003d37))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d37))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d-1), Location(value\u003d37))": {
+    "__class__": "UnitType",
+    "name": "Unit"
   }
 }

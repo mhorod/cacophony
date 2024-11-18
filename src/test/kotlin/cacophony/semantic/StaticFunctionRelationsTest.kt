@@ -13,6 +13,7 @@ class StaticFunctionRelationsTest {
         val varA = variableDeclaration("a", Empty(mockRange()))
         val funF = functionDeclaration("f", varA)
         val ast = astOf(funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -21,10 +22,11 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
+                    program to programStaticRelation(),
                     funF to
                         StaticFunctionRelations(
-                            null,
-                            0,
+                            program,
+                            1,
                             setOf(varA),
                             emptySet(),
                         ),
@@ -40,6 +42,7 @@ class StaticFunctionRelationsTest {
         val varAUse = variableUse("a")
         val funF = functionDeclaration("f", block(varA, varAUse))
         val ast = astOf(funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -48,10 +51,11 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
+                    program to programStaticRelation(),
                     funF to
                         StaticFunctionRelations(
-                            null,
-                            0,
+                            program,
+                            1,
                             setOf(varA),
                             setOf(UsedVariable(varAUse, VariableUseType.READ)),
                         ),
@@ -68,6 +72,7 @@ class StaticFunctionRelationsTest {
         val varAWrite = variableWrite(varAUse)
         val funF = functionDeclaration("f", block(varA, varAWrite))
         val ast = astOf(funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -76,10 +81,11 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
+                    program to programStaticRelation(),
                     funF to
                         StaticFunctionRelations(
-                            null,
-                            0,
+                            program,
+                            1,
                             setOf(varA),
                             setOf(UsedVariable(varAUse, VariableUseType.WRITE)),
                         ),
@@ -98,6 +104,7 @@ class StaticFunctionRelationsTest {
         val varAUse2 = variableUse("a")
         val funF = functionDeclaration("f", block(varA, varAWrite, varAUse2))
         val ast = astOf(funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -106,10 +113,11 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
+                    program to programStaticRelation(),
                     funF to
                         StaticFunctionRelations(
-                            null,
-                            0,
+                            program,
+                            1,
                             setOf(varA),
                             setOf(
                                 UsedVariable(varAUse1, VariableUseType.WRITE),
@@ -129,6 +137,7 @@ class StaticFunctionRelationsTest {
         val varC = variableDeclaration("c", Empty(mockRange()))
         val funF = functionDeclaration("f", block(varA, varB, varC))
         val ast = astOf(funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -137,10 +146,11 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
+                    program to programStaticRelation(),
                     funF to
                         StaticFunctionRelations(
-                            null,
-                            0,
+                            program,
+                            1,
                             setOf(varA, varB, varC),
                             emptySet(),
                         ),
@@ -155,6 +165,7 @@ class StaticFunctionRelationsTest {
         val funG = functionDeclaration("g", Empty(mockRange()))
         val funF = functionDeclaration("f", funG)
         val ast = astOf(funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -163,17 +174,18 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
+                    program to programStaticRelation(),
                     funF to
                         StaticFunctionRelations(
-                            null,
-                            0,
+                            program,
+                            1,
                             emptySet(),
                             emptySet(),
                         ),
                     funG to
                         StaticFunctionRelations(
                             funF,
-                            1,
+                            2,
                             emptySet(),
                             emptySet(),
                         ),
@@ -189,6 +201,7 @@ class StaticFunctionRelationsTest {
         val funH = functionDeclaration("h", Empty(mockRange()))
         val funF = functionDeclaration("f", block(funG, funH))
         val ast = astOf(funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -197,24 +210,25 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
+                    program to programStaticRelation(),
                     funF to
                         StaticFunctionRelations(
-                            null,
-                            0,
+                            program,
+                            1,
                             emptySet(),
                             emptySet(),
                         ),
                     funG to
                         StaticFunctionRelations(
                             funF,
-                            1,
+                            2,
                             emptySet(),
                             emptySet(),
                         ),
                     funH to
                         StaticFunctionRelations(
                             funF,
-                            1,
+                            2,
                             emptySet(),
                             emptySet(),
                         ),
@@ -223,12 +237,13 @@ class StaticFunctionRelationsTest {
     }
 
     @Test
-    fun `should ignore top level variables`() {
+    fun `should analyze top level variables`() {
         // given
         // (let a; f => ())
         val varA = variableDeclaration("a", Empty(mockRange()))
         val funF = functionDeclaration("f", Empty(mockRange()))
         val ast = astOf(varA, funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -237,10 +252,17 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    funF to
+                    program to
                         StaticFunctionRelations(
                             null,
                             0,
+                            setOf(varA),
+                            emptySet(),
+                        ),
+                    funF to
+                        StaticFunctionRelations(
+                            program,
+                            1,
                             emptySet(),
                             emptySet(),
                         ),
@@ -260,6 +282,7 @@ class StaticFunctionRelationsTest {
         val funF = functionDeclaration("f", block(varA, funG))
 
         val ast = astOf(funF)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -267,24 +290,25 @@ class StaticFunctionRelationsTest {
         // then
         assertThat(relations).containsExactlyInAnyOrderEntriesOf(
             mapOf(
+                program to programStaticRelation(),
                 funF to
                     StaticFunctionRelations(
-                        null,
-                        0,
+                        program,
+                        1,
                         setOf(varA),
                         emptySet(),
                     ),
                 funG to
                     StaticFunctionRelations(
                         funF,
-                        1,
+                        2,
                         setOf(varB),
                         emptySet(),
                     ),
                 funH to
                     StaticFunctionRelations(
                         funG,
-                        2,
+                        3,
                         setOf(varC),
                         emptySet(),
                     ),
@@ -308,6 +332,7 @@ class StaticFunctionRelationsTest {
         val funMain = functionDeclaration("main", call(varFooUse))
 
         val ast = astOf(funFoo, funMain)
+        val program = program(ast)
 
         // when
         val relations = findStaticFunctionRelations(ast)
@@ -315,45 +340,46 @@ class StaticFunctionRelationsTest {
         // then
         assertThat(relations).containsExactlyInAnyOrderEntriesOf(
             mapOf(
+                program to programStaticRelation(),
                 funFoo to
                     StaticFunctionRelations(
-                        null,
-                        0,
+                        program,
+                        1,
                         setOf(varA),
                         emptySet(),
                     ),
                 funG to
                     StaticFunctionRelations(
                         funFoo,
-                        1,
+                        2,
                         emptySet(),
                         emptySet(),
                     ),
                 funH to
                     StaticFunctionRelations(
                         funG,
-                        2,
+                        3,
                         setOf(),
                         setOf(UsedVariable(varAUse, VariableUseType.READ)),
                     ),
                 funI to
                     StaticFunctionRelations(
                         funFoo,
-                        1,
+                        2,
                         emptySet(),
                         setOf(UsedVariable(varGUse, VariableUseType.READ)),
                     ),
                 funJ to
                     StaticFunctionRelations(
                         funI,
-                        2,
+                        3,
                         emptySet(),
                         emptySet(),
                     ),
                 funMain to
                     StaticFunctionRelations(
-                        null,
-                        0,
+                        program,
+                        1,
                         emptySet(),
                         setOf(UsedVariable(varFooUse, VariableUseType.READ)),
                     ),

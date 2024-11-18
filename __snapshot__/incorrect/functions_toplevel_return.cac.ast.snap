@@ -2,45 +2,182 @@
   "__class__": "Block",
   "expressions": [
     {
-      "__class__": "ReturnStatement",
-      "value": {
-        "__class__": "IntLiteral",
-        "value": 42,
+      "__class__": "FunctionDeclaration",
+      "type": {
+        "__class__": "Functional",
+        "argumentsType": [],
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Unit",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
         "range": {
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 7
+            "value": -1
           },
           "second": {
             "__class__": "Location",
-            "value": 8
+            "value": -1
           }
         }
       },
+      "arguments": [],
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Unit",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": -1
+          },
+          "second": {
+            "__class__": "Location",
+            "value": -1
+          }
+        }
+      },
+      "body": {
+        "__class__": "Block",
+        "expressions": [
+          {
+            "__class__": "Block",
+            "expressions": [
+              {
+                "__class__": "ReturnStatement",
+                "value": {
+                  "__class__": "IntLiteral",
+                  "value": 42,
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 7
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 8
+                    }
+                  }
+                },
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 0
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 8
+                  }
+                }
+              },
+              {
+                "__class__": "Empty",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 8
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 8
+                  }
+                }
+              }
+            ],
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 0
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 9
+              }
+            }
+          },
+          {
+            "__class__": "Empty",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 10
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 10
+              }
+            }
+          }
+        ],
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 0
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 10
+          }
+        }
+      },
+      "identifier": "\u003cprogram\u003e",
       "range": {
         "__class__": "Pair",
         "first": {
           "__class__": "Location",
-          "value": 0
+          "value": -1
         },
         "second": {
           "__class__": "Location",
-          "value": 8
+          "value": 10
         }
       }
     },
     {
-      "__class__": "Empty",
+      "__class__": "FunctionCall",
+      "function": {
+        "__class__": "VariableUse",
+        "identifier": "\u003cprogram\u003e",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 10
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 10
+          }
+        }
+      },
+      "arguments": [],
       "range": {
         "__class__": "Pair",
         "first": {
           "__class__": "Location",
-          "value": 8
+          "value": 10
         },
         "second": {
           "__class__": "Location",
-          "value": 8
+          "value": 10
         }
       }
     }
@@ -49,11 +186,11 @@
     "__class__": "Pair",
     "first": {
       "__class__": "Location",
-      "value": 0
+      "value": -1
     },
     "second": {
       "__class__": "Location",
-      "value": 9
+      "value": 10
     }
   }
 }

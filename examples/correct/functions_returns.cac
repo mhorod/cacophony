@@ -41,3 +41,6 @@ let f = [early: Bool] -> Int => (
     result + 41
 );
 f[true]; # `42`, not `1`
+
+# whole program is also function, so top level return is valid
+return ()

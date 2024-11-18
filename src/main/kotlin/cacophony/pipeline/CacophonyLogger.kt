@@ -98,9 +98,9 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
                 val from =
                     "${variable.definedIn} (${variable.definedIn.identifier}/${variable.definedIn.arguments.size})"
                 println("      [$usage] ${variable.declaration} (${variable.declaration.identifier}) from $from")
-                println("    Variables used in nested functions: ${analysis.variablesUsedInNestedFunctions.size}")
-                analysis.variablesUsedInNestedFunctions.forEach { println("      $it") }
             }
+            println("    Variables used in nested functions: ${analysis.variablesUsedInNestedFunctions.size}")
+            analysis.variablesUsedInNestedFunctions.forEach { println("      $it") }
         }
     }
 
