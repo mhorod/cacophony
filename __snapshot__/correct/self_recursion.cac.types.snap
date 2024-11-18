@@ -505,5 +505,17 @@
   "(Location(value\u003d18), Location(value\u003d696))": {
     "__class__": "UnitType",
     "name": "Unit"
+  },
+  "(Location(value\u003d697), Location(value\u003d697))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d697))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d-1), Location(value\u003d697))": {
+    "__class__": "UnitType",
+    "name": "Unit"
   }
 }

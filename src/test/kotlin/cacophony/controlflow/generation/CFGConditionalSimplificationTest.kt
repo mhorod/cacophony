@@ -20,6 +20,7 @@ import cacophony.variableDeclaration
 import cacophony.variableUse
 import cacophony.whileLoop
 import cacophony.writeRegister
+import com.sun.tools.javac.jvm.ByteCodes.lor
 import org.junit.jupiter.api.Test
 
 /**
@@ -83,12 +84,12 @@ class CFGConditionalSimplificationTest {
                 ifThenElse(
                     // if
                     lit(false) land (
-                        block(
-                            variableDeclaration("x", lit(10)),
-                            variableDeclaration("y", lit(20)),
-                            (variableUse("x") eq variableUse("y")),
-                        )
-                    ),
+                            block(
+                                variableDeclaration("x", lit(10)),
+                                variableDeclaration("y", lit(20)),
+                                (variableUse("x") eq variableUse("y")),
+                            )
+                            ),
                     // then
                     lit(11),
                     // else
@@ -105,12 +106,12 @@ class CFGConditionalSimplificationTest {
                 fragment(fDef) {
                     "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
                     "write result to rax" does
-                        jump("return") {
-                            writeRegister(
-                                rax,
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
+                            jump("return") {
+                                writeRegister(
+                                    rax,
+                                    registerUse(virtualRegister("result")),
+                                )
+                            }
                     "return" does final { returnNode }
                 }
             }
@@ -126,12 +127,12 @@ class CFGConditionalSimplificationTest {
                 ifThenElse(
                     // if
                     lit(true) lor (
-                        block(
-                            variableDeclaration("x", lit(10)),
-                            variableDeclaration("y", lit(20)),
-                            (variableUse("x") eq variableUse("y")),
-                        )
-                    ),
+                            block(
+                                variableDeclaration("x", lit(10)),
+                                variableDeclaration("y", lit(20)),
+                                (variableUse("x") eq variableUse("y")),
+                            )
+                            ),
                     // then
                     lit(11),
                     // else
@@ -148,12 +149,12 @@ class CFGConditionalSimplificationTest {
                 fragment(fDef) {
                     "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
                     "write result to rax" does
-                        jump("return") {
-                            writeRegister(
-                                rax,
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
+                            jump("return") {
+                                writeRegister(
+                                    rax,
+                                    registerUse(virtualRegister("result")),
+                                )
+                            }
                     "return" does final { returnNode }
                 }
             }
@@ -169,11 +170,11 @@ class CFGConditionalSimplificationTest {
                 ifThenElse(
                     // if
                     lit(false) lor (
-                        block(
-                            variableDeclaration("x", lit(true)),
-                            variableUse("x"),
-                        )
-                    ),
+                            block(
+                                variableDeclaration("x", lit(true)),
+                                variableUse("x"),
+                            )
+                            ),
                     // then
                     lit(11),
                     // else
@@ -190,30 +191,30 @@ class CFGConditionalSimplificationTest {
                 fragment(fDef) {
                     "entry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
                     "condition on x" does
-                        conditional("write 11 to result", "write 22 to result") {
-                            registerUse(virtualRegister("x"))
-                        }
+                            conditional("write 11 to result", "write 22 to result") {
+                                registerUse(virtualRegister("x"))
+                            }
                     "write 11 to result" does
-                        jump("write result to rax") {
-                            writeRegister(
-                                virtualRegister("result"),
-                                integer(11),
-                            )
-                        }
+                            jump("write result to rax") {
+                                writeRegister(
+                                    virtualRegister("result"),
+                                    integer(11),
+                                )
+                            }
                     "write 22 to result" does
-                        jump("write result to rax") {
-                            writeRegister(
-                                virtualRegister("result"),
-                                integer(22),
-                            )
-                        }
+                            jump("write result to rax") {
+                                writeRegister(
+                                    virtualRegister("result"),
+                                    integer(22),
+                                )
+                            }
                     "write result to rax" does
-                        jump("return") {
-                            writeRegister(
-                                rax,
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
+                            jump("return") {
+                                writeRegister(
+                                    rax,
+                                    registerUse(virtualRegister("result")),
+                                )
+                            }
                     "return" does final { returnNode }
                 }
             }
@@ -229,11 +230,11 @@ class CFGConditionalSimplificationTest {
                 ifThenElse(
                     // if
                     lit(true) land (
-                        block(
-                            variableDeclaration("x", lit(true)),
-                            variableUse("x"),
-                        )
-                    ),
+                            block(
+                                variableDeclaration("x", lit(true)),
+                                variableUse("x"),
+                            )
+                            ),
                     // then
                     lit(11),
                     // else
@@ -250,30 +251,30 @@ class CFGConditionalSimplificationTest {
                 fragment(fDef) {
                     "entry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
                     "condition on x" does
-                        conditional("write 11 to result", "write 22 to result") {
-                            registerUse(virtualRegister("x"))
-                        }
+                            conditional("write 11 to result", "write 22 to result") {
+                                registerUse(virtualRegister("x"))
+                            }
                     "write 11 to result" does
-                        jump("write result to rax") {
-                            writeRegister(
-                                virtualRegister("result"),
-                                integer(11),
-                            )
-                        }
+                            jump("write result to rax") {
+                                writeRegister(
+                                    virtualRegister("result"),
+                                    integer(11),
+                                )
+                            }
                     "write 22 to result" does
-                        jump("write result to rax") {
-                            writeRegister(
-                                virtualRegister("result"),
-                                integer(22),
-                            )
-                        }
+                            jump("write result to rax") {
+                                writeRegister(
+                                    virtualRegister("result"),
+                                    integer(22),
+                                )
+                            }
                     "write result to rax" does
-                        jump("return") {
-                            writeRegister(
-                                rax,
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
+                            jump("return") {
+                                writeRegister(
+                                    rax,
+                                    registerUse(virtualRegister("result")),
+                                )
+                            }
                     "return" does final { returnNode }
                 }
             }
@@ -289,22 +290,22 @@ class CFGConditionalSimplificationTest {
                 ifThenElse(
                     // if
                     (
-                        lit(true)
-                            land
-                            (lit(false) lor lit(false))
-                    )
-                        land
-                        (
-                            lit(true) lor (
-                                lit(false)
+                            lit(true)
                                     land
-                                    block(
-                                        variableDeclaration("x", lit(10)),
-                                        variableDeclaration("y", lit(20)),
-                                        (variableUse("x") eq variableUse("y")),
-                                    )
+                                    (lit(false) lor lit(false))
                             )
-                        ),
+                            land
+                            (
+                                    lit(true) lor (
+                                            lit(false)
+                                                    land
+                                                    block(
+                                                        variableDeclaration("x", lit(10)),
+                                                        variableDeclaration("y", lit(20)),
+                                                        (variableUse("x") eq variableUse("y")),
+                                                    )
+                                            )
+                                    ),
                     // then
                     lit(11),
                     // else
@@ -321,12 +322,12 @@ class CFGConditionalSimplificationTest {
                 fragment(fDef) {
                     "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
                     "write result to rax" does
-                        jump("return") {
-                            writeRegister(
-                                rax,
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
+                            jump("return") {
+                                writeRegister(
+                                    rax,
+                                    registerUse(virtualRegister("result")),
+                                )
+                            }
                     "return" does final { returnNode }
                 }
             }
@@ -353,9 +354,9 @@ class CFGConditionalSimplificationTest {
             cfg {
                 fragment(fDef) {
                     "entry" does
-                        jump("entry") {
-                            writeRegister(virtualRegister("x"), integer(10))
-                        }
+                            jump("entry") {
+                                writeRegister(virtualRegister("x"), integer(10))
+                            }
                 }
             }
 
@@ -383,13 +384,13 @@ class CFGConditionalSimplificationTest {
             cfg {
                 fragment(fDef) {
                     "entry" does
-                        jump("write result to rax") {
-                            writeRegister(virtualRegister("y"), integer(20))
-                        }
+                            jump("write result to rax") {
+                                writeRegister(virtualRegister("y"), integer(20))
+                            }
                     "write result to rax" does
-                        jump("return") {
-                            writeRegister(rax, registerUse(virtualRegister("y")))
-                        }
+                            jump("return") {
+                                writeRegister(rax, registerUse(virtualRegister("y")))
+                            }
                     "return" does final { returnNode }
                 }
             }
@@ -399,23 +400,37 @@ class CFGConditionalSimplificationTest {
     @Test
     fun `deep condition made of true, false, and, or simplifies to single branch`() {
         // given
-        val program = """
-            let f = [] -> Int =>
-                if (false || (false || (false || (false || (false || (false || (false || true)))))))
-                    && (true && (true && (true && (true && (true && (true && (true && (false))))))))
-                    then 12
-                    else 24;
-        """
-        val input = StringInput(program)
+        val fDef = functionDeclaration(
+            "f",
+            ifThenElse(
+                (lit(false) lor
+                                (lit(false) lor
+                                        (lit(false) lor
+                                                (lit(false) lor
+                                                        (lit(false) lor
+                                                                (
+                                                                        lit(false) lor
+                                                                                lit(true)
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+
+                        ),
+                lit(12),
+                lit(24)
+            )
+        )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(input)
+        val actualCFG = pipeline.generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
             cfg {
                 fragment(actualCFG.keys.first()) {
-                    "entry" does jump("write result to rax") { writeRegister("result", integer(24)) }
+                    "entry" does jump("write result to rax") { writeRegister("result", integer(12)) }
                     "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
                     "return" does final { returnNode }
                 }
@@ -427,16 +442,26 @@ class CFGConditionalSimplificationTest {
     @Test
     fun `condition with nested ifs simplifies to single branch`() {
         // given
-        val program = "let f = [] -> Int => if if true then false else true then 10 else 20;"
-        val input = StringInput(program)
+        val fDef = functionDeclaration(
+            "f",
+            ifThenElse(
+                ifThenElse(
+                    lit(true),
+                    lit(false),
+                    lit(true),
+                ),
+                lit(10),
+                lit(20),
+            )
+        )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(input)
+        val actualCFG = pipeline.generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
             cfg {
-                fragment(actualCFG.keys.first()) {
+                fragment(fDef) {
                     "entry" does jump("write result to rax") { writeRegister("result", integer(20)) }
                     "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
                     "return" does final { returnNode }
@@ -449,21 +474,34 @@ class CFGConditionalSimplificationTest {
     @Test
     fun `condition if ifs nested in branches simplifies to single branch`() {
         // given
-        val program = """
-            let f = [] -> Int =>
-                if true
-                    then (if (if false then false else true) then 11 else 12)
-                    else (if true then 13  else 15);
-        """
-        val input = StringInput(program)
+        val fDef = functionDeclaration(
+            "f",
+            ifThenElse(
+                lit(true),
+                ifThenElse(
+                    ifThenElse(
+                        lit(false),
+                        lit(false),
+                        lit(true),
+                    ),
+                    lit(11),
+                    lit(12),
+                ),
+                ifThenElse(
+                    lit(true),
+                    lit(13),
+                    lit(15),
+                ),
+            )
+        )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(input)
+        val actualCFG = pipeline.generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
             cfg {
-                fragment(actualCFG.keys.first()) {
+                fragment(fDef) {
                     "entry" does jump("write result to rax") { writeRegister("result", integer(11)) }
                     "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
                     "return" does final { returnNode }

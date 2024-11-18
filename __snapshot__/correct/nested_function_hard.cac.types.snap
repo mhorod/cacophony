@@ -159,5 +159,17 @@
   "(Location(value\u003d0), Location(value\u003d192))": {
     "__class__": "IntegerType",
     "name": "Int"
+  },
+  "(Location(value\u003d193), Location(value\u003d193))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d193))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d-1), Location(value\u003d193))": {
+    "__class__": "UnitType",
+    "name": "Unit"
   }
 }

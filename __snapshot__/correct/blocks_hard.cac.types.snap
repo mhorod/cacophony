@@ -87,5 +87,17 @@
   "(Location(value\u003d0), Location(value\u003d89))": {
     "__class__": "UnitType",
     "name": "Unit"
+  },
+  "(Location(value\u003d90), Location(value\u003d90))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d90))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d-1), Location(value\u003d90))": {
+    "__class__": "UnitType",
+    "name": "Unit"
   }
 }

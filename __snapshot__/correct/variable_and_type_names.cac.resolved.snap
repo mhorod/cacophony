@@ -1,5 +1,5 @@
 {
-  "__class__": "SingletonMap",
+  "__class__": "LinkedHashMap",
   "(Location(value\u003d323), Location(value\u003d323))": {
     "__class__": "Pair",
     "first": {
@@ -9,6 +9,17 @@
     "second": {
       "__class__": "Location",
       "value": 310
+    }
+  },
+  "(Location(value\u003d325), Location(value\u003d325))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": -1
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 325
     }
   }
 }

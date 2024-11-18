@@ -394,11 +394,31 @@
     "__class__": "IntegerType",
     "name": "Int"
   },
-  "(Location(value\u003d1244), Location(value\u003d1244))": {
+  "(Location(value\u003d1334), Location(value\u003d1334))": {
     "__class__": "UnitType",
     "name": "Unit"
   },
-  "(Location(value\u003d0), Location(value\u003d1245))": {
+  "(Location(value\u003d1334), Location(value\u003d1335))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d1327), Location(value\u003d1335))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d0), Location(value\u003d1335))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d1336), Location(value\u003d1336))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d1336))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d-1), Location(value\u003d1336))": {
     "__class__": "UnitType",
     "name": "Unit"
   }

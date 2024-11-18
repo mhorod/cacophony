@@ -4,7 +4,6 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.utils.getProperTransitiveClosure
-import cacophony.utils.getReachableFrom
 import cacophony.utils.reverseGraph
 
 typealias FunctionAnalysisResult = Map<Definition.FunctionDeclaration, AnalyzedFunction>
@@ -32,9 +31,12 @@ data class AnalyzedFunction(
     val staticDepth: Int,
     val variablesUsedInNestedFunctions: Set<Definition>,
 ) {
-    fun declaredVariables() = variables.filter { it.definedIn == function }
 
-    fun outerVariables() = variables.filter { it.definedIn != function }
+    private val declaredVariables = lazy { variables.filter { it.definedIn == function } }
+    fun declaredVariables() = declaredVariables.value
+
+    private val outerVariables = lazy { variables.filter { it.definedIn != function } }
+    fun outerVariables() = outerVariables.value
 }
 
 data class AnalyzedVariable(
@@ -51,14 +53,28 @@ fun analyzeFunctions(
     val relations = findStaticFunctionRelations(ast)
     val variableDeclarationFunctions = getVariableDeclarationFunctions(relations)
     val argumentFunctions = getArgumentFunctions(relations)
+    val parentGraph =
+        relations.mapValues { (_, staticRelations) ->
+            staticRelations.parent?.let { setOf(it) } ?: emptySet()
+        }
+    val callGraphClosedRelations =
+        staticFunctionRelationsClosure(
+            relations,
+            callGraph,
+        )
+    // we need information if children declaration uses outside variables because of static links
+    val childrenGraphClosedRelations =
+        staticFunctionRelationsClosure(
+            callGraphClosedRelations,
+            reverseGraph(parentGraph),
+        )
     val analyzedVariables =
         analyzedVariables(
-            staticFunctionRelationsClosure(relations, callGraph),
+            childrenGraphClosedRelations,
             resolvedVariables,
             variableDeclarationFunctions,
             argumentFunctions,
         )
-    val functionsUsingParentLinks = functionsUsingParentLinks(relations, analyzedVariables, callGraph)
     val variablesUsedInNestedFunctions = variablesUsedInNestedFunctions(analyzedVariables)
 
     return relations.mapValues { (function, staticRelations) ->
@@ -66,7 +82,6 @@ fun analyzeFunctions(
             function,
             staticRelations,
             analyzedVariables,
-            functionsUsingParentLinks,
             variablesUsedInNestedFunctions[function] ?: emptySet(),
         )
     }
@@ -76,7 +91,7 @@ fun variablesUsedInNestedFunctions(
     analyzedVariables: Map<Definition.FunctionDeclaration, Set<AnalyzedVariable>>,
 ): Map<Definition.FunctionDeclaration, Set<Definition>> {
     val result = mutableMapOf<Definition.FunctionDeclaration, MutableSet<Definition>>()
-    analyzedVariables.forEach { function, variables ->
+    analyzedVariables.forEach { (function, variables) ->
         variables.forEach { variable ->
             if (variable.definedIn != function) {
                 result.getOrPut(variable.definedIn) { mutableSetOf() }.add(variable.declaration)
@@ -100,13 +115,12 @@ fun makeAnalyzedFunction(
     function: Definition.FunctionDeclaration,
     staticRelations: StaticFunctionRelations,
     analyzedVariables: Map<Definition.FunctionDeclaration, Set<AnalyzedVariable>>,
-    functionsUsingParentLinks: Set<Definition.FunctionDeclaration>,
     variablesUsedInNestedFunctions: Set<Definition>,
 ): AnalyzedFunction {
-    val parentLink = staticRelations.parent?.let { ParentLink(it, function in functionsUsingParentLinks) }
     val variables =
         analyzedVariables[function]
             ?: throw IllegalStateException("Analyzed function is missing variable information")
+    val parentLink = staticRelations.parent?.let { ParentLink(it, variables.any { it.definedIn != function }) }
     return AnalyzedFunction(
         function,
         parentLink,
@@ -140,24 +154,6 @@ fun makeAnalyzedVariable(
     )
 }
 
-private fun functionsUsingParentLinks(
-    relations: StaticFunctionRelationsMap,
-    analyzedVariables: Map<Definition.FunctionDeclaration, Set<AnalyzedVariable>>,
-    callGraph: CallGraph,
-): Set<Definition.FunctionDeclaration> {
-    val calledByGraph = reverseGraph(callGraph)
-    val parentGraph =
-        relations.mapValues { (_, staticRelations) -> staticRelations.parent?.let { setOf(it) } ?: emptySet() }
-    val directUsages = relations.keys.filter { usesParentLinkDirectly(it, analyzedVariables[it] ?: emptySet()) }
-    val nestedUsages = getReachableFrom(directUsages, parentGraph)
-    return getReachableFrom(nestedUsages, calledByGraph)
-}
-
-private fun usesParentLinkDirectly(
-    function: Definition.FunctionDeclaration,
-    analyzedVariables: Set<AnalyzedVariable>,
-) = analyzedVariables.any { it.definedIn != function }
-
 private fun getVariableDeclarationFunctions(
     relations: StaticFunctionRelationsMap,
 ): Map<Definition.VariableDeclaration, Definition.FunctionDeclaration> {
@@ -173,9 +169,10 @@ private fun analyzedVariables(
     resolvedVariables: ResolvedVariables,
     variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDeclaration>,
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
-) = relations.mapValues { (_, staticRelations) ->
+) = relations.mapValues { (function, staticRelations) ->
     getAnalyzedVariables(
-        staticRelations,
+        function,
+        relations,
         resolvedVariables,
         variableDeclarationFunctions,
         argumentFunctions,
@@ -183,24 +180,29 @@ private fun analyzedVariables(
 }
 
 private fun getAnalyzedVariables(
-    staticRelations: StaticFunctionRelations,
+    function: Definition.FunctionDeclaration,
+    relations: StaticFunctionRelationsMap,
     resolvedVariables: ResolvedVariables,
     variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDeclaration>,
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
 ): Set<AnalyzedVariable> {
-    return staticRelations.usedVariables
+    return relations[function]!!.usedVariables
         .asSequence()
         .filter {
             resolvedVariables[it.variable] is Definition.VariableDeclaration ||
-                resolvedVariables[it.variable] is Definition.FunctionArgument
+                    resolvedVariables[it.variable] is Definition.FunctionArgument
         }
         .map { makeAnalyzedVariable(it, resolvedVariables, variableDeclarationFunctions, argumentFunctions) }
         .toSet()
         .union(
-            staticRelations.declaredVariables.map {
+            relations[function]!!.declaredVariables.map {
                 AnalyzedVariable(it, variableDeclarationFunctions[it]!!, VariableUseType.UNUSED)
             },
-        )
+        ).filter {
+            relations[it.definedIn]!!.staticDepth < relations[function]!!.staticDepth
+                    ||
+                    it.definedIn == function
+        }
         .groupBy { it.declaration }
         .map {
             val useType = variableUseType(it.value.map { variable -> variable.useType })
@@ -218,9 +220,9 @@ private fun variableUseType(useTypes: List<VariableUseType>) =
 
 private fun staticFunctionRelationsClosure(
     staticFunctionRelations: StaticFunctionRelationsMap,
-    callGraph: CallGraph,
+    graph: Map<Definition.FunctionDeclaration, Set<Definition.FunctionDeclaration>>,
 ): StaticFunctionRelationsMap {
-    val closure = getProperTransitiveClosure(callGraph)
+    val closure = getProperTransitiveClosure(graph)
     val newMap = staticFunctionRelations.toMutableMap()
     staticFunctionRelations.forEach {
         val newUsedVariables = it.value.usedVariables.toMutableSet()
