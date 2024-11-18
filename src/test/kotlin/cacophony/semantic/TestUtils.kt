@@ -67,7 +67,50 @@ fun call(
     vararg arguments: Expression,
 ) = FunctionCall(mockRange(), variableUse, arguments.toList())
 
-fun astOf(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
+fun astOf(vararg expressions: Expression) =
+    Block(
+        mockRange(),
+        listOf(
+            functionDeclaration(
+                MAIN_FUNCTION_IDENTIFIER,
+                Block(mockRange(), expressions.toList()),
+            ),
+            call(variableUse(MAIN_FUNCTION_IDENTIFIER)),
+        ),
+    )
+
+fun program(ast: Block) = ast.expressions[0] as Definition.FunctionDeclaration
+
+fun programCall(ast: Block) = (ast.expressions[1] as FunctionCall).function as VariableUse
+
+fun programResolvedName(ast: Block) =
+    (
+        programCall(ast)
+            to program(ast)
+    )
+
+fun programStaticRelation() = StaticFunctionRelations(null, 0, emptySet(), emptySet())
+
+fun programFunctionAnalysis(ast: Block) =
+    (
+        program(ast)
+            to analyzedFunction(0, emptySet())
+    )
+
+fun programFunctionAnalysis(
+    ast: Block,
+    variablesUsedInNestedFunctions: Set<Definition>,
+) = (
+    program(ast)
+        to
+        AnalyzedFunction(
+            null,
+            emptySet(),
+            mutableSetOf(),
+            0,
+            variablesUsedInNestedFunctions,
+        )
+)
 
 fun callGraph(vararg calls: Pair<Definition.FunctionDeclaration, Definition.FunctionDeclaration>): CallGraph =
     calls.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }

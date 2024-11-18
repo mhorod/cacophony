@@ -153,5 +153,16 @@
       "__class__": "Location",
       "value": 45
     }
+  },
+  "(Location(value\u003d116), Location(value\u003d116))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": -1
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 116
+    }
   }
 }

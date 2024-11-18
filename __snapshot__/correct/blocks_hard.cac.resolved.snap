@@ -1,3 +1,14 @@
 {
-  "__class__": "EmptyMap"
+  "__class__": "SingletonMap",
+  "(Location(value\u003d90), Location(value\u003d90))": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": -1
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 90
+    }
+  }
 }

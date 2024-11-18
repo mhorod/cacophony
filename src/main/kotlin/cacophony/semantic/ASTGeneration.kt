@@ -10,6 +10,8 @@ import cacophony.utils.Location
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
+const val MAIN_FUNCTION_IDENTIFIER = "<program>"
+
 private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): CacophonyGrammarSymbol =
     when (parseTree) {
         is ParseTree.Leaf -> parseTree.token.category
@@ -292,11 +294,48 @@ private fun generateASTInternal(
     return Empty(range = Pair(Location(0), Location(0)))
 }
 
+private fun wrapInFunction(originalAST: AST): AST {
+    val beforeStart = Location(-1)
+    val behindEnd = Location(originalAST.range.second.value + 1)
+    val program =
+        Definition.FunctionDeclaration(
+            Pair(beforeStart, behindEnd),
+            MAIN_FUNCTION_IDENTIFIER,
+            Type.Functional(
+                Pair(beforeStart, beforeStart),
+                emptyList(),
+                Type.Basic(Pair(beforeStart, beforeStart), "Unit"),
+            ),
+            emptyList(),
+            Type.Basic(Pair(beforeStart, beforeStart), "Unit"),
+            Block(
+                Pair(Location(0), behindEnd),
+                listOf(
+                    originalAST,
+                    Empty(Pair(behindEnd, behindEnd)),
+                ),
+            ),
+        )
+    val programCall =
+        FunctionCall(
+            Pair(behindEnd, behindEnd),
+            VariableUse(Pair(behindEnd, behindEnd), MAIN_FUNCTION_IDENTIFIER),
+            emptyList(),
+        )
+    return Block(
+        Pair(beforeStart, behindEnd),
+        listOf(
+            program,
+            programCall,
+        ),
+    )
+}
+
 fun generateAST(
     parseTree: ParseTree<CacophonyGrammarSymbol>,
     diagnostics: Diagnostics,
 ): AST {
     val prunedTree = pruneParseTree(parseTree, diagnostics)!!
-    val ast = generateASTInternal(prunedTree, diagnostics) as AST
-    return ast
+    val ast = generateASTInternal(prunedTree, diagnostics)
+    return wrapInFunction(ast)
 }

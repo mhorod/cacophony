@@ -1,10 +1,313 @@
 {
   "__class__": "LinkedHashMap",
-  "(Location(value\u003d0), Location(value\u003d66))": {
+  "(Location(value\u003d-1), Location(value\u003d67))": {
     "__class__": "AnalyzedFunction",
     "variables": [],
     "auxVariables": [],
     "staticDepth": 0,
+    "variablesUsedInNestedFunctions": []
+  },
+  "(Location(value\u003d0), Location(value\u003d66))": {
+    "__class__": "AnalyzedFunction",
+    "parentLink": {
+      "__class__": "ParentLink",
+      "parent": {
+        "__class__": "FunctionDeclaration",
+        "type": {
+          "__class__": "Functional",
+          "argumentsType": [],
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Unit",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": -1
+              },
+              "second": {
+                "__class__": "Location",
+                "value": -1
+              }
+            }
+          },
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
+        "arguments": [],
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Unit",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
+        "body": {
+          "__class__": "Block",
+          "expressions": [
+            {
+              "__class__": "FunctionDeclaration",
+              "arguments": [
+                {
+                  "__class__": "FunctionArgument",
+                  "type": {
+                    "__class__": "Basic",
+                    "identifier": "Bool",
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 12
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 15
+                      }
+                    }
+                  },
+                  "identifier": "a",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 9
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 15
+                    }
+                  }
+                }
+              ],
+              "returnType": {
+                "__class__": "Basic",
+                "identifier": "Bool",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 21
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 24
+                  }
+                }
+              },
+              "body": {
+                "__class__": "Block",
+                "expressions": [
+                  {
+                    "__class__": "FunctionDeclaration",
+                    "arguments": [
+                      {
+                        "__class__": "FunctionArgument",
+                        "type": {
+                          "__class__": "Basic",
+                          "identifier": "Bool",
+                          "range": {
+                            "__class__": "Pair",
+                            "first": {
+                              "__class__": "Location",
+                              "value": 42
+                            },
+                            "second": {
+                              "__class__": "Location",
+                              "value": 45
+                            }
+                          }
+                        },
+                        "identifier": "b",
+                        "range": {
+                          "__class__": "Pair",
+                          "first": {
+                            "__class__": "Location",
+                            "value": 39
+                          },
+                          "second": {
+                            "__class__": "Location",
+                            "value": 45
+                          }
+                        }
+                      }
+                    ],
+                    "returnType": {
+                      "__class__": "Basic",
+                      "identifier": "Bool",
+                      "range": {
+                        "__class__": "Pair",
+                        "first": {
+                          "__class__": "Location",
+                          "value": 51
+                        },
+                        "second": {
+                          "__class__": "Location",
+                          "value": 54
+                        }
+                      }
+                    },
+                    "body": {
+                      "__class__": "VariableUse",
+                      "identifier": "b",
+                      "range": {
+                        "__class__": "Pair",
+                        "first": {
+                          "__class__": "Location",
+                          "value": 59
+                        },
+                        "second": {
+                          "__class__": "Location",
+                          "value": 59
+                        }
+                      }
+                    },
+                    "identifier": "g",
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 30
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 59
+                      }
+                    }
+                  },
+                  {
+                    "__class__": "FunctionCall",
+                    "function": {
+                      "__class__": "VariableUse",
+                      "identifier": "g",
+                      "range": {
+                        "__class__": "Pair",
+                        "first": {
+                          "__class__": "Location",
+                          "value": 62
+                        },
+                        "second": {
+                          "__class__": "Location",
+                          "value": 62
+                        }
+                      }
+                    },
+                    "arguments": [
+                      {
+                        "__class__": "VariableUse",
+                        "identifier": "a",
+                        "range": {
+                          "__class__": "Pair",
+                          "first": {
+                            "__class__": "Location",
+                            "value": 64
+                          },
+                          "second": {
+                            "__class__": "Location",
+                            "value": 64
+                          }
+                        }
+                      }
+                    ],
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 62
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 65
+                      }
+                    }
+                  }
+                ],
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 29
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 66
+                  }
+                }
+              },
+              "identifier": "f",
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 0
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 66
+                }
+              }
+            },
+            {
+              "__class__": "Empty",
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 67
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 67
+                }
+              }
+            }
+          ],
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 0
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 67
+            }
+          }
+        },
+        "identifier": "\u003cprogram\u003e",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": -1
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 67
+          }
+        }
+      },
+      "used": false
+    },
+    "variables": [],
+    "auxVariables": [],
+    "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
   },
   "(Location(value\u003d30), Location(value\u003d59))": {
@@ -216,7 +519,7 @@
     },
     "variables": [],
     "auxVariables": [],
-    "staticDepth": 1,
+    "staticDepth": 2,
     "variablesUsedInNestedFunctions": []
   }
 }
