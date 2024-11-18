@@ -4,7 +4,6 @@ import cacophony.addeq
 import cacophony.block
 import cacophony.cfg
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.programCfgToGraphviz
 import cacophony.eq
 import cacophony.functionDeclaration
 import cacophony.ifThen
@@ -135,8 +134,6 @@ class ReturnTest {
                 }
             }
 
-        println(programCfgToGraphviz(actualCFG))
-        println(programCfgToGraphviz(expectedCFG))
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -216,8 +213,6 @@ class ReturnTest {
                 }
             }
 
-        println(programCfgToGraphviz(actualCFG))
-        println(programCfgToGraphviz(expectedCFG))
         assertEquivalent(actualCFG, expectedCFG)
     }
 }

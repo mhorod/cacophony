@@ -5,7 +5,6 @@ import cacophony.block
 import cacophony.breakStatement
 import cacophony.cfg
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.programCfgToGraphviz
 import cacophony.eq
 import cacophony.functionDeclaration
 import cacophony.ifThen
@@ -210,7 +209,6 @@ class BreakTest {
                 }
             }
 
-        println(programCfgToGraphviz(actualCFG))
         assertEquivalent(actualCFG, expectedCFG)
     }
 }

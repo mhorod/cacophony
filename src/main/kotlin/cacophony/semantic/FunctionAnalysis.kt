@@ -31,7 +31,6 @@ data class AnalyzedFunction(
     val staticDepth: Int,
     val variablesUsedInNestedFunctions: Set<Definition>,
 ) {
-
     fun declaredVariables() = variables.filter { it.definedIn == function }
 
     fun outerVariables() = variables.filter { it.definedIn != function }
@@ -188,7 +187,7 @@ private fun getAnalyzedVariables(
         .asSequence()
         .filter {
             resolvedVariables[it.variable] is Definition.VariableDeclaration ||
-                    resolvedVariables[it.variable] is Definition.FunctionArgument
+                resolvedVariables[it.variable] is Definition.FunctionArgument
         }
         .map { makeAnalyzedVariable(it, resolvedVariables, variableDeclarationFunctions, argumentFunctions) }
         .toSet()
@@ -197,9 +196,8 @@ private fun getAnalyzedVariables(
                 AnalyzedVariable(it, variableDeclarationFunctions[it]!!, VariableUseType.UNUSED)
             },
         ).filter {
-            relations[it.definedIn]!!.staticDepth < relations[function]!!.staticDepth
-                    ||
-                    it.definedIn == function
+            relations[it.definedIn]!!.staticDepth < relations[function]!!.staticDepth ||
+                it.definedIn == function
         }
         .groupBy { it.declaration }
         .map {

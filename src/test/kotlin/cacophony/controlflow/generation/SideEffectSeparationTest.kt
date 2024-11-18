@@ -40,7 +40,10 @@ private typealias MakeBinaryNode = (CFGNode, CFGNode) -> CFGNode
 class SideEffectSeparationTest {
     @ParameterizedTest
     @MethodSource("binaryExpressions")
-    fun `write-write clash is separated`() {
+    fun `write-write clash is separated`(
+        makeExpr: MakeBinaryExpression,
+        makeNode: MakeBinaryNode,
+    ) {
         // given
         val lhs = variableWrite(variableUse("x"), lit(10))
         val rhs = variableWrite(variableUse("x"), lit(20))
@@ -50,7 +53,7 @@ class SideEffectSeparationTest {
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    lhs add rhs,
+                    makeExpr(lhs, rhs),
                 ),
             )
 
@@ -73,10 +76,10 @@ class SideEffectSeparationTest {
                         jump("return") {
                             writeRegister(
                                 rax,
-                                // lhs is read from register
-                                readRegister("lhs") add
-                                    // rhs does not have to be extracted once lhs is separated
+                                makeNode(
+                                    readRegister("lhs"),
                                     (writeRegister("x", integer(20))),
+                                ),
                             )
                         }
                     "return" does final { returnNode }
@@ -87,7 +90,10 @@ class SideEffectSeparationTest {
 
     @ParameterizedTest
     @MethodSource("binaryExpressions")
-    fun `read-write clash is separated`() {
+    fun `read-write clash is separated`(
+        makeExpr: MakeBinaryExpression,
+        makeNode: MakeBinaryNode,
+    ) {
         // given
         val lhs = variableUse("x")
         val rhs = variableWrite(variableUse("x"), lit(20))
@@ -97,7 +103,7 @@ class SideEffectSeparationTest {
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    lhs add rhs,
+                    makeExpr(lhs, rhs),
                 ),
             )
 
@@ -120,10 +126,10 @@ class SideEffectSeparationTest {
                         jump("return") {
                             writeRegister(
                                 rax,
-                                // lhs is read from register
-                                readRegister("lhs") add
-                                    // rhs does not have to be extracted once lhs is separated
+                                makeNode(
+                                    readRegister("lhs"),
                                     (writeRegister("x", integer(20))),
+                                ),
                             )
                         }
                     "return" does final { returnNode }
@@ -134,7 +140,10 @@ class SideEffectSeparationTest {
 
     @ParameterizedTest
     @MethodSource("binaryExpressions")
-    fun `write-read clash is separated`() {
+    fun `write-read clash is separated`(
+        makeExpr: MakeBinaryExpression,
+        makeNode: MakeBinaryNode,
+    ) {
         // given
         val lhs = variableWrite(variableUse("x"), lit(10))
         val rhs = variableUse("x")
@@ -144,7 +153,7 @@ class SideEffectSeparationTest {
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    lhs add rhs,
+                    makeExpr(lhs, rhs),
                 ),
             )
 
@@ -167,10 +176,10 @@ class SideEffectSeparationTest {
                         jump("return") {
                             writeRegister(
                                 rax,
-                                // lhs is read from register
-                                readRegister("lhs") add
-                                    // rhs does not have to be extracted once lhs is separated
+                                makeNode(
+                                    readRegister("lhs"),
                                     readRegister("x"),
+                                ),
                             )
                         }
                     "return" does final { returnNode }

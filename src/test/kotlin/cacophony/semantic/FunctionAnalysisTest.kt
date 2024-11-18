@@ -81,14 +81,15 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program(ast) to AnalyzedFunction(
-                        program(ast),
-                        null,
-                        setOf(AnalyzedVariable(varA, program(ast), VariableUseType.READ)),
-                        mutableSetOf(),
-                        0,
-                        setOf(varA)
-                    ),
+                    program(ast) to
+                        AnalyzedFunction(
+                            program(ast),
+                            null,
+                            setOf(AnalyzedVariable(varA, program(ast), VariableUseType.READ)),
+                            mutableSetOf(),
+                            0,
+                            setOf(varA),
+                        ),
                     funF to
                         AnalyzedFunction(
                             funF,
@@ -120,14 +121,15 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to AnalyzedFunction(
-                        program,
-                        null,
-                        setOf(AnalyzedVariable(varA, program, VariableUseType.WRITE)),
-                        mutableSetOf(),
-                        0,
-                        setOf(varA),
-                    ),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(AnalyzedVariable(varA, program, VariableUseType.WRITE)),
+                            mutableSetOf(),
+                            0,
+                            setOf(varA),
+                        ),
                     funF to
                         AnalyzedFunction(
                             funF,
@@ -160,14 +162,15 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to AnalyzedFunction(
-                        program,
-                        null,
-                        setOf(AnalyzedVariable(varA, program, VariableUseType.READ_WRITE)),
-                        mutableSetOf(),
-                        0,
-                        setOf(varA),
-                    ),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(AnalyzedVariable(varA, program, VariableUseType.READ_WRITE)),
+                            mutableSetOf(),
+                            0,
+                            setOf(varA),
+                        ),
                     funF to
                         AnalyzedFunction(
                             funF,
@@ -244,14 +247,15 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to AnalyzedFunction(
-                        program,
-                        null,
-                        setOf(),
-                        mutableSetOf(),
-                        0,
-                        setOf(),
-                    ),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(),
+                            mutableSetOf(),
+                            0,
+                            setOf(),
+                        ),
                     funF to
                         AnalyzedFunction(
                             funF,
@@ -304,14 +308,15 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to AnalyzedFunction(
-                        program,
-                        null,
-                        setOf(),
-                        mutableSetOf(),
-                        0,
-                        emptySet(),
-                    ),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(),
+                            mutableSetOf(),
+                            0,
+                            emptySet(),
+                        ),
                     funFoo to
                         AnalyzedFunction(
                             funFoo,
@@ -391,14 +396,15 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to AnalyzedFunction(
-                        program,
-                        null,
-                        setOf(),
-                        mutableSetOf(),
-                        0,
-                        emptySet(),
-                    ),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(),
+                            mutableSetOf(),
+                            0,
+                            emptySet(),
+                        ),
                     funFoo to
                         AnalyzedFunction(
                             funFoo,
@@ -455,8 +461,10 @@ class FunctionAnalysisTest {
                     AnalyzedFunction(
                         funF,
                         ParentLink(program, false),
-                        setOf(AnalyzedVariable(argA, funF, VariableUseType.READ),
-                            AnalyzedVariable(argB, funF, VariableUseType.WRITE)),
+                        setOf(
+                            AnalyzedVariable(argA, funF, VariableUseType.READ),
+                            AnalyzedVariable(argB, funF, VariableUseType.WRITE),
+                        ),
                         mutableSetOf(),
                         1,
                         setOf(argA, argB),
