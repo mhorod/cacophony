@@ -70,6 +70,8 @@ internal class CFGGenerator(
                 }
         }
 
+    private fun ensureExtracted(node: CFGNode): SubCFG.Extracted = ensureExtracted(SubCFG.Immediate(node), EvalMode.SideEffect)
+
     /**
      * Convert the expression into SubCFG extracted to a separate vertex
      */
@@ -114,10 +116,9 @@ internal class CFGGenerator(
     ): SubCFG {
         val last = expression.expressions.lastOrNull() ?: return SubCFG.Immediate(noOpOrUnit(mode))
         val prerequisiteSubCFGs =
-            expression.expressions
-                .dropLast(1)
-                .map { ensureExtracted(visit(it, EvalMode.SideEffect, context), EvalMode.SideEffect) }
-        val valueCFG = ensureExtracted(visit(last, mode, context), mode)
+            expression.expressions.dropLast(1)
+                .map { visitExtracted(it, EvalMode.SideEffect, context) }
+        val valueCFG = visitExtracted(last, mode, context)
         return prerequisiteSubCFGs.foldRight(valueCFG) { subCFG, path -> subCFG merge path }
     }
 
@@ -138,30 +139,25 @@ internal class CFGGenerator(
     ): SubCFG {
         val argumentNodes =
             expression.arguments
-                .map { ensureExtracted(visit(it, EvalMode.Value, context), EvalMode.Value) }
+                .map { visitExtracted(it, EvalMode.Value, context) }
 
         val extractedArguments = argumentNodes.reduce { path, next -> path merge next }
 
         val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
-        val functionHandler = getFunctionHandler(function)
 
         val resultRegister = if (mode is EvalMode.Value) Register.VirtualRegister() else null
 
-        val callVertex =
-            cfg.addUnconditionalVertex(
-                CFGNode.Sequence(
-                    generateCall(
-                        function,
-                        argumentNodes.map { it.access },
-                        resultRegister,
-                    ),
-                ),
-            )
+        val callSequence =
+            generateCall(
+                function,
+                argumentNodes.map { it.access },
+                resultRegister,
+            ).map { ensureExtracted(it) }.reduce { path, next -> path merge next }
 
-        extractedArguments.exit.connect(callVertex.label)
+        extractedArguments.exit.connect(callSequence.entry.label)
 
         val resultAccess = resultRegister?.let { CFGNode.RegisterUse(it) } ?: CFGNode.NoOp
-        return SubCFG.Extracted(extractedArguments.entry, callVertex, resultAccess)
+        return SubCFG.Extracted(extractedArguments.entry, callSequence.exit, resultAccess)
     }
 
     private fun visitLiteral(

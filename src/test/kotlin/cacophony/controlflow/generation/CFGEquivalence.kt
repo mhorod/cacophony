@@ -147,11 +147,6 @@ private class FragmentEquivalenceVisitor {
                 visit(actual.value, expected.value)
             }
 
-            is CFGNode.Sequence -> {
-                assertThat(actual).isInstanceOf(CFGNode.Sequence::class.java)
-                check(actual is CFGNode.Sequence)
-            }
-
             is CFGNode.ConstantSlot -> {
                 assertThat(actual).isInstanceOf(CFGNode.ConstantSlot::class.java)
                 check(actual is CFGNode.ConstantSlot)
