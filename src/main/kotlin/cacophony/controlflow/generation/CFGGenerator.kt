@@ -70,7 +70,8 @@ internal class CFGGenerator(
                 }
         }
 
-    private fun ensureExtracted(node: CFGNode): SubCFG.Extracted = ensureExtracted(SubCFG.Immediate(node), EvalMode.SideEffect)
+    private fun ensureExtracted(node: CFGNode): SubCFG.Extracted =
+        ensureExtracted(SubCFG.Immediate(node), EvalMode.SideEffect)
 
     /**
      * Convert the expression into SubCFG extracted to a separate vertex
@@ -137,27 +138,31 @@ internal class CFGGenerator(
         mode: EvalMode,
         context: Context,
     ): SubCFG {
-        val argumentNodes =
+        val argumentVertices =
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
-        val extractedArguments = argumentNodes.reduce { path, next -> path merge next }
-
         val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
+        val functionHandler = getFunctionHandler(function)
 
         val resultRegister = if (mode is EvalMode.Value) Register.VirtualRegister() else null
 
         val callSequence =
-            generateCall(
-                function,
-                argumentNodes.map { it.access },
+            functionHandler.generateCallFrom(
+                getCurrentFunctionHandler(),
+                argumentVertices.map { it.access },
                 resultRegister,
+                true,
             ).map { ensureExtracted(it) }.reduce { path, next -> path merge next }
 
-        extractedArguments.exit.connect(callSequence.entry.label)
+        val entry = if (argumentVertices.isNotEmpty()) {
+            val extractedArguments = argumentVertices.reduce { path, next -> path merge next }
+            extractedArguments.exit.connect(callSequence.entry.label)
+            extractedArguments.entry
+        } else callSequence.entry
 
         val resultAccess = resultRegister?.let { CFGNode.RegisterUse(it) } ?: CFGNode.NoOp
-        return SubCFG.Extracted(extractedArguments.entry, callSequence.exit, resultAccess)
+        return SubCFG.Extracted(entry, callSequence.exit, resultAccess)
     }
 
     private fun visitLiteral(
@@ -345,7 +350,7 @@ internal class CFGGenerator(
     ): SubCFG {
         val definition = resolvedVariables[expression] ?: error("Unresolved variable $expression")
         val variableAccess =
-            getFunctionHandler(function).generateVariableAccess(Variable.SourceVariable(definition))
+            getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
         return when (mode) {
             is EvalMode.Value -> SubCFG.Immediate(variableAccess)
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
@@ -360,7 +365,8 @@ internal class CFGGenerator(
 
     internal fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
 
-    internal fun resolveVariable(variable: VariableUse) = resolvedVariables[variable] ?: error("Unresolved variable $variable")
+    internal fun resolveVariable(variable: VariableUse) =
+        resolvedVariables[variable] ?: error("Unresolved variable $variable")
 
     private fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler =
         functionHandlers[function] ?: error("Function $function has no handler")

@@ -10,6 +10,10 @@ import cacophony.controlflow.generation.ProgramCFG
 import cacophony.semantic.syntaxtree.Definition
 
 val rax = Register.FixedRegister(X64Register.RAX)
+val rsp = Register.FixedRegister(X64Register.RSP)
+val rbp = Register.FixedRegister(X64Register.RBP)
+val rdi = Register.FixedRegister(X64Register.RDI)
+val rsi = Register.FixedRegister(X64Register.RSI)
 val unit = CFGNode.UNIT
 val trueValue = CFGNode.TRUE
 val falseValue = CFGNode.FALSE
@@ -43,6 +47,13 @@ infix fun CFGNode.LValue.diveq(other: CFGNode) = CFGNode.DivisionAssignment(this
 
 infix fun CFGNode.LValue.modeq(other: CFGNode) = CFGNode.ModuloAssignment(this, other)
 
+// stack
+fun pushRegister(register: Register) = CFGNode.Push(CFGNode.RegisterUse(register))
+
+fun popRegister(register: Register) = CFGNode.Pop(CFGNode.RegisterUse(register))
+
+fun call(function: Definition.FunctionDeclaration) = CFGNode.Call(function)
+
 // logical
 infix fun CFGNode.eq(other: CFGNode) = CFGNode.Equals(this, other)
 
@@ -65,7 +76,7 @@ fun writeRegister(
 
 class CFGFragmentBuilder {
     private val labels: MutableMap<String, CFGLabel> = mutableMapOf()
-    val vertices = mutableMapOf<CFGLabel, CFGVertex>()
+    private val vertices = mutableMapOf<CFGLabel, CFGVertex>()
 
     private fun getLabel(label: String): CFGLabel {
         return labels.getOrPut(label) { CFGLabel() }
@@ -122,6 +133,8 @@ class CFGBuilder {
         name: String,
         node: CFGNode,
     ) = writeRegister(virtualRegister(name), node)
+
+    fun pushRegister(name: String) = pushRegister(virtualRegister(name))
 
     fun readRegister(name: String) = registerUse(virtualRegister(name))
 }

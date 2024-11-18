@@ -21,7 +21,7 @@ internal fun assertEquivalent(
     actual.entries.forEach { (function, cfg) -> assertFragmentIsEquivalent(cfg, expected[function]!!) }
 }
 
-private fun assertFragmentIsEquivalent(
+fun assertFragmentIsEquivalent(
     actual: CFGFragment,
     expected: CFGFragment,
 ) {

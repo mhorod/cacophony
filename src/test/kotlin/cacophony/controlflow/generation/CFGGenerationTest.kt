@@ -16,7 +16,6 @@ import cacophony.ifThenElse
 import cacophony.integer
 import cacophony.lit
 import cacophony.lt
-import cacophony.mod
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.rax
 import cacophony.registerUse
@@ -32,7 +31,7 @@ import org.junit.jupiter.api.Test
 
 class CFGGenerationTest {
     companion object {
-        val diagnostics = CacophonyDiagnostics(mockk())
+        private val diagnostics = CacophonyDiagnostics(mockk())
         val pipeline = CacophonyPipeline(diagnostics)
     }
 

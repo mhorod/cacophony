@@ -13,6 +13,7 @@ import cacophony.utils.CompileException
 fun generateFunctionHandlers(analyzedFunctions: FunctionAnalysisResult): Map<FunctionDeclaration, FunctionHandler> {
     val handlers = mutableMapOf<FunctionDeclaration, FunctionHandler>()
     val order = analyzedFunctions.entries.sortedBy { it.value.staticDepth }
+
     val ancestorHandlers = mutableMapOf<FunctionDeclaration, List<FunctionHandler>>()
 
     for ((function, analyzedFunction) in order) {
@@ -131,9 +132,8 @@ class FunctionHandlerImpl(
         result: Register?,
         respectStackAlignment: Boolean,
     ): List<CFGNode> {
-        if (ancestorFunctionHandlers.isEmpty()) throw Exception("Cannot call a top-level function")
         val staticLinkVar =
-            if (callerFunction === ancestorFunctionHandlers[0]) {
+            if (ancestorFunctionHandlers.isEmpty()|| callerFunction === ancestorFunctionHandlers[0]) {
                 RegisterUse(Register.FixedRegister(X64Register.RBP))
             } else {
                 callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers[0].getFunctionDeclaration())
