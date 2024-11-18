@@ -1,31 +1,45 @@
 package cacophony.codegen.patterns
 
 import cacophony.codegen.instructions.Instruction
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.Register
-import cacophony.controlflow.RegisterLabel
-import cacophony.semantic.syntaxtree.Definition
+import cacophony.controlflow.*
 
 class CacophonyPattern {
-    abstract class BinaryOpPattern {
-        val lhsRegisterLabel = RegisterLabel()
-        val rhsRegisterLabel = RegisterLabel()
-    }
-
-    abstract class UnaryOpPattern {
-        val registerLabel = RegisterLabel()
-    }
-
     /*****************************
      * CHAPTER 1. VALUE PATTERNS *
      *****************************/
 
+    abstract class BinaryOpPattern {
+        val lhsLabel = ValueLabel()
+        val rhsLabel = ValueLabel()
+    }
+
+    abstract class UnaryOpPattern {
+        val childLabel = ValueLabel()
+    }
+
+    // TODO: reduce boilerplate (typed DSL?)
+
+    // for now, we can always dump a constant into a register and call it a value
+    object ConstantPattern : ValuePattern {
+        val label = ConstantLabel()
+        val predicate: (Int) -> Boolean = { _ -> false }
+
+        override val tree = CFGNode.ConstantSlot(label, predicate)
+
+        override fun makeInstance(
+            fill: SlotFill,
+            destination: Register,
+        ): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
     object AdditionPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Addition(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -40,9 +54,9 @@ class CacophonyPattern {
     object SubtractionPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Subtraction(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -57,9 +71,9 @@ class CacophonyPattern {
     object MultiplicationPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Multiplication(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -74,9 +88,9 @@ class CacophonyPattern {
     object DivisionPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Division(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -91,9 +105,9 @@ class CacophonyPattern {
     object ModuloPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Modulo(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -108,9 +122,9 @@ class CacophonyPattern {
     object EqualsPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Equals(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -125,9 +139,9 @@ class CacophonyPattern {
     object NotEqualsPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.NotEquals(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -142,9 +156,9 @@ class CacophonyPattern {
     object LessPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Less(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -159,9 +173,9 @@ class CacophonyPattern {
     object GreaterPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.Greater(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -176,9 +190,9 @@ class CacophonyPattern {
     object LessEqualPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.LessEqual(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -193,9 +207,9 @@ class CacophonyPattern {
     object GreaterEqualPattern : ValuePattern, BinaryOpPattern() {
         override val tree =
             CFGNode.GreaterEqual(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
+                CFGNode.ValueSlot(lhsLabel),
+                CFGNode.ValueSlot(
+                    rhsLabel,
                 ),
             )
 
@@ -207,8 +221,9 @@ class CacophonyPattern {
         }
     }
 
-    object MinusPattern: ValuePattern, UnaryOpPattern() {
-        override val tree = CFGNode.Minus(CFGNode.RegisterSlot(registerLabel))
+    object MinusPattern : ValuePattern, UnaryOpPattern() {
+        override val tree = CFGNode.Minus(CFGNode.ValueSlot(childLabel))
+
         override fun makeInstance(
             fill: SlotFill,
             destination: Register,
@@ -217,8 +232,9 @@ class CacophonyPattern {
         }
     }
 
-    object LogicalNotPattern: ValuePattern, UnaryOpPattern() {
-        override val tree = CFGNode.LogicalNot(CFGNode.RegisterSlot(registerLabel))
+    object LogicalNotPattern : ValuePattern, UnaryOpPattern() {
+        override val tree = CFGNode.LogicalNot(CFGNode.ValueSlot(childLabel))
+
         override fun makeInstance(
             fill: SlotFill,
             destination: Register,
@@ -231,87 +247,147 @@ class CacophonyPattern {
      * CHAPTER 2. SIDE EFFECT PATTERNS *
      ***********************************/
 
-    object AdditionAssignmentPattern: SideEffectPattern, BinaryOpPattern() {
+    abstract class RegisterAssignmentTemplate {
+        val lhsRegisterLabel = RegisterLabel()
+        val rhsLabel = ValueLabel()
+    }
+
+    abstract class MemoryAssignmentTemplate {
+        val lhsLabel = ValueLabel()
+        val rhsLabel = ValueLabel()
+    }
+
+    object AdditionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
         override val tree =
             CFGNode.AdditionAssignment(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
-                ),
+                CFGNode.ValueSlot(rhsLabel),
             )
 
-        override fun makeInstance(
-            fill: SlotFill,
-        ): List<Instruction> {
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
         }
     }
 
-    object SubtractionAssignmentPattern: SideEffectPattern, BinaryOpPattern() {
+    object AdditionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
+        override val tree =
+            CFGNode.AdditionAssignment(
+                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
+                CFGNode.ValueSlot(
+                    rhsLabel,
+                ),
+            )
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object SubtractionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
         override val tree =
             CFGNode.SubtractionAssignment(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
-                ),
+                CFGNode.ValueSlot(rhsLabel),
             )
 
-        override fun makeInstance(
-            fill: SlotFill,
-        ): List<Instruction> {
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
         }
     }
 
-    object MultiplicationAssignmentPattern: SideEffectPattern, BinaryOpPattern() {
+    object SubtractionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
+        override val tree =
+            CFGNode.SubtractionAssignment(
+                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
+                CFGNode.ValueSlot(
+                    rhsLabel,
+                ),
+            )
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object MultiplicationAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
         override val tree =
             CFGNode.MultiplicationAssignment(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
-                ),
+                CFGNode.ValueSlot(rhsLabel),
             )
 
-        override fun makeInstance(
-            fill: SlotFill,
-        ): List<Instruction> {
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
         }
     }
 
-    object DivisionAssignmentPattern: SideEffectPattern, BinaryOpPattern() {
+    object MultiplicationAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
+        override val tree =
+            CFGNode.MultiplicationAssignment(
+                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
+                CFGNode.ValueSlot(
+                    rhsLabel,
+                ),
+            )
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object DivisionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
         override val tree =
             CFGNode.DivisionAssignment(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
-                ),
+                CFGNode.ValueSlot(rhsLabel),
             )
 
-        override fun makeInstance(
-            fill: SlotFill,
-        ): List<Instruction> {
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
         }
     }
 
-    object ModuloAssignmentPattern: SideEffectPattern, BinaryOpPattern() {
+    object DivisionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
+        override val tree =
+            CFGNode.DivisionAssignment(
+                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
+                CFGNode.ValueSlot(
+                    rhsLabel,
+                ),
+            )
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object ModuloAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
+        override val tree =
+            CFGNode.ModuloAssignment(
+                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
+                CFGNode.ValueSlot(
+                    rhsLabel,
+                ),
+            )
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object ModuloAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
         override val tree =
             CFGNode.ModuloAssignment(
                 CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.RegisterSlot(
-                    rhsRegisterLabel,
-                ),
+                CFGNode.ValueSlot(rhsLabel),
             )
 
-        override fun makeInstance(
-            fill: SlotFill,
-        ): List<Instruction> {
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
         }
     }
 
-    object Return: SideEffectPattern {
+    object ReturnPattern : SideEffectPattern {
         override val tree = CFGNode.Return
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
@@ -319,21 +395,48 @@ class CacophonyPattern {
         }
     }
 
-//     TODO
-//    object Call: SideEffectPattern {
-//        override val tree = CFGNode.Return
-//
-//        val functionDeclaration: Definition.FunctionDeclaration =
-//        override fun makeInstance(fill: SlotFill): List<Instruction> {
-//            TODO("Not yet implemented")
-//        }
-//    }
+    object PushPattern : SideEffectPattern {
+        val childLabel = ValueLabel()
 
-//    object Push: SideEffectPattern {
-//        override val tree = CFGNode.Push(CFGNode.RegisterSlot(registerLabel))
-//
-//        override fun makeInstance(fill: SlotFill): List<Instruction> {
-//            TODO("Not yet implemented")
-//        }
-//    }
+        override val tree = CFGNode.Push(CFGNode.ValueSlot(childLabel))
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object PopPattern : SideEffectPattern {
+        val regLabel = RegisterLabel()
+
+        override val tree = CFGNode.Pop(CFGNode.RegisterSlot(regLabel))
+//        override val tree = CFGNode.Pop()
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object RegisterAssignmentPattern : SideEffectPattern, RegisterAssignmentTemplate() {
+        override val tree =
+            CFGNode.Assignment(
+                CFGNode.RegisterSlot(lhsRegisterLabel),
+                CFGNode.ValueSlot(rhsLabel),
+            )
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object MemoryAssignmentPattern : SideEffectPattern, MemoryAssignmentTemplate() {
+        override val tree = CFGNode.Assignment(CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)), CFGNode.ValueSlot(rhsLabel))
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    /*********************************
+     * CHAPTER 3. CONDITION PATTERNS *
+     *********************************/
 }

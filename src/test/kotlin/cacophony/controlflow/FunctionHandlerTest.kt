@@ -80,9 +80,10 @@ class FunctionHandlerTest {
             for (node in callNodes) {
                 if (node is CFGNode.Assignment &&
                     node.destination is CFGNode.RegisterUse &&
-                    node.destination.register is Register.FixedRegister
+                    (node.destination as CFGNode.RegisterUse).register is Register.FixedRegister
                 ) {
-                    val register = node.destination.register.hardwareRegister
+                    val reg = (node.destination as CFGNode.RegisterUse).register as Register.FixedRegister
+                    val register = reg.hardwareRegister
                     if (register != X64Register.RSP) {
                         returnList.add(register)
                     }
@@ -114,9 +115,10 @@ class FunctionHandlerTest {
             for (node in callNodes) {
                 if (node is CFGNode.Assignment &&
                     node.destination is CFGNode.RegisterUse &&
-                    node.destination.register is Register.FixedRegister
+                    (node.destination as CFGNode.RegisterUse).register is Register.FixedRegister
                 ) {
-                    if (node.destination.register.hardwareRegister != X64Register.RSP) {
+                    val reg = (node.destination as CFGNode.RegisterUse).register as Register.FixedRegister
+                    if (reg.hardwareRegister != X64Register.RSP) {
                         continue
                     }
                     if (node.value is CFGNode.Addition) {
@@ -137,10 +139,13 @@ class FunctionHandlerTest {
                         addedModulo = modulo
                     }
                 }
-                if (node is CFGNode.Pop && node.register.register is Register.FixedRegister) {
-                    if ((node.register.register as Register.FixedRegister).hardwareRegister == X64Register.RSP) {
-                        assertThat(hasPopToRSP).isFalse()
-                        hasPopToRSP = true
+                if (node is CFGNode.Pop) {
+                    val registerUse = node.register as CFGNode.RegisterUse
+                    if (registerUse.register is Register.FixedRegister) {
+                        if ((registerUse.register as Register.FixedRegister).hardwareRegister == X64Register.RSP) {
+                            assertThat(hasPopToRSP).isFalse()
+                            hasPopToRSP = true
+                        }
                     }
                 }
             }
