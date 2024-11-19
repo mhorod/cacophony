@@ -75,10 +75,7 @@ infix fun CFGNode.geq(other: CFGNode) = CFGNode.GreaterEqual(this, other)
 
 fun not(node: CFGNode) = CFGNode.LogicalNot(node)
 
-fun writeRegister(
-    register: Register,
-    value: CFGNode,
-) = CFGNode.Assignment(registerUse(register), value)
+fun writeRegister(register: Register, value: CFGNode) = CFGNode.Assignment(registerUse(register), value)
 
 class CFGFragmentBuilder {
     private val labels: MutableMap<String, CFGLabel> = mutableMapOf()
@@ -94,18 +91,11 @@ class CFGFragmentBuilder {
 
     fun final(node: () -> CFGNode) = CFGVertex.Final(node())
 
-    fun jump(
-        destination: String,
-        node: () -> CFGNode,
-    ): CFGVertex {
+    fun jump(destination: String, node: () -> CFGNode): CFGVertex {
         return CFGVertex.Jump(node(), getLabel(destination))
     }
 
-    fun conditional(
-        trueDestination: String,
-        falseDestination: String,
-        condition: () -> CFGNode,
-    ): CFGVertex {
+    fun conditional(trueDestination: String, falseDestination: String, condition: () -> CFGNode): CFGVertex {
         return CFGVertex.Conditional(condition(), getLabel(trueDestination), getLabel(falseDestination))
     }
 
@@ -118,10 +108,7 @@ class CFGBuilder {
     private val programCFG = mutableMapOf<Definition.FunctionDeclaration, CFGFragment>()
     private val registers: MutableMap<String, Register> = mutableMapOf()
 
-    fun fragment(
-        function: Definition.FunctionDeclaration,
-        init: CFGFragmentBuilder.() -> Unit,
-    ) {
+    fun fragment(function: Definition.FunctionDeclaration, init: CFGFragmentBuilder.() -> Unit) {
         val builder = CFGFragmentBuilder()
         builder.init()
         programCFG[function] = builder.build()
@@ -135,10 +122,7 @@ class CFGBuilder {
         return registers.getOrPut(name) { Register.VirtualRegister() }
     }
 
-    fun writeRegister(
-        name: String,
-        node: CFGNode,
-    ) = writeRegister(virtualRegister(name), node)
+    fun writeRegister(name: String, node: CFGNode) = writeRegister(virtualRegister(name), node)
 
     fun pushRegister(name: String) = pushRegister(virtualRegister(name))
 

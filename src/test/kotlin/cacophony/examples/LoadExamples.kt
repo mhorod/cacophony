@@ -10,10 +10,7 @@ fun loadCorrectExamples(): List<Path> = getPathsMatching(Path.of("examples/corre
 
 fun loadIncorrectExamples(): List<Path> = getPathsMatching(Path.of("examples/incorrect"), Regex(".*"))
 
-fun getPathsMatching(
-    root: Path,
-    re: Regex,
-): List<Path> =
+fun getPathsMatching(root: Path, re: Regex): List<Path> =
     Files
         .walk(root)
         .filter { re.matches(it.toString()) }

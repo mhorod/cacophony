@@ -1,6 +1,117 @@
 root = true
 
 [*{.kt,.kts}]
+# Annotations
+ktlint_standard_annotation = enabled
+ktlint_standard_annotation-spacing = enabled
+ktlint_standard_spacing-between-declarations-with-annotations = enabled
+# Classes
+ktlint_standard_class-naming = enabled
+ktlint_standard_class-signature = disabled
+ktlint_standard_no-empty-class-body = enabled
+ktlint_class_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 5
+# Comments
+ktlint_standard_block-comment-initial-star-alignment = enabled
+ktlint_standard_comment-spacing = enabled
+ktlint_standard_comment-wrapping = disabled
 ktlint_standard_discouraged-comment-location = disabled
+ktlint_standard_kdoc-wrapping = enabled
+ktlint_standard_no-consecutive-comments = enabled
+ktlint_standard_no-single-line-block-comment = disabled
+ktlint_standard_type-argument-comment = disabled
+ktlint_standard_type-parameter-comment = disabled
+ktlint_standard_spacing-between-declarations-with-comments = enabled
+ktlint_standard_value-argument-comment = disabled
+ktlint_standard_value-parameter-comment = disabled
+# Control flow
+ktlint_standard_if-else-bracing = disabled
+ktlint_standard_multiline-if-else = disabled
+ktlint_standard_multiline-loop = disabled
+# Enums
+ktlint_standard_enum-entry-name-case = enabled
+ktlint_enum_entry_name_casing = upper_cases
+# Files
+ktlint_standard_filename = enabled
+ktlint_standard_no-empty-file = enabled
+ktlint_standard_package-name = enabled
+# Functions and lambdas
+ktlint_standard_fun-keyword-spacing = enabled
+ktlint_standard_function-literal = enabled
+ktlint_standard_function-naming = enabled
+ktlint_standard_function-return-type-spacing = enabled
+ktlint_standard_function-signature = enabled
+ktlint_standard_function-start-of-body-spacing = enabled
+ktlint_standard_function-type-modifier-spacing = enabled
+ktlint_standard_no-unit-return = disabled
+ktlint_standard_spacing-between-function-name-and-opening-parenthesis = enabled
+ktlint_standard_unnecessary-parentheses-before-trailing-lambda = enabled
+ktlint_function_signature_body_expression_wrapping = multiline
+ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 5
+# Imports
+ktlint_standard_import-ordering = enabled
+ktlint_standard_no-unused-imports = enabled
 ktlint_standard_no-wildcard-imports = disabled
+# Indentation
+ktlint_standard_indent = enabled
+indent_size = 4
+indent_style = space
+# Lines
+ktlint_ignore_back_ticked_identifier = true
+ktlint_standard_max-line-length = enabled
+max_line_length = 140
+# Methods
+ktlint_standard_modifier-order = enabled
+# Properties
+ktlint_standard_backing-property-naming = enabled
+ktlint_standard_property-naming = enabled
+ktlint_standard_property-wrapping = enabled
+# Punctuation
+ktlint_standard_trailing-comma-on-call-site = enabled
+ktlint_standard_no-semi = enabled
+ij_kotlin_allow_trailing_comma_on_call_site = true
+ij_kotlin_allow_trailing_comma = true
+# Strings
+ktlint_standard_string-template = enabled
+ktlint_standard_string-template-indent = enabled
+# Whitespace - spaces
+ktlint_standard_colon-spacing = enabled
+ktlint_standard_comma-spacing = enabled
+ktlint_standard_curly-spacing = enabled
+ktlint_standard_dot-spacing = enabled
+ktlint_standard_double-colon-spacing = enabled
+ktlint_standard_keyword-spacing = enabled
+ktlint_standard_modifier-list-spacing = enabled
+ktlint_standard_no-multi-spaces = enabled
+ktlint_standard_no-trailing-spaces = enabled
+ktlint_standard_nullable-type-spacing = enabled
+ktlint_standard_op-spacing = enabled
+ktlint_standard_parameter-list-spacing = enabled
+ktlint_standard_paren-spacing = enabled
+ktlint_standard_range-spacing = enabled
+ktlint_standard_spacing-around-angle-brackets = enabled
+ktlint_standard_try-catch-finally-spacing = enabled
+ktlint_standard_type-argument-list-spacing = enabled
+ktlint_standard_type-parameter-list-spacing = enabled
+ktlint_standard_unary-op-spacing = enabled
+# Whitespace - line breaks
+ktlint_standard_blank-line-before-declaration = enabled
+ktlint_standard_no-empty-first-line-in-class-body = enabled
+ktlint_standard_no-empty-first-line-in-method-block = enabled
+ktlint_standard_no-blank-line-before-rbrace = enabled
+ktlint_standard_no-blank-line-in-list = enabled
+ktlint_standard_no-blank-lines-in-chained-method-calls = enabled
+ktlint_standard_no-consecutive-blank-lines = enabled
+ktlint_standard_no-line-break-after-else = enabled
+ktlint_standard_no-line-break-before-assignment = enabled
+# Wrapping
+ktlint_standard_argument-list-wrapping = enabled
+ktlint_standard_chain-wrapping = enabled
+ktlint_standard_condition-wrapping = enabled
+ktlint_standard_context-receiver-wrapping = enabled
+ktlint_standard_enum-wrapping = enabled
 ktlint_standard_if-else-wrapping = disabled
+ktlint_standard_multiline-expression-wrapping = enabled
+ktlint_standard_wrapping = enabled
+ktlint_standard_statement-wrapping = enabled
+ktlint_standard_parameter-wrapping = enabled
+ktlint_standard_parameter-list-wrapping = enabled

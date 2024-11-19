@@ -20,10 +20,7 @@ class CacophonyPattern {
                 ),
             )
 
-        override fun makeInstance(
-            fill: SlotFill,
-            destination: Register,
-        ): List<Instruction> {
+        override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> {
             TODO("Not yet implemented")
         }
     }

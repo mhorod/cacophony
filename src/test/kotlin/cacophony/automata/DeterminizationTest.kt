@@ -27,10 +27,7 @@ class DeterminizationTest {
 
             override fun getProductions() = productions
 
-            override fun getProductions(
-                state: Int,
-                symbol: Char,
-            ) = productions[state to symbol] ?: emptyList()
+            override fun getProductions(state: Int, symbol: Char) = productions[state to symbol] ?: emptyList()
 
             override fun getEpsilonProductions() = epsilonProductions
 

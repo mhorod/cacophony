@@ -56,10 +56,7 @@ class LLOneParserTest {
         RPAREN,
     }
 
-    private fun <S : Enum<S>> terminal(
-        symbol: S,
-        loc: Int,
-    ) = ParseTree.Leaf(Token(symbol, "a", Location(loc), Location(loc + 1)))
+    private fun <S : Enum<S>> terminal(symbol: S, loc: Int) = ParseTree.Leaf(Token(symbol, "a", Location(loc), Location(loc + 1)))
 
     @MockK
     lateinit var diagnostics: Diagnostics

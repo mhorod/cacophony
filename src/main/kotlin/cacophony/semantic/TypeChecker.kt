@@ -21,11 +21,7 @@ typealias TypeCheckingResult = Map<Expression, TypeExpr>
 private val builtinTypes = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
 
 // Result contains every variable that could be properly typed
-fun checkTypes(
-    ast: AST,
-    diagnostics: Diagnostics,
-    resolvedVariables: ResolvedVariables,
-): TypeCheckingResult {
+fun checkTypes(ast: AST, diagnostics: Diagnostics, resolvedVariables: ResolvedVariables): TypeCheckingResult {
     val typer = Typer(diagnostics, resolvedVariables, builtinTypes)
     typer.typeExpression(ast)
     return typer.result
@@ -57,17 +53,20 @@ private class Typer(
                         if (voided) TypeExpr.VoidType else result[expression.expressions.last()]
                     }
                 }
+
                 is Definition.VariableDeclaration -> {
                     val deducedType = typeExpression(expression.value) ?: return null
                     val variableType = initializedType(expression.type, deducedType, expression.value.range) ?: return null
                     typedVariables[expression] = variableType
                     BuiltinType.UnitType
                 }
+
                 is Definition.FunctionArgument -> {
                     val argType = translateType(expression.type) ?: return null
                     typedVariables[expression] = argType
                     argType
                 }
+
                 is Definition.FunctionDeclaration -> {
                     // does not type anything inside if argument or result types are incorrect
                     val argsType = parseArgs(expression.arguments) ?: return null
@@ -84,6 +83,7 @@ private class Typer(
                     }
                     BuiltinType.UnitType
                 }
+
                 is Empty -> BuiltinType.UnitType
                 is FunctionCall -> {
                     val argsTypes = expression.arguments.map { typeExpression(it) }
@@ -110,6 +110,7 @@ private class Typer(
                         }.forEach { if (!it) return null }
                     functionType.result
                 }
+
                 is Literal.BoolLiteral -> BuiltinType.BooleanType
                 is Literal.IntLiteral -> BuiltinType.IntegerType
                 is OperatorBinary.Addition -> typeOperatorBinary(expression, BuiltinType.IntegerType, BuiltinType.IntegerType)
@@ -134,6 +135,7 @@ private class Typer(
                     }
                     lhsType
                 }
+
                 is OperatorBinary.Equals -> {
                     val (lhsType, rhsType) = typeBinary(expression) ?: return null
                     if (lhsType != rhsType) {
@@ -146,6 +148,7 @@ private class Typer(
                     }
                     BuiltinType.BooleanType
                 }
+
                 is OperatorBinary.NotEquals -> {
                     val (lhsType, rhsType) = typeBinary(expression) ?: return null
                     if (lhsType != rhsType) {
@@ -158,6 +161,7 @@ private class Typer(
                     }
                     BuiltinType.BooleanType
                 }
+
                 is OperatorBinary.Greater -> typeOperatorBinary(expression, BuiltinType.IntegerType, BuiltinType.BooleanType)
                 is OperatorBinary.GreaterEqual -> typeOperatorBinary(expression, BuiltinType.IntegerType, BuiltinType.BooleanType)
                 is OperatorBinary.Less -> typeOperatorBinary(expression, BuiltinType.IntegerType, BuiltinType.BooleanType)
@@ -172,6 +176,7 @@ private class Typer(
                     }
                     BuiltinType.IntegerType
                 }
+
                 is OperatorUnary.Negation -> {
                     val innerType = typeExpression(expression.expression) ?: return null
                     if (!isSubtype(innerType, BuiltinType.BooleanType)) {
@@ -180,6 +185,7 @@ private class Typer(
                     }
                     BuiltinType.BooleanType
                 }
+
                 is Statement.BreakStatement -> {
                     if (whileDepth == 0) {
                         error.breakOutsideWhile(expression.range)
@@ -187,6 +193,7 @@ private class Typer(
                     }
                     TypeExpr.VoidType
                 }
+
                 is Statement.IfElseStatement -> {
                     val trueBranchType = typeExpression(expression.doExpression)
                     val falseBranchType =
@@ -211,6 +218,7 @@ private class Typer(
                         return null
                     }
                 }
+
                 is Statement.ReturnStatement -> {
                     val returnedType = typeExpression(expression.value) ?: return null
                     if (functionContext.isEmpty()) {
@@ -223,6 +231,7 @@ private class Typer(
                     }
                     TypeExpr.VoidType
                 }
+
                 is Statement.WhileStatement -> {
                     whileDepth++
                     typeExpression(expression.doExpression)
@@ -234,6 +243,7 @@ private class Typer(
                     }
                     BuiltinType.UnitType
                 }
+
                 is VariableUse -> typedVariables[resolvedVariables[expression]!!]
             }
         if (expressionType != null) result[expression] = expressionType
@@ -241,11 +251,7 @@ private class Typer(
     }
 
     // returns type of x in constructions `let x (: type) = expr`
-    private fun initializedType(
-        type: Type?,
-        deducedType: TypeExpr,
-        range: Pair<Location, Location>,
-    ): TypeExpr? {
+    private fun initializedType(type: Type?, deducedType: TypeExpr, range: Pair<Location, Location>): TypeExpr? {
         return if (type != null) {
             val declaredType = translateType(type) ?: return null
             if (!isSubtype(deducedType, declaredType)) {
@@ -268,6 +274,7 @@ private class Typer(
                     error.unknownType(type.range)
                     null
                 }
+
             is Type.Functional -> {
                 val args = type.argumentsType.map { translateType(it) }
                 val ret = translateType(type.returnType)
@@ -305,11 +312,7 @@ private class Typer(
     }
 
     // handles +, -, etc.
-    private fun typeOperatorBinary(
-        expression: OperatorBinary,
-        type: TypeExpr,
-        result: TypeExpr,
-    ): TypeExpr? {
+    private fun typeOperatorBinary(expression: OperatorBinary, type: TypeExpr, result: TypeExpr): TypeExpr? {
         val (lhsType, rhsType) = typeBinary(expression) ?: return null
         if (!isSubtype(lhsType, type)) {
             error.typeMismatchError(type, lhsType, expression.lhs.range)
@@ -327,11 +330,7 @@ private class Typer(
 private class ErrorHandler(
     val diagnostics: Diagnostics,
 ) {
-    fun typeMismatchError(
-        expected: TypeExpr,
-        found: TypeExpr,
-        range: Pair<Location, Location>,
-    ) {
+    fun typeMismatchError(expected: TypeExpr, found: TypeExpr, range: Pair<Location, Location>) {
         diagnostics.report(TypeCheckerDiagnostics.TypeMismatch(expected.toString(), found.toString()), range)
     }
 
@@ -347,19 +346,11 @@ private class ErrorHandler(
         diagnostics.report(TypeCheckerDiagnostics.ExpectedLValueReference, range)
     }
 
-    fun operationNotSupportedOn(
-        operation: String,
-        type: TypeExpr,
-        range: Pair<Location, Location>,
-    ) {
+    fun operationNotSupportedOn(operation: String, type: TypeExpr, range: Pair<Location, Location>) {
         diagnostics.report(TypeCheckerDiagnostics.UnsupportedOperation(type.toString(), operation), range)
     }
 
-    fun noCommonType(
-        type1: TypeExpr,
-        type2: TypeExpr,
-        range: Pair<Location, Location>,
-    ) {
+    fun noCommonType(type1: TypeExpr, type2: TypeExpr, range: Pair<Location, Location>) {
         diagnostics.report(TypeCheckerDiagnostics.NoCommonType(type1.toString(), type2.toString()), range)
     }
 
@@ -402,10 +393,7 @@ class FunctionType(
     val result: TypeExpr,
 ) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
 
-fun isSubtype(
-    subtype: TypeExpr,
-    type: TypeExpr,
-): Boolean {
+fun isSubtype(subtype: TypeExpr, type: TypeExpr): Boolean {
     if (subtype == TypeExpr.VoidType) return true
     return subtype.name == type.name
 }

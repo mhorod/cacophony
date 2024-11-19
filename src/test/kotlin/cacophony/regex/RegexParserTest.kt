@@ -11,15 +11,13 @@ import org.junit.jupiter.api.assertThrows
 
 class RegexParserTest {
     // Checks _exact_ structure, i.e. returns false for (a|b) and (b|a).
-    private fun <AtomT> algebraicRegexEquals(
-        x: AlgebraicRegex<AtomT>,
-        y: AlgebraicRegex<AtomT>,
-    ): Boolean {
+    private fun <AtomT> algebraicRegexEquals(x: AlgebraicRegex<AtomT>, y: AlgebraicRegex<AtomT>): Boolean {
         when (x) {
             is AtomicRegex ->
                 if (y is AtomicRegex) {
                     return x.symbol == y.symbol
                 }
+
             is ConcatenationRegex ->
                 if (y is ConcatenationRegex) {
                     return x.internalRegexes.size == y.internalRegexes.size &&
@@ -27,10 +25,12 @@ class RegexParserTest {
                             algebraicRegexEquals(a, b)
                         }
                 }
+
             is StarRegex ->
                 if (y is StarRegex) {
                     return algebraicRegexEquals(x.internalRegex, y.internalRegex)
                 }
+
             is UnionRegex ->
                 if (y is UnionRegex) {
                     return x.internalRegexes.size == y.internalRegexes.size &&
@@ -51,6 +51,7 @@ class RegexParserTest {
                     "(",
                     ")",
                 ) { algebraicRegexToString(it) }
+
             is StarRegex -> "(${algebraicRegexToString(ar.internalRegex)})*"
             is UnionRegex ->
                 ar.internalRegexes.joinToString(
@@ -60,10 +61,7 @@ class RegexParserTest {
                 ) { algebraicRegexToString(it) }
         }
 
-    private fun <AtomT> assertEqualAlgebraicRegex(
-        result: AlgebraicRegex<AtomT>,
-        expected: AlgebraicRegex<AtomT>,
-    ) {
+    private fun <AtomT> assertEqualAlgebraicRegex(result: AlgebraicRegex<AtomT>, expected: AlgebraicRegex<AtomT>) {
         assert(algebraicRegexEquals(result, expected)) {
             println("result: ${algebraicRegexToString(result)}\nexpect: ${algebraicRegexToString(expected)}")
         }

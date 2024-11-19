@@ -16,20 +16,14 @@ import kotlin.collections.mutableMapOf
 
 typealias CallGraph = Map<Definition.FunctionDeclaration, Set<Definition.FunctionDeclaration>>
 
-fun generateCallGraph(
-    ast: AST,
-    diagnostics: Diagnostics,
-    resolvedVariables: ResolvedVariables,
-): CallGraph = CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null)
+fun generateCallGraph(ast: AST, diagnostics: Diagnostics, resolvedVariables: ResolvedVariables): CallGraph =
+    CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null)
 
 private class CallGraphProvider(
     private val diagnostics: Diagnostics,
     private val resolvedVariables: ResolvedVariables,
 ) {
-    public fun generateDirectCallGraph(
-        node: Expression?,
-        currentFn: Definition.FunctionDeclaration?,
-    ): CallGraph =
+    public fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDeclaration?): CallGraph =
         when (node) {
             is Definition.FunctionDeclaration -> generateDirectCallGraph(node.body, node)
             is FunctionCall ->
@@ -37,6 +31,7 @@ private class CallGraphProvider(
                     handleDirectFunctionCall(node.function, currentFn),
                     *node.arguments.map { generateDirectCallGraph(it, currentFn) }.toTypedArray(),
                 )
+
             is Definition.VariableDeclaration -> generateDirectCallGraph(node.value, currentFn)
             is Statement.IfElseStatement ->
                 merge(
@@ -44,11 +39,13 @@ private class CallGraphProvider(
                     generateDirectCallGraph(node.doExpression, currentFn),
                     generateDirectCallGraph(node.elseExpression, currentFn),
                 )
+
             is Statement.WhileStatement ->
                 merge(
                     generateDirectCallGraph(node.testExpression, currentFn),
                     generateDirectCallGraph(node.doExpression, currentFn),
                 )
+
             is Statement.ReturnStatement -> generateDirectCallGraph(node.value, currentFn)
             is OperatorUnary -> generateDirectCallGraph(node.expression, currentFn)
             is OperatorBinary ->
@@ -56,37 +53,38 @@ private class CallGraphProvider(
                     generateDirectCallGraph(node.lhs, currentFn),
                     generateDirectCallGraph(node.rhs, currentFn),
                 )
+
             is Block ->
                 merge(*node.expressions.map { generateDirectCallGraph(it, currentFn) }.toTypedArray())
+
             is LeafExpression -> mutableMapOf() // don't use else branch to prevent this from breaking when SyntaxTree is changed
             null -> mutableMapOf()
         }
 
-    private fun handleDirectFunctionCall(
-        fn: Expression,
-        currentFn: Definition.FunctionDeclaration?,
-    ) = when (fn) {
-        is VariableUse -> {
-            when (val decl = resolvedVariables[fn]) {
-                is Definition.FunctionDeclaration ->
-                    currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
-                is Definition -> {
-                    diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)
-                    throw diagnostics.fatal()
-                }
-                null -> {
-                    diagnostics.report(CallGraphDiagnostics.CallingNonExistentIdentifier(fn.identifier), fn.range)
-                    throw diagnostics.fatal()
+    private fun handleDirectFunctionCall(fn: Expression, currentFn: Definition.FunctionDeclaration?) =
+        when (fn) {
+            is VariableUse -> {
+                when (val decl = resolvedVariables[fn]) {
+                    is Definition.FunctionDeclaration ->
+                        currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
+
+                    is Definition -> {
+                        diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)
+                        throw diagnostics.fatal()
+                    }
+
+                    null -> {
+                        diagnostics.report(CallGraphDiagnostics.CallingNonExistentIdentifier(fn.identifier), fn.range)
+                        throw diagnostics.fatal()
+                    }
                 }
             }
+
+            else -> generateDirectCallGraph(fn, currentFn)
         }
-        else -> generateDirectCallGraph(fn, currentFn)
-    }
 }
 
-private fun <K, V> merge(
-    to: MutableMap<K, MutableSet<V>>,
-    vararg other: Map<K, Set<V>>,
-) = other.forEach { from -> from.forEach { (k, v) -> to.getOrPut(k) { mutableSetOf() } += v } }.let { to }
+private fun <K, V> merge(to: MutableMap<K, MutableSet<V>>, vararg other: Map<K, Set<V>>) =
+    other.forEach { from -> from.forEach { (k, v) -> to.getOrPut(k) { mutableSetOf() } += v } }.let { to }
 
 private fun <K, V> merge(vararg maps: Map<K, Set<V>>) = merge(mutableMapOf(), *maps)

@@ -11,10 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
 class ASTGenerationTests {
-    private fun assertEquivalentAST(
-        expected: AST,
-        actual: AST,
-    ) {
+    private fun assertEquivalentAST(expected: AST, actual: AST) {
         if (expected.isEquivalent(actual)) {
             return
         }
@@ -29,10 +26,7 @@ class ASTGenerationTests {
         }
     }
 
-    private fun locationPair(
-        from: Int,
-        to: Int,
-    ): Pair<Location, Location> = Pair(Location(from), Location(to))
+    private fun locationPair(from: Int, to: Int): Pair<Location, Location> = Pair(Location(from), Location(to))
 
     private fun anyLocation(): Pair<Location, Location> {
         val mock = mockk<Pair<Location, Location>>()
@@ -148,7 +142,8 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Block( // false; ();;
+                    Block(
+                        // false; ();;
                         anyLocation(),
                         listOf(
                             literal(false),

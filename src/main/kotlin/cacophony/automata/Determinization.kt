@@ -13,10 +13,7 @@ fun <StateT, AtomT> determinize(nfa: NFA<StateT, AtomT>): DFA<Int, AtomT, Unit> 
         },
     )
 
-private fun <StateT, AtomT> determinize(
-    nfa: NFA<StateT, AtomT>,
-    atoms: Iterable<AtomT>,
-): DFA<Int, AtomT, Unit> {
+private fun <StateT, AtomT> determinize(nfa: NFA<StateT, AtomT>, atoms: Iterable<AtomT>): DFA<Int, AtomT, Unit> {
     val startingState: Set<StateT> = nfa.epsilonClosure(setOf(nfa.getStartingState()))
     val createdStates = mutableSetOf(startingState)
     val worklist = ArrayDeque(listOf(startingState))
@@ -64,10 +61,7 @@ private fun <StateT> NFA<StateT, *>.epsilonClosure(states: Collection<StateT>): 
     return visited
 }
 
-private fun <StateT, AtomT> NFA<StateT, AtomT>.getSetEdge(
-    states: Set<StateT>,
-    symbol: AtomT,
-): Set<StateT> =
+private fun <StateT, AtomT> NFA<StateT, AtomT>.getSetEdge(states: Set<StateT>, symbol: AtomT): Set<StateT> =
     this.epsilonClosure(states).let { closure ->
         this.epsilonClosure(closure.flatMap { this.getProductions(it, symbol) }.toSet())
     }

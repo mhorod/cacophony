@@ -39,19 +39,13 @@ class FileInput(
         }
     }
 
-    private fun getCharAtPosition(
-        lineInd: Int,
-        pos: Int,
-    ): Char? {
+    private fun getCharAtPosition(lineInd: Int, pos: Int): Char? {
         if (lines.elementAtOrNull(lineInd) == null) return null
         return lines[lineInd].elementAtOrNull(pos)
     }
 
     // Location is encoded as the position in the string formed by the concatenation of all lines.
-    private fun encodeLocation(
-        lineInd: Int,
-        pos: Int,
-    ): Location = Location(lineBeginPos[lineInd] + pos)
+    private fun encodeLocation(lineInd: Int, pos: Int): Location = Location(lineBeginPos[lineInd] + pos)
 
     // Returns first after last position if not in range.
     private fun decodeLocation(loc: Location): Pair<Int, Int> {
@@ -92,10 +86,7 @@ class FileInput(
         return "line $lineInd, position $pos with '$charAtLoc'"
     }
 
-    override fun locationRangeToString(
-        locBegin: Location,
-        locEnd: Location,
-    ): String {
+    override fun locationRangeToString(locBegin: Location, locEnd: Location): String {
         if (locBegin == locEnd) return locationToString(locBegin)
 
         val (lineIndBegin, posBegin) = decodeLocation(locBegin)

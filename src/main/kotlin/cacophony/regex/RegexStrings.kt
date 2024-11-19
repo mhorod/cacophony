@@ -2,6 +2,7 @@ package cacophony.regex
 
 import cacophony.token.TokenCategoryGeneral
 import cacophony.token.TokenCategorySpecific
+
 // we will want to use only one of them
 
 object RegexStrings {

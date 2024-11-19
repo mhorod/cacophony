@@ -21,11 +21,7 @@ class FunctionHandlerTest {
 
     @Nested
     inner class GenerateCall {
-        private fun checkStaticLinkInGenerateCallFrom(
-            callee: FunctionHandler,
-            caller: FunctionHandler,
-            expectedStaticLink: CFGNode,
-        ) {
+        private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: CFGNode) {
             mockkStatic(::generateCall)
             callee.generateCallFrom(
                 caller,
@@ -60,10 +56,7 @@ class FunctionHandlerTest {
                 analyzedFunction
             }
 
-        private fun mockFunDeclarationAndFunHandlerWithParents(
-            argumentCount: Int,
-            chainLength: Int,
-        ): List<FunctionHandlerImpl> =
+        private fun mockFunDeclarationAndFunHandlerWithParents(argumentCount: Int, chainLength: Int): List<FunctionHandlerImpl> =
             run {
                 val functionHandlers = mutableListOf<FunctionHandlerImpl>()
                 for (i in 1..chainLength) {
@@ -91,11 +84,7 @@ class FunctionHandlerTest {
         private fun mockFunDeclarationAndFunHandler(argumentCount: Int): FunctionHandlerImpl =
             mockFunDeclarationAndFunHandlerWithParents(argumentCount, 1)[0]
 
-        private fun getCallNodes(
-            argumentCount: Int,
-            result: Register?,
-            alignStack: Boolean,
-        ): List<CFGNode> =
+        private fun getCallNodes(argumentCount: Int, result: Register?, alignStack: Boolean): List<CFGNode> =
             generateCall(
                 mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
                 (1..argumentCount + 1).map { mockk() },

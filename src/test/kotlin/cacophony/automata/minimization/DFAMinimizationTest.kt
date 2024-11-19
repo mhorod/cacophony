@@ -214,10 +214,7 @@ class DFAMinimizationTest {
         checkThatMinimizedDFAIsMinimal(dfa)
     }
 
-    private fun generateRandomDFA(
-        n: Int,
-        random: Random,
-    ): DFA<Int, Char, Unit> {
+    private fun generateRandomDFA(n: Int, random: Random): DFA<Int, Char, Unit> {
         val density = 0.2
         val symbols = "abc"
         val states = 1..n

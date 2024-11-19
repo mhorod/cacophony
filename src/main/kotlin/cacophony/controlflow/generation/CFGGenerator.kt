@@ -47,10 +47,7 @@ internal class CFGGenerator(
         return cfg.cfgFragment(extended.entry.label)
     }
 
-    internal fun ensureExtracted(
-        subCFG: SubCFG,
-        mode: EvalMode,
-    ): SubCFG.Extracted =
+    internal fun ensureExtracted(subCFG: SubCFG, mode: EvalMode): SubCFG.Extracted =
         when (subCFG) {
             is SubCFG.Extracted -> subCFG
             is SubCFG.Immediate ->
@@ -75,11 +72,8 @@ internal class CFGGenerator(
     /**
      * Convert the expression into SubCFG extracted to a separate vertex
      */
-    internal fun visitExtracted(
-        expression: Expression,
-        mode: EvalMode,
-        context: Context,
-    ) = ensureExtracted(visit(expression, mode, context), mode)
+    internal fun visitExtracted(expression: Expression, mode: EvalMode, context: Context) =
+        ensureExtracted(visit(expression, mode, context), mode)
 
     /**
      * Convert the expression into SubCFG
@@ -87,11 +81,7 @@ internal class CFGGenerator(
      * @param expression Expression to be converted
      * @param mode Mode of conversion, see [EvalMode]
      */
-    internal fun visit(
-        expression: Expression,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG =
+    internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
             is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
@@ -109,11 +99,7 @@ internal class CFGGenerator(
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
-    private fun visitBlock(
-        expression: Block,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitBlock(expression: Block, mode: EvalMode, context: Context): SubCFG {
         val last = expression.expressions.lastOrNull() ?: return SubCFG.Immediate(noOpOrUnit(mode))
         val prerequisiteSubCFGs =
             expression.expressions.dropLast(1)
@@ -124,19 +110,12 @@ internal class CFGGenerator(
 
     private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
-    private fun visitVariableDeclaration(
-        expression: Definition.VariableDeclaration,
-        mode: EvalMode,
-        context: Context,
-    ) = assignmentHandler.generateAssignment(expression, expression.value, mode, context, false)
+    private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode, context: Context) =
+        assignmentHandler.generateAssignment(expression, expression.value, mode, context, false)
 
     private fun visitEmpty(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
-    private fun visitFunctionCall(
-        expression: FunctionCall,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitFunctionCall(expression: FunctionCall, mode: EvalMode, context: Context): SubCFG {
         val argumentVertices =
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
@@ -167,10 +146,7 @@ internal class CFGGenerator(
         return SubCFG.Extracted(entry, callSequence.exit, resultAccess)
     }
 
-    private fun visitLiteral(
-        literal: Literal,
-        mode: EvalMode,
-    ): SubCFG =
+    private fun visitLiteral(literal: Literal, mode: EvalMode): SubCFG =
         when (mode) {
             is EvalMode.Value ->
                 SubCFG.Immediate(
@@ -190,11 +166,7 @@ internal class CFGGenerator(
             }
         }
 
-    private fun visitAssignment(
-        expression: OperatorBinary.Assignment,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitAssignment(expression: OperatorBinary.Assignment, mode: EvalMode, context: Context): SubCFG {
         val variableUse =
             expression.lhs as? VariableUse
                 ?: error("Expected variable use in assignment lhs, got ${expression.lhs}")
@@ -202,11 +174,7 @@ internal class CFGGenerator(
         return assignmentHandler.generateAssignment(definition, expression.rhs, mode, context, true)
     }
 
-    private fun visitOperatorBinary(
-        expression: OperatorBinary,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG =
+    private fun visitOperatorBinary(expression: OperatorBinary, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is OperatorBinary.Assignment -> visitAssignment(expression, mode, context)
             is OperatorBinary.ArithmeticOperator -> operatorHandler.visitArithmeticOperator(expression, mode, context)
@@ -216,21 +184,13 @@ internal class CFGGenerator(
             is OperatorBinary.LogicalOperator -> operatorHandler.visitLogicalOperator(expression, mode, context)
         }
 
-    private fun visitOperatorUnary(
-        expression: OperatorUnary,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG =
+    private fun visitOperatorUnary(expression: OperatorUnary, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is OperatorUnary.Negation -> operatorHandler.visitNegationOperator(expression, mode, context)
             is OperatorUnary.Minus -> operatorHandler.visitMinusOperator(expression, mode, context)
         }
 
-    private fun visitIfElseStatement(
-        expression: Statement.IfElseStatement,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitIfElseStatement(expression: Statement.IfElseStatement, mode: EvalMode, context: Context): SubCFG {
         if (expression.testExpression is Literal.BoolLiteral) {
             return shortenTrivialIfStatement(
                 expression,
@@ -263,11 +223,7 @@ internal class CFGGenerator(
         }
     }
 
-    internal fun extendWithAssignment(
-        subCFG: SubCFG,
-        destination: CFGNode.LValue,
-        mode: EvalMode,
-    ): SubCFG.Extracted =
+    internal fun extendWithAssignment(subCFG: SubCFG, destination: CFGNode.LValue, mode: EvalMode): SubCFG.Extracted =
         when (mode) {
             is EvalMode.Value -> {
                 val writeResultNode = CFGNode.Assignment(destination, subCFG.access)
@@ -285,11 +241,7 @@ internal class CFGGenerator(
             else -> ensureExtracted(subCFG, mode)
         }
 
-    private fun shortenTrivialIfStatement(
-        expression: Statement.IfElseStatement,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun shortenTrivialIfStatement(expression: Statement.IfElseStatement, mode: EvalMode, context: Context): SubCFG {
         check(expression.testExpression is Literal.BoolLiteral) { "Expected testExpression to be BoolLiteral" }
 
         return if (expression.testExpression.value) {
@@ -301,10 +253,7 @@ internal class CFGGenerator(
         }
     }
 
-    private fun visitReturnStatement(
-        expression: Statement.ReturnStatement,
-        context: Context,
-    ): SubCFG {
+    private fun visitReturnStatement(expression: Statement.ReturnStatement, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
             CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX)), valueCFG.access)
@@ -319,11 +268,7 @@ internal class CFGGenerator(
         return SubCFG.Extracted(resultAssignmentVertex, artificialExit, CFGNode.NoOp)
     }
 
-    private fun visitWhileStatement(
-        expression: Statement.WhileStatement,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitWhileStatement(expression: Statement.WhileStatement, mode: EvalMode, context: Context): SubCFG {
         check(mode !is EvalMode.Conditional) { "While statement cannot be used as a condition" }
         // while (condition) do (body) is translated to
         // entry: if (condition) then (body; Jump(entry)) else exit
@@ -346,10 +291,7 @@ internal class CFGGenerator(
         return SubCFG.Extracted(vertex, artificialExit, CFGNode.NoOp)
     }
 
-    private fun visitVariableUse(
-        expression: VariableUse,
-        mode: EvalMode,
-    ): SubCFG {
+    private fun visitVariableUse(expression: VariableUse, mode: EvalMode): SubCFG {
         val definition = resolvedVariables[expression] ?: error("Unresolved variable $expression")
         val variableAccess =
             getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))

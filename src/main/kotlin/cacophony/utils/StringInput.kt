@@ -34,10 +34,7 @@ class StringInput(private val text: String) : Input {
         return "position ${loc.value} with '${text.elementAtOrNull(loc.value)}'"
     }
 
-    override fun locationRangeToString(
-        locBegin: Location,
-        locEnd: Location,
-    ): String {
+    override fun locationRangeToString(locBegin: Location, locEnd: Location): String {
         assert(locBegin.value <= locEnd.value)
 
         val content = text.substring(locBegin.value, min(locEnd.value, text.length))
