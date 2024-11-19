@@ -99,11 +99,7 @@ internal class CFGGenerator(
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
-    private fun visitBlock(
-        expression: Block,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitBlock(expression: Block, mode: EvalMode, context: Context): SubCFG {
         return if (expression.expressions.isEmpty()) {
             SubCFG.Immediate(noOpOrUnit(mode))
         } else if (expression.expressions.size == 1) {

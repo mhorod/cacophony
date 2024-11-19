@@ -32,10 +32,7 @@ import org.junit.jupiter.params.provider.MethodSource
 class ConditionalOperatorsTest {
     @ParameterizedTest
     @MethodSource("logicalOperators")
-    fun `logical operators in conditional mode with non-extracted operands`(
-        makeExpr: MakeBinaryExpression,
-        makeNode: MakeBinaryNode,
-    ) {
+    fun `logical operators in conditional mode with non-extracted operands`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
             functionDeclaration(
@@ -84,10 +81,7 @@ class ConditionalOperatorsTest {
 
     @ParameterizedTest
     @MethodSource("logicalOperators")
-    fun `logical operators in conditional mode with extracted lhs`(
-        makeExpr: MakeBinaryExpression,
-        makeNode: MakeBinaryNode,
-    ) {
+    fun `logical operators in conditional mode with extracted lhs`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
             functionDeclaration(
@@ -143,10 +137,7 @@ class ConditionalOperatorsTest {
 
     @ParameterizedTest
     @MethodSource("logicalOperators")
-    fun `logical operators in conditional mode with extracted rhs`(
-        makeExpr: MakeBinaryExpression,
-        makeNode: MakeBinaryNode,
-    ) {
+    fun `logical operators in conditional mode with extracted rhs`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
             functionDeclaration(
@@ -202,10 +193,7 @@ class ConditionalOperatorsTest {
 
     @ParameterizedTest
     @MethodSource("logicalOperators")
-    fun `logical operators in conditional mode with extracted operands`(
-        makeExpr: MakeBinaryExpression,
-        makeNode: MakeBinaryNode,
-    ) {
+    fun `logical operators in conditional mode with extracted operands`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
             functionDeclaration(
