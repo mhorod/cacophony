@@ -152,12 +152,13 @@ internal class OperatorHandler(
         return when (mode) {
             is EvalMode.Conditional -> {
                 val conditionVertex = cfg.addConditionalVertex(valueCFG.access)
-                val entry = if (valueCFG is SubCFG.Extracted) {
-                    valueCFG.exit.connect(conditionVertex.label)
-                    valueCFG.entry
-                } else {
-                    conditionVertex
-                }
+                val entry =
+                    if (valueCFG is SubCFG.Extracted) {
+                        valueCFG.exit.connect(conditionVertex.label)
+                        valueCFG.entry
+                    } else {
+                        conditionVertex
+                    }
                 conditionVertex.connectTrue(mode.trueEntry.label)
                 conditionVertex.connectFalse(mode.falseEntry.label)
                 SubCFG.Extracted(entry, mode.exit, CFGNode.NoOp)
