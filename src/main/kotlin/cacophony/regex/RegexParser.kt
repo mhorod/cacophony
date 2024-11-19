@@ -23,6 +23,7 @@ fun parseRegex(str: String): AlgebraicRegex<Char> {
                     if (it != 0 && (regex[it - 1] !in "(|" || lastEscaped == it - 1)) parser.pushOperation(ConcatOperator)
                     parser.pushOperation(LeftParenthesis)
                 }
+
                 ')' -> parser.closeParenthesis()
                 '*' -> parser.pushOperation(StarOperator)
                 '|' -> parser.pushOperation(UnionOperator)
@@ -121,39 +122,32 @@ private sealed class InfixOperator(
         stack.add(merge(y, x))
     }
 
-    abstract fun merge(
-        x: RegexT,
-        y: RegexT,
-    ): RegexT
+    abstract fun merge(x: RegexT, y: RegexT): RegexT
 }
 
 private data object UnionOperator : InfixOperator(1) {
-    override fun merge(
-        x: RegexT,
-        y: RegexT,
-    ) = if (x is Union) {
-        x.summands.add(y)
-        x
-    } else if (y is Union) {
-        // Does not need to be at 0, but this is more consistent with string representation.
-        y.summands.add(0, x)
-        y
-    } else {
-        Union(mutableListOf(x, y))
-    }
+    override fun merge(x: RegexT, y: RegexT) =
+        if (x is Union) {
+            x.summands.add(y)
+            x
+        } else if (y is Union) {
+            // Does not need to be at 0, but this is more consistent with string representation.
+            y.summands.add(0, x)
+            y
+        } else {
+            Union(mutableListOf(x, y))
+        }
 }
 
 private data object ConcatOperator : InfixOperator(2) {
-    override fun merge(
-        x: RegexT,
-        y: RegexT,
-    ) = if (x is Concat) {
-        x.factors.add(y)
-        x
-    } else if (y is Concat) {
-        y.factors.add(0, x)
-        y
-    } else {
-        Concat(mutableListOf(x, y))
-    }
+    override fun merge(x: RegexT, y: RegexT) =
+        if (x is Concat) {
+            x.factors.add(y)
+            x
+        } else if (y is Concat) {
+            y.factors.add(0, x)
+            y
+        } else {
+            Concat(mutableListOf(x, y))
+        }
 }

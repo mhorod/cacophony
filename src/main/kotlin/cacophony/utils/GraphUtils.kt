@@ -3,10 +3,7 @@ package cacophony.utils
 import kotlin.math.min
 
 // Returns a set of all elements reachable from a collection of nodes in a directed graph.
-fun <VertexT> getReachableFrom(
-    from: Collection<VertexT>,
-    graph: Map<VertexT, Collection<VertexT>>,
-): Set<VertexT> {
+fun <VertexT> getReachableFrom(from: Collection<VertexT>, graph: Map<VertexT, Collection<VertexT>>): Set<VertexT> {
     val reachable = from.toMutableSet()
     val workList = from.toMutableList()
     while (workList.isNotEmpty()) {

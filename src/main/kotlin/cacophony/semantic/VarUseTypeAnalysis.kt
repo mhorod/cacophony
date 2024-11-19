@@ -4,11 +4,7 @@ import cacophony.semantic.syntaxtree.*
 
 typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseType>>
 
-fun analyzeVarUseTypes(
-    ast: AST,
-    resolvedVariables: ResolvedVariables,
-    functionAnalysis: FunctionAnalysisResult,
-): UseTypeAnalysisResult {
+fun analyzeVarUseTypes(ast: AST, resolvedVariables: ResolvedVariables, functionAnalysis: FunctionAnalysisResult): UseTypeAnalysisResult {
     val visitor = VarUseVisitor(resolvedVariables, functionAnalysis)
     visitor.visit(ast)
     return visitor.getAnalysisResult()
@@ -17,10 +13,7 @@ fun analyzeVarUseTypes(
 private class UseTypesForExpression(
     private val map: MutableMap<Definition, VariableUseType>,
 ) {
-    fun add(
-        definition: Definition,
-        type: VariableUseType,
-    ) {
+    fun add(definition: Definition, type: VariableUseType) {
         val previousType =
             map.getOrElse(
                 definition,
@@ -104,6 +97,7 @@ private class VarUseVisitor(
             is OperatorBinary.DivisionAssignment,
             is OperatorBinary.ModuloAssignment,
             -> visitCompoundAssignment(expr)
+
             else -> {
                 visitExpression(expr.lhs)
                 visitExpression(expr.rhs)
@@ -192,7 +186,8 @@ private class VarUseVisitor(
             UseTypesForExpression.merge(
                 useTypeAnalysis[expr.function],
             )
-        expr.arguments.forEach { // arguments should be marked as read-used
+        expr.arguments.forEach {
+            // arguments should be marked as read-used
             visitExpression(it)
             useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[it]!!)
         }

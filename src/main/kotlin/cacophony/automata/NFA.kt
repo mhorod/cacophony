@@ -14,10 +14,7 @@ interface NFA<StateT, AtomT> {
     fun getAllStates(): List<StateT>
 
     // Returns list of reachable states, returned list may be empty.
-    fun getProductions(
-        state: StateT,
-        symbol: AtomT,
-    ): List<StateT>
+    fun getProductions(state: StateT, symbol: AtomT): List<StateT>
 
     // Returns all non-epsilon productions.
     // Returned value is map accepting current state and symbol, and returning all reachable states.
@@ -56,10 +53,7 @@ data class SimpleNFA<AtomT>(
 
     override fun getProductions() = prod
 
-    override fun getProductions(
-        state: Int,
-        symbol: AtomT,
-    ) = prod[state to symbol] ?: emptyList()
+    override fun getProductions(state: Int, symbol: AtomT) = prod[state to symbol] ?: emptyList()
 
     override fun getEpsilonProductions(): Map<Int, List<Int>> = epsProd
 }

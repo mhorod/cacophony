@@ -15,17 +15,10 @@ internal class OperatorHandler(
     private val cfgGenerator: CFGGenerator,
     private val sideEffectAnalyzer: SideEffectAnalyzer,
 ) {
-    internal fun visitArithmeticOperator(
-        expression: OperatorBinary.ArithmeticOperator,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG = visitBinaryOperator(expression, mode, context)
+    internal fun visitArithmeticOperator(expression: OperatorBinary.ArithmeticOperator, mode: EvalMode, context: Context): SubCFG =
+        visitBinaryOperator(expression, mode, context)
 
-    private fun visitBinaryOperator(
-        expression: OperatorBinary,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitBinaryOperator(expression: OperatorBinary, mode: EvalMode, context: Context): SubCFG {
         val lhsCFG = cfgGenerator.visit(expression.lhs, mode, context)
         val rhsCFG = cfgGenerator.visit(expression.rhs, mode, context)
 
@@ -46,11 +39,7 @@ internal class OperatorHandler(
         return join(safeLhs, rhsCFG, access)
     }
 
-    private fun makeOperatorNode(
-        op: OperatorBinary,
-        lhs: CFGNode,
-        rhs: CFGNode,
-    ): CFGNode =
+    private fun makeOperatorNode(op: OperatorBinary, lhs: CFGNode, rhs: CFGNode): CFGNode =
         when (op) {
             is OperatorBinary.Addition -> CFGNode.Addition(lhs, rhs)
             is OperatorBinary.Division -> CFGNode.Division(lhs, rhs)
@@ -71,11 +60,7 @@ internal class OperatorHandler(
     /**
      * Joins `lhs` and `rhs` into one sequence of vertices with the provided `access` as the result value computation
      */
-    private fun join(
-        lhs: SubCFG,
-        rhs: SubCFG,
-        access: CFGNode,
-    ): SubCFG {
+    private fun join(lhs: SubCFG, rhs: SubCFG, access: CFGNode): SubCFG {
         val (entry, exit) =
             when {
                 lhs is SubCFG.Extracted && rhs is SubCFG.Extracted -> {
@@ -128,11 +113,7 @@ internal class OperatorHandler(
         }
     }
 
-    internal fun visitLogicalOperator(
-        expression: OperatorBinary.LogicalOperator,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    internal fun visitLogicalOperator(expression: OperatorBinary.LogicalOperator, mode: EvalMode, context: Context): SubCFG {
         return when (expression) {
             is OperatorBinary.LogicalAnd -> visitLogicalAndOperator(expression, mode, context)
             is OperatorBinary.LogicalOr -> visitLogicalOrOperator(expression, mode, context)
@@ -140,11 +121,7 @@ internal class OperatorHandler(
         }
     }
 
-    private fun visitNormalLogicalOperator(
-        expression: OperatorBinary.LogicalOperator,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitNormalLogicalOperator(expression: OperatorBinary.LogicalOperator, mode: EvalMode, context: Context): SubCFG {
         // If we are computing logical operator in Conditional mode then we want to compute both sides
         // and then perform jump basing on the operation on their values.
         val innerMode = if (mode is EvalMode.Conditional) EvalMode.Value else mode
@@ -159,15 +136,12 @@ internal class OperatorHandler(
                 conditionVertex.connectFalse(mode.falseEntry.label)
                 SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
             }
+
             else -> valueCFG
         }
     }
 
-    private fun visitLogicalOrOperator(
-        expression: OperatorBinary.LogicalOr,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitLogicalOrOperator(expression: OperatorBinary.LogicalOr, mode: EvalMode, context: Context): SubCFG {
         val rhs = cfgGenerator.visitExtracted(expression.rhs, mode, context)
         return when (mode) {
             is EvalMode.Conditional -> {
@@ -211,11 +185,7 @@ internal class OperatorHandler(
         }
     }
 
-    private fun visitLogicalAndOperator(
-        expression: OperatorBinary.LogicalAnd,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG {
+    private fun visitLogicalAndOperator(expression: OperatorBinary.LogicalAnd, mode: EvalMode, context: Context): SubCFG {
         val rhs = cfgGenerator.visitExtracted(expression.rhs, mode, context)
         return when (mode) {
             is EvalMode.Conditional -> {
@@ -259,11 +229,7 @@ internal class OperatorHandler(
         }
     }
 
-    internal fun visitMinusOperator(
-        expression: OperatorUnary.Minus,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG =
+    internal fun visitMinusOperator(expression: OperatorUnary.Minus, mode: EvalMode, context: Context): SubCFG =
         when (mode) {
             is EvalMode.Conditional -> error("Minus is not a conditional operator")
             is EvalMode.SideEffect -> cfgGenerator.visit(expression.expression, EvalMode.SideEffect, context)
@@ -280,11 +246,7 @@ internal class OperatorHandler(
             }
         }
 
-    internal fun visitNegationOperator(
-        expression: OperatorUnary.Negation,
-        mode: EvalMode,
-        context: Context,
-    ): SubCFG =
+    internal fun visitNegationOperator(expression: OperatorUnary.Negation, mode: EvalMode, context: Context): SubCFG =
         when (mode) {
             is EvalMode.Conditional ->
                 cfgGenerator.visit(

@@ -57,10 +57,7 @@ interface FunctionHandler {
 
     fun getVariableAllocation(variable: Variable): VariableAllocation
 
-    fun registerVariableAllocation(
-        variable: Variable,
-        allocation: VariableAllocation,
-    )
+    fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation)
 
     // Returns static link to parent
     fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable
@@ -114,10 +111,7 @@ class FunctionHandlerImpl(
         introduceStaticLinksParams()
     }
 
-    override fun registerVariableAllocation(
-        variable: Variable,
-        allocation: VariableAllocation,
-    ) {
+    override fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation) {
         variableAllocation[variable] = allocation
     }
 

@@ -8,25 +8,15 @@ sealed interface LeafExpression
 
 typealias AST = Expression
 
-fun areEquivalentTypes(
-    lhs: Type?,
-    rhs: Type?,
-): Boolean = lhs?.isEquivalent(rhs) ?: (rhs == null)
+fun areEquivalentTypes(lhs: Type?, rhs: Type?): Boolean = lhs?.isEquivalent(rhs) ?: (rhs == null)
 
-fun areEquivalentTypes(
-    lhs: List<Type?>,
-    rhs: List<Type?>,
-): Boolean = lhs.size == rhs.size && lhs.zip(rhs).all { areEquivalentTypes(it.first, it.second) }
+fun areEquivalentTypes(lhs: List<Type?>, rhs: List<Type?>): Boolean =
+    lhs.size == rhs.size && lhs.zip(rhs).all { areEquivalentTypes(it.first, it.second) }
 
-fun areEquivalentExpressions(
-    lhs: Expression?,
-    rhs: Expression?,
-): Boolean = lhs?.isEquivalent(rhs) ?: (rhs == null)
+fun areEquivalentExpressions(lhs: Expression?, rhs: Expression?): Boolean = lhs?.isEquivalent(rhs) ?: (rhs == null)
 
-fun areEquivalentExpressions(
-    lhs: List<Expression?>,
-    rhs: List<Expression?>,
-): Boolean = lhs.size == rhs.size && lhs.zip(rhs).all { areEquivalentExpressions(it.first, it.second) }
+fun areEquivalentExpressions(lhs: List<Expression?>, rhs: List<Expression?>): Boolean =
+    lhs.size == rhs.size && lhs.zip(rhs).all { areEquivalentExpressions(it.first, it.second) }
 
 sealed class Type(
     val range: Pair<Location, Location>,

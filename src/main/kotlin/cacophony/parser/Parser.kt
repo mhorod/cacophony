@@ -5,10 +5,7 @@ import cacophony.grammars.ParseTree
 import cacophony.utils.CompileException
 
 interface Parser<SymbolT : Enum<SymbolT>> {
-    fun process(
-        terminals: List<ParseTree.Leaf<SymbolT>>,
-        diagnostics: Diagnostics,
-    ): ParseTree<SymbolT>
+    fun process(terminals: List<ParseTree.Leaf<SymbolT>>, diagnostics: Diagnostics): ParseTree<SymbolT>
 }
 
 class ParsingException(

@@ -42,11 +42,7 @@ data class AnalyzedVariable(
     val useType: VariableUseType,
 )
 
-fun analyzeFunctions(
-    ast: AST,
-    resolvedVariables: ResolvedVariables,
-    callGraph: CallGraph,
-): FunctionAnalysisResult {
+fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, callGraph: CallGraph): FunctionAnalysisResult {
     val relations = findStaticFunctionRelations(ast)
     val variableDeclarationFunctions = getVariableDeclarationFunctions(relations)
     val argumentFunctions = getArgumentFunctions(relations)

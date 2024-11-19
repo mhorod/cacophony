@@ -58,15 +58,13 @@ private data class MutableStaticFunctionRelations(
         )
 
     companion object {
-        fun empty(
-            parent: Definition.FunctionDeclaration?,
-            staticDepth: Int,
-        ) = MutableStaticFunctionRelations(
-            parent,
-            staticDepth,
-            mutableSetOf(),
-            mutableSetOf(),
-        )
+        fun empty(parent: Definition.FunctionDeclaration?, staticDepth: Int) =
+            MutableStaticFunctionRelations(
+                parent,
+                staticDepth,
+                mutableSetOf(),
+                mutableSetOf(),
+            )
     }
 }
 
@@ -112,6 +110,7 @@ private class StaticFunctionsRelationsVisitor {
             is OperatorBinary.DivisionAssignment,
             is OperatorBinary.ModuloAssignment,
             -> visitCompoundAssignment(expr)
+
             else -> {
                 visitExpression(expr.lhs)
                 visitExpression(expr.rhs)

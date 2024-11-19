@@ -69,8 +69,7 @@ internal class CFG {
                 if (vertex is GeneralCFGVertex.UnconditionalVertex && vertex.node is CFGNode.NoOp) {
                     val edges = ingoingEdges.getOrDefault(label, listOf())
                     val next = vertex.getConnections().first()
-                    edges.forEach {
-                            v ->
+                    edges.forEach { v ->
                         v.replaceLabel(label, next)
                     }
                     ingoingEdges[next]!!.addAll(edges)

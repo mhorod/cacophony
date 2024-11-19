@@ -11,10 +11,7 @@ interface TreeLeaf : Tree {
 class TreePrinter(
     private val builder: StringBuilder = StringBuilder(),
 ) {
-    private fun printBlock(
-        block: String,
-        indent: String,
-    ) {
+    private fun printBlock(block: String, indent: String) {
         builder.append(block.lines().first())
         builder.append('\n')
         for (line in block.lines().drop(1)) {
@@ -23,11 +20,7 @@ class TreePrinter(
         }
     }
 
-    private fun printTreeInternal(
-        t: Tree,
-        indent: String,
-        isLastChild: Boolean,
-    ) {
+    private fun printTreeInternal(t: Tree, indent: String, isLastChild: Boolean) {
         if (indent.isNotEmpty()) {
             builder.append(indent.dropLast(1))
         }

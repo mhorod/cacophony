@@ -8,10 +8,7 @@ import cacophony.semantic.syntaxtree.Expression
 internal class SideEffectAnalyzer(
     private val analyzedUseTypes: UseTypeAnalysisResult,
 ) {
-    fun hasClashingSideEffects(
-        e1: Expression,
-        e2: Expression,
-    ): Boolean {
+    fun hasClashingSideEffects(e1: Expression, e2: Expression): Boolean {
         val firstWrites = writtenVariables(e1)
         val firstUses = analyzedUseTypes.getValue(e1).keys
 

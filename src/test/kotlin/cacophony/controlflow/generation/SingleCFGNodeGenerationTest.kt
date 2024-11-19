@@ -30,10 +30,7 @@ import org.junit.jupiter.api.Test
  * Tests if arithmetic/logical expressions are correctly converted to a single CFG node
  */
 class SingleCFGNodeGenerationTest {
-    private fun assertGeneratedSingleNode(
-        programCFG: ProgramCFG,
-        expectedNode: CFGNode,
-    ) {
+    private fun assertGeneratedSingleNode(programCFG: ProgramCFG, expectedNode: CFGNode) {
         val function = programCFG.keys.first()
         val expectedCFG =
             cfg {
