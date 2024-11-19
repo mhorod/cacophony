@@ -21,7 +21,7 @@ internal fun assertEquivalent(
     actual.entries.forEach { (function, cfg) -> assertFragmentIsEquivalent(cfg, expected[function]!!) }
 }
 
-private fun assertFragmentIsEquivalent(
+fun assertFragmentIsEquivalent(
     actual: CFGFragment,
     expected: CFGFragment,
 ) {
@@ -145,11 +145,6 @@ private class FragmentEquivalenceVisitor {
                 assertThat(actual).isInstanceOf(CFGNode.Push::class.java)
                 check(actual is CFGNode.Push)
                 visit(actual.value, expected.value)
-            }
-
-            is CFGNode.Sequence -> {
-                assertThat(actual).isInstanceOf(CFGNode.Sequence::class.java)
-                check(actual is CFGNode.Sequence)
             }
 
             is CFGNode.ConstantSlot -> {

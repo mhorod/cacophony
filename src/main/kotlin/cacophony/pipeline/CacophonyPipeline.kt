@@ -8,12 +8,7 @@ import cacophony.grammars.ParseTree
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyParser
-import cacophony.semantic.CallGraph
-import cacophony.semantic.FunctionAnalysisResult
-import cacophony.semantic.NameResolutionResult
-import cacophony.semantic.ResolvedVariables
-import cacophony.semantic.TypeCheckingResult
-import cacophony.semantic.analyzeVarUseTypes
+import cacophony.semantic.*
 import cacophony.semantic.syntaxtree.AST
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
@@ -177,7 +172,8 @@ class CacophonyPipeline(
         return generateControlFlowGraph(generateAST(input))
     }
 
-    fun generateControlFlowGraph(ast: AST): ProgramCFG {
+    fun generateControlFlowGraph(originalAST: AST): ProgramCFG {
+        val ast = originalAST // (originalAST)
         val resolvedVariables = resolveOverloads(ast)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
