@@ -14,6 +14,10 @@ val rsp = Register.FixedRegister(X64Register.RSP)
 val rbp = Register.FixedRegister(X64Register.RBP)
 val rdi = Register.FixedRegister(X64Register.RDI)
 val rsi = Register.FixedRegister(X64Register.RSI)
+val rdx = Register.FixedRegister(X64Register.RDX)
+val rcx = Register.FixedRegister(X64Register.RCX)
+val r8 = Register.FixedRegister(X64Register.R8)
+val r9 = Register.FixedRegister(X64Register.R9)
 val unit = CFGNode.UNIT
 val trueValue = CFGNode.TRUE
 val falseValue = CFGNode.FALSE
@@ -22,6 +26,8 @@ val returnNode = CFGNode.Return
 fun integer(value: Int) = CFGNode.Constant(value)
 
 fun registerUse(register: Register) = CFGNode.RegisterUse(register)
+
+fun memoryAccess(at: CFGNode) = CFGNode.MemoryAccess(at)
 
 // arithmetic
 infix fun CFGNode.add(other: CFGNode) = CFGNode.Addition(this, other)

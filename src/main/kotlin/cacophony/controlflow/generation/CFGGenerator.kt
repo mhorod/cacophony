@@ -70,8 +70,7 @@ internal class CFGGenerator(
                 }
         }
 
-    private fun ensureExtracted(node: CFGNode): SubCFG.Extracted =
-        ensureExtracted(SubCFG.Immediate(node), EvalMode.SideEffect)
+    private fun ensureExtracted(node: CFGNode): SubCFG.Extracted = ensureExtracted(SubCFG.Immediate(node), EvalMode.SideEffect)
 
     /**
      * Convert the expression into SubCFG extracted to a separate vertex
@@ -155,11 +154,14 @@ internal class CFGGenerator(
                 true,
             ).map { ensureExtracted(it) }.reduce { path, next -> path merge next }
 
-        val entry = if (argumentVertices.isNotEmpty()) {
-            val extractedArguments = argumentVertices.reduce { path, next -> path merge next }
-            extractedArguments.exit.connect(callSequence.entry.label)
-            extractedArguments.entry
-        } else callSequence.entry
+        val entry =
+            if (argumentVertices.isNotEmpty()) {
+                val extractedArguments = argumentVertices.reduce { path, next -> path merge next }
+                extractedArguments.exit.connect(callSequence.entry.label)
+                extractedArguments.entry
+            } else {
+                callSequence.entry
+            }
 
         val resultAccess = resultRegister?.let { CFGNode.RegisterUse(it) } ?: CFGNode.NoOp
         return SubCFG.Extracted(entry, callSequence.exit, resultAccess)
@@ -365,8 +367,7 @@ internal class CFGGenerator(
 
     internal fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
 
-    internal fun resolveVariable(variable: VariableUse) =
-        resolvedVariables[variable] ?: error("Unresolved variable $variable")
+    internal fun resolveVariable(variable: VariableUse) = resolvedVariables[variable] ?: error("Unresolved variable $variable")
 
     private fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler =
         functionHandlers[function] ?: error("Function $function has no handler")

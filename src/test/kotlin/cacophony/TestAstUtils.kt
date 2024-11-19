@@ -65,9 +65,15 @@ fun variableWrite(
 
 fun block(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 
-fun call(variableUse: VariableUse, vararg arguments: Expression) = FunctionCall(mockRange(), variableUse, arguments.toList())
+fun call(
+    variableUse: VariableUse,
+    vararg arguments: Expression,
+) = FunctionCall(mockRange(), variableUse, arguments.toList())
 
-fun call(identifier: String, vararg arguments: Expression) = call(variableUse(identifier), *arguments)
+fun call(
+    identifier: String,
+    vararg arguments: Expression,
+) = call(variableUse(identifier), *arguments)
 
 fun astOf(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 

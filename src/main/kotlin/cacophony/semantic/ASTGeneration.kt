@@ -332,10 +332,12 @@ private fun wrapInFunction(originalAST: AST): AST {
 }
 
 private fun isWrappedInFunction(ast: AST): Boolean {
-    if (ast !is Block)
+    if (ast !is Block) {
         return false
-    if (ast.expressions.size != 2)
+    }
+    if (ast.expressions.size != 2) {
         return false
+    }
     val initialExpression = ast.expressions[0]
     return initialExpression is Definition.FunctionDeclaration && initialExpression.identifier == MAIN_FUNCTION_IDENTIFIER
 }

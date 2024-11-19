@@ -133,7 +133,7 @@ class FunctionHandlerImpl(
         respectStackAlignment: Boolean,
     ): List<CFGNode> {
         val staticLinkVar =
-            if (ancestorFunctionHandlers.isEmpty()|| callerFunction === ancestorFunctionHandlers[0]) {
+            if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers[0]) {
                 RegisterUse(Register.FixedRegister(X64Register.RBP))
             } else {
                 callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers[0].getFunctionDeclaration())
