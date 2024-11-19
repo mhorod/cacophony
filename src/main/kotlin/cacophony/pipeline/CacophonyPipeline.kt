@@ -1,5 +1,12 @@
 package cacophony.pipeline
 
+import cacophony.codegen.instructions.CacophonyInstructionCovering
+import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
+import cacophony.codegen.linearization.LoweredCFGFragment
+import cacophony.codegen.linearization.linearize
+import cacophony.codegen.registers.Liveness
+import cacophony.codegen.registers.RegisterAllocation
+import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.generateFunctionHandlers
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.controlflow.generation.generateCFG
@@ -10,6 +17,7 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyParser
 import cacophony.semantic.*
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.syntaxtree.Definition
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
@@ -20,10 +28,13 @@ class CacophonyPipeline(
     private val logger: CacophonyLogger? = null,
     private val lexer: CacophonyLexer = cachedLexer,
     private val parser: CacophonyParser = cachedParser,
+    private val instructionMatcher: CacophonyInstructionMatcher = cachedInstructionMatcher,
 ) {
     companion object {
         private val cachedLexer = CacophonyLexer()
         private val cachedParser = CacophonyParser()
+        private val cachedInstructionMatcher = CacophonyInstructionMatcher()
+        private val allGPRs = HardwareRegister.entries.toSet()
     }
 
     private fun <T> assertEmptyDiagnosticsAfter(action: () -> T): T {
@@ -156,8 +167,7 @@ class CacophonyPipeline(
         return generateControlFlowGraph(generateAST(input))
     }
 
-    fun generateControlFlowGraph(originalAST: AST): ProgramCFG {
-        val ast = originalAST // (originalAST)
+    fun generateControlFlowGraph(ast: AST): ProgramCFG {
         val resolvedVariables = resolveOverloads(ast)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
@@ -165,4 +175,16 @@ class CacophonyPipeline(
         val functionHandlers = generateFunctionHandlers(analyzedFunctions)
         return generateCFG(resolvedVariables, analyzedExpressions, functionHandlers)
     }
+
+    fun coverWithInstructions(ast: AST): Map<Definition.FunctionDeclaration, LoweredCFGFragment> =
+        generateControlFlowGraph(ast).mapValues { (_, cfg) -> linearize(cfg, CacophonyInstructionCovering(instructionMatcher)) }
+
+    fun analyzeLiveness(ast: AST): Map<Definition.FunctionDeclaration, Liveness> =
+        coverWithInstructions(ast).mapValues { (_, loweredCFG) -> cacophony.codegen.registers.analyzeLiveness(loweredCFG) }
+
+    fun allocateRegisters(
+        ast: AST,
+        allowedRegisters: Set<HardwareRegister> = allGPRs,
+    ): Map<Definition.FunctionDeclaration, RegisterAllocation> =
+        analyzeLiveness(ast).mapValues { (_, liveness) -> cacophony.codegen.registers.allocateRegisters(liveness, allowedRegisters) }
 }

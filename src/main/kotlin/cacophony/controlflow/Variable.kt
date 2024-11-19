@@ -16,6 +16,6 @@ sealed class Register {
     class VirtualRegister : Register()
 
     data class FixedRegister(
-        val hardwareRegister: X64Register,
+        val hardwareRegister: HardwareRegister,
     ) : Register()
 }

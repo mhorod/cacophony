@@ -4,20 +4,20 @@ import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.CFGVertex
+import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
-import cacophony.controlflow.X64Register
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.semantic.syntaxtree.Definition
 
-val rax = Register.FixedRegister(X64Register.RAX)
-val rsp = Register.FixedRegister(X64Register.RSP)
-val rbp = Register.FixedRegister(X64Register.RBP)
-val rdi = Register.FixedRegister(X64Register.RDI)
-val rsi = Register.FixedRegister(X64Register.RSI)
-val rdx = Register.FixedRegister(X64Register.RDX)
-val rcx = Register.FixedRegister(X64Register.RCX)
-val r8 = Register.FixedRegister(X64Register.R8)
-val r9 = Register.FixedRegister(X64Register.R9)
+val rax = Register.FixedRegister(HardwareRegister.RAX)
+val rsp = Register.FixedRegister(HardwareRegister.RSP)
+val rbp = Register.FixedRegister(HardwareRegister.RBP)
+val rdi = Register.FixedRegister(HardwareRegister.RDI)
+val rsi = Register.FixedRegister(HardwareRegister.RSI)
+val rdx = Register.FixedRegister(HardwareRegister.RDX)
+val rcx = Register.FixedRegister(HardwareRegister.RCX)
+val r8 = Register.FixedRegister(HardwareRegister.R8)
+val r9 = Register.FixedRegister(HardwareRegister.R9)
 val unit = CFGNode.UNIT
 val trueValue = CFGNode.TRUE
 val falseValue = CFGNode.FALSE

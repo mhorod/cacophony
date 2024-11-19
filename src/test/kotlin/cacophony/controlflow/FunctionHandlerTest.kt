@@ -92,15 +92,15 @@ class FunctionHandlerTest {
                 alignStack,
             )
 
-        private fun getArgumentRegisters(callNodes: List<CFGNode>): List<X64Register> {
-            val returnList = mutableListOf<X64Register>()
+        private fun getArgumentRegisters(callNodes: List<CFGNode>): List<HardwareRegister> {
+            val returnList = mutableListOf<HardwareRegister>()
             for (node in callNodes) {
                 if (node is CFGNode.Assignment &&
                     node.destination is CFGNode.RegisterUse &&
                     node.destination.register is Register.FixedRegister
                 ) {
                     val register = node.destination.register.hardwareRegister
-                    if (register != X64Register.RSP) {
+                    if (register != HardwareRegister.RSP) {
                         returnList.add(register)
                     }
                 }
@@ -115,7 +115,7 @@ class FunctionHandlerTest {
             for (node in callNodes) {
                 if (node is CFGNode.Assignment && node.value is CFGNode.RegisterUse) {
                     val reg = (node.value as CFGNode.RegisterUse).register
-                    if (reg is Register.FixedRegister && reg.hardwareRegister == X64Register.RAX) {
+                    if (reg is Register.FixedRegister && reg.hardwareRegister == HardwareRegister.RAX) {
                         assertThat(register).isNull()
                         register = node.destination
                     }
@@ -133,7 +133,7 @@ class FunctionHandlerTest {
                     node.destination is CFGNode.RegisterUse &&
                     node.destination.register is Register.FixedRegister
                 ) {
-                    if (node.destination.register.hardwareRegister != X64Register.RSP) {
+                    if (node.destination.register.hardwareRegister != HardwareRegister.RSP) {
                         continue
                     }
                     if (node.value is CFGNode.Addition) {
@@ -141,7 +141,7 @@ class FunctionHandlerTest {
                         val rhs = (node.value as CFGNode.Addition).rhs
                         if (lhs !is CFGNode.RegisterUse ||
                             lhs.register !is Register.FixedRegister ||
-                            (lhs.register as Register.FixedRegister).hardwareRegister != X64Register.RSP
+                            (lhs.register as Register.FixedRegister).hardwareRegister != HardwareRegister.RSP
                         ) {
                             continue
                         }
@@ -155,7 +155,7 @@ class FunctionHandlerTest {
                     }
                 }
                 if (node is CFGNode.Pop && node.register.register is Register.FixedRegister) {
-                    if ((node.register.register as Register.FixedRegister).hardwareRegister == X64Register.RSP) {
+                    if ((node.register.register as Register.FixedRegister).hardwareRegister == HardwareRegister.RSP) {
                         assertThat(hasPopToRSP).isFalse()
                         hasPopToRSP = true
                     }
@@ -230,12 +230,12 @@ class FunctionHandlerTest {
         fun `up to first six arguments area passed via registers`(args: Int) {
             val expected =
                 listOf(
-                    X64Register.RDI,
-                    X64Register.RSI,
-                    X64Register.RDX,
-                    X64Register.RCX,
-                    X64Register.R8,
-                    X64Register.R9,
+                    HardwareRegister.RDI,
+                    HardwareRegister.RSI,
+                    HardwareRegister.RDX,
+                    HardwareRegister.RCX,
+                    HardwareRegister.R8,
+                    HardwareRegister.R9,
                 ).take(args + 1)
             assertThat(getArgumentRegisters(getCallNodes(args, null, false))).isEqualTo(expected)
         }
@@ -248,7 +248,7 @@ class FunctionHandlerTest {
             checkStaticLinkInGenerateCallFrom(
                 childHandler,
                 parentHandler,
-                CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
+                CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
             )
         }
 
@@ -259,7 +259,7 @@ class FunctionHandlerTest {
             checkStaticLinkInGenerateCallFrom(
                 childHandler,
                 childHandler,
-                CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP))),
+                CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))),
             )
         }
 
@@ -271,7 +271,7 @@ class FunctionHandlerTest {
             checkStaticLinkInGenerateCallFrom(
                 parentHandler,
                 childHandler,
-                CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)))),
+                CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
             )
         }
     }
@@ -521,7 +521,7 @@ class FunctionHandlerTest {
                 CFGNode.MemoryAccess(
                     // [rbp + 24]
                     CFGNode.Addition(
-                        CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
+                        CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
                         CFGNode.Constant(24),
                     ),
                 ),
@@ -617,7 +617,7 @@ class FunctionHandlerTest {
                     CFGNode.Addition(
                         CFGNode.MemoryAccess(
                             CFGNode.MemoryAccess(
-                                CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
+                                CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
                             ),
                         ),
                         CFGNode.Constant(24),
@@ -659,7 +659,7 @@ class FunctionHandlerTest {
                 CFGNode.MemoryAccess(
                     // [rbp + 0]
                     CFGNode.Addition(
-                        CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
+                        CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
                         CFGNode.Constant(0),
                     ),
                 ),
@@ -722,7 +722,7 @@ class FunctionHandlerTest {
                     // [[rbp] + 0]
                     CFGNode.Addition(
                         CFGNode.MemoryAccess(
-                            CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
+                            CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
                         ),
                         CFGNode.Constant(0),
                     ),
@@ -802,7 +802,7 @@ class FunctionHandlerTest {
             verify {
                 generateCall(
                     any(),
-                    listOf(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)))),
+                    listOf(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
                     any(),
                     false,
                 )
