@@ -13,18 +13,12 @@ import org.assertj.core.api.Assertions.assertThat
  *   - they have the exact same graph structure up to label names
  *   - the CFG nodes are equivalent up to virtual register names
  */
-internal fun assertEquivalent(
-    actual: ProgramCFG,
-    expected: ProgramCFG,
-) {
+internal fun assertEquivalent(actual: ProgramCFG, expected: ProgramCFG) {
     assertThat(actual.keys).isEqualTo(expected.keys)
     actual.entries.forEach { (function, cfg) -> assertFragmentIsEquivalent(cfg, expected[function]!!) }
 }
 
-fun assertFragmentIsEquivalent(
-    actual: CFGFragment,
-    expected: CFGFragment,
-) {
+fun assertFragmentIsEquivalent(actual: CFGFragment, expected: CFGFragment) {
     FragmentEquivalenceVisitor().visit(actual, expected)
 }
 
@@ -40,20 +34,14 @@ private class FragmentEquivalenceVisitor {
     private var actualCFG = mapOf<CFGLabel, CFGVertex>()
     private var expectedCFG = mapOf<CFGLabel, CFGVertex>()
 
-    fun visit(
-        actual: CFGFragment,
-        expected: CFGFragment,
-    ) {
+    fun visit(actual: CFGFragment, expected: CFGFragment) {
         mapLabels(actual.initialLabel, expected.initialLabel)
         actualCFG = actual.vertices
         expectedCFG = expected.vertices
         visit(actual.vertices[actual.initialLabel]!!, expected.vertices[expected.initialLabel]!!)
     }
 
-    fun visit(
-        actual: CFGVertex,
-        expected: CFGVertex,
-    ) {
+    fun visit(actual: CFGVertex, expected: CFGVertex) {
         if (visited.contains(expected)) return
         visited.add(expected)
 
@@ -86,10 +74,7 @@ private class FragmentEquivalenceVisitor {
         }
     }
 
-    private fun visit(
-        actual: CFGNode,
-        expected: CFGNode,
-    ) {
+    private fun visit(actual: CFGNode, expected: CFGNode) {
         when (expected) {
             is CFGNode.Assignment -> {
                 assertThat(actual).isInstanceOf(CFGNode.Assignment::class.java)
@@ -283,10 +268,7 @@ private class FragmentEquivalenceVisitor {
         }
     }
 
-    fun mapLabels(
-        actual: CFGLabel,
-        expected: CFGLabel,
-    ) {
+    fun mapLabels(actual: CFGLabel, expected: CFGLabel) {
         if (labelMapping[actual] != null && labelMapping[actual] != expected) {
             throw AssertionError("Label mismatch, expected $actual to be $expected, but was ${labelMapping[actual]}")
         } else if (reverseLabelMapping[expected] != null && reverseLabelMapping[expected] != actual) {
@@ -297,10 +279,7 @@ private class FragmentEquivalenceVisitor {
         }
     }
 
-    fun mapRegisters(
-        actual: Register,
-        expected: Register,
-    ) {
+    fun mapRegisters(actual: Register, expected: Register) {
         if (actual !is Register.VirtualRegister || expected !is Register.VirtualRegister) {
             assertThat(actual).isEqualTo(expected)
             return

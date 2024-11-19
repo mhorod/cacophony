@@ -19,10 +19,8 @@ data class AnalyzedGrammar<StateT, SymbolT>(
     val follow: StateToSymbolsMap<StateT, SymbolT, Production<SymbolT>>,
 ) {
     companion object {
-        fun <SymbolT> fromGrammar(
-            syncSymbols: Collection<SymbolT>,
-            grammar: Grammar<SymbolT>,
-        ) = fromAutomata(grammar.start, syncSymbols, buildAutomata(grammar))
+        fun <SymbolT> fromGrammar(syncSymbols: Collection<SymbolT>, grammar: Grammar<SymbolT>) =
+            fromAutomata(grammar.start, syncSymbols, buildAutomata(grammar))
 
         fun <SymbolT> buildAutomata(grammar: Grammar<SymbolT>) =
             grammar.productions.groupBy { it.lhs }.mapValues { buildAutomaton(it.value) }

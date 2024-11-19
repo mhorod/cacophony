@@ -18,10 +18,7 @@ class CacophonyLexer : Lexer<TokenCategorySpecific> {
         innerLexer = RegularLanguageLexer.fromRegexes(regexes)
     }
 
-    override fun process(
-        input: Input,
-        diagnostics: Diagnostics,
-    ): List<Token<TokenCategorySpecific>> {
+    override fun process(input: Input, diagnostics: Diagnostics): List<Token<TokenCategorySpecific>> {
         val tokens = innerLexer.process(input, diagnostics)
         return tokens.filter { !isWhitespaceToken(it) }
     }

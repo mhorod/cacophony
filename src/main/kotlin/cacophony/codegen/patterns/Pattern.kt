@@ -19,15 +19,9 @@ interface SideEffectPattern : Pattern {
 }
 
 interface ValuePattern : Pattern {
-    fun makeInstance(
-        fill: SlotFill,
-        destination: Register,
-    ): List<Instruction>
+    fun makeInstance(fill: SlotFill, destination: Register): List<Instruction>
 }
 
 interface ConditionPattern : Pattern {
-    fun makeInstance(
-        fill: SlotFill,
-        destinationLabel: InstructionLabel,
-    ): List<Instruction>
+    fun makeInstance(fill: SlotFill, destinationLabel: InstructionLabel): List<Instruction>
 }

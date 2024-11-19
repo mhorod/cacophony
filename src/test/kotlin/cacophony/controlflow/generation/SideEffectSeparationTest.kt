@@ -46,10 +46,7 @@ import org.junit.jupiter.params.provider.MethodSource
 class SideEffectSeparationTest {
     @ParameterizedTest
     @MethodSource("binaryExpressions")
-    fun `write-write clash is separated`(
-        makeExpr: MakeBinaryExpression,
-        makeNode: MakeBinaryNode,
-    ) {
+    fun `write-write clash is separated`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val lhs = variableWrite(variableUse("x"), lit(10))
         val rhs = variableWrite(variableUse("x"), lit(20))
@@ -96,10 +93,7 @@ class SideEffectSeparationTest {
 
     @ParameterizedTest
     @MethodSource("binaryExpressions")
-    fun `read-write clash is separated`(
-        makeExpr: MakeBinaryExpression,
-        makeNode: MakeBinaryNode,
-    ) {
+    fun `read-write clash is separated`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val lhs = variableUse("x")
         val rhs = variableWrite(variableUse("x"), lit(20))
@@ -146,10 +140,7 @@ class SideEffectSeparationTest {
 
     @ParameterizedTest
     @MethodSource("binaryExpressions")
-    fun `write-read clash is separated`(
-        makeExpr: MakeBinaryExpression,
-        makeNode: MakeBinaryNode,
-    ) {
+    fun `write-read clash is separated`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val lhs = variableWrite(variableUse("x"), lit(10))
         val rhs = variableUse("x")

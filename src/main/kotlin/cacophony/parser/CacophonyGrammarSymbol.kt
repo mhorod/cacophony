@@ -71,7 +71,7 @@ enum class CacophonyGrammarSymbol(
     ASSIGNMENT(OperatorBinary::class),
     UNARY(OperatorUnary::class),
 
-//    STATEMENT(Expression::class),
+    //    STATEMENT(Expression::class),
     RETURN_STATEMENT(Statement.ReturnStatement::class),
     BLOCK(Block::class),
     EMPTY_EXPRESSION(Empty::class),

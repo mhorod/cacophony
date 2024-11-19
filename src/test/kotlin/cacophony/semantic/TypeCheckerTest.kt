@@ -11,10 +11,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class TypeCheckerTest {
-    private fun assertTypeEquals(
-        type1: TypeExpr?,
-        type2: TypeExpr?,
-    ) = assertEquals(type1.toString(), type2.toString())
+    private fun assertTypeEquals(type1: TypeExpr?, type2: TypeExpr?) = assertEquals(type1.toString(), type2.toString())
 
     @Test
     fun `equality check`() {

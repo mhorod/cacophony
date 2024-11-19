@@ -14,10 +14,7 @@ interface DFA<StateT, AtomT, ResultT> {
     fun getAllStates(): List<StateT>
 
     // Returns state produced from provided state and symbol, or null if it doesn't exist.
-    fun getProduction(
-        state: StateT,
-        symbol: AtomT,
-    ): StateT?
+    fun getProduction(state: StateT, symbol: AtomT): StateT?
 
     // Returns all productions.
     // Returned value is map accepting current state and symbol, and returning new state, which may not exist.
@@ -47,8 +44,5 @@ class SimpleDFA<StateT, AtomT, ResultT>(
 
     override fun getProductions() = prod
 
-    override fun getProduction(
-        state: StateT,
-        symbol: AtomT,
-    ) = prod[state to symbol]
+    override fun getProduction(state: StateT, symbol: AtomT) = prod[state to symbol]
 }

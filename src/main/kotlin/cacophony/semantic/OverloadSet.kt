@@ -7,8 +7,5 @@ interface OverloadSet {
 
     fun toMap(): Map<Int, Definition.FunctionDeclaration>
 
-    fun withDeclaration(
-        arity: Int,
-        declaration: Definition.FunctionDeclaration,
-    ): OverloadSet
+    fun withDeclaration(arity: Int, declaration: Definition.FunctionDeclaration): OverloadSet
 }

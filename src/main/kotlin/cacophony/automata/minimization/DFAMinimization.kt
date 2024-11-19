@@ -4,10 +4,8 @@ import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
 import cacophony.automata.via
 
-private fun <E> PartitionRefinement<E>.smallerSet(
-    a: PartitionId,
-    b: PartitionId,
-): PartitionId = if (getElements(a).size < getElements(b).size) a else b
+private fun <E> PartitionRefinement<E>.smallerSet(a: PartitionId, b: PartitionId): PartitionId =
+    if (getElements(a).size < getElements(b).size) a else b
 
 // This is class and not dataclass to make equals() and hashcode() test for object identity,
 // which is sufficient in our case and makes sure there are no checks for the list equality.

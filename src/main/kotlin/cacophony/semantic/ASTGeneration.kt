@@ -18,10 +18,7 @@ private fun getGrammarSymbol(parseTree: ParseTree<CacophonyGrammarSymbol>): Caco
         is ParseTree.Branch -> parseTree.production.lhs
     }
 
-private fun pruneParseTree(
-    parseTree: ParseTree<CacophonyGrammarSymbol>,
-    diagnostics: Diagnostics,
-): ParseTree<CacophonyGrammarSymbol>? {
+private fun pruneParseTree(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): ParseTree<CacophonyGrammarSymbol>? {
     if (parseTree is ParseTree.Branch) {
         if (parseTree.children.size == 1) {
             return pruneParseTree(parseTree.children[0], diagnostics)
@@ -39,10 +36,7 @@ private fun pruneParseTree(
     return parseTree
 }
 
-private fun constructType(
-    parseTree: ParseTree<CacophonyGrammarSymbol>,
-    diagnostics: Diagnostics,
-): Type {
+private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Type {
     if (getGrammarSymbol(parseTree) == TYPE_IDENTIFIER) {
         val tree = parseTree as ParseTree.Leaf
         return Type
@@ -89,19 +83,12 @@ fun <T : OperatorBinary> createInstanceBinary(
     return constructor!!.call(range, lhs, rhs)
 }
 
-fun <T : OperatorUnary> createInstanceUnary(
-    kClass: KClass<T>,
-    range: Pair<Location, Location>,
-    subExpression: Expression,
-): Expression {
+fun <T : OperatorUnary> createInstanceUnary(kClass: KClass<T>, range: Pair<Location, Location>, subExpression: Expression): Expression {
     val constructor = kClass.primaryConstructor
     return constructor!!.call(range, subExpression)
 }
 
-private fun operatorRegexToAST(
-    children: List<ParseTree<CacophonyGrammarSymbol>>,
-    diagnostics: Diagnostics,
-): Expression {
+private fun operatorRegexToAST(children: List<ParseTree<CacophonyGrammarSymbol>>, diagnostics: Diagnostics): Expression {
     val childNum = children.size
     if (childNum == 1) {
         return generateASTInternal(children[0], diagnostics)
@@ -123,10 +110,7 @@ private fun operatorRegexToAST(
     }
 }
 
-private fun generateASTInternal(
-    parseTree: ParseTree<CacophonyGrammarSymbol>,
-    diagnostics: Diagnostics,
-): Expression {
+private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Expression {
     if (parseTree is ParseTree.Leaf) {
         val symbol: CacophonyGrammarSymbol = parseTree.token.category
         val context = parseTree.token.context
@@ -142,6 +126,7 @@ private fun generateASTInternal(
                         throw diagnostics.fatal()
                     },
                 )
+
             BOOL_LITERAL -> Literal.BoolLiteral(parseTree.range, context.toBoolean())
             KEYWORD_BREAK -> Statement.BreakStatement(parseTree.range)
             else -> throw IllegalArgumentException("Unexpected leaf symbol: $symbol")
@@ -232,12 +217,14 @@ private fun generateASTInternal(
                     )
                 }
             }
+
             WHILE_CLAUSE -> {
                 assert(childNum == 2)
                 val testExpression = generateASTInternal(parseTree.children[0], diagnostics)
                 val doExpression = generateASTInternal(parseTree.children[1], diagnostics)
                 Statement.WhileStatement(range, testExpression, doExpression)
             }
+
             IF_CLAUSE -> {
                 assert(childNum == 2 || childNum == 3)
                 val testExpression = generateASTInternal(parseTree.children[0], diagnostics)
@@ -245,11 +232,13 @@ private fun generateASTInternal(
                 val elseExpression = (if (childNum > 2) generateASTInternal(parseTree.children[2], diagnostics) else null)
                 Statement.IfElseStatement(range, testExpression, doExpression, elseExpression)
             }
+
             RETURN_STATEMENT -> {
                 assert(childNum == 1)
                 val expression = generateASTInternal(parseTree.children[0], diagnostics)
                 Statement.ReturnStatement(range, expression)
             }
+
             ASSIGNMENT_LEVEL -> {
                 assert(childNum == 3)
                 val operatorKind = parseTree.children[1]
@@ -265,10 +254,12 @@ private fun generateASTInternal(
                     throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
                 }
             }
+
             ADDITION_LEVEL, MULTIPLICATION_LEVEL, EQUALITY_LEVEL, COMPARATOR_LEVEL, LOGICAL_OPERATOR_LEVEL -> {
                 assert(childNum >= 3)
                 operatorRegexToAST(parseTree.children, diagnostics)
             }
+
             UNARY_LEVEL -> {
                 assert(childNum == 2)
                 val operatorKind = parseTree.children[0]
@@ -344,10 +335,7 @@ private fun isWrappedInFunction(ast: AST): Boolean {
 
 fun ensureWrappedInFunction(ast: AST): AST = if (isWrappedInFunction(ast)) ast else wrapInFunction(ast)
 
-fun generateAST(
-    parseTree: ParseTree<CacophonyGrammarSymbol>,
-    diagnostics: Diagnostics,
-): AST {
+fun generateAST(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): AST {
     val prunedTree = pruneParseTree(parseTree, diagnostics)!!
     val ast = generateASTInternal(prunedTree, diagnostics)
     return wrapInFunction(ast)

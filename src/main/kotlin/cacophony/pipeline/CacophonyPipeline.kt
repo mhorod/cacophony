@@ -92,10 +92,7 @@ class CacophonyPipeline(
         return resolveOverloads(ast, nr)
     }
 
-    fun resolveOverloads(
-        ast: AST,
-        nr: NameResolutionResult,
-    ): ResolvedVariables {
+    fun resolveOverloads(ast: AST, nr: NameResolutionResult): ResolvedVariables {
         val result =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.resolveOverloads(ast, diagnostics, nr) }
@@ -107,10 +104,7 @@ class CacophonyPipeline(
         return result
     }
 
-    fun checkTypes(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-    ): TypeCheckingResult {
+    fun checkTypes(ast: AST, resolvedVariables: ResolvedVariables): TypeCheckingResult {
         val types =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.checkTypes(ast, diagnostics, resolvedVariables) }
@@ -122,10 +116,7 @@ class CacophonyPipeline(
         return types
     }
 
-    fun generateCallGraph(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-    ): CallGraph {
+    fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables): CallGraph {
         val callGraph =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.generateCallGraph(ast, diagnostics, resolvedVariables) }
@@ -144,19 +135,12 @@ class CacophonyPipeline(
         return analyzeFunctions(ast, resolvedFunctions)
     }
 
-    fun analyzeFunctions(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-    ): FunctionAnalysisResult {
+    fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables): FunctionAnalysisResult {
         val callGraph = generateCallGraph(ast, resolvedVariables)
         return analyzeFunctions(ast, resolvedVariables, callGraph)
     }
 
-    fun analyzeFunctions(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-        callGraph: CallGraph,
-    ): FunctionAnalysisResult {
+    fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, callGraph: CallGraph): FunctionAnalysisResult {
         val result =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.analyzeFunctions(ast, resolvedVariables, callGraph) }

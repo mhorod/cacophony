@@ -19,10 +19,8 @@ fun <StateT, AtomT, ResultT> joinAutomata(automataAndResults: List<Pair<DFA<Stat
     }
 
     // Apply the transition to every element of list.
-    val transition = fun(
-        states: List<StateT?>,
-        atom: AtomT,
-    ): List<StateT?> = (automata zip states).map { (automaton, state) -> state?.let { automaton.getProduction(it, atom) } }
+    val transition = fun(states: List<StateT?>, atom: AtomT): List<StateT?> =
+        (automata zip states).map { (automaton, state) -> state?.let { automaton.getProduction(it, atom) } }
 
     // Parts of the final automaton.
     val productions: MutableMap<Pair<Int, AtomT>, Int> = mutableMapOf()
