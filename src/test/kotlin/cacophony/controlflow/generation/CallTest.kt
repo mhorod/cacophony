@@ -85,15 +85,14 @@ class CallTest {
                         }
                     "pass static link" does jump("call") { writeRegister(rdi, registerUse(rbp)) }
                     "call" does jump("restore rsp") { call(calleeDef) }
-                    "restore rsp" does jump("prepare block result") { popRegister(rsp) }
+                    "restore rsp" does jump("write block result to rax") { popRegister(rsp) }
                     // The called function returned something, but we don't care - we only wanted it for side effects
                     // We don't extract anything - instead, we prepare our own block result and move it to rax
-                    "prepare block result" does jump("forward block result") { writeRegister("block result", integer(2)) }
-                    "forward block result" does
+                    "write block result to rax" does
                         jump("return") {
                             writeRegister(
                                 rax,
-                                registerUse(virtualRegister("block result")),
+                                integer(2),
                             )
                         }
                     "return" does final { returnNode }

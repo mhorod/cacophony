@@ -1,26 +1,35 @@
 package cacophony.controlflow.generation
 
-import cacophony.add
 import cacophony.block
 import cacophony.cfg
-import cacophony.controlflow.CFGNode
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.div
-import cacophony.eq
-import cacophony.geq
-import cacophony.gt
+import cacophony.controlflow.generation.TestOperators.Companion.add
+import cacophony.controlflow.generation.TestOperators.Companion.addNode
+import cacophony.controlflow.generation.TestOperators.Companion.div
+import cacophony.controlflow.generation.TestOperators.Companion.divNode
+import cacophony.controlflow.generation.TestOperators.Companion.eq
+import cacophony.controlflow.generation.TestOperators.Companion.eqNode
+import cacophony.controlflow.generation.TestOperators.Companion.geq
+import cacophony.controlflow.generation.TestOperators.Companion.geqNode
+import cacophony.controlflow.generation.TestOperators.Companion.gt
+import cacophony.controlflow.generation.TestOperators.Companion.gtNode
+import cacophony.controlflow.generation.TestOperators.Companion.leq
+import cacophony.controlflow.generation.TestOperators.Companion.leqNode
+import cacophony.controlflow.generation.TestOperators.Companion.lt
+import cacophony.controlflow.generation.TestOperators.Companion.ltNode
+import cacophony.controlflow.generation.TestOperators.Companion.mod
+import cacophony.controlflow.generation.TestOperators.Companion.modNode
+import cacophony.controlflow.generation.TestOperators.Companion.mul
+import cacophony.controlflow.generation.TestOperators.Companion.mulNode
+import cacophony.controlflow.generation.TestOperators.Companion.neq
+import cacophony.controlflow.generation.TestOperators.Companion.neqNode
+import cacophony.controlflow.generation.TestOperators.Companion.sub
+import cacophony.controlflow.generation.TestOperators.Companion.subNode
 import cacophony.integer
-import cacophony.leq
 import cacophony.lit
-import cacophony.lt
-import cacophony.mod
-import cacophony.mul
-import cacophony.neq
 import cacophony.rax
 import cacophony.returnNode
 import cacophony.semantic.functionDeclaration
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.sub
 import cacophony.variableDeclaration
 import cacophony.variableUse
 import cacophony.variableWrite
@@ -29,9 +38,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.argumentSet
 import org.junit.jupiter.params.provider.MethodSource
-
-private typealias MakeBinaryExpression = (Expression, Expression) -> Expression
-private typealias MakeBinaryNode = (CFGNode, CFGNode) -> CFGNode
 
 /**
  * Test if side effects are separated correctly into separate vertices.
@@ -189,39 +195,6 @@ class SideEffectSeparationTest {
     }
 
     companion object {
-        private val add: MakeBinaryExpression = { lhs, rhs -> lhs add rhs }
-        private val addNode: MakeBinaryNode = { lhs, rhs -> lhs add rhs }
-
-        private val sub: MakeBinaryExpression = { lhs, rhs -> lhs sub rhs }
-        private val subNode: MakeBinaryNode = { lhs, rhs -> lhs sub rhs }
-
-        private val mul: MakeBinaryExpression = { lhs, rhs -> lhs mul rhs }
-        private val mulNode: MakeBinaryNode = { lhs, rhs -> lhs mul rhs }
-
-        private val div: MakeBinaryExpression = { lhs, rhs -> lhs div rhs }
-        private val divNode: MakeBinaryNode = { lhs, rhs -> lhs div rhs }
-
-        private val mod: MakeBinaryExpression = { lhs, rhs -> lhs mod rhs }
-        private val modNode: MakeBinaryNode = { lhs, rhs -> lhs mod rhs }
-
-        private val eq: MakeBinaryExpression = { lhs, rhs -> lhs eq rhs }
-        private val eqNode: MakeBinaryNode = { lhs, rhs -> lhs eq rhs }
-
-        private val neq: MakeBinaryExpression = { lhs, rhs -> lhs neq rhs }
-        private val neqNode: MakeBinaryNode = { lhs, rhs -> lhs neq rhs }
-
-        private val lt: MakeBinaryExpression = { lhs, rhs -> lhs lt rhs }
-        private val ltNode: MakeBinaryNode = { lhs, rhs -> lhs lt rhs }
-
-        private val leq: MakeBinaryExpression = { lhs, rhs -> lhs leq rhs }
-        private val leqNode: MakeBinaryNode = { lhs, rhs -> lhs leq rhs }
-
-        private val gt: MakeBinaryExpression = { lhs, rhs -> lhs gt rhs }
-        private val gtNode: MakeBinaryNode = { lhs, rhs -> lhs gt rhs }
-
-        private val geq: MakeBinaryExpression = { lhs, rhs -> lhs geq rhs }
-        private val geqNode: MakeBinaryNode = { lhs, rhs -> lhs geq rhs }
-
         @JvmStatic
         fun binaryExpressions(): List<Arguments> {
             return listOf(

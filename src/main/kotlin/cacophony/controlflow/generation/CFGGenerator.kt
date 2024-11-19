@@ -123,8 +123,13 @@ internal class CFGGenerator(
             val prerequisiteSubCFGs =
                 expression.expressions.dropLast(1)
                     .map { visitExtracted(it, EvalMode.SideEffect, context) }
-            val valueCFG = visitExtracted(last, mode, context)
-            prerequisiteSubCFGs.foldRight(valueCFG) { subCFG, path -> subCFG merge path }
+            val valueCFG = visit(last, mode, context)
+            val reduced = prerequisiteSubCFGs.reduce { subCFG, path -> subCFG merge path }
+
+            when (valueCFG) {
+                is SubCFG.Extracted -> reduced merge valueCFG
+                is SubCFG.Immediate -> SubCFG.Extracted(reduced.entry, reduced.exit, valueCFG.access)
+            }
         }
     }
 
