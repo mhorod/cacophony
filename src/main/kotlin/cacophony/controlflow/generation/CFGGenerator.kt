@@ -100,12 +100,23 @@ internal class CFGGenerator(
         }
 
     private fun visitBlock(expression: Block, mode: EvalMode, context: Context): SubCFG {
-        val last = expression.expressions.lastOrNull() ?: return SubCFG.Immediate(noOpOrUnit(mode))
-        val prerequisiteSubCFGs =
-            expression.expressions.dropLast(1)
-                .map { visitExtracted(it, EvalMode.SideEffect, context) }
-        val valueCFG = visitExtracted(last, mode, context)
-        return prerequisiteSubCFGs.foldRight(valueCFG) { subCFG, path -> subCFG merge path }
+        return if (expression.expressions.isEmpty()) {
+            SubCFG.Immediate(noOpOrUnit(mode))
+        } else if (expression.expressions.size == 1) {
+            visit(expression.expressions.first(), mode, context)
+        } else {
+            val last = expression.expressions.lastOrNull() ?: return SubCFG.Immediate(noOpOrUnit(mode))
+            val prerequisiteSubCFGs =
+                expression.expressions.dropLast(1)
+                    .map { visitExtracted(it, EvalMode.SideEffect, context) }
+            val valueCFG = visit(last, mode, context)
+            val reduced = prerequisiteSubCFGs.reduce { subCFG, path -> subCFG merge path }
+
+            when (valueCFG) {
+                is SubCFG.Extracted -> reduced merge valueCFG
+                is SubCFG.Immediate -> SubCFG.Extracted(reduced.entry, reduced.exit, valueCFG.access)
+            }
+        }
     }
 
     private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
