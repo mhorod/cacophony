@@ -30,7 +30,7 @@ internal class CFGGenerator(
 
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
-        val returnValueRegister = CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX))
+        val returnValueRegister = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX))
 
         val extended =
             when (bodyCFG) {
@@ -267,7 +267,7 @@ internal class CFGGenerator(
     private fun visitReturnStatement(expression: Statement.ReturnStatement, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
-            CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX)), valueCFG.access)
+            CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX)), valueCFG.access)
 
         val resultAssignmentVertex = cfg.addUnconditionalVertex(resultAssignment)
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)

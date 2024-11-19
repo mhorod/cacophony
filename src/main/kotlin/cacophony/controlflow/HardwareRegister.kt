@@ -1,6 +1,6 @@
 package cacophony.controlflow
 
-enum class X64Register(val isCallPreserved: Boolean) {
+enum class HardwareRegister(val isCallPreserved: Boolean) {
     RAX(false),
     RBX(true),
     RCX(false),
@@ -21,10 +21,10 @@ enum class X64Register(val isCallPreserved: Boolean) {
 
 val REGISTER_ARGUMENT_ORDER =
     listOf(
-        X64Register.RDI,
-        X64Register.RSI,
-        X64Register.RDX,
-        X64Register.RCX,
-        X64Register.R8,
-        X64Register.R9,
+        HardwareRegister.RDI,
+        HardwareRegister.RSI,
+        HardwareRegister.RDX,
+        HardwareRegister.RCX,
+        HardwareRegister.R8,
+        HardwareRegister.R9,
     )

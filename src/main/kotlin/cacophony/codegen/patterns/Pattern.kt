@@ -1,7 +1,7 @@
 package cacophony.codegen.patterns
 
+import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
-import cacophony.codegen.instructions.InstructionLabel
 import cacophony.controlflow.*
 
 data class SlotFill(
@@ -23,5 +23,5 @@ interface ValuePattern : Pattern {
 }
 
 interface ConditionPattern : Pattern {
-    fun makeInstance(fill: SlotFill, destinationLabel: InstructionLabel): List<Instruction>
+    fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel): List<Instruction>
 }

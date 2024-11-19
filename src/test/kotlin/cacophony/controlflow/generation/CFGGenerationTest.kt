@@ -8,8 +8,8 @@ import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.CFGNode.Companion.TRUE
 import cacophony.controlflow.CFGVertex
+import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
-import cacophony.controlflow.X64Register
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.functionDeclaration
 import cacophony.ifThenElse
@@ -47,7 +47,7 @@ class CFGGenerationTest {
         // then
         val entryLabel = CFGLabel()
         val writeUnitToRax =
-            CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(X64Register.RAX)), CFGNode.UNIT)
+            CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX)), CFGNode.UNIT)
         val returnLabel = CFGLabel()
 
         val expectedCFG =

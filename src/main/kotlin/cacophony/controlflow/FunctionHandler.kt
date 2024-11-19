@@ -65,6 +65,10 @@ interface FunctionHandler {
     fun getVariableFromDefinition(varDef: Definition): Variable
 
     fun generateAccessToFramePointer(other: FunctionDeclaration): CFGNode
+
+    fun generatePrologue(): List<CFGNode>
+
+    fun generateEpilogue(): List<CFGNode>
 }
 
 class GenerateVariableAccessException(
@@ -128,7 +132,7 @@ class FunctionHandlerImpl(
     ): List<CFGNode> {
         val staticLinkVar =
             if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers[0]) {
-                RegisterUse(Register.FixedRegister(X64Register.RBP))
+                RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
             } else {
                 callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers[0].getFunctionDeclaration())
             }
@@ -138,7 +142,7 @@ class FunctionHandlerImpl(
 
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {
-            RegisterUse(Register.FixedRegister(X64Register.RBP))
+            RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
         } else {
             MemoryAccess(traverseStaticLink(depth - 1))
         }
@@ -209,6 +213,14 @@ class FunctionHandlerImpl(
 
     override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
+    override fun generatePrologue(): List<CFGNode> {
+        TODO("Not yet implemented")
+    }
+
+    override fun generateEpilogue(): List<CFGNode> {
+        TODO("Not yet implemented")
+    }
+
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     // Static link is created even if parent doesn't exist.
     private fun introduceStaticLinksParams() {
@@ -238,7 +250,7 @@ fun generateCall(
         // we push two copies of RSP to the stack and either leave them both there,
         // or remove one of them via RSP assignment
         val oldRSP = Register.VirtualRegister()
-        nodes.add(CFGNode.Assignment(RegisterUse(oldRSP), RegisterUse(Register.FixedRegister(X64Register.RSP))))
+        nodes.add(CFGNode.Assignment(RegisterUse(oldRSP), RegisterUse(Register.FixedRegister(HardwareRegister.RSP))))
 
         nodes.add(CFGNode.Push(RegisterUse(oldRSP)))
         nodes.add(CFGNode.Push(RegisterUse(oldRSP)))
@@ -248,12 +260,12 @@ fun generateCall(
         // into two cases depending on the parity of stackArguments.size
         nodes.add(
             CFGNode.Assignment(
-                RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                 Addition(
-                    RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                    RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                     CFGNode.Modulo(
                         Addition(
-                            RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                            RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                             Constant(stackArguments.size % 2 * FunctionHandlerImpl.REGISTER_SIZE),
                         ),
                         Constant(16),
@@ -281,9 +293,9 @@ fun generateCall(
     if (stackArguments.isNotEmpty()) {
         nodes.add(
             CFGNode.Assignment(
-                RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                 Addition(
-                    RegisterUse(Register.FixedRegister(X64Register.RSP)),
+                    RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                     Constant(FunctionHandlerImpl.REGISTER_SIZE * stackArguments.size),
                 ),
             ),
@@ -294,11 +306,11 @@ fun generateCall(
         // we could remove the operations from previous `if (stackArguments.isNotEmpty())` block
         // via MemoryAccess, but for now the semantics are a bit unclear + it would introduce
         // a few ifs, which we do not need at this point
-        nodes.add(CFGNode.Pop(RegisterUse(Register.FixedRegister(X64Register.RSP))))
+        nodes.add(CFGNode.Pop(RegisterUse(Register.FixedRegister(HardwareRegister.RSP))))
     }
 
     if (result != null) {
-        nodes.add(CFGNode.Assignment(RegisterUse(result), RegisterUse(Register.FixedRegister(X64Register.RAX))))
+        nodes.add(CFGNode.Assignment(RegisterUse(result), RegisterUse(Register.FixedRegister(HardwareRegister.RAX))))
     }
 
     return nodes

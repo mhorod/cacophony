@@ -1,5 +1,17 @@
 package cacophony.codegen.instructions
 
-class InstructionLabel(val name: String)
+import cacophony.controlflow.HardwareRegisterMapping
+import cacophony.controlflow.Register
+import cacophony.controlflow.ValueSlotMapping
 
-class Instruction // TODO: add API when it becomes necessary
+interface Instruction {
+    val registersRead: Set<Register>
+
+    val registersWritten: Set<Register>
+
+    fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String
+}
+
+interface CopyInstruction : Instruction
+
+typealias InstructionMaker = (ValueSlotMapping) -> List<Instruction>
