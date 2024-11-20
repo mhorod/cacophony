@@ -16,10 +16,7 @@ class CacophonyDiagnostics(
 
     private val errors: MutableList<ReportedError> = ArrayList()
 
-    override fun report(
-        message: DiagnosticMessage,
-        range: Pair<Location, Location>,
-    ) {
+    override fun report(message: DiagnosticMessage, range: Pair<Location, Location>) {
         errors.add(ReportedError(message, range))
     }
 

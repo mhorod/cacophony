@@ -79,10 +79,7 @@ class RegularLanguageLexer<TC : Enum<TC>>(
         return lastMatch
     }
 
-    override fun process(
-        input: Input,
-        diagnostics: Diagnostics,
-    ): List<Token<TC>> {
+    override fun process(input: Input, diagnostics: Diagnostics): List<Token<TC>> {
         val tokens = mutableListOf<Token<TC>>()
 
         while (true) {
@@ -91,6 +88,7 @@ class RegularLanguageLexer<TC : Enum<TC>>(
                     input.skip(END_OF_LINE_CHAR)
                     input.next()
                 }
+
                 null -> break
                 else -> {
                     matchNewToken(input)?.let { token ->

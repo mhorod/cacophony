@@ -1,7 +1,7 @@
 package cacophony.codegen.patterns
 
+import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
-import cacophony.codegen.instructions.InstructionLabel
 import cacophony.controlflow.*
 
 data class SlotFill(
@@ -19,15 +19,9 @@ interface SideEffectPattern : Pattern {
 }
 
 interface ValuePattern : Pattern {
-    fun makeInstance(
-        fill: SlotFill,
-        destination: Register,
-    ): List<Instruction>
+    fun makeInstance(fill: SlotFill, destination: Register): List<Instruction>
 }
 
 interface ConditionPattern : Pattern {
-    fun makeInstance(
-        fill: SlotFill,
-        destinationLabel: InstructionLabel,
-    ): List<Instruction>
+    fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel): List<Instruction>
 }

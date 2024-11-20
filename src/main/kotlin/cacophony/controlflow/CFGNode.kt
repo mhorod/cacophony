@@ -79,12 +79,6 @@ sealed interface CFGNode {
         override fun toString(): String = value.toString()
     }
 
-    data class Sequence(
-        val nodes: List<CFGNode>,
-    ) : CFGNode {
-        override fun toString(): String = nodes.joinToString("; ") { it.toString() }
-    }
-
     sealed interface ArithmeticOperator : Value
 
     sealed interface ArithmeticAssignmentOperator : ArithmeticOperator

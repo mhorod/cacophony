@@ -6,8 +6,7 @@ import cacophony.semantic.ParentLink
 import cacophony.semantic.VariableUseType
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.*
@@ -22,6 +21,29 @@ class FunctionHandlerTest {
 
     @Nested
     inner class GenerateCall {
+        private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: CFGNode) {
+            mockkStatic(::generateCall)
+            callee.generateCallFrom(
+                caller,
+                emptyList(),
+                null,
+                false,
+            )
+
+            verify {
+                generateCall(
+                    any(),
+                    listOf(
+                        expectedStaticLink,
+                    ),
+                    any(),
+                    false,
+                )
+            }
+
+            unmockkStatic(::generateCall)
+        }
+
         private fun mockAnalyzedFunction(): AnalyzedFunction =
             run {
                 val analyzedFunction = mockk<AnalyzedFunction>()
@@ -29,14 +51,12 @@ class FunctionHandlerTest {
                 every { analyzedFunction.variables } returns emptySet()
                 every { analyzedFunction.auxVariables } returns auxVariables
                 every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+                every { analyzedFunction.declaredVariables() } returns emptyList()
 
                 analyzedFunction
             }
 
-        private fun mockFunDeclarationAndFunHandlerWithParents(
-            argumentCount: Int,
-            chainLength: Int,
-        ): List<FunctionHandlerImpl> =
+        private fun mockFunDeclarationAndFunHandlerWithParents(argumentCount: Int, chainLength: Int): List<FunctionHandlerImpl> =
             run {
                 val functionHandlers = mutableListOf<FunctionHandlerImpl>()
                 for (i in 1..chainLength) {
@@ -64,19 +84,16 @@ class FunctionHandlerTest {
         private fun mockFunDeclarationAndFunHandler(argumentCount: Int): FunctionHandlerImpl =
             mockFunDeclarationAndFunHandlerWithParents(argumentCount, 1)[0]
 
-        private fun getCallNodes(
-            argumentCount: Int,
-            result: Register?,
-            alignStack: Boolean,
-        ): List<CFGNode> =
-            mockFunDeclarationAndFunHandler(argumentCount).generateCall(
-                (1..argumentCount).map { mockk() },
+        private fun getCallNodes(argumentCount: Int, result: Register?, alignStack: Boolean): List<CFGNode> =
+            generateCall(
+                mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
+                (1..argumentCount + 1).map { mockk() },
                 result,
                 alignStack,
             )
 
-        private fun getArgumentRegisters(callNodes: List<CFGNode>): List<X64Register> {
-            val returnList = mutableListOf<X64Register>()
+        private fun getArgumentRegisters(callNodes: List<CFGNode>): List<HardwareRegister> {
+            val returnList = mutableListOf<HardwareRegister>()
             for (node in callNodes) {
                 if (node is CFGNode.Assignment &&
                     node.destination is CFGNode.RegisterUse &&
@@ -84,7 +101,7 @@ class FunctionHandlerTest {
                 ) {
                     val reg = (node.destination as CFGNode.RegisterUse).register as Register.FixedRegister
                     val register = reg.hardwareRegister
-                    if (register != X64Register.RSP) {
+                    if (register != HardwareRegister.RSP) {
                         returnList.add(register)
                     }
                 }
@@ -99,7 +116,7 @@ class FunctionHandlerTest {
             for (node in callNodes) {
                 if (node is CFGNode.Assignment && node.value is CFGNode.RegisterUse) {
                     val reg = (node.value as CFGNode.RegisterUse).register
-                    if (reg is Register.FixedRegister && reg.hardwareRegister == X64Register.RAX) {
+                    if (reg is Register.FixedRegister && reg.hardwareRegister == HardwareRegister.RAX) {
                         assertThat(register).isNull()
                         register = node.destination
                     }
@@ -118,7 +135,7 @@ class FunctionHandlerTest {
                     (node.destination as CFGNode.RegisterUse).register is Register.FixedRegister
                 ) {
                     val reg = (node.destination as CFGNode.RegisterUse).register as Register.FixedRegister
-                    if (reg.hardwareRegister != X64Register.RSP) {
+                    if (reg.hardwareRegister != HardwareRegister.RSP) {
                         continue
                     }
                     if (node.value is CFGNode.Addition) {
@@ -126,7 +143,7 @@ class FunctionHandlerTest {
                         val rhs = (node.value as CFGNode.Addition).rhs
                         if (lhs !is CFGNode.RegisterUse ||
                             lhs.register !is Register.FixedRegister ||
-                            (lhs.register as Register.FixedRegister).hardwareRegister != X64Register.RSP
+                            (lhs.register as Register.FixedRegister).hardwareRegister != HardwareRegister.RSP
                         ) {
                             continue
                         }
@@ -142,7 +159,7 @@ class FunctionHandlerTest {
                 if (node is CFGNode.Pop) {
                     val registerUse = node.register as CFGNode.RegisterUse
                     if (registerUse.register is Register.FixedRegister) {
-                        if ((registerUse.register as Register.FixedRegister).hardwareRegister == X64Register.RSP) {
+                        if ((registerUse.register as Register.FixedRegister).hardwareRegister == HardwareRegister.RSP) {
                             assertThat(hasPopToRSP).isFalse()
                             hasPopToRSP = true
                         }
@@ -158,7 +175,7 @@ class FunctionHandlerTest {
         fun `function call argument count mismatch throws error`() {
             val handler = mockFunDeclarationAndFunHandler(1)
 
-            assertThatThrownBy { handler.generateCall(listOf(), null) }
+            assertThatThrownBy { generateCall(handler.getFunctionDeclaration(), emptyList(), null) }
                 .isInstanceOf(IllegalArgumentException::class.java)
         }
 
@@ -194,11 +211,11 @@ class FunctionHandlerTest {
             assertThat(getStackAlignmentAdded(getCallNodes(3, null, true))).isEqualTo(0)
             assertThat(getStackAlignmentAdded(getCallNodes(4, null, true))).isEqualTo(0)
             assertThat(getStackAlignmentAdded(getCallNodes(5, null, true))).isEqualTo(0)
-            assertThat(getStackAlignmentAdded(getCallNodes(6, null, true))).isEqualTo(0)
-            assertThat(getStackAlignmentAdded(getCallNodes(7, null, true))).isEqualTo(8)
-            assertThat(getStackAlignmentAdded(getCallNodes(8, null, true))).isEqualTo(0)
-            assertThat(getStackAlignmentAdded(getCallNodes(9, null, true))).isEqualTo(8)
-            assertThat(getStackAlignmentAdded(getCallNodes(10, null, true))).isEqualTo(0)
+            assertThat(getStackAlignmentAdded(getCallNodes(6, null, true))).isEqualTo(8)
+            assertThat(getStackAlignmentAdded(getCallNodes(7, null, true))).isEqualTo(0)
+            assertThat(getStackAlignmentAdded(getCallNodes(8, null, true))).isEqualTo(8)
+            assertThat(getStackAlignmentAdded(getCallNodes(9, null, true))).isEqualTo(0)
+            assertThat(getStackAlignmentAdded(getCallNodes(10, null, true))).isEqualTo(8)
         }
 
         @ParameterizedTest
@@ -210,7 +227,7 @@ class FunctionHandlerTest {
         @ParameterizedTest
         @ValueSource(ints = [0, 1, 2, 5, 6, 7, 8, 18])
         fun `excess arguments area passed on stack`(args: Int) {
-            assertThat(getPushCount(getCallNodes(args, null, false))).isEqualTo(max(0, args - 6))
+            assertThat(getPushCount(getCallNodes(args, null, false))).isEqualTo(max(0, args + 1 - 6))
         }
 
         @ParameterizedTest
@@ -218,13 +235,13 @@ class FunctionHandlerTest {
         fun `up to first six arguments area passed via registers`(args: Int) {
             val expected =
                 listOf(
-                    X64Register.RDI,
-                    X64Register.RSI,
-                    X64Register.RDX,
-                    X64Register.RCX,
-                    X64Register.R8,
-                    X64Register.R9,
-                ).take(args)
+                    HardwareRegister.RDI,
+                    HardwareRegister.RSI,
+                    HardwareRegister.RDX,
+                    HardwareRegister.RCX,
+                    HardwareRegister.R8,
+                    HardwareRegister.R9,
+                ).take(args + 1)
             assertThat(getArgumentRegisters(getCallNodes(args, null, false))).isEqualTo(expected)
         }
 
@@ -233,46 +250,22 @@ class FunctionHandlerTest {
             val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
             val childHandler = handlers[0]
             val parentHandler = handlers[1]
-
-            val staticLinkNode =
-                childHandler.generateCallFrom(
-                    parentHandler,
-                    emptyList(),
-                    null,
-                )[0]
-
-            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
-            val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
-            val expected =
-                CFGNode.Assignment(
-                    CFGNode.MemoryAccess(staticLinkAccess),
-                    CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
-                )
-
-            assertThat(staticLinkNode).isEqualTo(expected)
+            checkStaticLinkInGenerateCallFrom(
+                childHandler,
+                parentHandler,
+                CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+            )
         }
 
         @Test
         fun `function calling itself works`() {
             val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
             val childHandler = handlers[0]
-
-            val staticLinkNode =
-                childHandler.generateCallFrom(
-                    childHandler,
-                    emptyList(),
-                    null,
-                )[0]
-
-            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
-            val staticLinkAccess = childHandler.generateVariableAccess(childHandler.getStaticLink())
-            val expected =
-                CFGNode.Assignment(
-                    CFGNode.MemoryAccess(staticLinkAccess),
-                    childHandler.generateVariableAccess(childHandler.getStaticLink()),
-                )
-
-            assertThat(staticLinkNode).isEqualTo(expected)
+            checkStaticLinkInGenerateCallFrom(
+                childHandler,
+                childHandler,
+                CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))),
+            )
         }
 
         @Test
@@ -280,23 +273,11 @@ class FunctionHandlerTest {
             val handlers = mockFunDeclarationAndFunHandlerWithParents(0, 3)
             val childHandler = handlers[0]
             val parentHandler = handlers[1]
-
-            val staticLinkNode =
-                parentHandler.generateCallFrom(
-                    childHandler,
-                    emptyList(),
-                    null,
-                )[0]
-
-            // This test isn't too interesting, it's more about checking if nothing fails rather if it returns particular value.
-            val staticLinkAccess = childHandler.generateVariableAccess(parentHandler.getStaticLink())
-            val expected =
-                CFGNode.Assignment(
-                    CFGNode.MemoryAccess(staticLinkAccess),
-                    childHandler.generateVariableAccess(parentHandler.getStaticLink()),
-                )
-
-            assertThat(staticLinkNode).isEqualTo(expected)
+            checkStaticLinkInGenerateCallFrom(
+                parentHandler,
+                childHandler,
+                CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
+            )
         }
     }
 
@@ -307,14 +288,15 @@ class FunctionHandlerTest {
         every { analyzedFunction.auxVariables } returns auxVariables
         every { analyzedFunction.variables } returns emptySet()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns emptyList()
 
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
 
         assertThat(auxVariables).contains(handler.getStaticLink())
 
         val allocation = handler.getVariableAllocation(handler.getStaticLink())
-        require(allocation is VariableAllocation.InRegister)
-        assert(allocation.register is Register.VirtualRegister)
+        require(allocation is VariableAllocation.OnStack)
+        assertThat(allocation.offset).isEqualTo(0)
     }
 
     @Test
@@ -327,6 +309,8 @@ class FunctionHandlerTest {
         every { analyzedFunction.variables } returns setOf(analyzedVariable)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
+
         // run
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
@@ -345,6 +329,8 @@ class FunctionHandlerTest {
         every { analyzedFunction.variables } returns setOf(analyzedVariable)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
+
         // run
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
@@ -364,13 +350,15 @@ class FunctionHandlerTest {
         every { analyzedFunction.variables } returns setOf(analyzedVariable)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(varDef)
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
+
         // run
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
         val allocation = handler.getVariableAllocation(variable)
         // check
         require(allocation is VariableAllocation.OnStack)
-        assertEquals(0, allocation.offset)
+        assertEquals(8, allocation.offset)
     }
 
     @Test
@@ -389,6 +377,8 @@ class FunctionHandlerTest {
         every { analyzedFunction.variables } returns setOf(analyzedVariable1, analyzedVariable2, analyzedVariable3)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(varDef1, varDef3)
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable1, analyzedVariable2, analyzedVariable3)
+
         // run
         val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
         val variable1 = handler.getVariableFromDefinition(varDef1)
@@ -401,9 +391,9 @@ class FunctionHandlerTest {
         require(allocation1 is VariableAllocation.OnStack)
         require(allocation2 is VariableAllocation.InRegister)
         require(allocation3 is VariableAllocation.OnStack)
-        assertEquals(0, allocation1.offset)
+        assertEquals(8, allocation1.offset)
         assert(allocation2.register is Register.VirtualRegister)
-        assertEquals(8, allocation3.offset)
+        assertEquals(16, allocation3.offset)
     }
 
     @Test
@@ -414,19 +404,20 @@ class FunctionHandlerTest {
                 mockRange,
                 "f",
                 null,
-                listOf(),
+                emptyList(),
                 Type.Basic(mockRange, "Int"),
                 Empty(mockRange),
             )
         val fAnalyzed =
             AnalyzedFunction(
+                fDef,
                 null,
-                setOf(),
+                emptySet(),
                 mutableSetOf(),
                 0,
-                setOf(),
+                emptySet(),
             )
-        val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+        val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
 
         // when
         val declaration = fHandler.getFunctionDeclaration()
@@ -451,7 +442,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Block(
                         mockRange,
@@ -464,14 +455,15 @@ class FunctionHandlerTest {
             val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     null,
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
             val xAllocation = Register.VirtualRegister()
-            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
             val x = fHandler.getVariableFromDefinition(xDef)
             fHandler.registerVariableAllocation(
                 x,
@@ -499,7 +491,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Block(
                         mockRange,
@@ -512,13 +504,14 @@ class FunctionHandlerTest {
             val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     null,
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
             val x = fHandler.getVariableFromDefinition(xDef)
             fHandler.registerVariableAllocation(
                 x,
@@ -530,9 +523,10 @@ class FunctionHandlerTest {
 
             // then
             assertThat(xAccess).isEqualTo(
-                CFGNode.MemoryAccess( // [rbp + 24]
+                CFGNode.MemoryAccess(
+                    // [rbp + 24]
                     CFGNode.Addition(
-                        CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
+                        CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
                         CFGNode.Constant(24),
                     ),
                 ),
@@ -557,7 +551,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     VariableUse(mockRange, "x"),
                 )
@@ -566,7 +560,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "g",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     fDef,
                 )
@@ -575,7 +569,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "h",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Block(mockRange, listOf(xDef, gDef)),
                 )
@@ -583,14 +577,16 @@ class FunctionHandlerTest {
             val xAnalyzed = AnalyzedVariable(xDef, hDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     ParentLink(gDef, true),
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     2,
-                    setOf(),
+                    emptySet(),
                 )
             val gAnalyzed =
                 AnalyzedFunction(
+                    gDef,
                     ParentLink(hDef, true),
                     setOf(xAnalyzed),
                     mutableSetOf(),
@@ -599,13 +595,14 @@ class FunctionHandlerTest {
                 )
             val hAnalyzed =
                 AnalyzedFunction(
+                    hDef,
                     null,
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     0,
                     setOf(xDef),
                 )
-            val hHandler = FunctionHandlerImpl(hDef, hAnalyzed, listOf())
+            val hHandler = FunctionHandlerImpl(hDef, hAnalyzed, emptyList())
             val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, listOf(hHandler))
             val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf(gHandler, hHandler))
 
@@ -614,31 +611,18 @@ class FunctionHandlerTest {
                 x,
                 VariableAllocation.OnStack(24),
             )
-            gHandler.registerVariableAllocation(
-                gHandler.getStaticLink(),
-                VariableAllocation.OnStack(8),
-            )
-            fHandler.registerVariableAllocation(
-                fHandler.getStaticLink(),
-                VariableAllocation.OnStack(32),
-            )
 
             // when
             val xAccess = fHandler.generateVariableAccess(x)
 
             // then
             assertThat(xAccess).isEqualTo(
-                CFGNode.MemoryAccess( // [[[rbp + 32] + 8] + 24]
+                CFGNode.MemoryAccess(
+                    // [[[rbp]] + 24]
                     CFGNode.Addition(
                         CFGNode.MemoryAccess(
-                            CFGNode.Addition(
-                                CFGNode.MemoryAccess(
-                                    CFGNode.Addition(
-                                        CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
-                                        CFGNode.Constant(32),
-                                    ),
-                                ),
-                                CFGNode.Constant(8),
+                            CFGNode.MemoryAccess(
+                                CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
                             ),
                         ),
                         CFGNode.Constant(24),
@@ -657,33 +641,31 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     null,
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
-            fHandler.registerVariableAllocation(
-                fHandler.getStaticLink(),
-                VariableAllocation.OnStack(16),
-            )
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
 
             // when
             val staticLinkAccess = fHandler.generateVariableAccess(fHandler.getStaticLink())
 
             // then
             assertThat(staticLinkAccess).isEqualTo(
-                CFGNode.MemoryAccess( // [rbp + 16]
+                CFGNode.MemoryAccess(
+                    // [rbp + 0]
                     CFGNode.Addition(
-                        CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
-                        CFGNode.Constant(16),
+                        CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+                        CFGNode.Constant(0),
                     ),
                 ),
             )
@@ -702,7 +684,7 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
@@ -711,54 +693,126 @@ class FunctionHandlerTest {
                     mockRange,
                     "g",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     fDef,
                 )
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     ParentLink(gDef, true),
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     1,
-                    setOf(),
+                    emptySet(),
                 )
             val gAnalyzed =
                 AnalyzedFunction(
+                    gDef,
                     null,
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, listOf())
+            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, emptyList())
             val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf(gHandler))
-            gHandler.registerVariableAllocation(
-                gHandler.getStaticLink(),
-                VariableAllocation.OnStack(48),
-            )
-            fHandler.registerVariableAllocation(
-                fHandler.getStaticLink(),
-                VariableAllocation.OnStack(16),
-            )
 
             // when
             val staticLinkAccess = fHandler.generateVariableAccess(gHandler.getStaticLink())
 
             // then
             assertThat(staticLinkAccess).isEqualTo(
-                CFGNode.MemoryAccess( // [[rbp + 16] + 48]
+                CFGNode.MemoryAccess(
+                    // [[rbp] + 0]
                     CFGNode.Addition(
                         CFGNode.MemoryAccess(
-                            CFGNode.Addition(
-                                CFGNode.RegisterUse(Register.FixedRegister(X64Register.RBP)),
-                                CFGNode.Constant(16),
-                            ),
+                            CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
                         ),
-                        CFGNode.Constant(48),
+                        CFGNode.Constant(0),
                     ),
                 ),
             )
+        }
+
+        @Test
+        fun `calls its sibling with static link to parent `() {
+            // let g = [] -> Int => (
+            //   let h = [] -> Int => 42
+            //   let f = [] -> Int => h[]  # should pass a static link to parent
+            // );
+
+            // given
+            val hDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "h",
+                    null,
+                    emptyList(),
+                    Type.Basic(mockRange, "Int"),
+                    Literal.IntLiteral(mockRange, 42),
+                )
+            val fDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "f",
+                    null,
+                    emptyList(),
+                    Type.Basic(mockRange, "Int"),
+                    FunctionCall(mockRange, VariableUse(mockRange, "h"), emptyList()),
+                )
+            val gDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "g",
+                    null,
+                    emptyList(),
+                    Type.Basic(mockRange, "Int"),
+                    Block(mockRange, listOf(hDef, fDef)),
+                )
+            val hAnalyzed =
+                AnalyzedFunction(
+                    hDef,
+                    ParentLink(gDef, true),
+                    emptySet(),
+                    mutableSetOf(),
+                    1,
+                    emptySet(),
+                )
+            val fAnalyzed =
+                AnalyzedFunction(
+                    fDef,
+                    ParentLink(gDef, true),
+                    emptySet(),
+                    mutableSetOf(),
+                    1,
+                    emptySet(),
+                )
+            val gAnalyzed =
+                AnalyzedFunction(
+                    gDef,
+                    null,
+                    emptySet(),
+                    mutableSetOf(),
+                    0,
+                    emptySet(),
+                )
+            val gHandler = FunctionHandlerImpl(gDef, gAnalyzed, emptyList())
+            val hHandler = FunctionHandlerImpl(hDef, hAnalyzed, listOf(gHandler))
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf(gHandler))
+
+            mockkStatic(::generateCall)
+            // when
+            hHandler.generateCallFrom(fHandler, emptyList(), null, false)
+            verify {
+                generateCall(
+                    any(),
+                    listOf(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
+                    any(),
+                    false,
+                )
+            }
+            unmockkStatic(::generateCall)
         }
 
         @Test
@@ -769,19 +823,20 @@ class FunctionHandlerTest {
                     mockRange,
                     "f",
                     null,
-                    listOf(),
+                    emptyList(),
                     Type.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val fAnalyzed =
                 AnalyzedFunction(
+                    fDef,
                     null,
-                    setOf(),
+                    emptySet(),
                     mutableSetOf(),
                     0,
-                    setOf(),
+                    emptySet(),
                 )
-            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, listOf())
+            val fHandler = FunctionHandlerImpl(fDef, fAnalyzed, emptyList())
 
             // when & then
             org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {

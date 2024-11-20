@@ -13,10 +13,7 @@ import cacophony.controlflow.CFGVertex
 internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNode) {
     internal abstract fun toVertex(): CFGVertex
 
-    internal abstract fun replaceLabel(
-        label: CFGLabel,
-        newLabel: CFGLabel,
-    )
+    internal abstract fun replaceLabel(label: CFGLabel, newLabel: CFGLabel)
 
     internal abstract fun getConnections(): List<CFGLabel>
 
@@ -33,11 +30,7 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
 
         override fun getConnections() = listOf(outgoing ?: error("Vertex $this is not connected"))
 
-        override fun replaceLabel(
-            label: CFGLabel,
-            newLabel: CFGLabel,
-        ) {
-            println("Replacing label $outgoing =?= $label with $newLabel")
+        override fun replaceLabel(label: CFGLabel, newLabel: CFGLabel) {
             if (outgoing == label) outgoing = newLabel
         }
 
@@ -67,10 +60,7 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
                 outgoingFalse ?: error("Vertex $this false output is not connected"),
             )
 
-        override fun replaceLabel(
-            label: CFGLabel,
-            newLabel: CFGLabel,
-        ) {
+        override fun replaceLabel(label: CFGLabel, newLabel: CFGLabel) {
             if (outgoingTrue == label) outgoingTrue = newLabel
             if (outgoingFalse == label) outgoingFalse = newLabel
         }
@@ -84,10 +74,7 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
     internal class FinalVertex(override val node: CFGNode, label: CFGLabel) : GeneralCFGVertex(label, node) {
         override fun toVertex() = CFGVertex.Final(node)
 
-        override fun replaceLabel(
-            label: CFGLabel,
-            newLabel: CFGLabel,
-        ) = Unit
+        override fun replaceLabel(label: CFGLabel, newLabel: CFGLabel) = Unit
 
         override fun getConnections() = emptyList<CFGLabel>()
     }

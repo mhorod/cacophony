@@ -25,10 +25,7 @@ class NFAConstructorTest {
             return states
         }
 
-        private fun step(
-            states: Set<StateT>,
-            symbol: Char,
-        ): Set<StateT> {
+        private fun step(states: Set<StateT>, symbol: Char): Set<StateT> {
             val states = epsClosure(states)
             var newStates: Set<StateT> = setOf()
             for (state in states) {

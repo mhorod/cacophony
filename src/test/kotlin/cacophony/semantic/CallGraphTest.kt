@@ -22,10 +22,7 @@ class CallGraphTest {
     @MockK
     lateinit var diagnostics: Diagnostics
 
-    private fun loc(
-        l: Int,
-        r: Int,
-    ) = Pair(Location(l), Location(r))
+    private fun loc(l: Int, r: Int) = Pair(Location(l), Location(r))
 
     @BeforeEach
     fun setUpMocks() {

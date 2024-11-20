@@ -1,6 +1,5 @@
 package cacophony.semantic
 
-import cacophony.*
 import cacophony.semantic.syntaxtree.Empty
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -24,6 +23,7 @@ class FunctionAnalysisTest {
                     programFunctionAnalysis(ast),
                     funF to
                         AnalyzedFunction(
+                            funF,
                             ParentLink(program, false),
                             emptySet(),
                             mutableSetOf(),
@@ -53,8 +53,9 @@ class FunctionAnalysisTest {
                     programFunctionAnalysis(ast),
                     funF to
                         AnalyzedFunction(
+                            funF,
                             ParentLink(program, false),
-                            emptySet(),
+                            setOf(AnalyzedVariable(varA, funF, VariableUseType.UNUSED)),
                             mutableSetOf(),
                             1,
                             emptySet(),
@@ -80,9 +81,18 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    programFunctionAnalysis(ast, setOf(varA)),
+                    program(ast) to
+                        AnalyzedFunction(
+                            program(ast),
+                            null,
+                            setOf(AnalyzedVariable(varA, program(ast), VariableUseType.READ)),
+                            mutableSetOf(),
+                            0,
+                            setOf(varA),
+                        ),
                     funF to
                         AnalyzedFunction(
+                            funF,
                             ParentLink(program, true),
                             setOf(AnalyzedVariable(varA, program, VariableUseType.READ)),
                             mutableSetOf(),
@@ -111,9 +121,18 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    programFunctionAnalysis(ast, setOf(varA)),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(AnalyzedVariable(varA, program, VariableUseType.WRITE)),
+                            mutableSetOf(),
+                            0,
+                            setOf(varA),
+                        ),
                     funF to
                         AnalyzedFunction(
+                            funF,
                             ParentLink(program, true),
                             setOf(AnalyzedVariable(varA, program, VariableUseType.WRITE)),
                             mutableSetOf(),
@@ -143,10 +162,21 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    programFunctionAnalysis(ast, setOf(varA)),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(AnalyzedVariable(varA, program, VariableUseType.READ_WRITE)),
+                            mutableSetOf(),
+                            0,
+                            setOf(varA),
+                        ),
                     funF to
                         AnalyzedFunction(
-                            ParentLink(program, true),
+                            funF,
+                            ParentLink(
+                                program, true,
+                            ),
                             setOf(AnalyzedVariable(varA, program, VariableUseType.READ_WRITE)),
                             mutableSetOf(),
                             1,
@@ -177,7 +207,10 @@ class FunctionAnalysisTest {
                     programFunctionAnalysis(ast),
                     funF to
                         AnalyzedFunction(
-                            ParentLink(program, false),
+                            funF,
+                            ParentLink(
+                                program, false,
+                            ),
                             emptySet(),
                             mutableSetOf(),
                             1,
@@ -185,6 +218,7 @@ class FunctionAnalysisTest {
                         ),
                     funG to
                         AnalyzedFunction(
+                            funG,
                             ParentLink(funF, false),
                             emptySet(),
                             mutableSetOf(),
@@ -205,7 +239,6 @@ class FunctionAnalysisTest {
         val funF = functionDeclaration("f", block(varA, funG))
         val ast = astOf(funF)
         val program = program(ast)
-        val callGraph = callGraph()
 
         // when
         val result = analyzeFunctions(ast, mapOf(varAUse to varA), callGraph())
@@ -214,17 +247,27 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    programFunctionAnalysis(ast),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(),
+                            mutableSetOf(),
+                            0,
+                            setOf(),
+                        ),
                     funF to
                         AnalyzedFunction(
+                            funF,
                             ParentLink(program, false),
-                            setOf(),
+                            setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
                             mutableSetOf(),
                             1,
                             setOf(varA),
                         ),
                     funG to
                         AnalyzedFunction(
+                            funG,
                             ParentLink(funF, true),
                             setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
                             mutableSetOf(),
@@ -265,17 +308,27 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    programFunctionAnalysis(ast),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(),
+                            mutableSetOf(),
+                            0,
+                            emptySet(),
+                        ),
                     funFoo to
                         AnalyzedFunction(
+                            funFoo,
                             ParentLink(program, false),
-                            setOf(),
+                            setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             1,
                             setOf(varA),
                         ),
                     funG to
                         AnalyzedFunction(
+                            funG,
                             ParentLink(funFoo, true),
                             setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
@@ -284,6 +337,7 @@ class FunctionAnalysisTest {
                         ),
                     funH to
                         AnalyzedFunction(
+                            funH,
                             ParentLink(funG, true),
                             setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
@@ -292,6 +346,7 @@ class FunctionAnalysisTest {
                         ),
                     funJ to
                         AnalyzedFunction(
+                            funJ,
                             ParentLink(funI, false),
                             emptySet(),
                             mutableSetOf(),
@@ -300,6 +355,7 @@ class FunctionAnalysisTest {
                         ),
                     funI to
                         AnalyzedFunction(
+                            funI,
                             ParentLink(funFoo, true),
                             setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
@@ -308,6 +364,7 @@ class FunctionAnalysisTest {
                         ),
                     funMain to
                         AnalyzedFunction(
+                            funMain,
                             ParentLink(program, false),
                             emptySet(),
                             mutableSetOf(),
@@ -339,22 +396,32 @@ class FunctionAnalysisTest {
         assertThat(result)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    programFunctionAnalysis(ast),
+                    program to
+                        AnalyzedFunction(
+                            program,
+                            null,
+                            setOf(),
+                            mutableSetOf(),
+                            0,
+                            emptySet(),
+                        ),
                     funFoo to
                         AnalyzedFunction(
-                            ParentLink(program, false),
-                            setOf(
-                                // AnalyzedVariable(fooVarA, funFoo, VariableUseType.READ)
+                            funFoo,
+                            ParentLink(
+                                program, false,
                             ),
+                            setOf(AnalyzedVariable(fooVarA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             1,
                             emptySet(),
                         ),
                     funBar to
                         AnalyzedFunction(
+                            funBar,
                             ParentLink(funFoo, false),
                             setOf(
-                                // AnalyzedVariable(barVarA, funBar, VariableUseType.WRITE),
+                                AnalyzedVariable(barVarA, funBar, VariableUseType.WRITE),
                             ),
                             mutableSetOf(),
                             2,
@@ -392,14 +459,19 @@ class FunctionAnalysisTest {
                 programFunctionAnalysis(ast),
                 funF to
                     AnalyzedFunction(
+                        funF,
                         ParentLink(program, false),
-                        setOf(),
+                        setOf(
+                            AnalyzedVariable(argA, funF, VariableUseType.READ),
+                            AnalyzedVariable(argB, funF, VariableUseType.WRITE),
+                        ),
                         mutableSetOf(),
                         1,
                         setOf(argA, argB),
                     ),
                 funG to
                     AnalyzedFunction(
+                        funG,
                         ParentLink(funF, true),
                         setOf(
                             AnalyzedVariable(argA, funF, VariableUseType.READ),

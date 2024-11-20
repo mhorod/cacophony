@@ -34,10 +34,7 @@ private class OverloadSetImpl : OverloadSet {
 
     override fun toMap(): Map<Int, FunctionDeclaration> = overloads
 
-    override fun withDeclaration(
-        arity: Int,
-        declaration: FunctionDeclaration,
-    ): OverloadSet {
+    override fun withDeclaration(arity: Int, declaration: FunctionDeclaration): OverloadSet {
         overloads[arity] = declaration
         return this
     }
@@ -53,10 +50,7 @@ private interface SymbolsTable {
 
     fun close()
 
-    fun define(
-        id: String,
-        definition: Definition,
-    )
+    fun define(id: String, definition: Definition)
 
     fun find(id: String): ResolvedName?
 }
@@ -77,10 +71,7 @@ private fun emptySymbolsTable(): SymbolsTable {
             }
         }
 
-        override fun define(
-            id: String,
-            definition: Definition,
-        ) {
+        override fun define(id: String, definition: Definition) {
             if (blocks.isNotEmpty()) {
                 if (!idToBlocks.containsKey(id)) {
                     idToBlocks[id] = mutableListOf()
@@ -93,9 +84,11 @@ private fun emptySymbolsTable(): SymbolsTable {
                     is VariableDeclaration -> {
                         blocks.last()[id] = ResolvedName.Variable(definition)
                     }
+
                     is FunctionArgument -> {
                         blocks.last()[id] = ResolvedName.Argument(definition)
                     }
+
                     is FunctionDeclaration -> {
                         val arity = definition.arguments.size
 
@@ -105,6 +98,7 @@ private fun emptySymbolsTable(): SymbolsTable {
                                     .def
                                     .withDeclaration(arity, definition)
                             }
+
                             else -> {
                                 blocks.last()[id] =
                                     ResolvedName.Function(
@@ -137,33 +131,30 @@ private fun emptySymbolsTable(): SymbolsTable {
 
 typealias NameResolutionResult = Map<VariableUse, ResolvedName>
 
-fun resolveNames(
-    root: AST,
-    diagnostics: Diagnostics,
-): NameResolutionResult {
+fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
     val resolution = mutableMapOf<VariableUse, ResolvedName>()
     val symbolsTable = emptySymbolsTable()
 
-    fun traverseAst(
-        node: Expression,
-        openNewBlock: Boolean,
-    ) {
+    fun traverseAst(node: Expression, openNewBlock: Boolean) {
         if (openNewBlock) symbolsTable.open()
 
         when (node) {
             is Block -> {
                 node.expressions.forEach { traverseAst(it, it is Block) }
             }
+
             is VariableUse -> {
                 symbolsTable
                     .find(node.identifier)
                     ?.let { resolvedName -> resolution[node] = resolvedName }
                     ?: diagnostics.report(NRDiagnostics.UnidentifiedIdentifier(node.identifier), node.range)
             }
+
             is VariableDeclaration -> {
                 symbolsTable.define(node.identifier, node)
                 traverseAst(node.value, true)
             }
+
             is FunctionDeclaration -> {
                 symbolsTable.define(node.identifier, node)
                 // Open new block to make arguments visible in function body, but not after
@@ -173,35 +164,43 @@ fun resolveNames(
                 traverseAst(node.body, true)
                 symbolsTable.close()
             }
+
             is FunctionArgument -> {
                 if (node.type is Type.Functional) {
                     diagnostics.report(NRDiagnostics.IllegalFunctionalArgument(node.identifier), node.range)
                 }
                 symbolsTable.define(node.identifier, node)
             }
+
             is FunctionCall -> {
                 traverseAst(node.function, false)
                 node.arguments.forEach { traverseAst(it, true) }
             }
+
             is Statement.IfElseStatement -> {
                 traverseAst(node.testExpression, true)
                 traverseAst(node.doExpression, true)
                 node.elseExpression?.let { traverseAst(it, true) }
             }
+
             is Statement.WhileStatement -> {
                 traverseAst(node.testExpression, true)
                 traverseAst(node.doExpression, true)
             }
+
             is Statement.ReturnStatement -> {
                 traverseAst(node.value, true)
             }
+
             is OperatorUnary -> {
                 traverseAst(node.expression, true)
             }
+
             is OperatorBinary -> {
                 traverseAst(node.lhs, true)
                 traverseAst(node.rhs, true)
             }
+
             else -> {}
         }
 

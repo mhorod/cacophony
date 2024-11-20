@@ -3,7 +3,7 @@ package cacophony.controlflow
 import cacophony.semantic.syntaxtree.Definition
 
 sealed class Variable {
-    class SourceVariable(
+    data class SourceVariable(
         val definition: Definition,
     ) : Variable()
 
@@ -16,6 +16,6 @@ sealed class Register {
     class VirtualRegister : Register()
 
     data class FixedRegister(
-        val hardwareRegister: X64Register,
+        val hardwareRegister: HardwareRegister,
     ) : Register()
 }

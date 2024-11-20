@@ -1,21 +1,13 @@
 package cacophony.automata
 
 interface DFAEquivalenceHelper<StateA, StateB> {
-    fun areDistinguishable(
-        a: StateA,
-        b: StateB,
-    ): Boolean
+    fun areDistinguishable(a: StateA, b: StateB): Boolean
 
-    fun areEquivalent(
-        a: StateA,
-        b: StateB,
-    ): Boolean = !areDistinguishable(a, b)
+    fun areEquivalent(a: StateA, b: StateB): Boolean = !areDistinguishable(a, b)
 }
 
-fun <StateA, StateB, AtomT, ResultT> areEquivalent(
-    dfaA: DFA<StateA, AtomT, ResultT>,
-    dfaB: DFA<StateB, AtomT, ResultT>,
-): Boolean = createDFAEquivalenceHelper(dfaA, dfaB).areEquivalent(dfaA.getStartingState(), dfaB.getStartingState())
+fun <StateA, StateB, AtomT, ResultT> areEquivalent(dfaA: DFA<StateA, AtomT, ResultT>, dfaB: DFA<StateB, AtomT, ResultT>): Boolean =
+    createDFAEquivalenceHelper(dfaA, dfaB).areEquivalent(dfaA.getStartingState(), dfaB.getStartingState())
 
 fun <StateA, StateB, AtomT, ResultT> createDFAEquivalenceHelper(
     dfaA: DFA<StateA, AtomT, ResultT>,
@@ -23,10 +15,7 @@ fun <StateA, StateB, AtomT, ResultT> createDFAEquivalenceHelper(
 ): DFAEquivalenceHelper<StateA, StateB> {
     val distinguishable = initializeDistinguishableStates(dfaA, dfaB)
     return object : DFAEquivalenceHelper<StateA, StateB> {
-        override fun areDistinguishable(
-            a: StateA,
-            b: StateB,
-        ): Boolean = distinguishable.contains(Pair(a, b))
+        override fun areDistinguishable(a: StateA, b: StateB): Boolean = distinguishable.contains(Pair(a, b))
     }
 }
 
@@ -71,10 +60,7 @@ private fun <StateT, AtomT> getSymbols(productions: Map<Pair<StateT, AtomT>, Sta
             it.second
         }.toSet()
 
-private fun <StateT, AtomT> invertProductions(
-    dfa: DFA<StateT, AtomT, *>,
-    symbols: Set<AtomT>,
-): Map<Pair<StateT?, AtomT>, Set<StateT?>> {
+private fun <StateT, AtomT> invertProductions(dfa: DFA<StateT, AtomT, *>, symbols: Set<AtomT>): Map<Pair<StateT?, AtomT>, Set<StateT?>> {
     val inverted = mutableMapOf<Pair<StateT?, AtomT>, MutableSet<StateT?>>()
     for (symbol in symbols) {
         for (state in dfa.getAllStates()) {

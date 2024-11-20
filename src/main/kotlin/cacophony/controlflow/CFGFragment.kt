@@ -40,10 +40,7 @@ fun cfgFragmentToGraphviz(cfg: CFGFragment): String {
     return builder.toString()
 }
 
-private fun cfgGraphvizVertices(
-    cfg: CFGFragment,
-    nextNodeId: Int,
-): String {
+private fun cfgGraphvizVertices(cfg: CFGFragment, nextNodeId: Int): String {
     var nextId = nextNodeId
     val ids = cfg.vertices.mapValues { nextId++ }
 

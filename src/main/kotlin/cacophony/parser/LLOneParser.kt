@@ -94,10 +94,7 @@ class LLOneParser<StateT, SymbolT : Enum<SymbolT>>(
         }
     }
 
-    override fun process(
-        terminals: List<ParseTree.Leaf<SymbolT>>,
-        diagnostics: Diagnostics,
-    ): ParseTree<SymbolT> {
+    override fun process(terminals: List<ParseTree.Leaf<SymbolT>>, diagnostics: Diagnostics): ParseTree<SymbolT> {
         if (terminals.isEmpty()) {
             throw ParsingException("Unable to parse empty input.")
         }
@@ -140,7 +137,8 @@ class LLOneParser<StateT, SymbolT : Enum<SymbolT>>(
                         } catch (e: ParsingException) {
                             if (!eof && dfa.getProduction(state, terminal.token.category) == null) {
                                 throw diagnostics.fatal()
-                            } else {}
+                            } else {
+                            }
                         }
                     } ?: run {
                         diagnostics.report(ParserDiagnostics.UnexpectedToken(terminal.token.category.name, symbol.name), terminal.range)

@@ -14,42 +14,35 @@ fun mockRange() = Pair(Location(0), Location(0))
 
 fun unitType() = Type.Basic(mockRange(), "Unit")
 
-fun functionDeclaration(
-    identifier: String,
-    body: Expression,
-) = Definition.FunctionDeclaration(
-    mockRange(),
-    identifier,
-    null,
-    emptyList(),
-    unitType(),
-    body,
-)
+fun functionDeclaration(identifier: String, body: Expression) =
+    Definition.FunctionDeclaration(
+        mockRange(),
+        identifier,
+        null,
+        emptyList(),
+        unitType(),
+        body,
+    )
 
 fun arg(identifier: String) = Definition.FunctionArgument(mockRange(), identifier, unitType())
 
-fun functionDeclaration(
-    identifier: String,
-    arguments: List<Definition.FunctionArgument>,
-    body: Expression,
-) = Definition.FunctionDeclaration(
-    mockRange(),
-    identifier,
-    null,
-    arguments,
-    unitType(),
-    body,
-)
+fun functionDeclaration(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
+    Definition.FunctionDeclaration(
+        mockRange(),
+        identifier,
+        null,
+        arguments,
+        unitType(),
+        body,
+    )
 
-fun variableDeclaration(
-    identifier: String,
-    value: Expression,
-) = Definition.VariableDeclaration(
-    mockRange(),
-    identifier,
-    null,
-    value,
-)
+fun variableDeclaration(identifier: String, value: Expression) =
+    Definition.VariableDeclaration(
+        mockRange(),
+        identifier,
+        null,
+        value,
+    )
 
 fun variableUse(identifier: String) = VariableUse(mockRange(), identifier)
 
@@ -62,10 +55,7 @@ fun variableWrite(variableUse: VariableUse) =
 
 fun block(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 
-fun call(
-    variableUse: VariableUse,
-    vararg arguments: Expression,
-) = FunctionCall(mockRange(), variableUse, arguments.toList())
+fun call(variableUse: VariableUse, vararg arguments: Expression) = FunctionCall(mockRange(), variableUse, arguments.toList())
 
 fun astOf(vararg expressions: Expression) =
     Block(
@@ -94,34 +84,32 @@ fun programStaticRelation() = StaticFunctionRelations(null, 0, emptySet(), empty
 fun programFunctionAnalysis(ast: Block) =
     (
         program(ast)
-            to analyzedFunction(0, emptySet())
+            to analyzedFunction(program(ast), 0, emptySet())
     )
 
-fun programFunctionAnalysis(
-    ast: Block,
-    variablesUsedInNestedFunctions: Set<Definition>,
-) = (
-    program(ast)
-        to
-        AnalyzedFunction(
-            null,
-            emptySet(),
-            mutableSetOf(),
-            0,
-            variablesUsedInNestedFunctions,
-        )
-)
+fun programFunctionAnalysis(ast: Block, variablesUsedInNestedFunctions: Set<Definition>) =
+    (
+        program(ast)
+            to
+            AnalyzedFunction(
+                program(ast),
+                null,
+                emptySet(),
+                mutableSetOf(),
+                0,
+                variablesUsedInNestedFunctions,
+            )
+    )
 
 fun callGraph(vararg calls: Pair<Definition.FunctionDeclaration, Definition.FunctionDeclaration>): CallGraph =
     calls.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
 
-fun analyzedFunction(
-    staticDepth: Int,
-    variables: Set<AnalyzedVariable>,
-) = AnalyzedFunction(
-    null,
-    variables,
-    mutableSetOf(),
-    staticDepth,
-    emptySet(),
-)
+fun analyzedFunction(function: Definition.FunctionDeclaration, staticDepth: Int, variables: Set<AnalyzedVariable>) =
+    AnalyzedFunction(
+        function,
+        null,
+        variables,
+        mutableSetOf(),
+        staticDepth,
+        emptySet(),
+    )

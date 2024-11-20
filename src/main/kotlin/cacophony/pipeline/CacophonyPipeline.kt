@@ -1,16 +1,23 @@
 package cacophony.pipeline
 
+import cacophony.codegen.instructions.CacophonyInstructionCovering
+import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
+import cacophony.codegen.linearization.LoweredCFGFragment
+import cacophony.codegen.linearization.linearize
+import cacophony.codegen.registers.Liveness
+import cacophony.codegen.registers.RegisterAllocation
+import cacophony.controlflow.HardwareRegister
+import cacophony.controlflow.generateFunctionHandlers
+import cacophony.controlflow.generation.ProgramCFG
+import cacophony.controlflow.generation.generateCFG
 import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyParser
-import cacophony.semantic.CallGraph
-import cacophony.semantic.FunctionAnalysisResult
-import cacophony.semantic.NameResolutionResult
-import cacophony.semantic.ResolvedVariables
-import cacophony.semantic.TypeCheckingResult
+import cacophony.semantic.*
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.syntaxtree.Definition
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
@@ -21,10 +28,13 @@ class CacophonyPipeline(
     private val logger: CacophonyLogger? = null,
     private val lexer: CacophonyLexer = cachedLexer,
     private val parser: CacophonyParser = cachedParser,
+    private val instructionMatcher: CacophonyInstructionMatcher = cachedInstructionMatcher,
 ) {
     companion object {
         private val cachedLexer = CacophonyLexer()
         private val cachedParser = CacophonyParser()
+        private val cachedInstructionMatcher = CacophonyInstructionMatcher()
+        private val allGPRs = HardwareRegister.entries.toSet()
     }
 
     private fun <T> assertEmptyDiagnosticsAfter(action: () -> T): T {
@@ -93,10 +103,7 @@ class CacophonyPipeline(
         return resolveOverloads(ast, nr)
     }
 
-    fun resolveOverloads(
-        ast: AST,
-        nr: NameResolutionResult,
-    ): ResolvedVariables {
+    fun resolveOverloads(ast: AST, nr: NameResolutionResult): ResolvedVariables {
         val result =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.resolveOverloads(ast, diagnostics, nr) }
@@ -108,10 +115,7 @@ class CacophonyPipeline(
         return result
     }
 
-    fun checkTypes(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-    ): TypeCheckingResult {
+    fun checkTypes(ast: AST, resolvedVariables: ResolvedVariables): TypeCheckingResult {
         val types =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.checkTypes(ast, diagnostics, resolvedVariables) }
@@ -123,10 +127,7 @@ class CacophonyPipeline(
         return types
     }
 
-    fun generateCallGraph(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-    ): CallGraph {
+    fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables): CallGraph {
         val callGraph =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.generateCallGraph(ast, diagnostics, resolvedVariables) }
@@ -145,29 +146,12 @@ class CacophonyPipeline(
         return analyzeFunctions(ast, resolvedFunctions)
     }
 
-    fun analyzeFunctions(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-    ): FunctionAnalysisResult {
-        val types = checkTypes(ast, resolvedVariables)
-        return analyzeFunctions(ast, resolvedVariables, types)
-    }
-
-    fun analyzeFunctions(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-        types: TypeCheckingResult,
-    ): FunctionAnalysisResult {
+    fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables): FunctionAnalysisResult {
         val callGraph = generateCallGraph(ast, resolvedVariables)
-        return analyzeFunctions(ast, resolvedVariables, types, callGraph)
+        return analyzeFunctions(ast, resolvedVariables, callGraph)
     }
 
-    fun analyzeFunctions(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-        types: TypeCheckingResult,
-        callGraph: CallGraph,
-    ): FunctionAnalysisResult {
+    fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, callGraph: CallGraph): FunctionAnalysisResult {
         val result =
             try {
                 assertEmptyDiagnosticsAfter { cacophony.semantic.analyzeFunctions(ast, resolvedVariables, callGraph) }
@@ -178,4 +162,29 @@ class CacophonyPipeline(
         logger?.logSuccessfulFunctionAnalysis(result)
         return result
     }
+
+    fun generateControlFlowGraph(input: Input): ProgramCFG {
+        return generateControlFlowGraph(generateAST(input))
+    }
+
+    fun generateControlFlowGraph(ast: AST): ProgramCFG {
+        val resolvedVariables = resolveOverloads(ast)
+        val callGraph = generateCallGraph(ast, resolvedVariables)
+        val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
+        val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
+        val functionHandlers = generateFunctionHandlers(analyzedFunctions)
+        return generateCFG(resolvedVariables, analyzedExpressions, functionHandlers)
+    }
+
+    fun coverWithInstructions(ast: AST): Map<Definition.FunctionDeclaration, LoweredCFGFragment> =
+        generateControlFlowGraph(ast).mapValues { (_, cfg) -> linearize(cfg, CacophonyInstructionCovering(instructionMatcher)) }
+
+    fun analyzeLiveness(ast: AST): Map<Definition.FunctionDeclaration, Liveness> =
+        coverWithInstructions(ast).mapValues { (_, loweredCFG) -> cacophony.codegen.registers.analyzeLiveness(loweredCFG) }
+
+    fun allocateRegisters(
+        ast: AST,
+        allowedRegisters: Set<HardwareRegister> = allGPRs,
+    ): Map<Definition.FunctionDeclaration, RegisterAllocation> =
+        analyzeLiveness(ast).mapValues { (_, liveness) -> cacophony.codegen.registers.allocateRegisters(liveness, allowedRegisters) }
 }
