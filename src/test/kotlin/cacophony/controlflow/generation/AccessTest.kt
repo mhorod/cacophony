@@ -1,6 +1,7 @@
 package cacophony.controlflow.generation
 
 import cacophony.*
+import cacophony.controlflow.*
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import org.junit.jupiter.api.Test
 

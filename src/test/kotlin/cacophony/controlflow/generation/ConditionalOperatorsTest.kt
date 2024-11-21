@@ -1,7 +1,7 @@
 package cacophony.controlflow.generation
 
 import cacophony.block
-import cacophony.cfg
+import cacophony.controlflow.cfg
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.controlflow.generation.TestOperators.Companion.eq
 import cacophony.controlflow.generation.TestOperators.Companion.eqNode
@@ -15,15 +15,15 @@ import cacophony.controlflow.generation.TestOperators.Companion.lt
 import cacophony.controlflow.generation.TestOperators.Companion.ltNode
 import cacophony.controlflow.generation.TestOperators.Companion.neq
 import cacophony.controlflow.generation.TestOperators.Companion.neqNode
+import cacophony.controlflow.integer
+import cacophony.controlflow.rax
+import cacophony.controlflow.returnNode
+import cacophony.controlflow.writeRegister
 import cacophony.functionDeclaration
 import cacophony.ifThenElse
-import cacophony.integer
 import cacophony.lit
-import cacophony.rax
-import cacophony.returnNode
 import cacophony.variableDeclaration
 import cacophony.variableUse
-import cacophony.writeRegister
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.argumentSet

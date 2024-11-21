@@ -3,27 +3,25 @@ package cacophony.codegen.patterns.cacophonyPatterns
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.patterns.SideEffectPattern
 import cacophony.codegen.patterns.SlotFill
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.RegisterLabel
-import cacophony.controlflow.ValueLabel
+import cacophony.controlflow.*
 
 class SideEffectPatterns {
     abstract class RegisterAssignmentTemplate {
         val lhsRegisterLabel = RegisterLabel()
         val rhsLabel = ValueLabel()
+        val lhsSlot = CFGNode.RegisterSlot(lhsRegisterLabel)
+        val rhsSlot = CFGNode.ValueSlot(rhsLabel)
     }
 
     abstract class MemoryAssignmentTemplate {
         val lhsLabel = ValueLabel()
         val rhsLabel = ValueLabel()
+        val lhsSlot = CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel))
+        val rhsSlot = CFGNode.ValueSlot(rhsLabel)
     }
 
     object AdditionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
-        override val tree =
-            CFGNode.AdditionAssignment(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.ValueSlot(rhsLabel),
-            )
+        override val tree = lhsSlot addeq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -31,13 +29,7 @@ class SideEffectPatterns {
     }
 
     object AdditionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
-        override val tree =
-            CFGNode.AdditionAssignment(
-                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
-                CFGNode.ValueSlot(
-                    rhsLabel,
-                ),
-            )
+        override val tree = lhsSlot addeq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -45,11 +37,7 @@ class SideEffectPatterns {
     }
 
     object SubtractionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
-        override val tree =
-            CFGNode.SubtractionAssignment(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.ValueSlot(rhsLabel),
-            )
+        override val tree = lhsSlot subeq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -57,13 +45,7 @@ class SideEffectPatterns {
     }
 
     object SubtractionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
-        override val tree =
-            CFGNode.SubtractionAssignment(
-                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
-                CFGNode.ValueSlot(
-                    rhsLabel,
-                ),
-            )
+        override val tree = lhsSlot subeq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -71,11 +53,7 @@ class SideEffectPatterns {
     }
 
     object MultiplicationAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
-        override val tree =
-            CFGNode.MultiplicationAssignment(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.ValueSlot(rhsLabel),
-            )
+        override val tree = lhsSlot subeq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -83,13 +61,7 @@ class SideEffectPatterns {
     }
 
     object MultiplicationAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
-        override val tree =
-            CFGNode.MultiplicationAssignment(
-                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
-                CFGNode.ValueSlot(
-                    rhsLabel,
-                ),
-            )
+        override val tree = lhsSlot muleq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -97,11 +69,7 @@ class SideEffectPatterns {
     }
 
     object DivisionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
-        override val tree =
-            CFGNode.DivisionAssignment(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.ValueSlot(rhsLabel),
-            )
+        override val tree = lhsSlot diveq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -109,27 +77,7 @@ class SideEffectPatterns {
     }
 
     object DivisionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
-        override val tree =
-            CFGNode.DivisionAssignment(
-                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
-                CFGNode.ValueSlot(
-                    rhsLabel,
-                ),
-            )
-
-        override fun makeInstance(fill: SlotFill): List<Instruction> {
-            TODO("Not yet implemented")
-        }
-    }
-
-    object ModuloAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
-        override val tree =
-            CFGNode.ModuloAssignment(
-                CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)),
-                CFGNode.ValueSlot(
-                    rhsLabel,
-                ),
-            )
+        override val tree = lhsSlot diveq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -137,11 +85,15 @@ class SideEffectPatterns {
     }
 
     object ModuloAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
-        override val tree =
-            CFGNode.ModuloAssignment(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.ValueSlot(rhsLabel),
-            )
+        override val tree = lhsSlot modeq rhsSlot
+
+        override fun makeInstance(fill: SlotFill): List<Instruction> {
+            TODO("Not yet implemented")
+        }
+    }
+
+    object ModuloAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemplate() {
+        override val tree = lhsSlot modeq rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -177,11 +129,7 @@ class SideEffectPatterns {
     }
 
     object RegisterAssignmentPattern : SideEffectPattern, RegisterAssignmentTemplate() {
-        override val tree =
-            CFGNode.Assignment(
-                CFGNode.RegisterSlot(lhsRegisterLabel),
-                CFGNode.ValueSlot(rhsLabel),
-            )
+        override val tree = lhsSlot assign rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")
@@ -189,7 +137,7 @@ class SideEffectPatterns {
     }
 
     object MemoryAssignmentPattern : SideEffectPattern, MemoryAssignmentTemplate() {
-        override val tree = CFGNode.Assignment(CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel)), CFGNode.ValueSlot(rhsLabel))
+        override val tree = lhsSlot assign rhsSlot
 
         override fun makeInstance(fill: SlotFill): List<Instruction> {
             TODO("Not yet implemented")

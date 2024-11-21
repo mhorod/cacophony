@@ -1,18 +1,19 @@
 package cacophony.controlflow.generation
 
-import cacophony.add
+import cacophony.*
 import cacophony.controlflow.CFGNode
-import cacophony.div
-import cacophony.eq
-import cacophony.geq
-import cacophony.gt
-import cacophony.leq
-import cacophony.lt
-import cacophony.mod
-import cacophony.mul
-import cacophony.neq
+import cacophony.controlflow.add
+import cacophony.controlflow.div
+import cacophony.controlflow.eq
+import cacophony.controlflow.geq
+import cacophony.controlflow.gt
+import cacophony.controlflow.leq
+import cacophony.controlflow.lt
+import cacophony.controlflow.mod
+import cacophony.controlflow.mul
+import cacophony.controlflow.neq
+import cacophony.controlflow.sub
 import cacophony.semantic.syntaxtree.Expression
-import cacophony.sub
 
 typealias MakeBinaryExpression = (Expression, Expression) -> Expression
 typealias MakeBinaryNode = (CFGNode, CFGNode) -> CFGNode

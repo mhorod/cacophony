@@ -1,8 +1,6 @@
 package cacophony.controlflow.generation
 
-import cacophony.addeq
-import cacophony.block
-import cacophony.cfg
+import cacophony.*
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
@@ -10,22 +8,17 @@ import cacophony.controlflow.CFGNode.Companion.TRUE
 import cacophony.controlflow.CFGVertex
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
+import cacophony.controlflow.addeq
+import cacophony.controlflow.cfg
+import cacophony.controlflow.integer
+import cacophony.controlflow.lt
+import cacophony.controlflow.rax
+import cacophony.controlflow.registerUse
+import cacophony.controlflow.returnNode
+import cacophony.controlflow.unit
+import cacophony.controlflow.writeRegister
 import cacophony.diagnostics.CacophonyDiagnostics
-import cacophony.functionDeclaration
-import cacophony.ifThenElse
-import cacophony.integer
-import cacophony.lit
-import cacophony.lt
 import cacophony.pipeline.CacophonyPipeline
-import cacophony.rax
-import cacophony.registerUse
-import cacophony.returnNode
-import cacophony.returnStatement
-import cacophony.unit
-import cacophony.variableDeclaration
-import cacophony.variableUse
-import cacophony.whileLoop
-import cacophony.writeRegister
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 

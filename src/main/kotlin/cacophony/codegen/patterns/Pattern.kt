@@ -5,7 +5,7 @@ import cacophony.codegen.instructions.Instruction
 import cacophony.controlflow.*
 
 data class SlotFill(
-    val valueFill: Map<ValueLabel, CFGNode.Value>,
+    val valueFill: Map<ValueLabel, CFGNode.RegisterRef>,
     val registerFill: Map<RegisterLabel, CFGNode.RegisterUse>,
     val constantFill: Map<ConstantLabel, CFGNode.Constant>,
 )
