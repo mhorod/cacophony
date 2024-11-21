@@ -1,16 +1,16 @@
 package cacophony.controlflow.generation
 
 import cacophony.block
-import cacophony.cfg
+import cacophony.controlflow.cfg
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
+import cacophony.controlflow.integer
+import cacophony.controlflow.rax
+import cacophony.controlflow.returnNode
+import cacophony.controlflow.unit
+import cacophony.controlflow.writeRegister
 import cacophony.functionDeclaration
-import cacophony.integer
 import cacophony.lit
-import cacophony.rax
-import cacophony.returnNode
-import cacophony.unit
 import cacophony.variableDeclaration
-import cacophony.writeRegister
 import org.junit.jupiter.api.Test
 
 class BlocksTest {

@@ -1,24 +1,16 @@
 package cacophony.controlflow.generation
 
-import cacophony.addeq
-import cacophony.block
-import cacophony.cfg
+import cacophony.*
+import cacophony.controlflow.addeq
+import cacophony.controlflow.cfg
+import cacophony.controlflow.eq
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.eq
-import cacophony.functionDeclaration
-import cacophony.ifThen
-import cacophony.ifThenElse
-import cacophony.integer
-import cacophony.lit
-import cacophony.lt
-import cacophony.mod
-import cacophony.rax
-import cacophony.returnNode
-import cacophony.returnStatement
-import cacophony.unit
-import cacophony.variableDeclaration
-import cacophony.variableUse
-import cacophony.whileLoop
+import cacophony.controlflow.integer
+import cacophony.controlflow.lt
+import cacophony.controlflow.mod
+import cacophony.controlflow.rax
+import cacophony.controlflow.returnNode
+import cacophony.controlflow.unit
 import org.junit.jupiter.api.Test
 
 class ReturnTest {
@@ -57,7 +49,7 @@ class ReturnTest {
                 fragment(fDef) {
                     "entry" does
                         jump("condition") {
-                            cacophony.writeRegister(virtualRegister("x"), integer(0))
+                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
                         }
                     "condition" does
                         conditional("true branch", "return from loop") {
@@ -69,7 +61,7 @@ class ReturnTest {
                         }
                     "return from loop" does
                         jump("loop return") {
-                            cacophony.writeRegister(rax, integer(0))
+                            cacophony.controlflow.writeRegister(rax, integer(0))
                         }
                     "loop return" does final { returnNode }
                     "return" does final { returnNode }
@@ -113,7 +105,7 @@ class ReturnTest {
                 fragment(fDef) {
                     "entry" does
                         jump("loop condition") {
-                            cacophony.writeRegister(virtualRegister("x"), integer(0))
+                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
                         }
                     "loop condition" does
                         conditional("increment x", "exit") {
@@ -127,9 +119,9 @@ class ReturnTest {
                         conditional("return from loop", "loop condition") {
                             (readRegister("x") mod integer(5)) eq integer(0)
                         }
-                    "exit" does jump("return") { cacophony.writeRegister(rax, unit) }
+                    "exit" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
                     "return" does final { returnNode }
-                    "return from loop" does jump("loop return") { cacophony.writeRegister(rax, integer(0)) }
+                    "return from loop" does jump("loop return") { cacophony.controlflow.writeRegister(rax, integer(0)) }
                     "loop return" does final { returnNode }
                 }
             }
@@ -156,7 +148,7 @@ class ReturnTest {
         val expectedCFG =
             cfg {
                 fragment(fDef) {
-                    "entry" does jump("return") { cacophony.writeRegister(rax, integer(1)) }
+                    "entry" does jump("return") { cacophony.controlflow.writeRegister(rax, integer(1)) }
                     "return" does final { returnNode }
                 }
             }
@@ -194,7 +186,7 @@ class ReturnTest {
                 fragment(fDef) {
                     "entry" does
                         jump("condition") {
-                            cacophony.writeRegister(virtualRegister("x"), integer(2))
+                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(2))
                         }
                     "condition" does
                         conditional("write 1 to rax", "write 2 to rax") {
@@ -202,11 +194,11 @@ class ReturnTest {
                         }
                     "write 1 to rax" does
                         jump("return 1") {
-                            cacophony.writeRegister(rax, integer(1))
+                            cacophony.controlflow.writeRegister(rax, integer(1))
                         }
                     "write 2 to rax" does
                         jump("return 2") {
-                            cacophony.writeRegister(rax, integer(2))
+                            cacophony.controlflow.writeRegister(rax, integer(2))
                         }
                     "return 1" does final { returnNode }
                     "return 2" does final { returnNode }

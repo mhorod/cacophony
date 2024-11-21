@@ -1,25 +1,16 @@
 package cacophony.controlflow.generation
 
-import cacophony.addeq
-import cacophony.block
-import cacophony.breakStatement
-import cacophony.cfg
+import cacophony.*
+import cacophony.controlflow.addeq
+import cacophony.controlflow.cfg
+import cacophony.controlflow.eq
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.eq
-import cacophony.functionDeclaration
-import cacophony.ifThen
-import cacophony.ifThenElse
-import cacophony.integer
-import cacophony.lit
-import cacophony.lt
-import cacophony.mod
-import cacophony.rax
-import cacophony.returnNode
-import cacophony.returnStatement
-import cacophony.unit
-import cacophony.variableDeclaration
-import cacophony.variableUse
-import cacophony.whileLoop
+import cacophony.controlflow.integer
+import cacophony.controlflow.lt
+import cacophony.controlflow.mod
+import cacophony.controlflow.rax
+import cacophony.controlflow.returnNode
+import cacophony.controlflow.unit
 import org.junit.jupiter.api.Test
 
 class BreakTest {
@@ -58,7 +49,7 @@ class BreakTest {
                 fragment(fDef) {
                     "entry" does
                         jump("condition") {
-                            cacophony.writeRegister(virtualRegister("x"), integer(0))
+                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
                         }
                     "condition" does
                         conditional("true branch", "exit") {
@@ -68,7 +59,7 @@ class BreakTest {
                         jump("condition") {
                             readRegister("x") addeq integer(1)
                         }
-                    "exit" does jump("return") { cacophony.writeRegister(rax, unit) }
+                    "exit" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
                     "return" does final { returnNode }
                 }
             }
@@ -111,7 +102,7 @@ class BreakTest {
                 fragment(fDef) {
                     "entry" does
                         jump("loop condition") {
-                            cacophony.writeRegister(virtualRegister("x"), integer(0))
+                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
                         }
                     "loop condition" does
                         conditional("increment x", "exit") {
@@ -125,7 +116,7 @@ class BreakTest {
                         conditional("exit", "loop condition") {
                             (readRegister("x") mod integer(5)) eq integer(0)
                         }
-                    "exit" does jump("return") { cacophony.writeRegister(rax, unit) }
+                    "exit" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
                     "return" does final { returnNode }
                 }
             }
@@ -157,7 +148,7 @@ class BreakTest {
             cfg {
                 fragment(fDef) {
                     "entry" does jump("write unit to rax") { writeRegister("x", integer(2)) }
-                    "write unit to rax" does jump("return") { cacophony.writeRegister(rax, unit) }
+                    "write unit to rax" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
                     "return" does final { returnNode }
                 }
             }
@@ -198,13 +189,13 @@ class BreakTest {
                 fragment(fDef) {
                     "entry" does
                         jump("condition") {
-                            cacophony.writeRegister(virtualRegister("x"), integer(2))
+                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(2))
                         }
                     "condition" does
                         conditional("exit", "exit") {
                             readRegister("x") eq integer(2)
                         }
-                    "exit" does jump("return") { cacophony.writeRegister(rax, unit) }
+                    "exit" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
                     "return" does final { returnNode }
                 }
             }

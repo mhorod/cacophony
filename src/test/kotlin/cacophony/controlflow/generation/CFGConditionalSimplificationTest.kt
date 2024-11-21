@@ -1,25 +1,15 @@
 package cacophony.controlflow.generation
 
-import cacophony.block
-import cacophony.cfg
+import cacophony.*
+import cacophony.controlflow.cfg
+import cacophony.controlflow.eq
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.eq
-import cacophony.functionDeclaration
-import cacophony.ifThenElse
-import cacophony.integer
-import cacophony.land
-import cacophony.lit
-import cacophony.lor
-import cacophony.rax
-import cacophony.registerUse
-import cacophony.returnNode
-import cacophony.returnStatement
-import cacophony.trueValue
-import cacophony.variableDeclaration
-import cacophony.variableUse
-import cacophony.whileLoop
-import cacophony.writeRegister
-import com.sun.tools.javac.jvm.ByteCodes.lor
+import cacophony.controlflow.integer
+import cacophony.controlflow.rax
+import cacophony.controlflow.registerUse
+import cacophony.controlflow.returnNode
+import cacophony.controlflow.trueValue
+import cacophony.controlflow.writeRegister
 import org.junit.jupiter.api.Test
 
 /**
