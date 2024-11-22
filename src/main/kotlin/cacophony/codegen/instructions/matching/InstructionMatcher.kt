@@ -9,5 +9,5 @@ interface InstructionMatcher {
 
     fun findMatchesForSideEffects(node: CFGNode): Set<Match>
 
-    fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel): Set<Match>
+    fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean = true): Set<Match>
 }
