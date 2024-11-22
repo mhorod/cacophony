@@ -23,5 +23,5 @@ interface ValuePattern : Pattern {
 }
 
 interface ConditionPattern : Pattern {
-    fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel): List<Instruction>
+    fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean = true): List<Instruction>
 }
