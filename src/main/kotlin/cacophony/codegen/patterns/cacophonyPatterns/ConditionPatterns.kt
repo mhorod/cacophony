@@ -10,8 +10,12 @@ import cacophony.controlflow.gt
 import cacophony.controlflow.leq
 import cacophony.controlflow.lt
 import cacophony.controlflow.neq
-import cacophony.controlflow.not
 
+/**
+ * A collection of patterns that can be used to generate value-producing instructions.
+ *
+ * LogicalAnd, LogicalOr, and LogicalNot are not included here because cfg does not generate them in condition mode.
+ */
 val conditionPatterns =
     listOf(
         EqualsConditionPattern,
@@ -20,7 +24,6 @@ val conditionPatterns =
         LessEqualConditionPattern,
         GreaterConditionPattern,
         GreaterEqualConditionPattern,
-        LogicalNotConditionPattern,
     )
 
 object EqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
@@ -65,14 +68,6 @@ object GreaterConditionPattern : ConditionPattern, BinaryOpPattern() {
 
 object GreaterEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
     override val tree = lhsSlot geq rhsSlot
-
-    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean): List<Instruction> {
-        TODO("Not yet implemented")
-    }
-}
-
-object LogicalNotConditionPattern : ConditionPattern, UnaryOpPattern() {
-    override val tree = not(childSlot)
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean): List<Instruction> {
         TODO("Not yet implemented")

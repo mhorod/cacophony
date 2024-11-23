@@ -5,21 +5,28 @@ import cacophony.codegen.patterns.SlotFill
 import cacophony.codegen.patterns.ValuePattern
 import cacophony.controlflow.*
 
+/**
+ * A collection of patterns that can be used to generate value-producing instructions.
+ *
+ * LogicalAnd and LogicalOr are not included here because they are short-circuiting and cfg handles them differently.
+ */
 val valuePatterns =
     listOf(
         ConstantPattern,
+        // arithmetic
         AdditionPattern,
         SubtractionPattern,
         MultiplicationPattern,
         DivisionPattern,
         ModuloPattern,
+        MinusPattern,
+        // logical
         EqualsValuePattern,
         NotEqualsValuePattern,
         LessValuePattern,
-        GreaterValuePattern,
         LessEqualValuePattern,
+        GreaterValuePattern,
         GreaterEqualValuePattern,
-        MinusPattern,
         LogicalNotValuePattern,
     )
 
@@ -75,6 +82,14 @@ object ModuloPattern : ValuePattern, BinaryOpPattern() {
     }
 }
 
+object MinusPattern : ValuePattern, UnaryOpPattern() {
+    override val tree = minus(childSlot)
+
+    override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> {
+        TODO("Not yet implemented")
+    }
+}
+
 object EqualsValuePattern : ValuePattern, BinaryOpPattern() {
     override val tree = lhsSlot eq rhsSlot
 
@@ -99,14 +114,6 @@ object LessValuePattern : ValuePattern, BinaryOpPattern() {
     }
 }
 
-object GreaterValuePattern : ValuePattern, BinaryOpPattern() {
-    override val tree = lhsSlot gt rhsSlot
-
-    override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> {
-        TODO("Not yet implemented")
-    }
-}
-
 object LessEqualValuePattern : ValuePattern, BinaryOpPattern() {
     override val tree = lhsSlot leq rhsSlot
 
@@ -115,16 +122,16 @@ object LessEqualValuePattern : ValuePattern, BinaryOpPattern() {
     }
 }
 
-object GreaterEqualValuePattern : ValuePattern, BinaryOpPattern() {
-    override val tree = lhsSlot geq rhsSlot
+object GreaterValuePattern : ValuePattern, BinaryOpPattern() {
+    override val tree = lhsSlot gt rhsSlot
 
     override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> {
         TODO("Not yet implemented")
     }
 }
 
-object MinusPattern : ValuePattern, UnaryOpPattern() {
-    override val tree = minus(childSlot)
+object GreaterEqualValuePattern : ValuePattern, BinaryOpPattern() {
+    override val tree = lhsSlot geq rhsSlot
 
     override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> {
         TODO("Not yet implemented")

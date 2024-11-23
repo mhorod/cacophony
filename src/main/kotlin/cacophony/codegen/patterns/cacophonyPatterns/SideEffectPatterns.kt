@@ -57,7 +57,7 @@ object SubtractionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentT
 }
 
 object MultiplicationAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
-    override val tree = lhsSlot subeq rhsSlot
+    override val tree = lhsSlot muleq rhsSlot
 
     override fun makeInstance(fill: SlotFill): List<Instruction> {
         TODO("Not yet implemented")
