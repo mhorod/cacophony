@@ -10,10 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class LivenessAnalysisTest {
-    private fun mockCopyInstruction(
-        def: Set<Register>,
-        use: Set<Register>,
-    ): CopyInstruction =
+    private fun mockCopyInstruction(def: Set<Register>, use: Set<Register>): CopyInstruction =
         object : CopyInstruction {
             override val registersRead: Set<Register>
                 get() = use
@@ -23,10 +20,7 @@ class LivenessAnalysisTest {
             override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String = "mock"
         }
 
-    private fun mockInstruction(
-        def: Set<Register>,
-        use: Set<Register>,
-    ): Instruction =
+    private fun mockInstruction(def: Set<Register>, use: Set<Register>): Instruction =
         object : Instruction {
             override val registersRead: Set<Register>
                 get() = use
