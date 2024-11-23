@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlin.random.Random
 
 class RegisterAllocationTest {
     private fun <E> Map<E, Set<E>>.undirect(): Map<E, Set<E>> {
@@ -76,6 +75,40 @@ class RegisterAllocationTest {
     }
 
     @Test
+    fun `2 registers with copy are colored properly`() {
+        val regA = Register.VirtualRegister()
+        val regB = Register.VirtualRegister()
+        val allocation =
+            allocateAndValidate(
+                Liveness(
+                    setOf(regA, regB),
+                    emptyMap(),
+                    mapOf(regA to setOf(regB), regB to setOf(regA)),
+                ),
+                setOf(HardwareRegister.RBP),
+            )
+
+        assertThat(allocation.spills).isEmpty()
+    }
+
+    @Test
+    fun `2 fixed registers are colored properly`() {
+        val regB = Register.FixedRegister(HardwareRegister.RBX)
+        val regC = Register.FixedRegister(HardwareRegister.RCX)
+        val allocation =
+            allocateAndValidate(
+                Liveness(
+                    setOf(regB, regC),
+                    emptyMap(),
+                    emptyMap(),
+                ),
+                setOf(HardwareRegister.RAX, HardwareRegister.RBX, HardwareRegister.RCX),
+            )
+
+        assertThat(allocation.spills).isEmpty()
+    }
+
+    @Test
     fun `16 clique is 16 colorable`() {
         val hwRegisters = HardwareRegister.entries.toSet()
         val registers = hwRegisters.map { Register.VirtualRegister() }.toSet()
@@ -111,7 +144,7 @@ class RegisterAllocationTest {
 //
 //
 //
-////        return Pair(availableHwRegisters.toSet())
+// //        return Pair(availableHwRegisters.toSet())
 //        TODO()
 //    }
 //
