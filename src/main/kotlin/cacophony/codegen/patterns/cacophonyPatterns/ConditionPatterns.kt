@@ -1,9 +1,10 @@
 package cacophony.codegen.patterns.cacophonyPatterns
 
 import cacophony.codegen.BlockLabel
-import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.patterns.ConditionPattern
 import cacophony.codegen.patterns.SlotFill
+import cacophony.codegen.patterns.cacophonyPatterns.LessEqualValuePattern.lhsLabel
+import cacophony.codegen.patterns.cacophonyPatterns.LessEqualValuePattern.rhsLabel
 import cacophony.controlflow.eq
 import cacophony.controlflow.geq
 import cacophony.controlflow.gt
@@ -29,47 +30,71 @@ val conditionPatterns =
 object EqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
     override val tree = lhsSlot eq rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean): List<Instruction> {
-        TODO("Not yet implemented")
-    }
+    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
+        if (jumpIf) {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::je)
+        } else {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jne)
+        }
 }
 
 object NotEqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
     override val tree = lhsSlot neq rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean): List<Instruction> {
-        TODO("Not yet implemented")
-    }
+    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
+        if (jumpIf) {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jne)
+        } else {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::je)
+        }
 }
 
 object LessConditionPattern : ConditionPattern, BinaryOpPattern() {
     override val tree = lhsSlot lt rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean): List<Instruction> {
-        TODO("Not yet implemented")
-    }
+    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
+        if (jumpIf) {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jl)
+        } else {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jge)
+        }
 }
 
 object LessEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
     override val tree = lhsSlot leq rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean): List<Instruction> {
-        TODO("Not yet implemented")
-    }
+    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
+        if (jumpIf) {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jle)
+        } else {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jg)
+        }
 }
 
 object GreaterConditionPattern : ConditionPattern, BinaryOpPattern() {
     override val tree = lhsSlot gt rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean): List<Instruction> {
-        TODO("Not yet implemented")
-    }
+    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
+        if (jumpIf) {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jg)
+        } else {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jle)
+        }
 }
 
 object GreaterEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
     override val tree = lhsSlot geq rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean): List<Instruction> {
-        TODO("Not yet implemented")
-    }
+    override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
+        if (jumpIf) {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jge)
+        } else {
+            makeBinaryLogicalOperatorInstance(fill, destinationLabel, InstructionBuilder::jl)
+        }
 }
+
+private fun makeBinaryLogicalOperatorInstance(fill: SlotFill, destinationLabel: BlockLabel, jcc: InstructionBuilder.(BlockLabel) -> Unit) =
+    instructions(fill) {
+        cmp(reg(lhsLabel), reg(rhsLabel))
+        jcc(destinationLabel)
+    }
