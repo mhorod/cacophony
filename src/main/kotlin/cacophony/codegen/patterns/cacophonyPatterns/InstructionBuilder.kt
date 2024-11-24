@@ -23,6 +23,8 @@ class InstructionBuilder(val slotFill: SlotFill) {
         TODO()
     }
 
+    fun mov(destination: Register, label: ValueLabel) = mov(destination, slotFill.valueFill.getValue(label))
+
     fun mov(destination: Register, memory: MemoryAddress) {
         TODO()
     }
