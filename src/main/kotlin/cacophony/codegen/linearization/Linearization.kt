@@ -29,17 +29,15 @@ private class MutableBasicBlock(
 
 private fun <T> combine(vararg iters: Iterator<T>) = iterator { iters.forEach { yieldAll(it) } }
 
-private fun swapCondition(node: CFGNode) = CFGNode.LogicalNot(node)
-
 private class Linearizer(val fragment: CFGFragment, val covering: InstructionCovering) {
     val visited = mutableMapOf<CFGLabel, MutableBasicBlock>()
     var blocks = 0
 
-    fun getLabel() = "bb${blocks++}"
+    fun getLabel() = BlockLabel("bb${blocks++}")
 
     fun dfs(label: CFGLabel): PartialLinearization {
         val vertex = fragment.vertices[label]!!
-        val block = MutableBasicBlock(BlockLabel(getLabel()))
+        val block = MutableBasicBlock(getLabel())
         visited[label] = block
 
         fun handle(vertex: CFGVertex.Final) =
@@ -52,14 +50,16 @@ private class Linearizer(val fragment: CFGFragment, val covering: InstructionCov
             var result = iterator<MutableBasicBlock> { yield(block) }
 
             (
-                visited[vertex.destination] ?: dfs(vertex.destination).let { (neighbor, iter) ->
+                visited[vertex.destination]?.also { neighbor ->
+                    block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, neighbor.label)
+                } ?: dfs(vertex.destination).let { (neighbor, iter) ->
+                    block.instructions += covering.coverWithInstructions(vertex.tree)
                     result = combine(result, iter)
                     neighbor
                 }
             ).also { neighbor ->
                 block.successors.add(neighbor)
                 neighbor.predecessors.add(block)
-                block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, neighbor.label)
             }
 
             return Pair(block, result)
@@ -87,11 +87,10 @@ private class Linearizer(val fragment: CFGFragment, val covering: InstructionCov
                     visited[vertex.trueDestination]?.also {
                         doubled = swapped
                         swapped = false
+                    } ?: dfs(vertex.trueDestination).let { (neighbor, iter) ->
+                        result = combine(result, iter)
+                        neighbor
                     }
-                        ?: dfs(vertex.trueDestination).let { (neighbor, iter) ->
-                            result = combine(result, iter)
-                            neighbor
-                        }
                 ).also { neighbor ->
                     block.successors.add(neighbor)
                     neighbor.predecessors.add(block)
