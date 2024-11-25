@@ -9,7 +9,7 @@ class CacophonyInstructionCovering(val instructionMatcher: InstructionMatcher) :
         TODO("Not yet implemented")
     }
 
-    override fun coverWithInstructionsAndJump(node: CFGNode, label: BlockLabel): List<Instruction> {
+    override fun coverWithInstructionsAndJump(node: CFGNode, label: BlockLabel, jumpIf: Boolean): List<Instruction> {
         TODO("Not yet implemented")
     }
 }

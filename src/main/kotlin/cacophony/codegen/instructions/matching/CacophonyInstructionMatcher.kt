@@ -13,7 +13,7 @@ class CacophonyInstructionMatcher : InstructionMatcher {
         TODO("Not yet implemented")
     }
 
-    override fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel): Set<Match> {
+    override fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean): Set<Match> {
         TODO("Not yet implemented")
     }
 }

@@ -5,9 +5,9 @@ import cacophony.codegen.instructions.Instruction
 import cacophony.controlflow.*
 
 data class SlotFill(
-    val valueFill: Map<ValueLabel, CFGNode.Value>,
-    val registerFill: Map<RegisterLabel, CFGNode.RegisterUse>,
-    val constantFill: Map<RegisterLabel, CFGNode.Constant>,
+    val valueFill: Map<ValueLabel, Register>,
+    val registerFill: Map<RegisterLabel, Register>,
+    val constantFill: Map<ConstantLabel, CFGNode.Constant>,
 )
 
 sealed interface Pattern {
@@ -23,5 +23,5 @@ interface ValuePattern : Pattern {
 }
 
 interface ConditionPattern : Pattern {
-    fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel): List<Instruction>
+    fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean = true): List<Instruction>
 }

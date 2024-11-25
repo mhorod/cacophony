@@ -22,6 +22,8 @@ sealed interface CFGNode {
 
     sealed interface LValue : CFGNode
 
+    sealed interface RegisterRef : Leaf, LValue
+
     data object NoOp : Leaf {
         override fun toString(): String = "nop"
     }
@@ -43,7 +45,7 @@ sealed interface CFGNode {
 
     // NOTE: Pop may be unnecessary since it can be done via Assignment
     data class Pop(
-        val register: RegisterUse,
+        val register: RegisterRef,
     ) :
         Leaf
 
@@ -56,9 +58,8 @@ sealed interface CFGNode {
 
     data class RegisterUse(
         val register: Register,
-    ) : LValue,
-        Value,
-        Leaf {
+    ) : Value,
+        RegisterRef {
         @OptIn(ExperimentalStdlibApi::class)
         override fun toString(): String =
             when (register) {
@@ -197,19 +198,22 @@ sealed interface CFGNode {
         val TRUE = Constant(1)
     }
 
-    // TODO: document
+    /* Slots are used by patterns only. Each slot represents some CFGNode specifying some
+     * constraints
+     */
     sealed interface Slot : CFGNode {
         val label: SlotLabel
     }
 
     data class RegisterSlot(
         override val label: RegisterLabel,
-    ) : Slot, LValue
+    ) : Slot, RegisterRef
 
     data class ValueSlot(
         override val label: ValueLabel,
     ) : Slot, Value
 
+    // will be used later for optimization purposes; see [CacophonyPattern.ConstantPattern]
     data class ConstantSlot(
         override val label: ConstantLabel,
         val predicate: (Int) -> Boolean,

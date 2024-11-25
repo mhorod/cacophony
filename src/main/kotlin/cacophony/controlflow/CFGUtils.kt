@@ -1,11 +1,5 @@
-package cacophony
+package cacophony.controlflow
 
-import cacophony.controlflow.CFGFragment
-import cacophony.controlflow.CFGLabel
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.CFGVertex
-import cacophony.controlflow.HardwareRegister
-import cacophony.controlflow.Register
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.semantic.syntaxtree.Definition
 
@@ -43,6 +37,8 @@ infix fun CFGNode.mod(other: CFGNode) = CFGNode.Modulo(this, other)
 fun minus(node: CFGNode) = CFGNode.Minus(node)
 
 // assignment
+infix fun CFGNode.LValue.assign(other: CFGNode) = CFGNode.Assignment(this, other)
+
 infix fun CFGNode.LValue.addeq(other: CFGNode) = CFGNode.AdditionAssignment(this, other)
 
 infix fun CFGNode.LValue.subeq(other: CFGNode) = CFGNode.SubtractionAssignment(this, other)
@@ -81,23 +77,16 @@ class CFGFragmentBuilder {
     private val labels: MutableMap<String, CFGLabel> = mutableMapOf()
     private val vertices = mutableMapOf<CFGLabel, CFGVertex>()
 
-    private fun getLabel(label: String): CFGLabel {
-        return labels.getOrPut(label) { CFGLabel() }
-    }
+    private fun getLabel(label: String): CFGLabel = labels.getOrPut(label) { CFGLabel() }
 
-    fun build(): CFGFragment {
-        return CFGFragment(vertices, getLabel("entry"))
-    }
+    fun build(): CFGFragment = CFGFragment(vertices, getLabel("entry"))
 
     fun final(node: () -> CFGNode) = CFGVertex.Final(node())
 
-    fun jump(destination: String, node: () -> CFGNode): CFGVertex {
-        return CFGVertex.Jump(node(), getLabel(destination))
-    }
+    fun jump(destination: String, node: () -> CFGNode): CFGVertex = CFGVertex.Jump(node(), getLabel(destination))
 
-    fun conditional(trueDestination: String, falseDestination: String, condition: () -> CFGNode): CFGVertex {
-        return CFGVertex.Conditional(condition(), getLabel(trueDestination), getLabel(falseDestination))
-    }
+    fun conditional(trueDestination: String, falseDestination: String, condition: () -> CFGNode): CFGVertex =
+        CFGVertex.Conditional(condition(), getLabel(trueDestination), getLabel(falseDestination))
 
     infix fun String.does(vertex: CFGVertex) {
         vertices[getLabel(this)] = vertex
@@ -114,13 +103,9 @@ class CFGBuilder {
         programCFG[function] = builder.build()
     }
 
-    fun build(): ProgramCFG {
-        return programCFG
-    }
+    fun build(): ProgramCFG = programCFG
 
-    fun virtualRegister(name: String): Register {
-        return registers.getOrPut(name) { Register.VirtualRegister() }
-    }
+    fun virtualRegister(name: String): Register = registers.getOrPut(name) { Register.VirtualRegister() }
 
     fun writeRegister(name: String, node: CFGNode) = writeRegister(virtualRegister(name), node)
 
