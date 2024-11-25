@@ -119,9 +119,7 @@ private class Linearizer(val fragment: CFGFragment, val covering: InstructionCov
     }
 }
 
-fun linearize(fragment: CFGFragment, covering: InstructionCovering): LoweredCFGFragment {
-    val bbList = mutableListOf<MutableBasicBlock>()
-    Linearizer(fragment, covering).dfs(fragment.initialLabel).second.forEach { bbList.add(it) }
-
-    return bbList
-}
+fun linearize(fragment: CFGFragment, covering: InstructionCovering): LoweredCFGFragment =
+    mutableListOf<MutableBasicBlock>().apply {
+        Linearizer(fragment, covering).dfs(fragment.initialLabel).second.forEach { this.add(it) }
+    }
