@@ -62,6 +62,47 @@ class RegisterAllocationTest {
     }
 
     @Test
+    fun `unknown register as interference key`() {
+        assertThatThrownBy {
+            allocateRegisters(
+                Liveness(
+                    setOf(Register.VirtualRegister()),
+                    mapOf(Register.VirtualRegister() to emptySet()),
+                    emptyMap(),
+                ),
+                setOf(HardwareRegister.RAX),
+            )
+        }.isInstanceOf(IllegalArgumentException::class.java)
+    }
+
+    @Test
+    fun `unknown register in copying map`() {
+        assertThatThrownBy {
+            val reg = Register.VirtualRegister()
+            allocateRegisters(
+                Liveness(
+                    setOf(reg),
+                    emptyMap(),
+                    mapOf(reg to setOf(Register.VirtualRegister())),
+                ),
+                setOf(HardwareRegister.RAX),
+            )
+        }.isInstanceOf(IllegalArgumentException::class.java)
+    }
+
+    @Test
+    fun `0 registers with 0 colors`() {
+        allocateAndValidate(
+            Liveness(
+                emptySet(),
+                emptyMap(),
+                emptyMap(),
+            ),
+            setOf(),
+        )
+    }
+
+    @Test
     fun `1 register is enough if there are no interferences`() {
         val allocation =
             allocateAndValidate(
@@ -227,6 +268,31 @@ class RegisterAllocationTest {
     }
 
     @Test
+    fun `copying chain with fixed registers`() {
+        val registers =
+            listOf(
+                Register.VirtualRegister(),
+                Register.FixedRegister(HardwareRegister.RAX),
+                Register.VirtualRegister(),
+                Register.FixedRegister(HardwareRegister.RBX),
+                Register.VirtualRegister(),
+            )
+        val copying = (1..<registers.size).associate { registers[it] to setOf(registers[it - 1]) }
+        val allocation =
+            allocateAndValidate(
+                Liveness(
+                    registers.toSet(),
+                    emptyMap(),
+                    copying,
+                ),
+                setOf(HardwareRegister.RAX, HardwareRegister.RBX),
+            )
+        assertThat(allocation.spills).isEmpty()
+        assertThat(allocation.successful[registers[0]]).isEqualTo(HardwareRegister.RAX)
+        assertThat(allocation.successful[registers[4]]).isEqualTo(HardwareRegister.RBX)
+    }
+
+    @Test
     fun `bipartite clique`() {
         val registers = (0..<20).map { Register.VirtualRegister() }
         val interferences =
@@ -280,6 +346,75 @@ class RegisterAllocationTest {
     @Test
     fun `bipartite clique with some copies`() {
         val reg = (0..8).map { Register.VirtualRegister() }
+        val interferences = reg.associateWith { setOf<Register>() }.toMutableMap()
+        val copy = reg.associateWith { mutableSetOf<Register>() }
+
+        val a = (0..2).map { reg[it] }.toSet()
+        val b = (3..5).map { reg[it] }.toSet()
+        a.forEach { interferences[it] = b }
+        b.forEach { interferences[it] = a }
+        copy[reg[6]]!!.add(reg[0])
+        copy[reg[7]]!!.add(reg[5])
+        copy[reg[8]]!!.add(reg[1])
+
+        val allocation =
+            allocateAndValidate(
+                Liveness(
+                    reg.toSet(),
+                    interferences.toMap(),
+                    copy.toMap(),
+                ),
+                setOf(HardwareRegister.RAX, HardwareRegister.RBX),
+            )
+
+        assertThat(allocation.spills).isEmpty()
+        assertThat(allocation.successful[reg[6]]).isEqualTo(allocation.successful[reg[0]])
+        assertThat(allocation.successful[reg[7]]).isEqualTo(allocation.successful[reg[3]])
+        assertThat(allocation.successful[reg[8]]).isEqualTo(allocation.successful[reg[0]])
+    }
+
+    @Test
+    fun `copying with fixed registers`() {
+        val rax = Register.FixedRegister(HardwareRegister.RAX)
+        val rbx = Register.FixedRegister(HardwareRegister.RBX)
+        val reg1 = Register.VirtualRegister()
+        val reg2 = Register.VirtualRegister()
+        val allocation =
+            allocateAndValidate(
+                Liveness(
+                    setOf(rax, rbx, reg1, reg2),
+                    emptyMap(),
+                    mapOf(rax to setOf(reg2), reg1 to setOf(rbx)),
+                ),
+                setOf(HardwareRegister.RAX, HardwareRegister.RBX),
+            )
+        assertThat(allocation.spills).isEmpty()
+        assertThat(allocation.successful[rax]).isEqualTo(HardwareRegister.RAX)
+        assertThat(allocation.successful[rbx]).isEqualTo(HardwareRegister.RBX)
+    }
+
+    @Test
+    fun `two copies with interference`() {
+        val reg1 = Register.VirtualRegister()
+        val reg2 = Register.VirtualRegister()
+        val reg3 = Register.VirtualRegister()
+        val allocation =
+            allocateAndValidate(
+                Liveness(
+                    setOf(reg1, reg2, reg3),
+                    mapOf(reg2 to setOf(reg3), reg3 to setOf(reg2)),
+                    mapOf(reg1 to setOf(reg2), reg3 to setOf(reg1)),
+                ),
+                setOf(HardwareRegister.RAX, HardwareRegister.RBX, HardwareRegister.RCX),
+            )
+        assertThat(allocation.spills).isEmpty()
+        assertThat(allocation.successful[reg1]).isIn(allocation.successful[reg2], allocation.successful[reg3])
+    }
+
+    @Test
+    fun `bipartite clique with some copies and fixed register`() {
+        val reg = (0..8).map { Register.VirtualRegister() }.toMutableList<Register>()
+        reg[6] = Register.FixedRegister(HardwareRegister.RBX)
         val interferences = reg.associateWith { setOf<Register>() }.toMutableMap()
         val copy = reg.associateWith { mutableSetOf<Register>() }
 

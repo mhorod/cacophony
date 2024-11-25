@@ -14,6 +14,7 @@ data class RegisterAllocation(val successful: HardwareRegisterMapping, val spill
  * @throws IllegalArgumentException if liveness object is invalid i.e.
  * - there are hardware registers that are expected to be allocated but are not allowed
  * - there is a register interfering with itself
+ * - interference or copying mappings contain register outside of liveness.allRegisters
  */
 fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation =
     RegisterAllocator(liveness, allowedRegisters).allocate()
@@ -22,6 +23,13 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
     fun allocate(): RegisterAllocation {
         generateFirstFitOrder()
         return doColoring()
+    }
+
+    init {
+        for (mapping in listOf(liveness.interference, liveness.copying)) {
+            if (!liveness.allRegisters.containsAll(mapping.keys union mapping.values.flatten()))
+                throw IllegalArgumentException("Unexpected register")
+        }
     }
 
     private val wrappers = liveness.allRegisters.associateWith { RegisterWrapper(it) }
