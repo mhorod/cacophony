@@ -4,7 +4,7 @@ import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.MemoryAddress
 import cacophony.codegen.instructions.RegisterByte
-import cacophony.codegen.instructions.cacophonyInstructions.CacophonyInstructions
+import cacophony.codegen.instructions.cacophonyInstructions.*
 import cacophony.codegen.patterns.SlotFill
 import cacophony.controlflow.ConstantLabel
 import cacophony.controlflow.Register
@@ -17,137 +17,137 @@ class InstructionBuilder(val slotFill: SlotFill) {
     fun instructions(): List<Instruction> = instructions.toList()
 
     fun mov(destination: Register, source: Register) {
-        instructions.add(CacophonyInstructions.MovRegReg(destination, source))
+        instructions.add(MovRegReg(destination, source))
     }
 
     fun mov(destination: Register, value: Int) {
-        instructions.add(CacophonyInstructions.MovRegImm(destination, value))
+        instructions.add(MovRegImm(destination, value))
     }
 
     fun mov(destination: Register, label: ValueLabel) = mov(destination, slotFill.valueFill.getValue(label))
 
     fun mov(destination: Register, memory: MemoryAddress) {
-        instructions.add(CacophonyInstructions.MovRegMem(destination, memory))
+        instructions.add(MovRegMem(destination, memory))
     }
 
     fun mov(memory: MemoryAddress, source: Register) {
-        instructions.add(CacophonyInstructions.MovMemReg(memory, source))
+        instructions.add(MovMemReg(memory, source))
     }
 
     fun add(destination: Register, source: Register) {
-        instructions.add(CacophonyInstructions.AddRegReg(destination, source))
+        instructions.add(AddRegReg(destination, source))
     }
 
     fun add(destination: Register, value: Int) {
-        instructions.add(CacophonyInstructions.AddRegImm(destination, value))
+        instructions.add(AddRegImm(destination, value))
     }
 
     fun sub(destination: Register, source: Register) {
-        instructions.add(CacophonyInstructions.SubRegReg(destination, source))
+        instructions.add(SubRegReg(destination, source))
     }
 
     fun sub(destination: Register, value: Int) {
-        instructions.add(CacophonyInstructions.SubRegImm(destination, value))
+        instructions.add(SubRegImm(destination, value))
     }
 
     fun imul(destination: Register, source: Register) {
-        instructions.add(CacophonyInstructions.IMulRegReg(destination, source))
+        instructions.add(IMulRegReg(destination, source))
     }
 
     fun cqo() {
-        instructions.add(CacophonyInstructions.Cqo())
+        instructions.add(Cqo())
     }
 
     fun idiv(source: Register) {
-        instructions.add(CacophonyInstructions.IDiv(source))
+        instructions.add(IDiv(source))
     }
 
     fun xor(destination: Register, source: Register) {
-        instructions.add(CacophonyInstructions.XorRegReg(destination, source))
+        instructions.add(XorRegReg(destination, source))
     }
 
     fun xor(destination: Register, value: Int) {
-        instructions.add(CacophonyInstructions.XorRegImm(destination, value))
+        instructions.add(XorRegImm(destination, value))
     }
 
     fun test(lhs: Register, rhs: Register) {
-        instructions.add(CacophonyInstructions.TestRegReg(lhs, rhs))
+        instructions.add(TestRegReg(lhs, rhs))
     }
 
     fun push(source: Register) {
-        instructions.add(CacophonyInstructions.PushReg(source))
+        instructions.add(PushReg(source))
     }
 
     fun pop(destination: Register) {
-        instructions.add(CacophonyInstructions.Pop(destination))
+        instructions.add(Pop(destination))
     }
 
     fun cmp(lhs: Register, rhs: Register) {
-        instructions.add(CacophonyInstructions.CmpRegReg(lhs, rhs))
+        instructions.add(CmpRegReg(lhs, rhs))
     }
 
     fun je(label: BlockLabel) {
-        instructions.add(CacophonyInstructions.Je(label))
+        instructions.add(Je(label))
     }
 
     fun jne(label: BlockLabel) {
-        instructions.add(CacophonyInstructions.Jne(label))
+        instructions.add(Jne(label))
     }
 
     fun jl(label: BlockLabel) {
-        instructions.add(CacophonyInstructions.Jl(label))
+        instructions.add(Jl(label))
     }
 
     fun jle(label: BlockLabel) {
-        instructions.add(CacophonyInstructions.Jle(label))
+        instructions.add(Jle(label))
     }
 
     fun jg(label: BlockLabel) {
-        instructions.add(CacophonyInstructions.Jg(label))
+        instructions.add(Jg(label))
     }
 
     fun jge(label: BlockLabel) {
-        instructions.add(CacophonyInstructions.Jge(label))
+        instructions.add(Jge(label))
     }
 
     fun jz(label: BlockLabel) {
-        instructions.add(CacophonyInstructions.Jz(label))
+        instructions.add(Jz(label))
     }
 
     fun jnz(label: BlockLabel) {
-        instructions.add(CacophonyInstructions.Jnz(label))
+        instructions.add(Jnz(label))
     }
 
     fun sete(registerByte: RegisterByte) {
-        instructions.add(CacophonyInstructions.Sete(registerByte))
+        instructions.add(Sete(registerByte))
     }
 
     fun setne(registerByte: RegisterByte) {
-        instructions.add(CacophonyInstructions.Setne(registerByte))
+        instructions.add(Setne(registerByte))
     }
 
     fun setl(registerByte: RegisterByte) {
-        instructions.add(CacophonyInstructions.Setl(registerByte))
+        instructions.add(Setl(registerByte))
     }
 
     fun setle(registerByte: RegisterByte) {
-        instructions.add(CacophonyInstructions.Setle(registerByte))
+        instructions.add(Setle(registerByte))
     }
 
     fun setg(registerByte: RegisterByte) {
-        instructions.add(CacophonyInstructions.Setg(registerByte))
+        instructions.add(Setg(registerByte))
     }
 
     fun setge(registerByte: RegisterByte) {
-        instructions.add(CacophonyInstructions.Setge(registerByte))
+        instructions.add(Setge(registerByte))
     }
 
     fun movzx(register: Register, registerByte: RegisterByte) {
-        instructions.add(CacophonyInstructions.MovzxReg64Reg8(register, registerByte))
+        instructions.add(MovzxReg64Reg8(register, registerByte))
     }
 
     fun ret() {
-        TODO()
+        instructions.add(Ret())
     }
 
     fun byte(register: Register) = RegisterByte(register)
