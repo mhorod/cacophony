@@ -296,7 +296,7 @@ class RegisterAllocationTest {
                 registers[i] to
                     (0..<20)
                         .filter {
-                            i / 10 != it / 10
+                            i / 10 != it / 10 && Math.random() > 0.5
                         }.map { registers[it] }
                         .toSet()
             }

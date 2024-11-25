@@ -3,6 +3,7 @@ package cacophony.codegen.registers
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
+import cacophony.utils.getTransitiveClosure
 
 /**
  * @param successful Map describing the allocation of registers that made it into hardware registers
@@ -32,45 +33,27 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
         }
     }
 
-    private val wrappers =
-        (
-            liveness.allRegisters +
-                allowedRegisters.map {
-                    Register.FixedRegister(
-                        it,
-                    )
-                }
-        ).associateWith { RegisterWrapper(it) }
     private val graph =
         symmetricClosure(
             liveness.interference
-                .map { (k, v) -> wrappers[k]!! to v.map { wrappers[it]!! }.toMutableSet() }
-                .toMap(),
+                .mapValues { (_, v) -> v.toMutableSet() },
         )
 
+    private val originalGraph = symmetricClosure(liveness.interference)
+
     init {
-        wrappers.values.forEach { if (graph[it] == null) graph[it] = mutableSetOf() }
-        allowedRegisters.forEach { r ->
-            graph[
-                wrappers[
-                    Register.FixedRegister(
-                        r,
-                    ),
-                ],
-            ]!!.addAll(allowedRegisters.filter { it != r }.map { wrappers[Register.FixedRegister(it)]!! })
+        allowedRegisters.map { Register.FixedRegister(it) }.forEach { r ->
+            if (graph[r] == null) graph[r] = mutableSetOf()
+            graph[r]!!.addAll(allowedRegisters.filter { it != r.hardwareRegister }.map { Register.FixedRegister(it) })
         }
     }
 
-    private val registers = liveness.allRegisters.map { wrappers[it]!! }.toMutableSet()
+    private val registers = liveness.allRegisters.toMutableSet()
     private val copying =
         transitiveSymmetricClosure(
-            liveness.copying
-                .map { (k, v) ->
-                    wrappers[k]!! to v.map { wrappers[it]!! }.toMutableSet()
-                }.toMap()
-                .toMutableMap(),
+            liveness.copying,
         )
-    private val stack = mutableListOf<Set<RegisterWrapper>>()
+    private val stack = mutableListOf<Set<Register>>()
     private val k = allowedRegisters.size
 
     init {
@@ -82,15 +65,15 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
                 throw IllegalArgumentException("Register cannot interfere with itself")
     }
 
-    private val copyGroups = mutableMapOf<RegisterWrapper, Set<RegisterWrapper>>()
+    private val copyGroups = mutableMapOf<Register, Set<Register>>()
 
-    private fun originalNeighbors(r: RegisterWrapper) = (liveness.interference[r.register]?.map { wrappers[it]!! }?.toSet() ?: emptySet())
+    private fun originalNeighbors(r: Register) = originalGraph[r] ?: emptySet()
 
-    private fun neighbors(r: RegisterWrapper) = (graph[r] ?: emptySet())
+    private fun neighbors(r: Register) = graph[r] ?: emptySet()
 
-    private fun copies(r: RegisterWrapper) = (copying[r] ?: emptySet()).filter { it in registers }
+    private fun copies(r: Register) = (copying[r] ?: emptySet()).filter { it in registers }
 
-    private fun deposit(r: RegisterWrapper) {
+    private fun deposit(r: Register) {
         stack.add(copyGroup(r))
         registers.removeAll(copyGroup(r))
         graph[r]?.forEach {
@@ -98,24 +81,16 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
         }
     }
 
-    private fun copyGroup(r: RegisterWrapper) = (copyGroups[r] ?: setOf()) + setOf(r)
+    private fun copyGroup(r: Register) = (copyGroups[r] ?: setOf()) + setOf(r)
 
-    private fun coalesce(a: RegisterWrapper, b: RegisterWrapper) {
-        if (a.register
-                is Register.FixedRegister &&
-            b.register is Register.FixedRegister
-        ) throw IllegalArgumentException("Cannot coalesce two fixed registers")
-        if (b.register is Register.FixedRegister) {
-            coalesce(b, a)
-            return
-        }
+    private fun coalesce(a: Register, b: Register) {
         copyGroups[a] = copyGroup(a) + copyGroup(b)
         registers.remove(b)
-        graph[b]!!.forEach {
+        graph[b]?.forEach {
             graph[it]?.remove(b)
             graph[it]?.add(a)
         }
-        graph[a]!!.addAll(graph[b]!!)
+        graph.getOrPut(a) { mutableSetOf() }.addAll(graph[b] ?: emptySet())
     }
 
     private fun generateFirstFitOrder() {
@@ -131,23 +106,23 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
                 if (y == null) break
             }
             if (registers.isNotEmpty())
-                deposit(registers.minBy { if (it.register is Register.FixedRegister) Int.MAX_VALUE else neighbors(it).size })
+                deposit(registers.minBy { if (it is Register.FixedRegister) Int.MAX_VALUE else neighbors(it).size })
         }
     }
 
     private fun doColoring(): RegisterAllocation {
-        val coloring = mutableMapOf<RegisterWrapper, HardwareRegister>()
-        val spills = mutableSetOf<RegisterWrapper>()
+        val coloring = mutableMapOf<Register, HardwareRegister>()
+        val spills = mutableSetOf<Register>()
         stack.forEach { group ->
-            val fixedRegister = group.find { it.register is Register.FixedRegister }
+            val fixedRegister = group.find { it is Register.FixedRegister }
             if (fixedRegister != null) {
                 group.forEach {
-                    coloring[it] = (fixedRegister.register as Register.FixedRegister).hardwareRegister
+                    coloring[it] = (fixedRegister as Register.FixedRegister).hardwareRegister
                 }
             }
         }
         stack.reversed().forEach { group ->
-            if (group.any { it.register is Register.FixedRegister }) return@forEach
+            if (group.any { it is Register.FixedRegister }) return@forEach
             val forbiddenColors = group.map { r -> originalNeighbors(r).mapNotNull { coloring[it] } }.flatten().toSet()
             val color = (allowedRegisters - forbiddenColors).firstOrNull()
             if (color == null) spills.addAll(group)
@@ -155,51 +130,32 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
         }
         return RegisterAllocation(
             coloring
-                .filter { (k, _) -> k.register in liveness.allRegisters }
-                .map { (k, v) ->
-                    k.register to v
-                }.toMap(),
-            spills.map { it.register }.toSet(),
+                .filter { (k, _) -> k in liveness.allRegisters }
+                .toMap(),
+            spills.toSet(),
         )
     }
 
-    private fun registerToCoalesce(r: RegisterWrapper) = copies(r).find { shouldCoalesce(r, it) }
+    private fun registerToCoalesce(r: Register) = copies(r).find { shouldCoalesce(r, it) }
 
     // Uses George criterion for safety
-    private fun isCoalesceSafe(a: RegisterWrapper, b: RegisterWrapper) =
+    private fun isCoalesceSafe(a: Register, b: Register) =
         neighbors(a).all {
             it in neighbors(b) ||
                 neighbors(it).size < allowedRegisters.size
         }
 
-    private fun shouldCoalesce(a: RegisterWrapper, b: RegisterWrapper): Boolean {
-        if (a in neighbors(b) && b !in neighbors(a))
-            println("co")
-        return b !in neighbors(a) &&
+    private fun shouldCoalesce(a: Register, b: Register): Boolean =
+        b !in neighbors(a) &&
             b in copies(a) &&
             isCoalesceSafe(a, b)
-    }
 
-    private fun dfs(from: RegisterWrapper, graph: Map<RegisterWrapper, Set<RegisterWrapper>>, visited: MutableSet<RegisterWrapper>) {
-        if (from in visited) return
-        visited.add(from)
-        graph[from]!!.forEach { dfs(it, graph, visited) }
-    }
-
-    private fun getReachable(from: RegisterWrapper, graph: Map<RegisterWrapper, Set<RegisterWrapper>>): Set<RegisterWrapper> {
-        val visited: MutableSet<RegisterWrapper> = mutableSetOf()
-        dfs(from, graph, visited)
-        return visited
-    }
-
-    private fun transitiveSymmetricClosure(graph: Map<RegisterWrapper, Set<RegisterWrapper>>): Map<RegisterWrapper, Set<RegisterWrapper>> {
+    private fun <A> transitiveSymmetricClosure(graph: Map<A, Set<A>>): Map<A, Set<A>> {
         val symmetric = symmetricClosure(graph)
-        return symmetric.mapValues { (k, _) -> getReachable(k, symmetric) - setOf(k) }
+        return getTransitiveClosure(symmetric).mapValues { (k, v) -> v - setOf(k) }
     }
 
-    private fun symmetricClosure(
-        graph: Map<RegisterWrapper, Set<RegisterWrapper>>,
-    ): MutableMap<RegisterWrapper, MutableSet<RegisterWrapper>> {
+    private fun <A> symmetricClosure(graph: Map<A, Set<A>>): MutableMap<A, MutableSet<A>> {
         val result = graph.mapValues { (_, v) -> v.toMutableSet() }.toMutableMap()
         graph.forEach { (k, v) ->
             v.forEach {
@@ -209,6 +165,4 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
         }
         return result
     }
-
-    private class RegisterWrapper(val register: Register)
 }
