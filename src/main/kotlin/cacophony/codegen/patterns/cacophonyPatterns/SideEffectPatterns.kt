@@ -37,9 +37,10 @@ object AdditionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemp
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            mov(r10, mem(reg(lhsLabel)))
-            add(r10, reg(rhsLabel))
-            mov(mem(reg(lhsLabel)), r10)
+            val temporaryRegister = Register.VirtualRegister()
+            mov(temporaryRegister, mem(reg(lhsLabel)))
+            add(temporaryRegister, reg(rhsLabel))
+            mov(mem(reg(lhsLabel)), temporaryRegister)
         }
 }
 
@@ -57,9 +58,10 @@ object SubtractionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentT
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            mov(r10, mem(reg(lhsLabel)))
-            sub(r10, reg(rhsLabel))
-            mov(mem(reg(lhsLabel)), r10)
+            val temporaryRegister = Register.VirtualRegister()
+            mov(temporaryRegister, mem(reg(lhsLabel)))
+            sub(temporaryRegister, reg(rhsLabel))
+            mov(mem(reg(lhsLabel)), temporaryRegister)
         }
 }
 
@@ -77,9 +79,10 @@ object MultiplicationAssignmentMemoryPattern : SideEffectPattern, MemoryAssignme
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            mov(r10, mem(reg(lhsLabel)))
-            imul(r10, reg(rhsLabel))
-            mov(mem(reg(lhsLabel)), r10)
+            val temporaryRegister = Register.VirtualRegister()
+            mov(temporaryRegister, mem(reg(lhsLabel)))
+            imul(temporaryRegister, reg(rhsLabel))
+            mov(mem(reg(lhsLabel)), temporaryRegister)
         }
 }
 
@@ -176,7 +179,8 @@ object MemoryAssignmentPattern : SideEffectPattern, MemoryAssignmentTemplate() {
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            mov(r10, reg(rhsLabel))
-            mov(mem(reg(lhsLabel)), r10)
+            val temporaryRegister = Register.VirtualRegister()
+            mov(temporaryRegister, reg(rhsLabel))
+            mov(mem(reg(lhsLabel)), temporaryRegister)
         }
 }

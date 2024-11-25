@@ -23,8 +23,6 @@ class InstructionBuilder(val slotFill: SlotFill) {
         TODO()
     }
 
-    fun mov(destination: Register, label: ValueLabel) = mov(destination, slotFill.valueFill.getValue(label))
-
     fun mov(destination: Register, memory: MemoryAddress) {
         TODO()
     }
@@ -69,6 +67,10 @@ class InstructionBuilder(val slotFill: SlotFill) {
         TODO()
     }
 
+    fun test(lhs: Register, rhs: Register) {
+        TODO()
+    }
+
     fun push(source: Register) {
         TODO()
     }
@@ -102,6 +104,14 @@ class InstructionBuilder(val slotFill: SlotFill) {
     }
 
     fun jge(label: BlockLabel) {
+        TODO()
+    }
+
+    fun jz(label: BlockLabel) {
+        TODO()
+    }
+
+    fun jnz(label: BlockLabel) {
         TODO()
     }
 

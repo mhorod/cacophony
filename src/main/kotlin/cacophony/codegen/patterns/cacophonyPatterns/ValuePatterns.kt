@@ -181,7 +181,7 @@ object LogicalNotValuePattern : ValuePattern, UnaryOpPattern() {
 
     override fun makeInstance(fill: SlotFill, destination: Register) =
         instructions(fill) {
-            mov(destination, childLabel)
+            mov(destination, reg(childLabel))
             xor(destination, 1)
         }
 }
