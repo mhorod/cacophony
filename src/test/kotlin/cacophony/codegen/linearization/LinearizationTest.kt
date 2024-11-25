@@ -2,7 +2,6 @@ package cacophony.codegen.linearization
 
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
-import cacophony.codegen.linearization.linearize
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode

@@ -102,7 +102,7 @@ private class Linearizer(val fragment: CFGFragment, val covering: InstructionCov
             } else if (doubled) {
                 // both edges go backwards, need 2 jumps
                 block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, trueBlock.label)
-                block.instructions += covering.coverWithInstructionsAndJump(CFGNode.Constant(42), falseBlock.label)
+                block.instructions += covering.coverWithInstructionsAndJump(CFGNode.UNIT, falseBlock.label)
             } else {
                 // false edge goes forwards
                 block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, trueBlock.label)
