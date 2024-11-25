@@ -11,7 +11,9 @@ import cacophony.controlflow.Register
 data class RegisterAllocation(val successful: HardwareRegisterMapping, val spills: Set<Register>)
 
 /**
- * @throws IllegalArgumentException if there are hardware registers that are expected to be allocated but are not allowed
+ * @throws IllegalArgumentException if liveness object is invalid i.e.
+ * - there are hardware registers that are expected to be allocated but are not allowed
+ * - there is a register interfering with itself
  */
 fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation =
     RegisterAllocator(liveness, allowedRegisters).allocate()
@@ -38,6 +40,9 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
         if (liveness.allRegisters.any { it is Register.FixedRegister && it.hardwareRegister !in allowedRegisters }) {
             throw IllegalArgumentException("Unexpected hardware register")
         }
+        for ((register, interferences) in liveness.interference)
+            if (register in interferences)
+                throw IllegalArgumentException("Register cannot interfere with itself")
     }
 
     private val copyGroups = mutableMapOf<RegisterWrapper, Set<RegisterWrapper>>()
