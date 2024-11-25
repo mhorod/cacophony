@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import kotlin.random.Random
 
 class RegisterAllocationTest {
     private fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<HardwareRegister>) {
@@ -296,10 +297,37 @@ class RegisterAllocationTest {
                 registers[i] to
                     (0..<20)
                         .filter {
-                            i / 10 != it / 10 && Math.random() > 0.5
+                            i / 10 != it / 10
                         }.map { registers[it] }
                         .toSet()
             }
+        val allocation =
+            allocateAndValidate(
+                Liveness(
+                    registers.toSet(),
+                    interferences.toMap(),
+                    emptyMap(),
+                ),
+                setOf(HardwareRegister.RAX, HardwareRegister.RBX),
+            )
+        assertThat(allocation.spills).isEmpty()
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [1, 2, 3, 4, 5, 6])
+    fun `half of bipartite clique`(seed: Int) {
+        val n = 20
+        val rnd = Random(seed)
+        val registers = (0..<n).map { Register.VirtualRegister() }.shuffled(rnd)
+        val interferences = registers.associateWith { mutableSetOf<Register>() }
+        for (i in 0..<n / 2) {
+            for (j in n / 2..<n) {
+                if (rnd.nextBoolean()) {
+                    interferences[registers[i]]!!.add(registers[j])
+                    interferences[registers[j]]!!.add(registers[i])
+                }
+            }
+        }
         val allocation =
             allocateAndValidate(
                 Liveness(
