@@ -1,6 +1,8 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
+import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
+import cacophony.codegen.instructions.RegisterByte
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
 
@@ -32,5 +34,25 @@ class InstructionTemplates {
             val lhsHardwareReg = hardwareRegisterMapping[lhs]
             return "$op $lhsHardwareReg $imm"
         }
+    }
+
+    abstract class JccInstruction(
+        open val label: BlockLabel,
+        private val op: String,
+    ) : Instruction {
+        override val registersRead: Set<Register> = setOf()
+        override val registersWritten: Set<Register> = setOf()
+
+        override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "$op ${label.name}"
+    }
+
+    abstract class SetccInstruction(
+        open val byte: RegisterByte,
+        private val op: String,
+    ) : Instruction {
+        override val registersRead: Set<Register> = setOf()
+        override val registersWritten: Set<Register> = setOf(byte.register)
+
+        override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "$op ${byte.map(hardwareRegisterMapping)}"
     }
 }

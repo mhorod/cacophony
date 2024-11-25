@@ -42,6 +42,8 @@ enum class HardwareRegisterByte(private val hardwareRegister: HardwareRegister) 
     R15B(HardwareRegister.R15),
     ;
 
+    override fun toString(): String = name
+
     companion object {
         fun fromRegister(register: HardwareRegister): HardwareRegisterByte =
             entries.find { it.hardwareRegister == register } ?: error("No byte register for $register")
