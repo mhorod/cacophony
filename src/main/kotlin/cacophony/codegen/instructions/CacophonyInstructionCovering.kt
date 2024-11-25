@@ -8,13 +8,14 @@ import cacophony.controlflow.Register
 
 class CacophonyInstructionCovering(private val instructionMatcher: InstructionMatcher) : InstructionCovering {
     private fun coverGivenMatch(match: Match): List<Instruction> {
-        val tempRegisters = match.toFill.keys.associateWith { Register.VirtualRegister() }
+        val tempRegisters = match.toFill.mapValues { Register.VirtualRegister() }
 
-        val instructions = mutableListOf<Instruction>()
-        match.toFill.forEach { (label, node) ->
-            instructions += coverWithInstructionsForValue(node, tempRegisters[label]!!)
-        }
-        instructions += match.instructionMaker(tempRegisters)
+        val instructions =
+            match.toFill
+                .map { (label, node) ->
+                    coverWithInstructionsForValue(node, tempRegisters[label]!!)
+                }.flatten()
+                .plus(match.instructionMaker(tempRegisters))
 
         return instructions
     }
