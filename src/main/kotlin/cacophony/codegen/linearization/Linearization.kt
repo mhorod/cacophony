@@ -47,11 +47,11 @@ private class Linearizer(val fragment: CFGFragment, val covering: InstructionCov
             )
 
         fun handle(vertex: CFGVertex.Jump): PartialLinearization {
-            var result = iterator<MutableBasicBlock> { yield(block) }
+            var result = iterator { yield(block) }
 
             (
                 visited[vertex.destination]?.also { neighbor ->
-                    block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, neighbor.label)
+                    block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, neighbor.label) // TODO: This needs to use unconditional jump
                 } ?: dfs(vertex.destination).let { (neighbor, iter) ->
                     block.instructions += covering.coverWithInstructions(vertex.tree)
                     result = combine(result, iter)
@@ -66,7 +66,7 @@ private class Linearizer(val fragment: CFGFragment, val covering: InstructionCov
         }
 
         fun handle(vertex: CFGVertex.Conditional): PartialLinearization {
-            var result = iterator<MutableBasicBlock> { yield(block) }
+            var result = iterator { yield(block) }
 
             var swapped = false
             var doubled = false
@@ -98,11 +98,11 @@ private class Linearizer(val fragment: CFGFragment, val covering: InstructionCov
 
             if (swapped) {
                 // false edge goes backwards, true edge forwards
-                block.instructions += covering.coverWithInstructionsAndJump(CFGNode.LogicalNot(vertex.tree), falseBlock.label)
+                block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, falseBlock.label, false)
             } else if (doubled) {
                 // both edges go backwards, need 2 jumps
                 block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, trueBlock.label)
-                block.instructions += covering.coverWithInstructionsAndJump(CFGNode.UNIT, falseBlock.label)
+                block.instructions += covering.coverWithInstructionsAndJump(CFGNode.UNIT, falseBlock.label) // TODO: This needs to use unconditional jump
             } else {
                 // false edge goes forwards
                 block.instructions += covering.coverWithInstructionsAndJump(vertex.tree, trueBlock.label)

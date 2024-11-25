@@ -189,9 +189,7 @@ class LinearizationTest {
             }
 
         every { covering.coverWithInstructionsAndJump(v1.tree, match { it.name == "bb2" }) } returns i1
-        every {
-            covering.coverWithInstructionsAndJump(CFGNode.LogicalNot(node), match { it.name == "bb0" })
-        } returns i2
+        every { covering.coverWithInstructionsAndJump(v2.tree, match { it.name == "bb0" }, false) } returns i2
         every { covering.coverWithInstructionsAndJump(v3.tree, match { it.name == "bb2" }) } returns i3
         every { covering.coverWithInstructionsAndJump(v4.tree, match { it.name == "bb1" }) } returns i4
         every { covering.coverWithInstructionsAndJump(CFGNode.Constant(42), match { it.name == "bb0" }) } returns i5
