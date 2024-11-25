@@ -1,7 +1,9 @@
 package cacophony.codegen.linearization
 
+import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
+import cacophony.codegen.instructions.cacophonyInstructions.Jmp
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
@@ -117,7 +119,7 @@ class LinearizationTest {
 
         every { covering.coverWithInstructions(v1.tree) } returns i1
         every { covering.coverWithInstructions(v2.tree) } returns i2
-        every { covering.coverWithInstructionsAndJump(v3.tree, match { it.name == "bb0" }) } returns i3
+        every { covering.coverWithInstructions(v3.tree) } returns i3
 
         val cfg =
             CFGFragment(
@@ -144,7 +146,7 @@ class LinearizationTest {
         assertThat(linear[2].label().name).isEqualTo("bb2")
         assertThat(linear[2].successors()).isEqualTo(mutableSetOf(linear[0]))
         assertThat(linear[2].predecessors()).isEqualTo(mutableSetOf(linear[1]))
-        assertThat(linear[2].instructions()).isEqualTo(i3)
+        assertThat(linear[2].instructions()).isEqualTo(i3 + listOf(Jmp(BlockLabel("bb0"))))
     }
 
     @Test
@@ -162,7 +164,6 @@ class LinearizationTest {
         val i2 = spyk(listOf<Instruction>(mockk()))
         val i3 = spyk(listOf<Instruction>(mockk()))
         val i4 = spyk(listOf<Instruction>(mockk()))
-        val i5 = spyk(listOf<Instruction>(mockk()))
 
         val v1 =
             mockk<CFGVertex.Conditional> {
@@ -192,7 +193,6 @@ class LinearizationTest {
         every { covering.coverWithInstructionsAndJump(v2.tree, match { it.name == "bb0" }, false) } returns i2
         every { covering.coverWithInstructionsAndJump(v3.tree, match { it.name == "bb2" }) } returns i3
         every { covering.coverWithInstructionsAndJump(v4.tree, match { it.name == "bb1" }) } returns i4
-        every { covering.coverWithInstructionsAndJump(CFGNode.Constant(42), match { it.name == "bb0" }) } returns i5
 
         val cfg =
             CFGFragment(
@@ -227,6 +227,6 @@ class LinearizationTest {
         assertThat(linear[3].label().name).isEqualTo("bb3")
         assertThat(linear[3].successors()).isEqualTo(mutableSetOf(linear[0], linear[1]))
         assertThat(linear[3].predecessors()).isEqualTo(mutableSetOf(linear[2]))
-        assertThat(linear[3].instructions()).isEqualTo(i4 + i5)
+        assertThat(linear[3].instructions()).isEqualTo(i4 + listOf(Jmp(BlockLabel("bb0"))))
     }
 }

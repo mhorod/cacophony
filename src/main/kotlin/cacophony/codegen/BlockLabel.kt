@@ -1,5 +1,3 @@
 package cacophony.codegen
 
-class BlockLabel(val name: String) {
-    override fun toString() = name
-}
+data class BlockLabel(val name: String)
