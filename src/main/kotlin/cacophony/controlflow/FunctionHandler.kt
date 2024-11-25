@@ -274,11 +274,11 @@ class PrologueEpilogueHandler(
                 var offset = 0
                 for (variable in stackVariables) {
                     if (variable.offset != offset)
-                        throw CompileException("Holes in stack")
+                        throw IllegalStateException("Holes in stack")
                     offset += REGISTER_SIZE
                 }
                 if (preservedRegisters.contains(HardwareRegister.RSP))
-                    throw CompileException("RSP amongst call preserved registers")
+                    throw IllegalArgumentException("RSP amongst call preserved registers")
             }
             stackVariables.size
         }
