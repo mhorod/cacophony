@@ -34,10 +34,10 @@ class LinearizationTest {
         val l3 = CFGLabel()
         val l4 = CFGLabel()
 
-        val i1 = spyk(listOf<Instruction>())
-        val i2 = spyk(listOf<Instruction>())
-        val i3 = spyk(listOf<Instruction>())
-        val i4 = spyk(listOf<Instruction>())
+        val i1 = spyk(listOf<Instruction>(mockk()))
+        val i2 = spyk(listOf<Instruction>(mockk()))
+        val i3 = spyk(listOf<Instruction>(mockk()))
+        val i4 = spyk(listOf<Instruction>(mockk()))
 
         val v1 =
             mockk<CFGVertex.Jump> {
@@ -99,9 +99,9 @@ class LinearizationTest {
         val l2 = CFGLabel()
         val l3 = CFGLabel()
 
-        val i1 = spyk(listOf<Instruction>())
-        val i2 = spyk(listOf<Instruction>())
-        val i3 = spyk(listOf<Instruction>())
+        val i1 = spyk(listOf<Instruction>(mockk()))
+        val i2 = spyk(listOf<Instruction>(mockk()))
+        val i3 = spyk(listOf<Instruction>(mockk()))
 
         val v1 =
             mockk<CFGVertex.Jump> {
