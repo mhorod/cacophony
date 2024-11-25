@@ -4,6 +4,7 @@ import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.MemoryAddress
 import cacophony.codegen.instructions.RegisterByte
+import cacophony.codegen.instructions.cacophonyInstructions.CacophonyInstructions
 import cacophony.codegen.patterns.SlotFill
 import cacophony.controlflow.ConstantLabel
 import cacophony.controlflow.Register
@@ -16,17 +17,17 @@ class InstructionBuilder(val slotFill: SlotFill) {
     fun instructions(): List<Instruction> = instructions.toList()
 
     fun mov(destination: Register, source: Register) {
-        TODO()
+        instructions.add(CacophonyInstructions.MovRegReg(destination, source))
     }
 
     fun mov(destination: Register, value: Int) {
-        TODO()
+        instructions.add(CacophonyInstructions.MovRegImm(destination, value))
     }
 
     fun mov(destination: Register, label: ValueLabel) = mov(destination, slotFill.valueFill.getValue(label))
 
     fun mov(destination: Register, memory: MemoryAddress) {
-        TODO()
+        instructions.add(CacophonyInstructions.MovRegMem(destination, memory))
     }
 
     fun mov(memory: MemoryAddress, source: Register) {
@@ -34,23 +35,23 @@ class InstructionBuilder(val slotFill: SlotFill) {
     }
 
     fun add(destination: Register, source: Register) {
-        TODO()
+        instructions.add(CacophonyInstructions.AddRegReg(destination, source))
     }
 
     fun add(destination: Register, value: Int) {
-        TODO()
+        instructions.add(CacophonyInstructions.AddRegImm(destination, value))
     }
 
     fun sub(destination: Register, source: Register) {
-        TODO()
+        instructions.add(CacophonyInstructions.SubRegReg(destination, source))
     }
 
     fun sub(destination: Register, value: Int) {
-        TODO()
+        instructions.add(CacophonyInstructions.SubRegImm(destination, value))
     }
 
     fun imul(destination: Register, source: Register) {
-        TODO()
+        instructions.add(CacophonyInstructions.IMulRegReg(destination, source))
     }
 
     fun cqo() {

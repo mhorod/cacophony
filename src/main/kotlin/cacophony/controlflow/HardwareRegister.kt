@@ -1,5 +1,7 @@
 package cacophony.controlflow
 
+import java.util.*
+
 enum class HardwareRegister(val isCallPreserved: Boolean) {
     RAX(false),
     RBX(true),
@@ -16,7 +18,9 @@ enum class HardwareRegister(val isCallPreserved: Boolean) {
     R12(true),
     R13(true),
     R14(true),
-    R15(true),
+    R15(true), ;
+
+    override fun toString(): String = name
 }
 
 enum class HardwareRegisterByte(private val hardwareRegister: HardwareRegister) {
@@ -39,9 +43,8 @@ enum class HardwareRegisterByte(private val hardwareRegister: HardwareRegister) 
     ;
 
     companion object {
-        fun fromRegister(register: HardwareRegister): HardwareRegisterByte {
-            return entries.find { it.hardwareRegister == register } ?: error("No byte register for $register")
-        }
+        fun fromRegister(register: HardwareRegister): HardwareRegisterByte =
+            entries.find { it.hardwareRegister == register } ?: error("No byte register for $register")
     }
 }
 
