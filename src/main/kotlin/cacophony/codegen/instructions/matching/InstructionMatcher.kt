@@ -80,11 +80,11 @@ class InstructionMatcherImpl(
     )
 
     // Internal function to save some boilerplate from three exported functions.
-    // instructionMaker is truly instructionMakerMaker, as it's some helper to generate instructionMakers.
+    // As only thing that is different is instruction maker, it accepts createInstructionMaker to simplify.
     private fun <PatternType : Pattern> findMatchesWithInstructionMaker(
         node: CFGNode,
         patterns: List<PatternType>,
-        instructionMaker: (MatchMetadata, PatternType) -> InstructionMaker,
+        createInstructionMaker: (MatchMetadata, PatternType) -> InstructionMaker,
     ): Set<Match> {
         val result: MutableSet<Match> = mutableSetOf()
         for (pattern in patterns) {
@@ -92,7 +92,7 @@ class InstructionMatcherImpl(
             if (tryMatch(node, pattern.tree, metadata)) {
                 result.add(
                     Match(
-                        instructionMaker(metadata, pattern),
+                        createInstructionMaker(metadata, pattern),
                         metadata.toFill,
                         metadata.size,
                     ),
