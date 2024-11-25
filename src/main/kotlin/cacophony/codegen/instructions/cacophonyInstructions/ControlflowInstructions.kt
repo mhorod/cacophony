@@ -2,14 +2,15 @@ package cacophony.codegen.instructions.cacophonyInstructions
 
 import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
+import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
 
 data class PushReg(
     val reg: Register,
 ) : Instruction {
-    override val registersRead: Set<Register> = setOf(reg)
-    override val registersWritten: Set<Register> = setOf()
+    override val registersRead: Set<Register> = setOf(reg, Register.FixedRegister(HardwareRegister.RSP))
+    override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
@@ -20,8 +21,8 @@ data class PushReg(
 data class Pop(
     val reg: Register,
 ) : Instruction {
-    override val registersRead: Set<Register> = setOf()
-    override val registersWritten: Set<Register> = setOf(reg)
+    override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
+    override val registersWritten: Set<Register> = setOf(reg, Register.FixedRegister(HardwareRegister.RSP))
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
@@ -48,7 +49,7 @@ data class CmpRegReg(
     val rhs: Register,
 ) : Instruction {
     override val registersRead: Set<Register> = setOf(rhs, lhs)
-    override val registersWritten: Set<Register> = setOf()
+    override val registersWritten: Set<Register> = setOf() // only rFLAGS are set
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
@@ -56,6 +57,8 @@ data class CmpRegReg(
         return "CMP $lhsHardwareReg $rhsHardwareReg"
     }
 }
+
+data class Jmp(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JMP")
 
 data class Je(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JE")
 
@@ -76,15 +79,15 @@ data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruc
 data class Call(
     val label: BlockLabel,
 ) : Instruction {
-    override val registersRead: Set<Register> = setOf()
-    override val registersWritten: Set<Register> = setOf()
+    override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
+    override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "CALL ${label.name}"
 }
 
 class Ret : Instruction {
-    override val registersRead: Set<Register> = setOf()
-    override val registersWritten: Set<Register> = setOf()
+    override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
+    override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "RET"
 }
