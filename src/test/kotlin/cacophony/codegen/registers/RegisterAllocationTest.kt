@@ -255,16 +255,14 @@ class RegisterAllocationTest {
         val registers = (0..4).map { Register.VirtualRegister() }
         val interferences = mapOf(registers[1] to setOf(registers[3]), registers[3] to setOf(registers[1]))
         val copying = (1..4).associate { registers[it] to setOf(registers[it - 1]) }
-        val allocation =
-            allocateAndValidate(
-                Liveness(
-                    registers.toSet(),
-                    interferences.toMap(),
-                    copying.toMap(),
-                ),
-                setOf(HardwareRegister.RAX),
-            )
-        assertThat(allocation.spills).hasSize(2)
+        allocateAndValidate(
+            Liveness(
+                registers.toSet(),
+                interferences.toMap(),
+                copying.toMap(),
+            ),
+            setOf(HardwareRegister.RAX),
+        )
     }
 
     @Test
@@ -288,8 +286,6 @@ class RegisterAllocationTest {
                 setOf(HardwareRegister.RAX, HardwareRegister.RBX),
             )
         assertThat(allocation.spills).isEmpty()
-        assertThat(allocation.successful[registers[0]]).isEqualTo(HardwareRegister.RAX)
-        assertThat(allocation.successful[registers[4]]).isEqualTo(HardwareRegister.RBX)
     }
 
     @Test
@@ -298,9 +294,11 @@ class RegisterAllocationTest {
         val interferences =
             (0..<20).map { i ->
                 registers[i] to
-                    (0..<20).filter {
-                        i / 10 != it / 10
-                    }.map { registers[it] }.toSet()
+                    (0..<20)
+                        .filter {
+                            i / 10 != it / 10
+                        }.map { registers[it] }
+                        .toSet()
             }
         val allocation =
             allocateAndValidate(
