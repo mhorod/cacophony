@@ -72,32 +72,24 @@ class LinearizationTest {
         val linear = linearize(cfg, covering)
 
         assertThat(linear[0].label().name).isEqualTo("bb0")
-        assertThat(linear[0].successors()).isEqualTo(
-            mutableSetOf(linear[1]),
-        )
+        assertThat(linear[0].successors()).isEqualTo(mutableSetOf(linear[1]))
         assertThat(linear[0].predecessors()).isEqualTo(mutableSetOf<BasicBlock>())
+        assertThat(linear[0].instructions()).isEqualTo(i1)
 
         assertThat(linear[1].label().name).isEqualTo("bb1")
-        assertThat(linear[1].successors()).isEqualTo(
-            mutableSetOf(linear[2]),
-        )
-        assertThat(linear[1].predecessors()).isEqualTo(
-            mutableSetOf(linear[0]),
-        )
+        assertThat(linear[1].successors()).isEqualTo(mutableSetOf(linear[2]))
+        assertThat(linear[1].predecessors()).isEqualTo(mutableSetOf(linear[0]))
+        assertThat(linear[1].instructions()).isEqualTo(i2)
 
         assertThat(linear[2].label().name).isEqualTo("bb2")
-        assertThat(linear[2].successors()).isEqualTo(
-            mutableSetOf(linear[3]),
-        )
-        assertThat(linear[2].predecessors()).isEqualTo(
-            mutableSetOf(linear[1]),
-        )
+        assertThat(linear[2].successors()).isEqualTo(mutableSetOf(linear[3]))
+        assertThat(linear[2].predecessors()).isEqualTo(mutableSetOf(linear[1]))
+        assertThat(linear[2].instructions()).isEqualTo(i3)
 
         assertThat(linear[3].label().name).isEqualTo("bb3")
         assertThat(linear[3].successors()).isEqualTo(mutableSetOf<BasicBlock>())
-        assertThat(linear[3].predecessors()).isEqualTo(
-            mutableSetOf(linear[2]),
-        )
+        assertThat(linear[3].predecessors()).isEqualTo(mutableSetOf(linear[2]))
+        assertThat(linear[3].instructions()).isEqualTo(i4)
     }
 
     @Test
@@ -141,28 +133,19 @@ class LinearizationTest {
         val linear = linearize(cfg, covering)
 
         assertThat(linear[0].label().name).isEqualTo("bb0")
-        assertThat(linear[0].successors()).isEqualTo(
-            mutableSetOf(linear[1]),
-        )
-        assertThat(linear[0].predecessors()).isEqualTo(
-            mutableSetOf(linear[2]),
-        )
+        assertThat(linear[0].successors()).isEqualTo(mutableSetOf(linear[1]))
+        assertThat(linear[0].predecessors()).isEqualTo(mutableSetOf(linear[2]))
+        assertThat(linear[0].instructions()).isEqualTo(i1)
 
         assertThat(linear[1].label().name).isEqualTo("bb1")
-        assertThat(linear[1].successors()).isEqualTo(
-            mutableSetOf(linear[2]),
-        )
-        assertThat(linear[1].predecessors()).isEqualTo(
-            mutableSetOf(linear[0]),
-        )
+        assertThat(linear[1].successors()).isEqualTo(mutableSetOf(linear[2]))
+        assertThat(linear[1].predecessors()).isEqualTo(mutableSetOf(linear[0]))
+        assertThat(linear[1].instructions()).isEqualTo(i2)
 
         assertThat(linear[2].label().name).isEqualTo("bb2")
-        assertThat(linear[2].successors()).isEqualTo(
-            mutableSetOf(linear[0]),
-        )
-        assertThat(linear[2].predecessors()).isEqualTo(
-            mutableSetOf(linear[1]),
-        )
+        assertThat(linear[2].successors()).isEqualTo(mutableSetOf(linear[0]))
+        assertThat(linear[2].predecessors()).isEqualTo(mutableSetOf(linear[1]))
+        assertThat(linear[2].instructions()).isEqualTo(i3)
     }
 
     @Test
