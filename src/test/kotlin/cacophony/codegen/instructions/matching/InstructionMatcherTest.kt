@@ -3,7 +3,6 @@ package cacophony.codegen.instructions.matching
 import cacophony.codegen.patterns.ValuePattern
 import cacophony.codegen.patterns.cacophonyPatterns.AdditionPattern
 import cacophony.controlflow.*
-import cacophony.controlflow.generation.CFG
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -11,18 +10,20 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class InstructionMatcherTest {
-    private val oddNumberAdditionPattern = run {
-        val valueLabel = ValueLabel()
-        val constLabel = ConstantLabel()
-        val lhsSlot = CFGNode.ValueSlot(valueLabel)
-        val rhsSlot = CFGNode.ConstantSlot(constLabel) { a -> a % 2 == 0 }
+    private val oddNumberAdditionPattern =
+        run {
+            val valueLabel = ValueLabel()
+            val constLabel = ConstantLabel()
+            val lhsSlot = CFGNode.ValueSlot(valueLabel)
+            val rhsSlot = CFGNode.ConstantSlot(constLabel) { a -> a % 2 == 0 }
 
-        val res = mockk<ValuePattern>()
+            val res = mockk<ValuePattern>()
 
-        every { res.tree } returns (lhsSlot add rhsSlot)
-        every { res.makeInstance(any(), any()) } returns emptyList()
-        res
-    }
+            every { res.tree } returns (lhsSlot add rhsSlot)
+            every { res.makeInstance(any(), any()) } returns emptyList()
+            res
+        }
+
     @Test
     fun `matcher checks predicate`() {
         val standardAdditionPattern = AdditionPattern
@@ -40,8 +41,9 @@ class InstructionMatcherTest {
         val constLabel = ConstantLabel()
         val valueLabel = ValueLabel()
         val registerLabel = RegisterLabel()
-        val patternTree = (CFGNode.ConstantSlot(constLabel) { true } add CFGNode.ValueSlot(valueLabel)) add
-            CFGNode.RegisterSlot(registerLabel)
+        val patternTree =
+            (CFGNode.ConstantSlot(constLabel) { true } add CFGNode.ValueSlot(valueLabel)) add
+                CFGNode.RegisterSlot(registerLabel)
         val customAdditionPattern = mockk<ValuePattern>()
         every { customAdditionPattern.tree } returns patternTree
         every { customAdditionPattern.makeInstance(any(), any()) } returns emptyList()
@@ -66,19 +68,15 @@ class InstructionMatcherTest {
         val match = instructionMatcher.findMatchesForValue(node, resultRegister).elementAt(0)
 
         match.instructionMaker(mapOf(valueLabel to subOperationResult))
-        verify { customAdditionPattern.makeInstance(
-            match {
-                it.constantFill == mapOf(
-                    constLabel to nodes[0]
-                ) &&
-                it.valueFill == mapOf(
-                    valueLabel to subOperationResult
-                ) &&
-                it.registerFill == mapOf(
-                    registerLabel to register
-                )
-            },
-            resultRegister)
+        verify {
+            customAdditionPattern.makeInstance(
+                match {
+                    it.constantFill == mapOf(constLabel to nodes[0]) &&
+                        it.valueFill == mapOf(valueLabel to subOperationResult) &&
+                        it.registerFill == mapOf(registerLabel to register)
+                },
+                resultRegister,
+            )
         }
     }
 
@@ -93,5 +91,4 @@ class InstructionMatcherTest {
         val node = constNode add registerNode
         assertThat(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()).size).isEqualTo(1)
     }
-
 }
