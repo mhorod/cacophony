@@ -19,10 +19,10 @@ class LivenessAnalysisErrorException(
     reason: String,
 ) : CompileException(reason)
 
-private fun getFirstInstructions(blocks: Set<BasicBlock>): List<Instruction> = blocks.mapNotNull { it.instructions.firstOrNull() }
+private fun getFirstInstructions(blocks: Set<BasicBlock>): List<Instruction> = blocks.mapNotNull { it.instructions().firstOrNull() }
 
 fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
-    if (cfgFragment.find { it.instructions.isEmpty() } != null) {
+    if (cfgFragment.any { it.instructions().isEmpty() }) {
         throw LivenessAnalysisErrorException("Found empty basic block")
     }
 
@@ -30,17 +30,16 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
         cfgFragment
             .flatMap { block ->
                 block
-                    .instructions
+                    .instructions()
                     .zipWithNext { a, b -> a to listOf(b) } +
                     listOf(
-                        block.instructions.last() to getFirstInstructions(block.successors),
+                        block.instructions().last() to getFirstInstructions(block.successors()),
                     )
             }.associate { it.first to it.second.toSet() }
 
     val allInstructions = nextInstructions.keys
 
-    val definedIn: Map<Instruction, Set<Register>> = allInstructions.associateWith { it.registersWritten }
-    val liveOut: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { definedIn[it]!!.toMutableSet() }
+    val liveOut: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { it.registersWritten.toMutableSet() }
     val liveIn: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { it.registersRead.toMutableSet() }
 
     var fixedPointObtained = false
@@ -59,7 +58,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
                 }
 
             liveOut[instruction]!!.forEach {
-                if (!liveIn[instruction]!!.contains(it) && !definedIn[instruction]!!.contains(it)) {
+                if (!liveIn[instruction]!!.contains(it) && !instruction.registersWritten.contains(it)) {
                     fixedPointObtained = false
                     liveIn[instruction]!!.add(it)
                 }
@@ -87,9 +86,9 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
             allInstructions
                 .asSequence()
                 .filterIsInstance<CopyInstruction>()
-                .flatMap { instruction ->
-                    instruction.registersRead + instruction.registersWritten
-                }.toSet()
+                .filter { it.registersRead.contains(reg) }
+                .flatMap { it.registersWritten }
+                .toSet()
                 .minus(reg)
                 .minus(interference[reg]!!)
                 .toSet()

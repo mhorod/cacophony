@@ -1,34 +1,35 @@
 package cacophony.codegen.registers
 
-import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.linearization.BasicBlock
-import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
+import io.mockk.every
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class LivenessAnalysisTest {
-    private fun mockCopyInstruction(def: Set<Register>, use: Set<Register>): CopyInstruction =
-        object : CopyInstruction {
-            override val registersRead: Set<Register>
-                get() = use
-            override val registersWritten: Set<Register>
-                get() = def
+    private fun mockInstruction(def: Set<Register>, use: Set<Register>): Instruction {
+        val instruction = mockk<Instruction>()
+        every { instruction.registersRead } returns use
+        every { instruction.registersWritten } returns def
+        return instruction
+    }
 
-            override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String = "mock"
-        }
+    private fun mockCopyInstruction(def: Set<Register>, use: Set<Register>): CopyInstruction {
+        val instruction = mockk<CopyInstruction>()
+        every { instruction.registersRead } returns use
+        every { instruction.registersWritten } returns def
+        return instruction
+    }
 
-    private fun mockInstruction(def: Set<Register>, use: Set<Register>): Instruction =
-        object : Instruction {
-            override val registersRead: Set<Register>
-                get() = use
-            override val registersWritten: Set<Register>
-                get() = def
-
-            override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String = "mock"
-        }
+    private fun mockBlock(instructions: List<Instruction>, successors: Set<BasicBlock>): BasicBlock {
+        val block = mockk<BasicBlock>()
+        every { block.instructions() } returns instructions
+        every { block.successors() } returns successors
+        return block
+    }
 
     //  -------------------------------------------->
     //             2: [def B, use B/def C]
@@ -45,42 +46,35 @@ class LivenessAnalysisTest {
         val regD = Register.VirtualRegister()
 
         val block4 =
-            BasicBlock(
-                BlockLabel("4"),
+            mockBlock(
                 listOf(mockInstruction(setOf(), setOf(regA))),
                 setOf(),
-                mutableSetOf(),
             )
         val block3 =
-            BasicBlock(
-                BlockLabel("3"),
+            mockBlock(
                 listOf(mockInstruction(setOf(regD), setOf())),
                 setOf(block4),
-                mutableSetOf(),
             )
         val block2 =
-            BasicBlock(
-                BlockLabel("2"),
+            mockBlock(
                 listOf(
                     mockInstruction(setOf(regB), setOf()),
                     mockInstruction(setOf(regC), setOf(regB)),
                 ),
                 setOf(block4),
-                mutableSetOf(),
             )
         val block1 =
-            BasicBlock(
-                BlockLabel("1"),
+            mockBlock(
                 listOf(
                     mockInstruction(setOf(regA), setOf()),
                 ),
                 setOf(block2, block3),
-                mutableSetOf(),
             )
 
-        block4.predecessors.addAll(setOf(block2, block3))
-        block3.predecessors.add(block1)
-        block2.predecessors.add(block1)
+        every { block4.predecessors() } returns setOf(block2, block3)
+        every { block3.predecessors() } returns setOf(block1)
+        every { block2.predecessors() } returns setOf(block1)
+        every { block1.predecessors() } returns setOf()
 
         // when
         val liveness = analyzeLiveness(listOf(block1, block2, block3, block4))
@@ -113,29 +107,25 @@ class LivenessAnalysisTest {
         val regB = Register.VirtualRegister()
 
         val block3 =
-            BasicBlock(
-                BlockLabel("3"),
+            mockBlock(
                 listOf(mockInstruction(setOf(), setOf(regA))),
                 setOf(),
-                mutableSetOf(),
             )
         val block2 =
-            BasicBlock(
-                BlockLabel("2"),
+            mockBlock(
                 listOf(mockCopyInstruction(setOf(regB), setOf(regA))),
                 setOf(block3),
-                mutableSetOf(),
-            )
-        val block1 =
-            BasicBlock(
-                BlockLabel("1"),
-                listOf(mockInstruction(setOf(regA), setOf())),
-                setOf(block2),
-                mutableSetOf(),
             )
 
-        block3.predecessors.add(block2)
-        block2.predecessors.add(block1)
+        val block1 =
+            mockBlock(
+                listOf(mockInstruction(setOf(regA), setOf())),
+                setOf(block2),
+            )
+
+        every { block3.predecessors() } returns setOf(block2)
+        every { block2.predecessors() } returns setOf(block1)
+        every { block1.predecessors() } returns setOf()
 
         // when
         val liveness = analyzeLiveness(listOf(block1, block2, block3))
@@ -151,7 +141,7 @@ class LivenessAnalysisTest {
         assertThat(liveness.copying).containsExactlyInAnyOrderEntriesOf(
             mapOf(
                 regA to setOf(regB),
-                regB to setOf(regA),
+                regB to setOf(),
             ),
         )
     }
@@ -164,37 +154,30 @@ class LivenessAnalysisTest {
         val regB = Register.VirtualRegister()
 
         val block4 =
-            BasicBlock(
-                BlockLabel("4"),
+            mockBlock(
                 listOf(mockInstruction(setOf(), setOf(regB))),
                 setOf(),
-                mutableSetOf(),
             )
         val block3 =
-            BasicBlock(
-                BlockLabel("3"),
+            mockBlock(
                 listOf(mockInstruction(setOf(regA), setOf())),
                 setOf(block4),
-                mutableSetOf(),
             )
         val block2 =
-            BasicBlock(
-                BlockLabel("2"),
+            mockBlock(
                 listOf(mockCopyInstruction(setOf(regB), setOf(regA))),
                 setOf(block3),
-                mutableSetOf(),
             )
         val block1 =
-            BasicBlock(
-                BlockLabel("1"),
+            mockBlock(
                 listOf(mockInstruction(setOf(regA), setOf())),
                 setOf(block2),
-                mutableSetOf(),
             )
 
-        block4.predecessors.add(block3)
-        block3.predecessors.add(block2)
-        block2.predecessors.add(block1)
+        every { block4.predecessors() } returns setOf(block3)
+        every { block3.predecessors() } returns setOf(block2)
+        every { block2.predecessors() } returns setOf(block1)
+        every { block1.predecessors() } returns setOf()
 
         // when
         val liveness = analyzeLiveness(listOf(block1, block2, block3, block4))
@@ -220,7 +203,7 @@ class LivenessAnalysisTest {
         // given
         val lCfgFragment =
             listOf(
-                BasicBlock(BlockLabel("A"), listOf(), setOf(), mutableSetOf()),
+                mockBlock(listOf(), setOf()),
             )
 
         // when & then
