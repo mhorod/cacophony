@@ -12,6 +12,13 @@ val rdx = Register.FixedRegister(HardwareRegister.RDX)
 val rcx = Register.FixedRegister(HardwareRegister.RCX)
 val r8 = Register.FixedRegister(HardwareRegister.R8)
 val r9 = Register.FixedRegister(HardwareRegister.R9)
+val r10 = Register.FixedRegister(HardwareRegister.R10)
+val r11 = Register.FixedRegister(HardwareRegister.R11)
+val r12 = Register.FixedRegister(HardwareRegister.R12)
+val r13 = Register.FixedRegister(HardwareRegister.R13)
+val r14 = Register.FixedRegister(HardwareRegister.R14)
+val r15 = Register.FixedRegister(HardwareRegister.R15)
+
 val unit = CFGNode.UNIT
 val trueValue = CFGNode.TRUE
 val falseValue = CFGNode.FALSE
