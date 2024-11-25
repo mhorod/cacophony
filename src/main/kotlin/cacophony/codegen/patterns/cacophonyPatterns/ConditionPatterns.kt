@@ -3,8 +3,6 @@ package cacophony.codegen.patterns.cacophonyPatterns
 import cacophony.codegen.BlockLabel
 import cacophony.codegen.patterns.ConditionPattern
 import cacophony.codegen.patterns.SlotFill
-import cacophony.codegen.patterns.cacophonyPatterns.LessEqualValuePattern.lhsLabel
-import cacophony.codegen.patterns.cacophonyPatterns.LessEqualValuePattern.rhsLabel
 import cacophony.controlflow.eq
 import cacophony.controlflow.geq
 import cacophony.controlflow.gt
@@ -37,7 +35,45 @@ val conditionPatterns =
         NegatedLogicalNotConditionPattern,
     )
 
-object EqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
+abstract class BinaryConditionPattern : ConditionPattern, BinaryOpPattern() {
+    protected fun equalsInstance(fill: SlotFill, destinationLabel: BlockLabel) =
+        instructions(fill) {
+            cmp(reg(lhsLabel), reg(rhsLabel))
+            je(destinationLabel)
+        }
+
+    protected fun notEqualsInstance(fill: SlotFill, destinationLabel: BlockLabel) =
+        instructions(fill) {
+            cmp(reg(lhsLabel), reg(rhsLabel))
+            jne(destinationLabel)
+        }
+
+    protected fun lessInstance(fill: SlotFill, destinationLabel: BlockLabel) =
+        instructions(fill) {
+            cmp(reg(lhsLabel), reg(rhsLabel))
+            jl(destinationLabel)
+        }
+
+    protected fun lessEqualInstance(fill: SlotFill, destinationLabel: BlockLabel) =
+        instructions(fill) {
+            cmp(reg(lhsLabel), reg(rhsLabel))
+            jle(destinationLabel)
+        }
+
+    protected fun greaterInstance(fill: SlotFill, destinationLabel: BlockLabel) =
+        instructions(fill) {
+            cmp(reg(lhsLabel), reg(rhsLabel))
+            jg(destinationLabel)
+        }
+
+    protected fun greaterEqualInstance(fill: SlotFill, destinationLabel: BlockLabel) =
+        instructions(fill) {
+            cmp(reg(lhsLabel), reg(rhsLabel))
+            jge(destinationLabel)
+        }
+}
+
+object EqualsConditionPattern : BinaryConditionPattern() {
     override val tree = lhsSlot eq rhsSlot
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -45,7 +81,7 @@ object EqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
         else notEqualsInstance(fill, destinationLabel)
 }
 
-object NotEqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
+object NotEqualsConditionPattern : BinaryConditionPattern() {
     override val tree = lhsSlot neq rhsSlot
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -53,7 +89,7 @@ object NotEqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
         else equalsInstance(fill, destinationLabel)
 }
 
-object LessConditionPattern : ConditionPattern, BinaryOpPattern() {
+object LessConditionPattern : BinaryConditionPattern() {
     override val tree = lhsSlot lt rhsSlot
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -61,7 +97,7 @@ object LessConditionPattern : ConditionPattern, BinaryOpPattern() {
         else greaterEqualInstance(fill, destinationLabel)
 }
 
-object LessEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
+object LessEqualConditionPattern : BinaryConditionPattern() {
     override val tree = lhsSlot leq rhsSlot
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -69,7 +105,7 @@ object LessEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
         else greaterInstance(fill, destinationLabel)
 }
 
-object GreaterConditionPattern : ConditionPattern, BinaryOpPattern() {
+object GreaterConditionPattern : BinaryConditionPattern() {
     override val tree = lhsSlot gt rhsSlot
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -77,7 +113,7 @@ object GreaterConditionPattern : ConditionPattern, BinaryOpPattern() {
         else lessEqualInstance(fill, destinationLabel)
 }
 
-object GreaterEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
+object GreaterEqualConditionPattern : BinaryConditionPattern() {
     override val tree = lhsSlot geq rhsSlot
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -85,18 +121,18 @@ object GreaterEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
         else lessInstance(fill, destinationLabel)
 }
 
-object LogicalNotConditionPattern : ConditionPattern, UnaryOpPattern() {
+object LogicalNotConditionPattern : UnaryOpPattern(), ConditionPattern {
     override val tree = not(childSlot)
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
         instructions(fill) {
-            test(reg(lhsLabel), reg(lhsLabel))
+            test(reg(childLabel), reg(childLabel))
             if (jumpIf) jz(destinationLabel)
             else jnz(destinationLabel)
         }
 }
 
-object NegatedEqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
+object NegatedEqualsConditionPattern : BinaryConditionPattern() {
     override val tree = not(lhsSlot eq rhsSlot)
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -104,7 +140,7 @@ object NegatedEqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
         else equalsInstance(fill, destinationLabel)
 }
 
-object NegatedNotEqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
+object NegatedNotEqualsConditionPattern : BinaryConditionPattern() {
     override val tree = not(lhsSlot neq rhsSlot)
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -112,7 +148,7 @@ object NegatedNotEqualsConditionPattern : ConditionPattern, BinaryOpPattern() {
         else notEqualsInstance(fill, destinationLabel)
 }
 
-object NegatedLessConditionPattern : ConditionPattern, BinaryOpPattern() {
+object NegatedLessConditionPattern : BinaryConditionPattern() {
     override val tree = not(lhsSlot lt rhsSlot)
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -120,7 +156,7 @@ object NegatedLessConditionPattern : ConditionPattern, BinaryOpPattern() {
         else lessInstance(fill, destinationLabel)
 }
 
-object NegatedLessEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
+object NegatedLessEqualConditionPattern : BinaryConditionPattern() {
     override val tree = not(lhsSlot leq rhsSlot)
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -128,7 +164,7 @@ object NegatedLessEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
         else lessEqualInstance(fill, destinationLabel)
 }
 
-object NegatedGreaterConditionPattern : ConditionPattern, BinaryOpPattern() {
+object NegatedGreaterConditionPattern : BinaryConditionPattern() {
     override val tree = not(lhsSlot gt rhsSlot)
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -136,7 +172,7 @@ object NegatedGreaterConditionPattern : ConditionPattern, BinaryOpPattern() {
         else greaterInstance(fill, destinationLabel)
 }
 
-object NegatedGreaterEqualConditionPattern : ConditionPattern, BinaryOpPattern() {
+object NegatedGreaterEqualConditionPattern : BinaryConditionPattern() {
     override val tree = not(lhsSlot geq rhsSlot)
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
@@ -149,44 +185,8 @@ object NegatedLogicalNotConditionPattern : ConditionPattern, UnaryOpPattern() {
 
     override fun makeInstance(fill: SlotFill, destinationLabel: BlockLabel, jumpIf: Boolean) =
         instructions(fill) {
-            test(reg(lhsLabel), reg(lhsLabel))
+            test(reg(childLabel), reg(childLabel))
             if (jumpIf) jnz(destinationLabel)
             else jz(destinationLabel)
         }
 }
-
-private fun equalsInstance(fill: SlotFill, destinationLabel: BlockLabel) =
-    instructions(fill) {
-        cmp(reg(lhsLabel), reg(rhsLabel))
-        je(destinationLabel)
-    }
-
-private fun notEqualsInstance(fill: SlotFill, destinationLabel: BlockLabel) =
-    instructions(fill) {
-        cmp(reg(lhsLabel), reg(rhsLabel))
-        jne(destinationLabel)
-    }
-
-private fun lessInstance(fill: SlotFill, destinationLabel: BlockLabel) =
-    instructions(fill) {
-        cmp(reg(lhsLabel), reg(rhsLabel))
-        jl(destinationLabel)
-    }
-
-private fun lessEqualInstance(fill: SlotFill, destinationLabel: BlockLabel) =
-    instructions(fill) {
-        cmp(reg(lhsLabel), reg(rhsLabel))
-        jle(destinationLabel)
-    }
-
-private fun greaterInstance(fill: SlotFill, destinationLabel: BlockLabel) =
-    instructions(fill) {
-        cmp(reg(lhsLabel), reg(rhsLabel))
-        jg(destinationLabel)
-    }
-
-private fun greaterEqualInstance(fill: SlotFill, destinationLabel: BlockLabel) =
-    instructions(fill) {
-        cmp(reg(lhsLabel), reg(rhsLabel))
-        jge(destinationLabel)
-    }

@@ -4,8 +4,6 @@ import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.RegisterByte
 import cacophony.codegen.patterns.SlotFill
 import cacophony.codegen.patterns.ValuePattern
-import cacophony.codegen.patterns.cacophonyPatterns.LessEqualValuePattern.lhsLabel
-import cacophony.codegen.patterns.cacophonyPatterns.LessEqualValuePattern.rhsLabel
 import cacophony.controlflow.*
 
 /**
@@ -110,70 +108,49 @@ object MinusPattern : ValuePattern, UnaryOpPattern() {
         }
 }
 
-object EqualsValuePattern : ValuePattern, BinaryOpPattern() {
+abstract class BinaryLogicalOperatorValuePattern : BinaryOpPattern(), ValuePattern {
+    protected fun makeInstance(fill: SlotFill, destination: Register, setcc: InstructionBuilder.(RegisterByte) -> Unit) =
+        instructions(fill) {
+            cmp(reg(lhsLabel), reg(rhsLabel))
+            setcc(byte(destination))
+            movzx(destination, byte(destination))
+        }
+}
+
+object EqualsValuePattern : BinaryLogicalOperatorValuePattern() {
     override val tree = lhsSlot eq rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destination: Register) =
-        makeBinaryLogicalOperatorInstance(
-            fill,
-            destination,
-            InstructionBuilder::sete,
-        )
+    override fun makeInstance(fill: SlotFill, destination: Register) = makeInstance(fill, destination, InstructionBuilder::sete)
 }
 
-object NotEqualsValuePattern : ValuePattern, BinaryOpPattern() {
+object NotEqualsValuePattern : BinaryLogicalOperatorValuePattern() {
     override val tree = lhsSlot neq rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destination: Register) =
-        makeBinaryLogicalOperatorInstance(
-            fill,
-            destination,
-            InstructionBuilder::setne,
-        )
+    override fun makeInstance(fill: SlotFill, destination: Register) = makeInstance(fill, destination, InstructionBuilder::setne)
 }
 
-object LessValuePattern : ValuePattern, BinaryOpPattern() {
+object LessValuePattern : BinaryLogicalOperatorValuePattern() {
     override val tree = lhsSlot lt rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destination: Register) =
-        makeBinaryLogicalOperatorInstance(
-            fill,
-            destination,
-            InstructionBuilder::setl,
-        )
+    override fun makeInstance(fill: SlotFill, destination: Register) = makeInstance(fill, destination, InstructionBuilder::setl)
 }
 
-object LessEqualValuePattern : ValuePattern, BinaryOpPattern() {
+object LessEqualValuePattern : BinaryLogicalOperatorValuePattern() {
     override val tree = lhsSlot leq rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destination: Register) =
-        makeBinaryLogicalOperatorInstance(
-            fill,
-            destination,
-            InstructionBuilder::setle,
-        )
+    override fun makeInstance(fill: SlotFill, destination: Register) = makeInstance(fill, destination, InstructionBuilder::setle)
 }
 
-object GreaterValuePattern : ValuePattern, BinaryOpPattern() {
+object GreaterValuePattern : BinaryLogicalOperatorValuePattern() {
     override val tree = lhsSlot gt rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destination: Register) =
-        makeBinaryLogicalOperatorInstance(
-            fill,
-            destination,
-            InstructionBuilder::setg,
-        )
+    override fun makeInstance(fill: SlotFill, destination: Register) = makeInstance(fill, destination, InstructionBuilder::setg)
 }
 
-object GreaterEqualValuePattern : ValuePattern, BinaryOpPattern() {
+object GreaterEqualValuePattern : BinaryLogicalOperatorValuePattern() {
     override val tree = lhsSlot geq rhsSlot
 
-    override fun makeInstance(fill: SlotFill, destination: Register) =
-        makeBinaryLogicalOperatorInstance(
-            fill,
-            destination,
-            InstructionBuilder::setge,
-        )
+    override fun makeInstance(fill: SlotFill, destination: Register) = makeInstance(fill, destination, InstructionBuilder::setge)
 }
 
 object LogicalNotValuePattern : ValuePattern, UnaryOpPattern() {
@@ -185,10 +162,3 @@ object LogicalNotValuePattern : ValuePattern, UnaryOpPattern() {
             xor(destination, 1)
         }
 }
-
-private fun makeBinaryLogicalOperatorInstance(fill: SlotFill, destination: Register, setcc: InstructionBuilder.(RegisterByte) -> Unit) =
-    instructions(fill) {
-        cmp(reg(lhsLabel), reg(rhsLabel))
-        setcc(byte(destination))
-        movzx(destination, byte(destination))
-    }
