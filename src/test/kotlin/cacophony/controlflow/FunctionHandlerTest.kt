@@ -283,14 +283,16 @@ class FunctionHandlerTest {
 
     @Test
     fun `initialization registers static link`() {
+        val funDef = mockk<Definition.FunctionDeclaration>()
         val analyzedFunction = mockk<AnalyzedFunction>()
         val auxVariables = mutableSetOf<Variable.AuxVariable>()
+        every { funDef.arguments } returns emptyList()
         every { analyzedFunction.auxVariables } returns auxVariables
         every { analyzedFunction.variables } returns emptySet()
         every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
         every { analyzedFunction.declaredVariables() } returns emptyList()
 
-        val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
+        val handler = FunctionHandlerImpl(funDef, analyzedFunction, emptyList())
 
         assertThat(auxVariables).contains(handler.getStaticLink())
 
@@ -302,6 +304,8 @@ class FunctionHandlerTest {
     @Test
     fun `variable from definition just works`() {
         // setup
+        val funDef = mockk<Definition.FunctionDeclaration>()
+        every { funDef.arguments } returns emptyList()
         val varDef = mockk<Definition>()
         val analyzedVariable = mockk<AnalyzedVariable>()
         every { analyzedVariable.declaration } returns varDef
@@ -312,7 +316,7 @@ class FunctionHandlerTest {
         every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
 
         // run
-        val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
+        val handler = FunctionHandlerImpl(funDef, analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
         // check
         assertNotNull(variable)
@@ -322,6 +326,8 @@ class FunctionHandlerTest {
     @Test
     fun `variable not used in nested function goes to virtual register`() {
         // setup
+        val funDef = mockk<Definition.FunctionDeclaration>()
+        every { funDef.arguments } returns emptyList()
         val varDef = mockk<Definition>()
         val analyzedVariable = mockk<AnalyzedVariable>()
         every { analyzedVariable.declaration } returns varDef
@@ -332,7 +338,7 @@ class FunctionHandlerTest {
         every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
 
         // run
-        val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
+        val handler = FunctionHandlerImpl(funDef, analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
         val allocation = handler.getVariableAllocation(variable)
         // check
@@ -343,6 +349,8 @@ class FunctionHandlerTest {
     @Test
     fun `variable used in nested function goes on stack`() {
         // setup
+        val funDef = mockk<Definition.FunctionDeclaration>()
+        every { funDef.arguments } returns emptyList()
         val varDef = mockk<Definition>()
         val analyzedVariable = mockk<AnalyzedVariable>()
         every { analyzedVariable.declaration } returns varDef
@@ -353,7 +361,7 @@ class FunctionHandlerTest {
         every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
 
         // run
-        val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
+        val handler = FunctionHandlerImpl(funDef, analyzedFunction, emptyList())
         val variable = handler.getVariableFromDefinition(varDef)
         val allocation = handler.getVariableAllocation(variable)
         // check
@@ -364,6 +372,8 @@ class FunctionHandlerTest {
     @Test
     fun `multiple variables, stack and virtual registers`() {
         // setup
+        val funDef = mockk<Definition.FunctionDeclaration>()
+        every { funDef.arguments } returns emptyList()
         val varDef1 = mockk<Definition>()
         val varDef2 = mockk<Definition>()
         val varDef3 = mockk<Definition>()
@@ -380,7 +390,7 @@ class FunctionHandlerTest {
         every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable1, analyzedVariable2, analyzedVariable3)
 
         // run
-        val handler = FunctionHandlerImpl(mockk(), analyzedFunction, emptyList())
+        val handler = FunctionHandlerImpl(funDef, analyzedFunction, emptyList())
         val variable1 = handler.getVariableFromDefinition(varDef1)
         val variable2 = handler.getVariableFromDefinition(varDef2)
         val variable3 = handler.getVariableFromDefinition(varDef3)

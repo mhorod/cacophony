@@ -26,8 +26,7 @@ class AccessTest {
                     "bodyEntry" does jump("exit") { writeRegister(rax, registerUse(virReg)) }
                 }
             }
-        println(actualCFG)
-        println(expectedCFG)
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 

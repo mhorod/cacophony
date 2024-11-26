@@ -3,7 +3,6 @@ package cacophony.controlflow.generation
 import cacophony.*
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class CallTest {
@@ -147,7 +146,6 @@ class CallTest {
     }
 
     @Test
-    @Disabled("TODO: should work after changes in analyzed function or prologue generation")
     fun `call sequence for a function with six parameters correctly forwards all provided constants as arguments`() {
         // given
         val calleeDef =

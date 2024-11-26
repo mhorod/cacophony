@@ -31,10 +31,11 @@ class CFGGenerationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef, listOf(VariableAllocation.OnStack(0)), 8) {
+                fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does jump("exit") { writeRegister(rax, UNIT) }
                 }
             }
+
         assertEquivalent(cfg, expectedCFG)
     }
 
@@ -49,12 +50,11 @@ class CFGGenerationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef, listOf(VariableAllocation.OnStack(0)), 8) {
+                fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does jump("exit") { writeRegister(rax, TRUE) }
                 }
             }
-        println(actualCFG)
-        println(expectedCFG)
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -79,11 +79,11 @@ class CFGGenerationTest {
 
         // when
         val actualCFG = pipeline.generateControlFlowGraph(fDef)
-        println(actualCFG)
+
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef, listOf(VariableAllocation.OnStack(0)), 8) {
+                fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does jump("condition") { writeRegister(virtualRegister("x"), integer(1)) }
                     "condition" does
                         conditional("true", "false") {
@@ -94,7 +94,7 @@ class CFGGenerationTest {
                     "end" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("t"))) }
                 }
             }
-        println(expectedCFG)
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -121,7 +121,7 @@ class CFGGenerationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef, listOf(VariableAllocation.OnStack(0)), 8) {
+                fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does
                         jump("condition") {
                             writeRegister(virtualRegister("x"), integer(0))

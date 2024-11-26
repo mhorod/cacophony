@@ -83,17 +83,18 @@ class FunctionHandlerImpl(
 ) : FunctionHandler {
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable =
-        analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
+        (analyzedFunction.variables.map { it.declaration } union function.arguments).associateWith { Variable.SourceVariable(it) }
 
     private val variableAllocation: MutableMap<Variable, VariableAllocation> =
         run {
             val res = mutableMapOf<Variable, VariableAllocation>()
             val usedVars = analyzedFunction.variablesUsedInNestedFunctions
             val regVar =
-                analyzedFunction
-                    .declaredVariables()
-                    .map { it.declaration }
-                    .toSet()
+                (
+                    analyzedFunction
+                        .declaredVariables()
+                        .map { it.declaration } union function.arguments
+                ).toSet()
                     .minus(usedVars)
             regVar.forEach { varDef ->
                 res[definitionToVariable[varDef]!!] = VariableAllocation.InRegister(Register.VirtualRegister())
