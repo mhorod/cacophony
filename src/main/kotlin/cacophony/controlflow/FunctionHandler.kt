@@ -4,8 +4,6 @@ import cacophony.controlflow.CFGNode.Addition
 import cacophony.controlflow.CFGNode.Constant
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
-import cacophony.controlflow.CFGNode.Subtraction
-import cacophony.controlflow.FunctionHandlerImpl.Companion.REGISTER_SIZE
 import cacophony.semantic.AnalyzedFunction
 import cacophony.semantic.FunctionAnalysisResult
 import cacophony.semantic.syntaxtree.Definition
@@ -83,10 +81,6 @@ class FunctionHandlerImpl(
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionHandler {
-    companion object {
-        const val REGISTER_SIZE = 8
-    }
-
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable =
         analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
@@ -219,7 +213,7 @@ class FunctionHandlerImpl(
         PrologueEpilogueHandler(
             this,
             ::defaultCallConvention,
-            HardwareRegister.entries.filter { it != HardwareRegister.RSP && it.isCallPreserved },
+            PRESERVED_REGISTERS,
         )
 
     override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()
@@ -239,17 +233,10 @@ class FunctionHandlerImpl(
 
 fun defaultCallConvention(index: Int): CFGNode {
     if (index < REGISTER_ARGUMENT_ORDER.size)
-        return RegisterUse(Register.FixedRegister(REGISTER_ARGUMENT_ORDER[index]))
+        return registerUse(Register.FixedRegister(REGISTER_ARGUMENT_ORDER[index]))
     val over = index - REGISTER_ARGUMENT_ORDER.size
     // Assumes that the RSP has not changed after `call f`
-    return MemoryAccess(
-        Addition(
-            RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-            Constant(
-                (over + 1) * REGISTER_SIZE,
-            ),
-        ),
-    )
+    return memoryAccess(registerUse(rsp) add integer((over + 1) * REGISTER_SIZE))
 }
 
 class PrologueEpilogueHandler(
@@ -285,14 +272,8 @@ class PrologueEpilogueHandler(
 
     private fun lvalueFromAllocation(allocation: VariableAllocation): CFGNode.LValue =
         when (allocation) {
-            is VariableAllocation.InRegister -> RegisterUse(allocation.register)
-            is VariableAllocation.OnStack ->
-                MemoryAccess(
-                    Subtraction(
-                        RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                        Constant(allocation.offset + REGISTER_SIZE),
-                    ),
-                )
+            is VariableAllocation.InRegister -> registerUse(allocation.register)
+            is VariableAllocation.OnStack -> memoryAccess(registerUse(rsp) sub integer(allocation.offset + REGISTER_SIZE))
         }
 
     fun generatePrologue(): List<CFGNode> {
@@ -304,29 +285,20 @@ class PrologueEpilogueHandler(
             // Defined function arguments
             for ((ind, arg) in function.arguments.withIndex()) {
                 nodes.add(
-                    CFGNode.Assignment(
-                        lvalueFromAllocation(getVariableAllocation(getVariableFromDefinition(arg))),
+                    lvalueFromAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
                         callConvention(ind),
-                    ),
                 )
             }
             // Static link (implicit arg)
             nodes.add(
-                CFGNode.Assignment(
-                    lvalueFromAllocation(getVariableAllocation(getStaticLink())),
+                lvalueFromAllocation(getVariableAllocation(getStaticLink())) assign
                     callConvention(function.arguments.size),
-                ),
             )
             // Space for all stack variables
-            nodes.add(
-                CFGNode.SubtractionAssignment(
-                    RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                    Constant(numberOfStackVariables * REGISTER_SIZE),
-                ),
-            )
+            nodes.add(registerUse(rsp) subeq integer(numberOfStackVariables * REGISTER_SIZE))
             // Preserved registers
             for (register in preservedRegisters) {
-                nodes.add(CFGNode.Push(RegisterUse(Register.FixedRegister(register))))
+                nodes.add(pushRegister(Register.FixedRegister(register)))
             }
         }
         return nodes
@@ -336,15 +308,10 @@ class PrologueEpilogueHandler(
         val nodes = mutableListOf<CFGNode>()
         // Restoring preserved registers
         for (register in preservedRegisters.reversed()) {
-            nodes.add(CFGNode.Pop(RegisterUse(Register.FixedRegister(register))))
+            nodes.add(popRegister(Register.FixedRegister(register)))
         }
         // Restoring RSP
-        nodes.add(
-            CFGNode.AdditionAssignment(
-                RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                Constant(numberOfStackVariables * REGISTER_SIZE),
-            ),
-        )
+        nodes.add(registerUse(rsp) addeq integer(numberOfStackVariables * REGISTER_SIZE))
         return nodes
     }
 }

@@ -19,14 +19,15 @@ class AccessTest {
         val actualCFG = pipeline.generateControlFlowGraph(fDef)
 
         // then
+        val virReg = Register.VirtualRegister()
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("return") { writeRegister(rax, registerUse(virtualRegister("arg register"))) }
-                    "return" does final { returnNode }
+                fragment(fDef, listOf(argReg(virReg), argStack(0)), 8) {
+                    "bodyEntry" does jump("exit") { writeRegister(rax, registerUse(virReg)) }
                 }
             }
-
+        println(actualCFG)
+        println(expectedCFG)
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -49,15 +50,14 @@ class AccessTest {
         // then
         val expectedFragment =
             cfg {
-                fragment(innerDef) {
-                    "entry" does
-                        jump("return") {
+                fragment(innerDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 memoryAccess(memoryAccess(registerUse(rbp)) add integer(8)),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }[innerDef]!!
 
@@ -92,15 +92,14 @@ class AccessTest {
         // then
         val expectedFragment =
             cfg {
-                fragment(innerDef) {
-                    "entry" does
-                        jump("return") {
+                fragment(innerDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 memoryAccess(memoryAccess(registerUse(rbp)) add integer(8)),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }[innerDef]!!
 

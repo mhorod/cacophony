@@ -17,7 +17,6 @@ import cacophony.controlflow.generation.TestOperators.Companion.neq
 import cacophony.controlflow.generation.TestOperators.Companion.neqNode
 import cacophony.controlflow.integer
 import cacophony.controlflow.rax
-import cacophony.controlflow.returnNode
 import cacophony.controlflow.writeRegister
 import cacophony.functionDeclaration
 import cacophony.ifThenElse
@@ -53,8 +52,8 @@ class ConditionalOperatorsTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         conditional("true", "false") {
                             makeNode(integer(1), integer(2))
                         }
@@ -67,12 +66,8 @@ class ConditionalOperatorsTest {
                             writeRegister("result", integer(4))
                         }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(rax, readRegister("result"))
-                        }
-                    "return" does
-                        final {
-                            returnNode
                         }
                 }
             }
@@ -105,8 +100,8 @@ class ConditionalOperatorsTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("condition") {
                             writeRegister("x", integer(1))
                         }
@@ -123,12 +118,8 @@ class ConditionalOperatorsTest {
                             writeRegister("result", integer(4))
                         }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(rax, readRegister("result"))
-                        }
-                    "return" does
-                        final {
-                            returnNode
                         }
                 }
             }
@@ -161,8 +152,8 @@ class ConditionalOperatorsTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("condition") {
                             writeRegister("x", integer(1))
                         }
@@ -179,12 +170,8 @@ class ConditionalOperatorsTest {
                             writeRegister("result", integer(4))
                         }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(rax, readRegister("result"))
-                        }
-                    "return" does
-                        final {
-                            returnNode
                         }
                 }
             }
@@ -217,8 +204,8 @@ class ConditionalOperatorsTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("write y") {
                             writeRegister("x", integer(1))
                         }
@@ -239,12 +226,8 @@ class ConditionalOperatorsTest {
                             writeRegister("result", integer(4))
                         }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(rax, readRegister("result"))
-                        }
-                    "return" does
-                        final {
-                            returnNode
                         }
                 }
             }
@@ -253,8 +236,8 @@ class ConditionalOperatorsTest {
 
     companion object {
         @JvmStatic
-        fun logicalOperators(): List<Arguments> {
-            return listOf(
+        fun logicalOperators(): List<Arguments> =
+            listOf(
                 argumentSet("eq", eq, eqNode),
                 argumentSet("neq", neq, neqNode),
                 argumentSet("lt", lt, ltNode),
@@ -262,6 +245,5 @@ class ConditionalOperatorsTest {
                 argumentSet("gt", gt, gtNode),
                 argumentSet("geq", geq, geqNode),
             )
-        }
     }
 }

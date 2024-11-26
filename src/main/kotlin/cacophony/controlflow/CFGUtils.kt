@@ -95,6 +95,46 @@ class CFGFragmentBuilder {
     fun conditional(trueDestination: String, falseDestination: String, condition: () -> CFGNode): CFGVertex =
         CFGVertex.Conditional(condition(), getLabel(trueDestination), getLabel(falseDestination))
 
+    fun prologueAndEpilogue(cfgBuilder: CFGBuilder, args: List<VariableAllocation>, stackSpace: Int) {
+        with(cfgBuilder) {
+            var vir = 0
+            var curLabel = "entry"
+            var nextLabel = 1
+            val single = { getNode: () -> CFGNode ->
+                curLabel does jump(nextLabel.toString(), getNode)
+                curLabel = nextLabel.toString()
+                nextLabel++
+            }
+
+            // prologue
+            for ((ind, allocation) in args.withIndex()) {
+                single {
+                    when (allocation) {
+                        is VariableAllocation.InRegister -> writeRegister(allocation.register, defaultCallConvention(ind))
+                        is VariableAllocation.OnStack ->
+                            memoryAccess(registerUse(rsp) sub integer((allocation.offset + 1) * REGISTER_SIZE)) assign
+                                defaultCallConvention(ind)
+                    }
+                }
+            }
+            single { registerUse(rsp) subeq integer(stackSpace) }
+            for (register in PRESERVED_REGISTERS.dropLast(1)) {
+                single { pushRegister(Register.FixedRegister(register)) }
+            }
+            // jump to body
+            curLabel does jump("bodyEntry") { pushRegister(Register.FixedRegister(PRESERVED_REGISTERS.last())) }
+
+            // epilogue
+            curLabel = "exit"
+            for (register in PRESERVED_REGISTERS.reversed()) {
+                single { popRegister(Register.FixedRegister(register)) }
+            }
+            curLabel does jump("return") { registerUse(rsp) addeq integer(stackSpace) }
+
+            "return" does final { returnNode }
+        }
+    }
+
     infix fun String.does(vertex: CFGVertex) {
         vertices[getLabel(this)] = vertex
     }
@@ -104,8 +144,14 @@ class CFGBuilder {
     private val programCFG = mutableMapOf<Definition.FunctionDeclaration, CFGFragment>()
     private val registers: MutableMap<String, Register> = mutableMapOf()
 
-    fun fragment(function: Definition.FunctionDeclaration, init: CFGFragmentBuilder.() -> Unit) {
+    fun fragment(
+        function: Definition.FunctionDeclaration,
+        args: List<VariableAllocation>,
+        stackSpace: Int,
+        init: CFGFragmentBuilder.() -> Unit,
+    ) {
         val builder = CFGFragmentBuilder()
+        builder.prologueAndEpilogue(this, args, stackSpace)
         builder.init()
         programCFG[function] = builder.build()
     }

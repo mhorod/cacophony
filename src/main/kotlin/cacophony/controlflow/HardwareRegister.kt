@@ -1,5 +1,9 @@
 package cacophony.controlflow
 
+const val REGISTER_SIZE = 8
+
+val PRESERVED_REGISTERS = HardwareRegister.entries.filter { it != HardwareRegister.RSP && it.isCallPreserved }
+
 enum class HardwareRegister(val isCallPreserved: Boolean) {
     RAX(false),
     RBX(true),
@@ -39,9 +43,8 @@ enum class HardwareRegisterByte(private val hardwareRegister: HardwareRegister) 
     ;
 
     companion object {
-        fun fromRegister(register: HardwareRegister): HardwareRegisterByte {
-            return entries.find { it.hardwareRegister == register } ?: error("No byte register for $register")
-        }
+        fun fromRegister(register: HardwareRegister): HardwareRegisterByte =
+            entries.find { it.hardwareRegister == register } ?: error("No byte register for $register")
     }
 }
 

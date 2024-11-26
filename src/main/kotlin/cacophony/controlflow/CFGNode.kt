@@ -2,7 +2,9 @@ package cacophony.controlflow
 
 import cacophony.semantic.syntaxtree.Definition
 
-class CFGLabel
+class CFGLabel {
+    override fun toString(): String = super.toString().takeLast(9)
+}
 
 sealed interface SlotLabel
 

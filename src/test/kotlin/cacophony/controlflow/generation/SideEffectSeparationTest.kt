@@ -27,7 +27,6 @@ import cacophony.controlflow.generation.TestOperators.Companion.sub
 import cacophony.controlflow.generation.TestOperators.Companion.subNode
 import cacophony.controlflow.integer
 import cacophony.controlflow.rax
-import cacophony.controlflow.returnNode
 import cacophony.controlflow.writeRegister
 import cacophony.lit
 import cacophony.semantic.functionDeclaration
@@ -40,9 +39,9 @@ import org.junit.jupiter.params.provider.Arguments.argumentSet
 import org.junit.jupiter.params.provider.MethodSource
 
 /**
- * Test if side effects are separated correctly into separate vertices.
- * In case of clash the values should be evaluated from left to right.
- */
+* Test if side effects are separated correctly into separate vertices.
+* In case of clash the values should be evaluated from left to right.
+*/
 class SideEffectSeparationTest {
     @ParameterizedTest
     @MethodSource("binaryExpressions")
@@ -66,8 +65,8 @@ class SideEffectSeparationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("compute lhs") {
                             writeRegister("x", integer(5))
                         }
@@ -76,7 +75,7 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", writeRegister("x", integer(10)))
                         }
                     "add" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 makeNode(
@@ -85,7 +84,6 @@ class SideEffectSeparationTest {
                                 ),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(cfg, expectedCFG)
@@ -113,8 +111,8 @@ class SideEffectSeparationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("compute lhs") {
                             writeRegister("x", integer(5))
                         }
@@ -123,7 +121,7 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", readRegister("x"))
                         }
                     "add" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 makeNode(
@@ -132,7 +130,6 @@ class SideEffectSeparationTest {
                                 ),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(cfg, expectedCFG)
@@ -160,8 +157,8 @@ class SideEffectSeparationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("compute lhs") {
                             writeRegister("x", integer(5))
                         }
@@ -170,7 +167,7 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", writeRegister("x", integer(10)))
                         }
                     "add" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 makeNode(
@@ -179,7 +176,6 @@ class SideEffectSeparationTest {
                                 ),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(cfg, expectedCFG)
@@ -187,8 +183,8 @@ class SideEffectSeparationTest {
 
     companion object {
         @JvmStatic
-        fun binaryExpressions(): List<Arguments> {
-            return listOf(
+        fun binaryExpressions(): List<Arguments> =
+            listOf(
                 argumentSet("add", add, addNode),
                 argumentSet("sub", sub, subNode),
                 argumentSet("mul", mul, mulNode),
@@ -201,6 +197,5 @@ class SideEffectSeparationTest {
                 argumentSet("gt", gt, gtNode),
                 argumentSet("geq", geq, geqNode),
             )
-        }
     }
 }
