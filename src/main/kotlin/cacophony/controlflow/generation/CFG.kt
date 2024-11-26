@@ -69,7 +69,6 @@ internal class CFG {
                 if (vertex is GeneralCFGVertex.UnconditionalVertex && vertex.node is CFGNode.NoOp) {
                     val edges = ingoingEdges.getOrDefault(label, listOf())
                     val next = vertex.getConnections().first()
-                    println("Removing no-op at $label, replacing with $next")
                     if (next != label) {
                         edges.forEach { v ->
                             v.replaceLabel(label, next)
