@@ -69,15 +69,16 @@ internal class CFG {
                 if (vertex is GeneralCFGVertex.UnconditionalVertex && vertex.node is CFGNode.NoOp) {
                     val edges = ingoingEdges.getOrDefault(label, listOf())
                     val next = vertex.getConnections().first()
-                    edges.forEach { v ->
-                        v.replaceLabel(label, next)
+                    println("Removing no-op at $label, replacing with $next")
+                    if (next != label) {
+                        edges.forEach { v ->
+                            v.replaceLabel(label, next)
+                        }
+                        ingoingEdges[next]!!.addAll(edges)
+                        ingoingEdges.remove(label)
                     }
-                    ingoingEdges[next]!!.addAll(edges)
-                    ingoingEdges.remove(label)
                 }
             }
         }
-
-        cfg.values.removeAll { it.node is CFGNode.NoOp && it.label != entryLabel }
     }
 }
