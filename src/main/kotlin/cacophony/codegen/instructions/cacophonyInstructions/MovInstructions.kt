@@ -1,5 +1,6 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
+import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.MemoryAddress
 import cacophony.codegen.instructions.RegisterByte
@@ -9,7 +10,7 @@ import cacophony.controlflow.Register
 data class MovRegReg(
     val lhs: Register,
     val rhs: Register,
-) : Instruction {
+) : CopyInstruction {
     override val registersRead: Set<Register> = setOf(rhs)
     override val registersWritten: Set<Register> = setOf(lhs)
 

@@ -7,9 +7,9 @@ import cacophony.controlflow.*
 val sideEffectPatterns =
     listOf(
         // +=
-        AdditionAssignmentRegisterPattern,
         AdditionAssignmentMemoryPattern,
         ConstantAdditionAssignmentRegisterPattern,
+        AdditionAssignmentRegisterPattern,
         // -=
         SubtractionAssignmentRegisterPattern,
         SubtractionAssignmentMemoryPattern,
@@ -22,6 +22,7 @@ val sideEffectPatterns =
         ModuloAssignmentMemoryPattern,
         ReturnPattern,
         PushPattern,
+        PushRegPattern,
         PopPattern,
         // assignments
         RegisterAssignmentPattern,
@@ -181,6 +182,17 @@ object PushPattern : SideEffectPattern {
     val childLabel = ValueLabel()
 
     override val tree = CFGNode.Push(CFGNode.ValueSlot(childLabel))
+
+    override fun makeInstance(fill: SlotFill) =
+        instructions(fill) {
+            push(reg(childLabel))
+        }
+}
+
+object PushRegPattern : SideEffectPattern {
+    val childLabel = RegisterLabel()
+
+    override val tree = CFGNode.Push(CFGNode.RegisterSlot(childLabel))
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
