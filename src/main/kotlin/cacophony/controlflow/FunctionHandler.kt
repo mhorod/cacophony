@@ -66,6 +66,8 @@ interface FunctionHandler {
 
     fun generateAccessToFramePointer(other: FunctionDeclaration): CFGNode
 
+    fun allocateFrameVariable(): CFGNode.LValue
+
     fun generatePrologue(): List<CFGNode>
 
     fun generateEpilogue(): List<CFGNode>
@@ -152,6 +154,10 @@ class FunctionHandlerImpl(
                 ancestorFunctionHandlers.indexOfFirst { it.getFunctionDeclaration() == other } + 1,
             )
         }
+
+    override fun allocateFrameVariable(): CFGNode.LValue {
+        TODO("Not yet implemented")
+    }
 
     override fun generateVariableAccess(variable: Variable): CFGNode.LValue {
         val definedInDeclaration =
