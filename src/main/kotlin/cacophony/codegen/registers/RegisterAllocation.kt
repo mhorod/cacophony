@@ -17,8 +17,10 @@ data class RegisterAllocation(val successful: HardwareRegisterMapping, val spill
  * - there is a register interfering with itself
  * - interference or copying mappings contain register outside of liveness.allRegisters
  */
-fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation =
-    RegisterAllocator(liveness, allowedRegisters).allocate()
+fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation {
+    val allocation = RegisterAllocator(liveness, allowedRegisters).allocate()
+    allocation.validate(liveness, allowedRegisters)
+}
 
 class RegisterAllocator(private val liveness: Liveness, private val allowedRegisters: Set<HardwareRegister>) {
     fun allocate(): RegisterAllocation {

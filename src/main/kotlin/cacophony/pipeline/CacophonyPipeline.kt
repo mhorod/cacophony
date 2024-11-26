@@ -7,7 +7,6 @@ import cacophony.codegen.linearization.linearize
 import cacophony.codegen.patterns.cacophonyPatterns.instructions
 import cacophony.codegen.registers.Liveness
 import cacophony.codegen.registers.RegisterAllocation
-import cacophony.codegen.registers.validate
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.generateFunctionHandlers
 import cacophony.controlflow.generation.ProgramCFG
@@ -212,7 +211,6 @@ class CacophonyPipeline(
                 cacophony.codegen.registers.allocateRegisters(liveness, allGPRs)
             }
         logger?.logSuccessfulRegisterAllocation(allocatedRegisters)
-        allocatedRegisters.forEach { (f, ra) -> ra.validate(liveness[f] ?: error("liveness missing for function $f"), allGPRs) }
         return allocatedRegisters
     }
 
