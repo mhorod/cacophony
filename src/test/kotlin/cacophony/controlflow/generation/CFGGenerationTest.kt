@@ -70,9 +70,9 @@ class CFGGenerationTest {
                         // if
                         variableUse("x"),
                         // then
-                        returnStatement(lit(11)),
+                        lit(11),
                         // else
-                        returnStatement(lit(22)),
+                        lit(22),
                     ),
                 ),
             )
@@ -81,21 +81,21 @@ class CFGGenerationTest {
         val actualCFG = pipeline.generateControlFlowGraph(fDef)
         println(actualCFG)
         // then
-//        val expectedCFG =
-//            cfg {
-//                fragment(fDef, listOf(VariableAllocation.OnStack(0)), 8) {
-//                    "bodyEntry" does jump("condition") { writeRegister(virtualRegister("x"), integer(1)) }
-//                    "condition" does
-//                        conditional("true", "false") {
-//                            registerUse(virtualRegister("x"))
-//                        }
-//                    "true" does jump("returnTrue") { writeRegister(rax, integer(11)) }
-//                    "false" does jump("returnFalse") { writeRegister(rax, integer(22)) }
-//                    "returnTrue" does final { returnNode }
-//                    "returnFalse" does final { returnNode }
-//                }
-//            }
-//        assertEquivalent(actualCFG, expectedCFG)
+        val expectedCFG =
+            cfg {
+                fragment(fDef, listOf(VariableAllocation.OnStack(0)), 8) {
+                    "bodyEntry" does jump("condition") { writeRegister(virtualRegister("x"), integer(1)) }
+                    "condition" does
+                        conditional("true", "false") {
+                            registerUse(virtualRegister("x"))
+                        }
+                    "true" does jump("end") { writeRegister(virtualRegister("t"), integer(11)) }
+                    "false" does jump("end") { writeRegister(virtualRegister("t"), integer(22)) }
+                    "end" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("t"))) }
+                }
+            }
+        println(expectedCFG)
+        assertEquivalent(actualCFG, expectedCFG)
     }
 
     @Test
