@@ -20,6 +20,7 @@ data class RegisterAllocation(val successful: HardwareRegisterMapping, val spill
 fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation {
     val allocation = RegisterAllocator(liveness, allowedRegisters).allocate()
     allocation.validate(liveness, allowedRegisters)
+    return allocation
 }
 
 class RegisterAllocator(private val liveness: Liveness, private val allowedRegisters: Set<HardwareRegister>) {
@@ -30,8 +31,7 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
 
     init {
         for (mapping in listOf(liveness.interference, liveness.copying)) {
-            if (!liveness.allRegisters.containsAll(mapping.keys union mapping.values.flatten()))
-                throw IllegalArgumentException("Unexpected register")
+            require(liveness.allRegisters.containsAll(mapping.keys union mapping.values.flatten())) { "Unexpected register" }
         }
     }
 
