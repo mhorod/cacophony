@@ -14,8 +14,10 @@ import cacophony.controlflow.*
 val valuePatterns =
     listOf(
         ConstantPattern,
+        RegisterUsePattern,
         // arithmetic
         AdditionPattern,
+        ConstantSubtractionPattern,
         SubtractionPattern,
         MultiplicationPattern,
         DivisionPattern,
@@ -29,6 +31,12 @@ val valuePatterns =
         GreaterValuePattern,
         GreaterEqualValuePattern,
         LogicalNotValuePattern,
+        // assignment
+        AdditionAssignmentRegisterValuePattern,
+        SubtractionAssignmentRegisterValuePattern,
+        MultiplicationAssignmentRegisterValuePattern,
+        DivisionAssignmentRegisterValuePattern,
+        ModuloAssignmentRegisterValuePattern,
     )
 
 // for now, we can always dump a constant into a register and call it a value
@@ -41,6 +49,16 @@ object ConstantPattern : ValuePattern {
     override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
         instructions(fill) {
             mov(destination, const(label))
+        }
+}
+
+object RegisterUsePattern : ValuePattern {
+    private val label = RegisterLabel()
+    override val tree = CFGNode.RegisterSlot(label)
+
+    override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
+        instructions(fill) {
+            mov(destination, reg(label))
         }
 }
 
@@ -61,6 +79,20 @@ object SubtractionPattern : ValuePattern, BinaryOpPattern() {
         instructions(fill) {
             mov(destination, reg(lhsLabel))
             sub(destination, reg(rhsLabel))
+        }
+}
+
+object ConstantSubtractionPattern : ValuePattern {
+    private val lhsLabel = ValueLabel()
+    private val rhsLabel = ConstantLabel()
+    private val lhsSlot = CFGNode.ValueSlot(lhsLabel)
+    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel, { true })
+    override val tree = lhsSlot sub rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            mov(destination, reg(lhsLabel))
+            sub(destination, const(rhsLabel))
         }
 }
 
@@ -160,5 +192,59 @@ object LogicalNotValuePattern : ValuePattern, UnaryOpPattern() {
         instructions(fill) {
             mov(destination, reg(childLabel))
             xor(destination, 1)
+        }
+}
+
+object AdditionAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTemplate() {
+    override val tree = lhsSlot addeq rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            add(reg(lhsRegisterLabel), reg(rhsLabel))
+            mov(destination, reg(lhsRegisterLabel))
+        }
+}
+
+object SubtractionAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTemplate() {
+    override val tree = lhsSlot subeq rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            sub(reg(lhsRegisterLabel), reg(rhsLabel))
+            mov(destination, reg(lhsRegisterLabel))
+        }
+}
+
+object MultiplicationAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTemplate() {
+    override val tree = lhsSlot muleq rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            imul(reg(lhsRegisterLabel), reg(rhsLabel))
+            mov(destination, reg(lhsRegisterLabel))
+        }
+}
+
+object DivisionAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTemplate() {
+    override val tree = lhsSlot diveq rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            mov(rax, reg(lhsRegisterLabel))
+            cqo()
+            idiv(reg(rhsLabel))
+            mov(destination, rax)
+        }
+}
+
+object ModuloAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTemplate() {
+    override val tree = lhsSlot modeq rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            mov(rax, reg(lhsRegisterLabel))
+            cqo()
+            idiv(reg(rhsLabel))
+            mov(destination, rdx)
         }
 }

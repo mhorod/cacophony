@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
     val diagnostics = CacophonyDiagnostics(input)
 
     try {
-        CacophonyPipeline(diagnostics, CacophonyLogger()).process(input)
+        CacophonyPipeline(diagnostics, CacophonyLogger()).generateAsm(input)
     } catch (t: CompileException) {
         println(diagnostics.extractErrors().joinToString("\n"))
     }

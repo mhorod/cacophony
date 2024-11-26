@@ -21,6 +21,7 @@ class CacophonyInstructionCoveringTest {
         val instr2 = mockk<Instruction>()
         val match2 = Match({ _ -> listOf(instr2) }, emptyMap(), 2)
         every { instrMatcher.findMatchesForSideEffects(root) } returns setOf(match1, match2)
+        every { instrMatcher.findMatchesForValue(root, any()) } returns setOf(match1)
 
         assertThat(instrCovering.coverWithInstructions(root)).containsExactly(instr2)
     }
@@ -56,6 +57,8 @@ class CacophonyInstructionCoveringTest {
         val instr1 = mockk<Instruction>()
         val match1 = Match({ _ -> listOf(instr1) }, mapOf(ValueLabel() to node2, ValueLabel() to node3), 1)
         every { instrMatcher.findMatchesForSideEffects(root) } returns setOf(match1)
+        every { instrMatcher.findMatchesForValue(root, any()) } returns setOf(match1)
+
         val instr2 = mockk<Instruction>()
         val match2 = Match({ _ -> listOf(instr2) }, emptyMap(), 1)
         every { instrMatcher.findMatchesForValue(node2, any()) } returns setOf(match2)
@@ -90,6 +93,8 @@ class CacophonyInstructionCoveringTest {
         val instr1 = mockk<Instruction>()
         val match1 = Match({ _ -> listOf(instr1) }, mapOf(ValueLabel() to node2, ValueLabel() to node3), 1)
         every { instrMatcher.findMatchesForSideEffects(root) } returns setOf(match1)
+        every { instrMatcher.findMatchesForValue(root, any()) } returns setOf(match1)
+
         val instr2 = mockk<Instruction>()
         val match2 = Match({ _ -> listOf(instr2) }, emptyMap(), 1)
         every { instrMatcher.findMatchesForValue(node2, any()) } returns setOf(match2)

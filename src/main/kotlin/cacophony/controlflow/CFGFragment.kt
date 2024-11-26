@@ -48,12 +48,18 @@ private fun cfgGraphvizVertices(cfg: CFGFragment, nextNodeId: Int): String {
 
     cfg.vertices.forEach { (label, vertex) ->
         val id = ids[label]
+        val nodeLabel =
+            when (vertex) {
+                is CFGVertex.Conditional -> "Conditional ${vertex.tree}"
+                is CFGVertex.Jump -> "Jump ${vertex.tree}"
+                is CFGVertex.Final -> "Final ${vertex.tree}"
+            }
         if (label == cfg.initialLabel) {
-            builder.append("  node$id [label=\"${vertex.tree}\", style=\"filled\", fillcolor=\"green\"]\n")
+            builder.append("  node$id [label=\"${nodeLabel}\", style=\"filled\", fillcolor=\"green\"]\n")
         } else if (vertex is CFGVertex.Final) {
-            builder.append("  node$id [label=\"${vertex.tree}\", style=\"filled\", fillcolor=\"red\"]\n")
+            builder.append("  node$id [label=\"${nodeLabel}\", style=\"filled\", fillcolor=\"red\"]\n")
         } else {
-            builder.append("  node$id [label=\"${vertex.tree}\"]\n")
+            builder.append("  node$id [label=\"${nodeLabel}\"]\n")
         }
 
         when (vertex) {

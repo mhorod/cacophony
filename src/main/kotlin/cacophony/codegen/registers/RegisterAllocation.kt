@@ -17,8 +17,11 @@ data class RegisterAllocation(val successful: HardwareRegisterMapping, val spill
  * - there is a register interfering with itself
  * - interference or copying mappings contain register outside of liveness.allRegisters
  */
-fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation =
-    RegisterAllocator(liveness, allowedRegisters).allocate()
+fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation {
+    val allocation = RegisterAllocator(liveness, allowedRegisters).allocate()
+    allocation.validate(liveness, allowedRegisters)
+    return allocation
+}
 
 class RegisterAllocator(private val liveness: Liveness, private val allowedRegisters: Set<HardwareRegister>) {
     fun allocate(): RegisterAllocation {
@@ -28,8 +31,7 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
 
     init {
         for (mapping in listOf(liveness.interference, liveness.copying)) {
-            if (!liveness.allRegisters.containsAll(mapping.keys union mapping.values.flatten()))
-                throw IllegalArgumentException("Unexpected register")
+            require(liveness.allRegisters.containsAll(mapping.keys union mapping.values.flatten())) { "Unexpected register" }
         }
     }
 
@@ -94,14 +96,15 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
     private fun generateFirstFitOrder() {
         while (registers.isNotEmpty()) {
             while (true) {
-                val x = registers.find { neighbors(it).size < k && registerToCoalesce(it) == null }?.also { deposit(it) }
-                if (x != null) continue
                 val y =
                     registers
                         .map { it to registerToCoalesce(it) }
                         .firstOrNull { it.second != null }
                         ?.also { (a, b) -> coalesce(a, b!!) }
-                if (y == null) break
+                if (y != null) continue
+
+                val x = registers.find { neighbors(it).size < k && registerToCoalesce(it) == null }?.also { deposit(it) }
+                if (x == null) break
             }
             if (registers.isNotEmpty())
                 deposit(registers.minBy { if (it is Register.FixedRegister) Int.MAX_VALUE else neighbors(it).size })
@@ -154,5 +157,23 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
             v.forEach { result.getOrPut(it) { mutableSetOf() }.add(k) }
         }
         return result
+    }
+}
+
+fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<HardwareRegister>) {
+    require(spills union successful.keys == liveness.allRegisters) { "Spills and successful registers do not cover all registers" }
+    require((spills intersect successful.keys).isEmpty()) { "Spills and successful registers intersect" }
+    require(successful.values.all { it in allowedRegisters }) { "Not allowed register was used" }
+
+    for ((reg1, interferences) in liveness.interference.entries) {
+        for (reg2 in interferences) {
+            val hw1 = successful[reg1]
+            val hw2 = successful[reg2]
+            require(hw1 == null || hw2 == null || hw1 != hw2)
+        }
+    }
+
+    for (fixedRegister in liveness.allRegisters.filterIsInstance<Register.FixedRegister>()) {
+        require(successful.containsKey(fixedRegister)) { "Fixed register was not allocated" }
     }
 }

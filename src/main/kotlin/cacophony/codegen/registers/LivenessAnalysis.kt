@@ -49,7 +49,9 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
 
         allInstructions.forEach { instruction ->
             nextInstructions[instruction]!!
-                .flatMap { liveIn[it]!!.toList() }
+                .flatMap {
+                    liveIn[it]!!.toList()
+                }
                 .forEach {
                     if (!liveOut[instruction]!!.contains(it)) {
                         fixedPointObtained = false

@@ -12,7 +12,7 @@ data class AddRegReg(
 ) : InstructionTemplates.BinaryRegRegInstruction(
         lhs,
         rhs,
-        "ADD",
+        "add",
     )
 
 data class AddRegImm(
@@ -21,7 +21,7 @@ data class AddRegImm(
 ) : InstructionTemplates.BinaryRegConstInstruction(
         lhs,
         imm,
-        "ADD",
+        "add",
     )
 
 data class SubRegReg(
@@ -30,7 +30,7 @@ data class SubRegReg(
 ) : InstructionTemplates.BinaryRegRegInstruction(
         lhs,
         rhs,
-        "SUB",
+        "sub",
     )
 
 data class SubRegImm(
@@ -39,7 +39,7 @@ data class SubRegImm(
 ) : InstructionTemplates.BinaryRegConstInstruction(
         lhs,
         imm,
-        "SUB",
+        "sub",
     )
 
 data class XorRegReg(
@@ -48,7 +48,7 @@ data class XorRegReg(
 ) : InstructionTemplates.BinaryRegRegInstruction(
         lhs,
         rhs,
-        "XOR",
+        "xor",
     )
 
 data class XorRegImm(
@@ -57,7 +57,7 @@ data class XorRegImm(
 ) : InstructionTemplates.BinaryRegConstInstruction(
         lhs,
         imm,
-        "XOR",
+        "xor",
     )
 
 data class IMulRegReg(
@@ -66,14 +66,14 @@ data class IMulRegReg(
 ) : InstructionTemplates.BinaryRegRegInstruction(
         lhs,
         rhs,
-        "IMUL",
+        "imul",
     )
 
 class Cqo : Instruction {
     override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RAX))
     override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RDX))
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "CQO"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "cqo"
 }
 
 data class IDiv(val reg: Register) : Instruction {
@@ -83,18 +83,18 @@ data class IDiv(val reg: Register) : Instruction {
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
-        return "IDIV $hardwareReg"
+        return "idiv $hardwareReg"
     }
 }
 
-data class Sete(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "SETE")
+data class Sete(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "sete")
 
-data class Setne(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "SETNE")
+data class Setne(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "setne")
 
-data class Setl(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "SETL")
+data class Setl(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "setl")
 
-data class Setle(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "SETLE")
+data class Setle(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "setle")
 
-data class Setg(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "SETG")
+data class Setg(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "setg")
 
-data class Setge(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "SETGE")
+data class Setge(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "setge")

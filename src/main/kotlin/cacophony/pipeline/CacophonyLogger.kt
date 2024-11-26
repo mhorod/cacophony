@@ -1,5 +1,11 @@
 package cacophony.pipeline
 
+import cacophony.codegen.linearization.BasicBlock
+import cacophony.codegen.registers.Liveness
+import cacophony.codegen.registers.RegisterAllocation
+import cacophony.controlflow.CFGFragment
+import cacophony.controlflow.Register
+import cacophony.controlflow.programCfgToGraphviz
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
@@ -10,6 +16,7 @@ import cacophony.semantic.ResolvedVariables
 import cacophony.semantic.TypeCheckingResult
 import cacophony.semantic.VariableUseType
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.syntaxtree.Definition
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.TreePrinter
@@ -105,4 +112,62 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     }
 
     override fun logFailedFunctionAnalysis() = println("Function analysis failed :(")
+
+    override fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDeclaration, RegisterAllocation>) {
+        println("Register allocation successful :D")
+        allocatedRegisters.forEach { (function, allocation) ->
+            println("  $function (${function.identifier}/${function.arguments.size})")
+            println("Successful registers:")
+            allocation.successful.forEach { (variable, register) ->
+                println("  $variable -> $register")
+            }
+            println("Spilled registers:")
+            allocation.spills.forEach { spill ->
+                println("  $spill")
+            }
+        }
+    }
+
+    override fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDeclaration, CFGFragment>) {
+        println("Control flow graph generation successful :D")
+        println(programCfgToGraphviz(cfg))
+    }
+
+    override fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>) {
+        println("Instruction covering successful :D")
+        covering.forEach { (function, blocks) ->
+            println("  $function (${function.identifier}/${function.arguments.size})")
+            blocks.forEach { block ->
+                println("   ${block.label()}")
+                block.instructions().forEach { instruction ->
+                    println("     $instruction")
+                }
+            }
+        }
+    }
+
+    override fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDeclaration, Liveness>) {
+        println("Liveness generation successfull :D")
+        liveness.forEach { (function, liveness) ->
+            println("  Function $function liveness: ")
+            println("        Interference:")
+            liveness.interference.forEach { (k, v) ->
+                if (v.isNotEmpty())
+                    println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
+            }
+
+            println("        Copying:")
+            liveness.copying.forEach { (k, v) ->
+                if (v.isNotEmpty())
+                    println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
+            }
+        }
+    }
+
+    private fun shortRegisterName(register: Register?) =
+        when (register) {
+            null -> "null"
+            is Register.FixedRegister -> register.hardwareRegister.name
+            is Register.VirtualRegister -> "$register".split("$").last()
+        }
 }

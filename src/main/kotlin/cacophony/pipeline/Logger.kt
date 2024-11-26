@@ -1,9 +1,14 @@
 package cacophony.pipeline
 
+import cacophony.codegen.linearization.BasicBlock
+import cacophony.codegen.registers.Liveness
+import cacophony.codegen.registers.RegisterAllocation
+import cacophony.controlflow.CFGFragment
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.semantic.*
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.syntaxtree.Definition
 import cacophony.token.Token
 
 interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymbol>> {
@@ -42,4 +47,12 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
     fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult)
 
     fun logFailedFunctionAnalysis()
+
+    fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDeclaration, RegisterAllocation>)
+
+    fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDeclaration, CFGFragment>)
+
+    fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>)
+
+    fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDeclaration, Liveness>)
 }

@@ -22,7 +22,7 @@ enum class HardwareRegister(val isCallPreserved: Boolean) {
     R14(true),
     R15(true), ;
 
-    override fun toString(): String = name
+    override fun toString(): String = name.lowercase()
 }
 
 enum class HardwareRegisterByte(private val hardwareRegister: HardwareRegister) {

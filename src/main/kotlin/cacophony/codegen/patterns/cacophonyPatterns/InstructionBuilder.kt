@@ -154,6 +154,8 @@ class InstructionBuilder(val slotFill: SlotFill) {
 
     fun mem(base: Register) = MemoryAddress(base, null, null, null)
 
+    fun memWithDisplacement(base: Register, displacement: Int) = MemoryAddress(base, null, null, displacement)
+
     fun reg(register: RegisterLabel) = slotFill.registerFill.getValue(register)
 
     fun reg(register: ValueLabel) = slotFill.valueFill.getValue(register)
