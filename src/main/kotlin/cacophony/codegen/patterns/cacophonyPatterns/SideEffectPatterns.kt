@@ -6,10 +6,14 @@ import cacophony.controlflow.*
 
 val sideEffectPatterns =
     listOf(
+        // +=
         AdditionAssignmentRegisterPattern,
         AdditionAssignmentMemoryPattern,
+        ConstantAdditionAssignmentRegisterPattern,
+        // -=
         SubtractionAssignmentRegisterPattern,
         SubtractionAssignmentMemoryPattern,
+        ConstantSubtractionAssignmentRegisterPattern,
         MultiplicationAssignmentRegisterPattern,
         MultiplicationAssignmentMemoryPattern,
         DivisionAssignmentRegisterPattern,
@@ -19,7 +23,11 @@ val sideEffectPatterns =
         ReturnPattern,
         PushPattern,
         PopPattern,
+        // assignments
         RegisterAssignmentPattern,
+        RegisterToMemoryWithAddedDisplacementAssignmentPattern,
+        RegisterToMemoryWithSubtractedDisplacementAssignmentPattern,
+        RegisterToMemoryAssignmentPattern,
         MemoryAssignmentPattern,
     )
 
@@ -44,6 +52,19 @@ object AdditionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTemp
         }
 }
 
+object ConstantAdditionAssignmentRegisterPattern : SideEffectPattern {
+    private val lhsLabel = RegisterLabel()
+    private val rhsLabel = ConstantLabel()
+    private val lhsSlot = CFGNode.RegisterSlot(lhsLabel)
+    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel, { true })
+    override val tree = lhsSlot addeq rhsSlot
+
+    override fun makeInstance(fill: SlotFill) =
+        instructions(fill) {
+            add(reg(lhsLabel), const(rhsLabel))
+        }
+}
+
 object SubtractionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
     override val tree = lhsSlot subeq rhsSlot
 
@@ -62,6 +83,19 @@ object SubtractionAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentT
             mov(temporaryRegister, mem(reg(lhsLabel)))
             sub(temporaryRegister, reg(rhsLabel))
             mov(mem(reg(lhsLabel)), temporaryRegister)
+        }
+}
+
+object ConstantSubtractionAssignmentRegisterPattern : SideEffectPattern {
+    private val lhsLabel = RegisterLabel()
+    private val rhsLabel = ConstantLabel()
+    private val lhsSlot = CFGNode.RegisterSlot(lhsLabel)
+    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel, { true })
+    override val tree = lhsSlot subeq rhsSlot
+
+    override fun makeInstance(fill: SlotFill) =
+        instructions(fill) {
+            sub(reg(lhsLabel), const(rhsLabel))
         }
 }
 
@@ -182,5 +216,58 @@ object MemoryAssignmentPattern : SideEffectPattern, MemoryAssignmentTemplate() {
             val temporaryRegister = Register.VirtualRegister()
             mov(temporaryRegister, reg(rhsLabel))
             mov(mem(reg(lhsLabel)), temporaryRegister)
+        }
+}
+
+object RegisterToMemoryAssignmentPattern : SideEffectPattern {
+    private val lhsLabel = ValueLabel()
+    private val rhsLabel = RegisterLabel()
+    private val lhsSlot = CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel))
+    private val rhsSlot = CFGNode.RegisterSlot(rhsLabel)
+    override val tree = lhsSlot assign rhsSlot
+
+    override fun makeInstance(fill: SlotFill) =
+        instructions(fill) {
+            mov(mem(reg(lhsLabel)), reg(rhsLabel))
+        }
+}
+
+object RegisterToMemoryWithAddedDisplacementAssignmentPattern : SideEffectPattern {
+    private val lhsLabel = ValueLabel()
+    private val displacementLabel = ConstantLabel()
+    private val rhsLabel = RegisterLabel()
+
+    private val lhsSlot =
+        memoryAccess(
+            CFGNode.ValueSlot(lhsLabel)
+                add
+                CFGNode.ConstantSlot(displacementLabel, { it in listOf(1, 2, 4, 8) }),
+        )
+    private val rhsSlot = CFGNode.RegisterSlot(rhsLabel)
+    override val tree = lhsSlot assign rhsSlot
+
+    override fun makeInstance(fill: SlotFill) =
+        instructions(fill) {
+            mov(memWithDisplacement(reg(lhsLabel), const(displacementLabel)), reg(rhsLabel))
+        }
+}
+
+object RegisterToMemoryWithSubtractedDisplacementAssignmentPattern : SideEffectPattern {
+    private val lhsLabel = ValueLabel()
+    private val displacementLabel = ConstantLabel()
+    private val rhsLabel = RegisterLabel()
+
+    private val lhsSlot =
+        memoryAccess(
+            CFGNode.ValueSlot(lhsLabel)
+                sub
+                CFGNode.ConstantSlot(displacementLabel, { it in listOf(1, 2, 4, 8) }),
+        )
+    private val rhsSlot = CFGNode.RegisterSlot(rhsLabel)
+    override val tree = lhsSlot assign rhsSlot
+
+    override fun makeInstance(fill: SlotFill) =
+        instructions(fill) {
+            mov(memWithDisplacement(reg(lhsLabel), -const(displacementLabel)), reg(rhsLabel))
         }
 }

@@ -27,10 +27,9 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
     }
 
     override fun coverWithInstructions(node: CFGNode): List<Instruction> {
-        if (node is CFGNode.Value) {
-            return coverWithInstructionsForValue(node, Register.VirtualRegister())
-        }
-        val matches = instructionMatcher.findMatchesForSideEffects(node)
+        val matches =
+            instructionMatcher.findMatchesForSideEffects(node)
+                .union(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()))
         val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }

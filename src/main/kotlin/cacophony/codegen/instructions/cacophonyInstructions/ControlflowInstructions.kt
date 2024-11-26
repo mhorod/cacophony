@@ -14,7 +14,7 @@ data class PushReg(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
-        return "PUSH $hardwareReg"
+        return "push $hardwareReg"
     }
 }
 
@@ -40,7 +40,7 @@ data class TestRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
-        return "test $lhsHardwareReg $rhsHardwareReg"
+        return "test $lhsHardwareReg, $rhsHardwareReg"
     }
 }
 

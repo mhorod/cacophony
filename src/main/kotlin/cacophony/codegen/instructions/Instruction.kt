@@ -19,7 +19,9 @@ enum class RegisterSize {
     QWORD,
 }
 
-data class MemoryAddress(val base: Register, val index: Register?, val scale: Int?, val displacement: Int?)
+data class MemoryAddress(val base: Register, val index: Register?, val scale: Int?, val displacement: Int?) {
+    fun registers() = setOf(base, index).filterNotNull().toSet()
+}
 
 interface Instruction {
     val registersRead: Set<Register>

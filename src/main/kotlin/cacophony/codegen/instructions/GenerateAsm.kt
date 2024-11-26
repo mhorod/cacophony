@@ -7,5 +7,7 @@ fun generateAsm(instruction: Instruction, registerAllocation: RegisterAllocation
 }
 
 fun generateAsm(instructions: List<Instruction>, registerAllocation: RegisterAllocation): String {
-    return instructions.joinToString("\n") { generateAsm(it, registerAllocation) }
+    return instructions.map { generateAsm(it, registerAllocation) }
+        .filter(String::isNotEmpty)
+        .joinToString("\n")
 }

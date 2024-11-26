@@ -9,8 +9,9 @@ fun MemoryAddress.toAsm(hardwareRegisterMapping: HardwareRegisterMapping): Strin
     if (index != null && scale != null) {
         builder.append("+$scale*${hardwareRegisterMapping[index]}")
     }
-    if (displacement != null) {
-        builder.append("+$displacement")
+    if (displacement != null && displacement != 0) {
+        val sign = if (displacement < 0) "" else "+"
+        builder.append("$sign$displacement")
     }
     builder.append("]")
     return builder.toString()

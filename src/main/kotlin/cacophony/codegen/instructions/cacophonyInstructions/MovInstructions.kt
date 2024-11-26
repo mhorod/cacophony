@@ -16,6 +16,9 @@ data class MovRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
+        if (lhsHardwareReg == rhsHardwareReg) {
+            return ""
+        }
         return "mov $lhsHardwareReg, $rhsHardwareReg"
     }
 }
@@ -37,7 +40,7 @@ data class MovRegMem(
     val lhs: Register,
     val mem: MemoryAddress,
 ) : Instruction {
-    override val registersRead: Set<Register> = setOf()
+    override val registersRead: Set<Register> = mem.registers()
     override val registersWritten: Set<Register> = setOf(lhs)
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
@@ -50,7 +53,7 @@ data class MovMemReg(
     val mem: MemoryAddress,
     val rhs: Register,
 ) : Instruction {
-    override val registersRead: Set<Register> = setOf(rhs)
+    override val registersRead: Set<Register> = setOf(rhs).union(mem.registers())
     override val registersWritten: Set<Register> = setOf()
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
