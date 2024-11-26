@@ -4,31 +4,12 @@ import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.random.Random
 
 class RegisterAllocationTest {
-    private fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<HardwareRegister>) {
-        assertThat(spills union successful.keys).isEqualTo(liveness.allRegisters)
-        assertThat(spills intersect successful.keys).isEmpty()
-        assertThat(successful.values).isSubsetOf(allowedRegisters)
-
-        for ((reg1, interferences) in liveness.interference.entries) {
-            for (reg2 in interferences) {
-                val hw1 = successful[reg1]
-                val hw2 = successful[reg2]
-                assertTrue(hw1 == null || hw2 == null || hw1 != hw2)
-            }
-        }
-
-        for (fixedRegister in liveness.allRegisters.filterIsInstance<Register.FixedRegister>()) {
-            assertThat(successful[fixedRegister]).isEqualTo(fixedRegister.hardwareRegister)
-        }
-    }
-
     private fun allocateAndValidate(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation =
         allocateRegisters(liveness, allowedRegisters).apply { validate(liveness, allowedRegisters) }
 

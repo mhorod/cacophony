@@ -4,7 +4,6 @@ import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
 import cacophony.utils.getTransitiveClosure
-import org.junit.jupiter.api.Assertions.assertTrue
 
 /**
  * @param successful Map describing the allocation of registers that made it into hardware registers
@@ -167,7 +166,7 @@ fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<Hardwa
         for (reg2 in interferences) {
             val hw1 = successful[reg1]
             val hw2 = successful[reg2]
-            assertTrue(hw1 == null || hw2 == null || hw1 != hw2)
+            require(hw1 == null || hw2 == null || hw1 != hw2)
         }
     }
 

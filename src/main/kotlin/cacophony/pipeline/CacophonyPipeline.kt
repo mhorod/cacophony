@@ -207,7 +207,10 @@ class CacophonyPipeline(
     fun allocateRegisters(
         liveness: Map<Definition.FunctionDeclaration, Liveness>,
     ): Map<Definition.FunctionDeclaration, RegisterAllocation> {
-        val allocatedRegisters = liveness.mapValues { (_, liveness) -> cacophony.codegen.registers.allocateRegisters(liveness, allGPRs) }
+        val allocatedRegisters =
+            liveness.mapValues { (_, liveness) ->
+                cacophony.codegen.registers.allocateRegisters(liveness, allGPRs)
+            }
         logger?.logSuccessfulRegisterAllocation(allocatedRegisters)
         allocatedRegisters.forEach { (f, ra) -> ra.validate(liveness[f] ?: error("liveness missing for function $f"), allGPRs) }
         return allocatedRegisters
