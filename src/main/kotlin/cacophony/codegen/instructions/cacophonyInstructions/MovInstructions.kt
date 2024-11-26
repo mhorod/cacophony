@@ -16,7 +16,7 @@ data class MovRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
-        return "MOV $lhsHardwareReg $rhsHardwareReg"
+        return "mov $lhsHardwareReg, $rhsHardwareReg"
     }
 }
 
@@ -29,7 +29,7 @@ data class MovRegImm(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
-        return "MOV $lhsHardwareReg $imm"
+        return "mov $lhsHardwareReg, $imm"
     }
 }
 
@@ -42,7 +42,7 @@ data class MovRegMem(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
-        return "MOV $lhsHardwareReg ${mem.toAsm()}"
+        return "mov $lhsHardwareReg, ${mem.toAsm(hardwareRegisterMapping)}"
     }
 }
 
@@ -55,7 +55,7 @@ data class MovMemReg(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
-        return "MOV ${mem.toAsm()} $rhsHardwareReg"
+        return "mov ${mem.toAsm(hardwareRegisterMapping)}, $rhsHardwareReg"
     }
 }
 
@@ -66,6 +66,6 @@ data class MovzxReg64Reg8(val lhs: Register, val rhs: RegisterByte) : Instructio
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = rhs.map(hardwareRegisterMapping)
-        return "MOVZX $lhsHardwareReg $rhsHardwareReg"
+        return "movzx $lhsHardwareReg, $rhsHardwareReg"
     }
 }

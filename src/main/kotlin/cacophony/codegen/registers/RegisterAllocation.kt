@@ -4,6 +4,7 @@ import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
 import cacophony.utils.getTransitiveClosure
+import org.junit.jupiter.api.Assertions.assertTrue
 
 /**
  * @param successful Map describing the allocation of registers that made it into hardware registers
@@ -154,5 +155,23 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
             v.forEach { result.getOrPut(it) { mutableSetOf() }.add(k) }
         }
         return result
+    }
+}
+
+fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<HardwareRegister>) {
+    require(spills union successful.keys == liveness.allRegisters) { "Spills and successful registers do not cover all registers" }
+    require((spills intersect successful.keys).isEmpty()) { "Spills and successful registers intersect" }
+    require(successful.values.all { it in allowedRegisters }) { "Not allowed register was used" }
+
+    for ((reg1, interferences) in liveness.interference.entries) {
+        for (reg2 in interferences) {
+            val hw1 = successful[reg1]
+            val hw2 = successful[reg2]
+            assertTrue(hw1 == null || hw2 == null || hw1 != hw2)
+        }
+    }
+
+    for (fixedRegister in liveness.allRegisters.filterIsInstance<Register.FixedRegister>()) {
+        require(successful.containsKey(fixedRegister)) { "Fixed register was not allocated" }
     }
 }

@@ -26,7 +26,7 @@ data class Pop(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
-        return "POP $hardwareReg"
+        return "pop $hardwareReg"
     }
 }
 
@@ -40,7 +40,7 @@ data class TestRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
-        return "TEST $lhsHardwareReg $rhsHardwareReg"
+        return "test $lhsHardwareReg $rhsHardwareReg"
     }
 }
 
@@ -54,27 +54,27 @@ data class CmpRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
-        return "CMP $lhsHardwareReg $rhsHardwareReg"
+        return "cmp $lhsHardwareReg, $rhsHardwareReg"
     }
 }
 
-data class Jmp(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JMP")
+data class Jmp(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jmp")
 
-data class Je(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JE")
+data class Je(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "je")
 
-data class Jne(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JNE")
+data class Jne(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jne")
 
-data class Jl(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JL")
+data class Jl(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jl")
 
-data class Jle(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JLE")
+data class Jle(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jle")
 
-data class Jg(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JG")
+data class Jg(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jg")
 
-data class Jge(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JGE")
+data class Jge(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jge")
 
-data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JZ")
+data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jz")
 
-data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "JNZ")
+data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
 data class Call(
     val label: BlockLabel,
@@ -82,12 +82,12 @@ data class Call(
     override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
     override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "CALL ${label.name}"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${label.name}"
 }
 
 class Ret : Instruction {
     override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
     override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "RET"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "ret"
 }

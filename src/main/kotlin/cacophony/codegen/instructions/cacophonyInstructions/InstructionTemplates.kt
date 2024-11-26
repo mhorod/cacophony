@@ -18,7 +18,7 @@ class InstructionTemplates {
         override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
             val lhsHardwareReg = hardwareRegisterMapping[lhs]
             val rhsHardwareReg = hardwareRegisterMapping[rhs]
-            return "$op $lhsHardwareReg $rhsHardwareReg"
+            return "$op $lhsHardwareReg, $rhsHardwareReg"
         }
     }
 
@@ -32,7 +32,7 @@ class InstructionTemplates {
 
         override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
             val lhsHardwareReg = hardwareRegisterMapping[lhs]
-            return "$op $lhsHardwareReg $imm"
+            return "$op $lhsHardwareReg, $imm"
         }
     }
 

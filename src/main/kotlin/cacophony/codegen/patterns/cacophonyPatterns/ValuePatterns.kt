@@ -14,6 +14,7 @@ import cacophony.controlflow.*
 val valuePatterns =
     listOf(
         ConstantPattern,
+        RegisterUsePattern,
         // arithmetic
         AdditionPattern,
         SubtractionPattern,
@@ -29,6 +30,9 @@ val valuePatterns =
         GreaterValuePattern,
         GreaterEqualValuePattern,
         LogicalNotValuePattern,
+        // assignment
+        AdditionAssignmentRegisterValuePattern,
+        SubtractionAssignmentRegisterValuePattern,
     )
 
 // for now, we can always dump a constant into a register and call it a value
@@ -41,6 +45,16 @@ object ConstantPattern : ValuePattern {
     override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
         instructions(fill) {
             mov(destination, const(label))
+        }
+}
+
+object RegisterUsePattern : ValuePattern {
+    private val label = RegisterLabel()
+    override val tree = CFGNode.RegisterSlot(label)
+
+    override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
+        instructions(fill) {
+            mov(destination, reg(label))
         }
 }
 
@@ -160,5 +174,25 @@ object LogicalNotValuePattern : ValuePattern, UnaryOpPattern() {
         instructions(fill) {
             mov(destination, reg(childLabel))
             xor(destination, 1)
+        }
+}
+
+object AdditionAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTemplate() {
+    override val tree = lhsSlot addeq rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            add(reg(lhsRegisterLabel), reg(rhsLabel))
+            mov(destination, reg(lhsRegisterLabel))
+        }
+}
+
+object SubtractionAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTemplate() {
+    override val tree = lhsSlot subeq rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            sub(reg(lhsRegisterLabel), reg(rhsLabel))
+            mov(destination, reg(lhsRegisterLabel))
         }
 }
