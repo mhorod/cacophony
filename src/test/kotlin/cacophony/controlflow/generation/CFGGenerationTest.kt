@@ -140,4 +140,33 @@ class CFGGenerationTest {
 
         assertEquivalent(actualCFG, expectedCFG)
     }
+
+    @Test
+    fun `CFG of while with noop body`() {
+        // given
+        val fDef =
+            functionDeclaration(
+                "f",
+                block(
+                    whileLoop(
+                        // condition
+                        lit(true),
+                        // body
+                        block(lit(1), lit(2)),
+                    ),
+                ),
+            )
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+
+        // then
+        val expectedCFG =
+            cfg {
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("bodyEntry") { CFGNode.NoOp }
+                }
+            }
+        assertEquivalent(actualCFG, expectedCFG)
+    }
 }

@@ -1,11 +1,13 @@
 package cacophony.codegen.patterns.cacophonyPatterns
 
+import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.patterns.SideEffectPattern
 import cacophony.codegen.patterns.SlotFill
 import cacophony.controlflow.*
 
 val sideEffectPatterns =
     listOf(
+        NoOpPattern,
         // +=
         AdditionAssignmentMemoryPattern,
         ConstantAdditionAssignmentRegisterPattern,
@@ -31,6 +33,12 @@ val sideEffectPatterns =
         RegisterToMemoryAssignmentPattern,
         MemoryAssignmentPattern,
     )
+
+object NoOpPattern : SideEffectPattern {
+    override val tree = CFGNode.NoOp
+
+    override fun makeInstance(fill: SlotFill) = emptyList<Instruction>()
+}
 
 object AdditionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
     override val tree = lhsSlot addeq rhsSlot
