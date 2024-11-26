@@ -39,20 +39,18 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
                 .mapValues { (_, v) -> v.toMutableSet() },
         )
 
-    private val originalGraph = symmetricClosure(liveness.interference)
+    private val originalGraph: Map<Register, Set<Register>> = symmetricClosure(liveness.interference)
 
     init {
         allowedRegisters.map { Register.FixedRegister(it) }.forEach { r ->
-            if (graph[r] == null) graph[r] = mutableSetOf()
-            graph[r]!!.addAll(allowedRegisters.filter { it != r.hardwareRegister }.map { Register.FixedRegister(it) })
+            graph.getOrPut(r) {
+                mutableSetOf()
+            }.addAll(allowedRegisters.filter { it != r.hardwareRegister }.map { Register.FixedRegister(it) })
         }
     }
 
     private val registers = liveness.allRegisters.toMutableSet()
-    private val copying =
-        transitiveSymmetricClosure(
-            liveness.copying,
-        )
+    private val copying = transitiveSymmetricClosure(liveness.copying)
     private val stack = mutableListOf<Set<Register>>()
     private val k = allowedRegisters.size
 
@@ -128,12 +126,7 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
             if (color == null) spills.addAll(group)
             else group.forEach { coloring[it] = color }
         }
-        return RegisterAllocation(
-            coloring
-                .filter { (k, _) -> k in liveness.allRegisters }
-                .toMap(),
-            spills.toSet(),
-        )
+        return RegisterAllocation(coloring.filterKeys { it in liveness.allRegisters }, spills)
     }
 
     private fun registerToCoalesce(r: Register) = copies(r).find { shouldCoalesce(r, it) }
@@ -158,10 +151,7 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
     private fun <A> symmetricClosure(graph: Map<A, Set<A>>): MutableMap<A, MutableSet<A>> {
         val result = graph.mapValues { (_, v) -> v.toMutableSet() }.toMutableMap()
         graph.forEach { (k, v) ->
-            v.forEach {
-                if (result[it] == null) result[it] = mutableSetOf()
-                result[it]!!.add(k)
-            }
+            v.forEach { result.getOrPut(it) { mutableSetOf() }.add(k) }
         }
         return result
     }

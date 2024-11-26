@@ -65,9 +65,10 @@ class RegisterAllocationTest {
     @Test
     fun `unknown register as interference key`() {
         assertThatThrownBy {
+            val known = setOf(Register.VirtualRegister())
             allocateRegisters(
                 Liveness(
-                    setOf(Register.VirtualRegister()),
+                    known,
                     mapOf(Register.VirtualRegister() to emptySet()),
                     emptyMap(),
                 ),
@@ -79,12 +80,12 @@ class RegisterAllocationTest {
     @Test
     fun `unknown register in copying map`() {
         assertThatThrownBy {
-            val reg = Register.VirtualRegister()
+            val known = setOf(Register.VirtualRegister())
             allocateRegisters(
                 Liveness(
-                    setOf(reg),
+                    known,
                     emptyMap(),
-                    mapOf(reg to setOf(Register.VirtualRegister())),
+                    mapOf(known.first() to setOf(Register.VirtualRegister())),
                 ),
                 setOf(HardwareRegister.RAX),
             )
