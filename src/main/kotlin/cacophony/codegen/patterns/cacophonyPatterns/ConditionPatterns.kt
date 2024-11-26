@@ -16,7 +16,7 @@ import cacophony.controlflow.not
  *
  * LogicalAnd, LogicalOr are not included here because cfg does not generate them in condition mode.
  */
-val conditionPatterns =
+val conditionPatterns: List<ConditionPattern> =
     listOf(
         EqualsConditionPattern,
         NotEqualsConditionPattern,

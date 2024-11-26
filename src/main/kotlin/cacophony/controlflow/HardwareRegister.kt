@@ -20,7 +20,9 @@ enum class HardwareRegister(val isCallPreserved: Boolean) {
     R12(true),
     R13(true),
     R14(true),
-    R15(true),
+    R15(true), ;
+
+    override fun toString(): String = name
 }
 
 enum class HardwareRegisterByte(private val hardwareRegister: HardwareRegister) {
@@ -41,6 +43,8 @@ enum class HardwareRegisterByte(private val hardwareRegister: HardwareRegister) 
     R14B(HardwareRegister.R14),
     R15B(HardwareRegister.R15),
     ;
+
+    override fun toString(): String = name
 
     companion object {
         fun fromRegister(register: HardwareRegister): HardwareRegisterByte =

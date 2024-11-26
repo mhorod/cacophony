@@ -4,6 +4,7 @@ import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.MemoryAddress
 import cacophony.codegen.instructions.RegisterByte
+import cacophony.codegen.instructions.cacophonyInstructions.*
 import cacophony.codegen.patterns.SlotFill
 import cacophony.controlflow.ConstantLabel
 import cacophony.controlflow.Register
@@ -16,135 +17,137 @@ class InstructionBuilder(val slotFill: SlotFill) {
     fun instructions(): List<Instruction> = instructions.toList()
 
     fun mov(destination: Register, source: Register) {
-        TODO()
+        instructions.add(MovRegReg(destination, source))
     }
 
     fun mov(destination: Register, value: Int) {
-        TODO()
+        instructions.add(MovRegImm(destination, value))
     }
 
+    fun mov(destination: Register, label: ValueLabel) = mov(destination, slotFill.valueFill.getValue(label))
+
     fun mov(destination: Register, memory: MemoryAddress) {
-        TODO()
+        instructions.add(MovRegMem(destination, memory))
     }
 
     fun mov(memory: MemoryAddress, source: Register) {
-        TODO()
+        instructions.add(MovMemReg(memory, source))
     }
 
     fun add(destination: Register, source: Register) {
-        TODO()
+        instructions.add(AddRegReg(destination, source))
     }
 
     fun add(destination: Register, value: Int) {
-        TODO()
+        instructions.add(AddRegImm(destination, value))
     }
 
     fun sub(destination: Register, source: Register) {
-        TODO()
+        instructions.add(SubRegReg(destination, source))
     }
 
     fun sub(destination: Register, value: Int) {
-        TODO()
+        instructions.add(SubRegImm(destination, value))
     }
 
     fun imul(destination: Register, source: Register) {
-        TODO()
+        instructions.add(IMulRegReg(destination, source))
     }
 
     fun cqo() {
-        TODO()
+        instructions.add(Cqo())
     }
 
     fun idiv(source: Register) {
-        TODO()
+        instructions.add(IDiv(source))
     }
 
     fun xor(destination: Register, source: Register) {
-        TODO()
+        instructions.add(XorRegReg(destination, source))
     }
 
     fun xor(destination: Register, value: Int) {
-        TODO()
+        instructions.add(XorRegImm(destination, value))
     }
 
     fun test(lhs: Register, rhs: Register) {
-        TODO()
+        instructions.add(TestRegReg(lhs, rhs))
     }
 
     fun push(source: Register) {
-        TODO()
+        instructions.add(PushReg(source))
     }
 
     fun pop(destination: Register) {
-        TODO()
+        instructions.add(Pop(destination))
     }
 
     fun cmp(lhs: Register, rhs: Register) {
-        TODO()
+        instructions.add(CmpRegReg(lhs, rhs))
     }
 
     fun je(label: BlockLabel) {
-        TODO()
+        instructions.add(Je(label))
     }
 
     fun jne(label: BlockLabel) {
-        TODO()
+        instructions.add(Jne(label))
     }
 
     fun jl(label: BlockLabel) {
-        TODO()
+        instructions.add(Jl(label))
     }
 
     fun jle(label: BlockLabel) {
-        TODO()
+        instructions.add(Jle(label))
     }
 
     fun jg(label: BlockLabel) {
-        TODO()
+        instructions.add(Jg(label))
     }
 
     fun jge(label: BlockLabel) {
-        TODO()
+        instructions.add(Jge(label))
     }
 
     fun jz(label: BlockLabel) {
-        TODO()
+        instructions.add(Jz(label))
     }
 
     fun jnz(label: BlockLabel) {
-        TODO()
+        instructions.add(Jnz(label))
     }
 
     fun sete(registerByte: RegisterByte) {
-        TODO()
+        instructions.add(Sete(registerByte))
     }
 
     fun setne(registerByte: RegisterByte) {
-        TODO()
+        instructions.add(Setne(registerByte))
     }
 
     fun setl(registerByte: RegisterByte) {
-        TODO()
+        instructions.add(Setl(registerByte))
     }
 
     fun setle(registerByte: RegisterByte) {
-        TODO()
+        instructions.add(Setle(registerByte))
     }
 
     fun setg(registerByte: RegisterByte) {
-        TODO()
+        instructions.add(Setg(registerByte))
     }
 
     fun setge(registerByte: RegisterByte) {
-        TODO()
+        instructions.add(Setge(registerByte))
     }
 
     fun movzx(register: Register, registerByte: RegisterByte) {
-        TODO()
+        instructions.add(MovzxReg64Reg8(register, registerByte))
     }
 
     fun ret() {
-        TODO()
+        instructions.add(Ret())
     }
 
     fun byte(register: Register) = RegisterByte(register)

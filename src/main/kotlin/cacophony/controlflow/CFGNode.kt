@@ -18,6 +18,8 @@ class ConstantLabel : SlotLabel
  * Single computation tree that has no control-flow or data-flow dependencies
  */
 sealed interface CFGNode {
+    fun children(): List<CFGNode> = emptyList()
+
     sealed interface Value : CFGNode
 
     sealed interface Leaf : CFGNode
@@ -43,19 +45,24 @@ sealed interface CFGNode {
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
     data class Push(
         val value: CFGNode,
-    ) : CFGNode
+    ) : CFGNode {
+        override fun children(): List<CFGNode> = listOf(value)
+    }
 
     // NOTE: Pop may be unnecessary since it can be done via Assignment
     data class Pop(
         val register: RegisterRef,
-    ) :
-        Leaf
+    ) : Leaf {
+        override fun children(): List<CFGNode> = listOf(register)
+    }
 
     data class Assignment(
         val destination: LValue,
         val value: CFGNode,
     ) : CFGNode {
         override fun toString(): String = "($destination = $value)"
+
+        override fun children(): List<CFGNode> = listOf(destination, value)
     }
 
     data class RegisterUse(
@@ -72,7 +79,9 @@ sealed interface CFGNode {
 
     data class MemoryAccess(
         val destination: CFGNode,
-    ) : LValue
+    ) : LValue {
+        override fun children(): List<CFGNode> = listOf(destination)
+    }
 
     data class Constant(
         val value: Int,
@@ -90,10 +99,14 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator {
         override fun toString(): String = "($lhs + $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class AdditionAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator {
         override fun toString(): String = "($lhs += $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class Subtraction(
@@ -101,10 +114,14 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator {
         override fun toString(): String = "($lhs - $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class SubtractionAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator {
         override fun toString(): String = "($lhs -= $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class Multiplication(
@@ -112,10 +129,14 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator {
         override fun toString(): String = "($lhs * $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class MultiplicationAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator {
         override fun toString(): String = "($lhs *= $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class Division(
@@ -123,10 +144,14 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator {
         override fun toString(): String = "($lhs / $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class DivisionAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator {
         override fun toString(): String = "($lhs /= $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class Modulo(
@@ -134,14 +159,20 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : ArithmeticOperator {
         override fun toString(): String = "($lhs % $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class ModuloAssignment(val lhs: LValue, val rhs: CFGNode) : ArithmeticAssignmentOperator {
         override fun toString(): String = "($lhs %= $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class Minus(val value: CFGNode) : ArithmeticOperator {
         override fun toString(): String = "(-$value)"
+
+        override fun children(): List<CFGNode> = listOf(value)
     }
 
     sealed interface LogicalOperator : Value
@@ -150,6 +181,8 @@ sealed interface CFGNode {
         val value: CFGNode,
     ) : LogicalOperator {
         override fun toString(): String = "(~$value)"
+
+        override fun children(): List<CFGNode> = listOf(value)
     }
 
     data class Equals(
@@ -157,6 +190,8 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator {
         override fun toString(): String = "($lhs == $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class NotEquals(
@@ -164,6 +199,8 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator {
         override fun toString(): String = "($lhs != $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class Less(
@@ -171,6 +208,8 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator {
         override fun toString(): String = "($lhs < $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class Greater(
@@ -178,6 +217,8 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator {
         override fun toString(): String = "($lhs > $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class LessEqual(
@@ -185,6 +226,8 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator {
         override fun toString(): String = "($lhs <= $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     data class GreaterEqual(
@@ -192,6 +235,8 @@ sealed interface CFGNode {
         val rhs: CFGNode,
     ) : LogicalOperator {
         override fun toString(): String = "($lhs >= $rhs)"
+
+        override fun children(): List<CFGNode> = listOf(lhs, rhs)
     }
 
     companion object {
