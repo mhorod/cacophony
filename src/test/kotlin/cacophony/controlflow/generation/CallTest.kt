@@ -24,8 +24,8 @@ class CallTest {
         // then
         val expectedFragment =
             cfg {
-                fragment(callerDef) {
-                    "entry" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
+                fragment(callerDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
                     "store rsp" does jump("pad") { pushRegister("temp rsp") }
                     "pad" does jump("adjust rsp") { pushRegister("temp rsp") }
                     "adjust rsp" does
@@ -40,8 +40,7 @@ class CallTest {
                     "restore rsp" does jump("extract result") { popRegister(rsp) }
                     // The called function returned something, and we are using it as a value - we need to extract it from rax
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                    "forward result" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result"))) }
-                    "return" does final { returnNode }
+                    "forward result" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("result"))) }
                 }
             }[callerDef]!!
 
@@ -73,8 +72,8 @@ class CallTest {
         // then
         val expectedFragment =
             cfg {
-                fragment(callerDef) {
-                    "entry" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
+                fragment(callerDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
                     "store rsp" does jump("pad") { pushRegister("temp rsp") }
                     "pad" does jump("adjust rsp") { pushRegister("temp rsp") }
                     "adjust rsp" does
@@ -90,13 +89,12 @@ class CallTest {
                     // The called function returned something, but we don't care - we only wanted it for side effects
                     // We don't extract anything - instead, we prepare our own block result and move it to rax
                     "write block result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 integer(2),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }[callerDef]!!
 
@@ -121,9 +119,9 @@ class CallTest {
         // then
         val expectedFragment =
             cfg {
-                fragment(callerDef) {
+                fragment(callerDef, listOf(argStack(0)), 8) {
                     // The argument is prepared in a temporary register...
-                    "entry" does jump("prepare rsp") { writeRegister("arg", integer(1)) }
+                    "bodyEntry" does jump("prepare rsp") { writeRegister("arg", integer(1)) }
                     "prepare rsp" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
                     "store rsp" does jump("pad") { pushRegister("temp rsp") }
                     "pad" does jump("adjust rsp") { pushRegister("temp rsp") }
@@ -140,8 +138,7 @@ class CallTest {
                     "call" does jump("restore rsp") { call(calleeDef) }
                     "restore rsp" does jump("extract result") { popRegister(rsp) }
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                    "forward result" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result"))) }
-                    "return" does final { returnNode }
+                    "forward result" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("result"))) }
                 }
             }[callerDef]!!
 
@@ -152,7 +149,11 @@ class CallTest {
     fun `call sequence for a function with six parameters correctly forwards all provided constants as arguments`() {
         // given
         val calleeDef =
-            functionDeclaration("callee", listOf(arg("x1"), arg("x2"), arg("x3"), arg("x4"), arg("x5"), arg("x6")), variableUse("x1"))
+            functionDeclaration(
+                "callee",
+                listOf(arg("x1"), arg("x2"), arg("x3"), arg("x4"), arg("x5"), arg("x6")),
+                variableUse("x1"),
+            )
         val callerDef = functionDeclaration("caller", call("callee", lit(1), lit(2), lit(3), lit(4), lit(5), lit(6)))
         /*
          * let callee = [x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int] -> Int => x1;
@@ -167,9 +168,9 @@ class CallTest {
         // then
         val expectedFragment =
             cfg {
-                fragment(callerDef) {
+                fragment(callerDef, listOf(argStack(0)), 8) {
                     // The arguments are prepared in a temporary registers...
-                    "entry" does jump("prepare arg2") { writeRegister("arg1", integer(1)) }
+                    "bodyEntry" does jump("prepare arg2") { writeRegister("arg1", integer(1)) }
                     "prepare arg2" does jump("prepare arg3") { writeRegister("arg2", integer(2)) }
                     "prepare arg3" does jump("prepare arg4") { writeRegister("arg3", integer(3)) }
                     "prepare arg4" does jump("prepare arg5") { writeRegister("arg4", integer(4)) }
@@ -201,8 +202,7 @@ class CallTest {
                     "clear arg6" does jump("restore rsp") { writeRegister(rsp, registerUse(rsp) add integer(8)) }
                     "restore rsp" does jump("extract result") { popRegister(rsp) }
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                    "forward result" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result"))) }
-                    "return" does final { returnNode }
+                    "forward result" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("result"))) }
                 }
             }[callerDef]!!
 
@@ -227,9 +227,9 @@ class CallTest {
         // then
         val expectedFragment =
             cfg {
-                fragment(callerDef) {
+                fragment(callerDef, listOf(argStack(0)), 8) {
                     // The argument is prepared in a temporary register...
-                    "entry" does jump("prepare rsp in") { writeRegister("arg in", integer(1)) }
+                    "bodyEntry" does jump("prepare rsp in") { writeRegister("arg in", integer(1)) }
                     "prepare rsp in" does jump("store rsp in") { writeRegister("temp rsp in", registerUse(rsp)) }
                     "store rsp in" does jump("pad in") { pushRegister("temp rsp in") }
                     "pad in" does jump("adjust rsp in") { pushRegister("temp rsp in") }
@@ -262,8 +262,7 @@ class CallTest {
                     "call out" does jump("restore rsp out") { call(calleeDef) }
                     "restore rsp out" does jump("extract result out") { popRegister(rsp) }
                     "extract result out" does jump("forward result out") { writeRegister("result out", registerUse(rax)) }
-                    "forward result out" does jump("return") { writeRegister(rax, registerUse(virtualRegister("result out"))) }
-                    "return" does final { returnNode }
+                    "forward result out" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("result out"))) }
                 }
             }[callerDef]!!
 
@@ -285,8 +284,8 @@ class CallTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
                     "store rsp" does jump("pad") { pushRegister("temp rsp") }
                     "pad" does jump("adjust rsp") { pushRegister("temp rsp") }
                     "adjust rsp" does
@@ -302,10 +301,9 @@ class CallTest {
                     // The called function returned something, and we are using it as a value - we need to extract it from rax
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
                     "forward result" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(rax, integer(1) add registerUse(virtualRegister("result")))
                         }
-                    "return" does final { returnNode }
                 }
             }
 

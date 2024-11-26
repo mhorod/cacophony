@@ -1,16 +1,9 @@
 package cacophony.controlflow.generation
 
 import cacophony.*
-import cacophony.controlflow.addeq
-import cacophony.controlflow.cfg
-import cacophony.controlflow.eq
+import cacophony.controlflow.*
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.integer
-import cacophony.controlflow.lt
 import cacophony.controlflow.mod
-import cacophony.controlflow.rax
-import cacophony.controlflow.returnNode
-import cacophony.controlflow.unit
 import org.junit.jupiter.api.Test
 
 class BreakTest {
@@ -46,21 +39,20 @@ class BreakTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("condition") {
-                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
+                            writeRegister(virtualRegister("x"), integer(0))
                         }
                     "condition" does
-                        conditional("true branch", "exit") {
+                        conditional("true branch", "exitWhile") {
                             readRegister("x") lt integer(10)
                         }
                     "true branch" does
                         jump("condition") {
                             readRegister("x") addeq integer(1)
                         }
-                    "exit" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
-                    "return" does final { returnNode }
+                    "exitWhile" does jump("exit") { writeRegister(rax, unit) }
                 }
             }
 
@@ -99,13 +91,13 @@ class BreakTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("loop condition") {
-                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
+                            writeRegister(virtualRegister("x"), integer(0))
                         }
                     "loop condition" does
-                        conditional("increment x", "exit") {
+                        conditional("increment x", "exitWhile") {
                             readRegister("x") lt integer(10)
                         }
                     "increment x" does
@@ -113,11 +105,10 @@ class BreakTest {
                             readRegister("x") addeq integer(1)
                         }
                     "check x mod 5" does
-                        conditional("exit", "loop condition") {
+                        conditional("exitWhile", "loop condition") {
                             (readRegister("x") mod integer(5)) eq integer(0)
                         }
-                    "exit" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
-                    "return" does final { returnNode }
+                    "exitWhile" does jump("exit") { writeRegister(rax, unit) }
                 }
             }
 
@@ -146,10 +137,9 @@ class BreakTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("write unit to rax") { writeRegister("x", integer(2)) }
-                    "write unit to rax" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
-                    "return" does final { returnNode }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("write unit to rax") { writeRegister("x", integer(2)) }
+                    "write unit to rax" does jump("exit") { writeRegister(rax, unit) }
                 }
             }
 
@@ -186,17 +176,16 @@ class BreakTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("condition") {
                             cacophony.controlflow.writeRegister(virtualRegister("x"), integer(2))
                         }
                     "condition" does
-                        conditional("exit", "exit") {
+                        conditional("exitWhile", "exitWhile") {
                             readRegister("x") eq integer(2)
                         }
-                    "exit" does jump("return") { cacophony.controlflow.writeRegister(rax, unit) }
-                    "return" does final { returnNode }
+                    "exitWhile" does jump("exit") { writeRegister(rax, unit) }
                 }
             }
 

@@ -1,6 +1,8 @@
 package cacophony.controlflow
 
-import java.util.*
+const val REGISTER_SIZE = 8
+
+val PRESERVED_REGISTERS = HardwareRegister.entries.filter { it != HardwareRegister.RSP && it.isCallPreserved }
 
 enum class HardwareRegister(val isCallPreserved: Boolean) {
     RAX(false),

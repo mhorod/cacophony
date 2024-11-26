@@ -1,16 +1,8 @@
 package cacophony.controlflow.generation
 
-import cacophony.block
-import cacophony.controlflow.cfg
+import cacophony.*
+import cacophony.controlflow.*
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.integer
-import cacophony.controlflow.rax
-import cacophony.controlflow.returnNode
-import cacophony.controlflow.unit
-import cacophony.controlflow.writeRegister
-import cacophony.functionDeclaration
-import cacophony.lit
-import cacophony.variableDeclaration
 import org.junit.jupiter.api.Test
 
 class BlocksTest {
@@ -25,14 +17,10 @@ class BlocksTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
-                        jump("return") {
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
+                        jump("exit") {
                             writeRegister(rax, unit)
-                        }
-                    "return" does
-                        final {
-                            returnNode
                         }
                 }
             }
@@ -51,14 +39,10 @@ class BlocksTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
-                        jump("return") {
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
+                        jump("exit") {
                             writeRegister(rax, writeRegister("x", integer(1)))
-                        }
-                    "return" does
-                        final {
-                            returnNode
                         }
                 }
             }
@@ -84,18 +68,14 @@ class BlocksTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("write result to rax") {
                             writeRegister("x", integer(1))
                         }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(rax, writeRegister("y", integer(2)))
-                        }
-                    "return" does
-                        final {
-                            returnNode
                         }
                 }
             }

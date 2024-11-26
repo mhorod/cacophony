@@ -8,6 +8,8 @@ sealed class CFGVertex(
 ) {
     abstract fun dependents(): List<CFGLabel>
 
+    override fun toString(): String = tree.toString()
+
     class Conditional(
         tree: CFGNode,
         val trueDestination: CFGLabel,

@@ -1,15 +1,8 @@
 package cacophony.controlflow.generation
 
 import cacophony.*
-import cacophony.controlflow.cfg
-import cacophony.controlflow.eq
+import cacophony.controlflow.*
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.integer
-import cacophony.controlflow.rax
-import cacophony.controlflow.registerUse
-import cacophony.controlflow.returnNode
-import cacophony.controlflow.trueValue
-import cacophony.controlflow.writeRegister
 import org.junit.jupiter.api.Test
 
 /**
@@ -33,9 +26,8 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("return") { writeRegister(rax, integer(11)) }
-                    "return" does final { returnNode }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("exit") { writeRegister(rax, integer(11)) }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -56,9 +48,8 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("return") { writeRegister(rax, integer(22)) }
-                    "return" does final { returnNode }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("exit") { writeRegister(rax, integer(22)) }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -92,16 +83,15 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 registerUse(virtualRegister("result")),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -135,16 +125,15 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 registerUse(virtualRegister("result")),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -177,8 +166,8 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
                     "condition on x" does
                         conditional("write 11 to result", "write 22 to result") {
                             registerUse(virtualRegister("x"))
@@ -198,13 +187,12 @@ class CFGConditionalSimplificationTest {
                             )
                         }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 registerUse(virtualRegister("result")),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -237,8 +225,8 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
                     "condition on x" does
                         conditional("write 11 to result", "write 22 to result") {
                             registerUse(virtualRegister("x"))
@@ -258,13 +246,12 @@ class CFGConditionalSimplificationTest {
                             )
                         }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 registerUse(virtualRegister("result")),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -308,16 +295,15 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(
                                 rax,
                                 registerUse(virtualRegister("result")),
                             )
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -341,9 +327,9 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
-                        jump("entry") {
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
+                        jump("bodyEntry") {
                             writeRegister(virtualRegister("x"), integer(10))
                         }
                 }
@@ -361,7 +347,7 @@ class CFGConditionalSimplificationTest {
                 block(
                     whileLoop(lit(false), variableDeclaration("x", lit(10))),
                     variableDeclaration("y", lit(20)),
-                    returnStatement(variableUse("y")),
+                    variableUse("y"),
                 ),
             )
 
@@ -371,16 +357,15 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does
                         jump("write result to rax") {
                             writeRegister(virtualRegister("y"), integer(20))
                         }
                     "write result to rax" does
-                        jump("return") {
+                        jump("exit") {
                             writeRegister(rax, registerUse(virtualRegister("y")))
                         }
-                    "return" does final { returnNode }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -424,10 +409,9 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(actualCFG.keys.first()) {
-                    "entry" does jump("write result to rax") { writeRegister("result", integer(12)) }
-                    "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
-                    "return" does final { returnNode }
+                fragment(actualCFG.keys.first(), listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(12)) }
+                    "write result to rax" does jump("exit") { writeRegister(rax, readRegister("result")) }
                 }
             }
 
@@ -457,10 +441,9 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("write result to rax") { writeRegister("result", integer(20)) }
-                    "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
-                    "return" does final { returnNode }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(20)) }
+                    "write result to rax" does jump("exit") { writeRegister(rax, readRegister("result")) }
                 }
             }
 
@@ -498,10 +481,9 @@ class CFGConditionalSimplificationTest {
         // then
         val expectedCFG =
             cfg {
-                fragment(fDef) {
-                    "entry" does jump("write result to rax") { writeRegister("result", integer(11)) }
-                    "write result to rax" does jump("return") { writeRegister(rax, readRegister("result")) }
-                    "return" does final { returnNode }
+                fragment(fDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(11)) }
+                    "write result to rax" does jump("exit") { writeRegister(rax, readRegister("result")) }
                 }
             }
 

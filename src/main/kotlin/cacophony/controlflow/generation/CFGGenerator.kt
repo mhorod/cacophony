@@ -30,7 +30,7 @@ internal class CFGGenerator(
 
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
-        val returnValueRegister = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX))
+        val returnValueRegister = registerUse(rax)
 
         val extended =
             when (bodyCFG) {
@@ -42,10 +42,24 @@ internal class CFGGenerator(
                 }
             }
 
+        val functionHandler = functionHandlers[function]!!
+        val prologue = listOfNodesToExtracted(functionHandler.generatePrologue())
+        val epilogue = listOfNodesToExtracted(functionHandler.generateEpilogue())
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)
-        extended.exit.connect(returnVertex.label)
-        return cfg.cfgFragment(extended.entry.label)
+
+        prologue.exit.connect(extended.entry.label)
+        extended.exit.connect(epilogue.entry.label)
+        epilogue.exit.connect(returnVertex.label)
+
+        return cfg.cfgFragment(prologue.entry.label)
     }
+
+    private fun listOfNodesToExtracted(nodes: List<CFGNode>): SubCFG.Extracted =
+        nodes
+            .map {
+                val vertex = cfg.addUnconditionalVertex(it)
+                SubCFG.Extracted(vertex, vertex, noOpOrUnit(EvalMode.SideEffect))
+            }.reduce(SubCFG.Extracted::merge)
 
     internal fun ensureExtracted(subCFG: SubCFG, mode: EvalMode): SubCFG.Extracted =
         when (subCFG) {
@@ -107,7 +121,8 @@ internal class CFGGenerator(
         } else {
             val last = expression.expressions.lastOrNull() ?: return SubCFG.Immediate(noOpOrUnit(mode))
             val prerequisiteSubCFGs =
-                expression.expressions.dropLast(1)
+                expression.expressions
+                    .dropLast(1)
                     .map { visitExtracted(it, EvalMode.SideEffect, context) }
             val valueCFG = visit(last, mode, context)
             val reduced = prerequisiteSubCFGs.reduce { subCFG, path -> subCFG merge path }
@@ -137,12 +152,14 @@ internal class CFGGenerator(
         val resultRegister = if (mode is EvalMode.Value) Register.VirtualRegister() else null
 
         val callSequence =
-            functionHandler.generateCallFrom(
-                getCurrentFunctionHandler(),
-                argumentVertices.map { it.access },
-                resultRegister,
-                true,
-            ).map { ensureExtracted(it) }.reduce { path, next -> path merge next }
+            functionHandler
+                .generateCallFrom(
+                    getCurrentFunctionHandler(),
+                    argumentVertices.map { it.access },
+                    resultRegister,
+                    true,
+                ).map { ensureExtracted(it) }
+                .reduce { path, next -> path merge next }
 
         val entry =
             if (argumentVertices.isNotEmpty()) {

@@ -76,28 +76,25 @@ class GenerateVariableAccessException(
 ) : CompileException(reason)
 
 class FunctionHandlerImpl(
-    private val function: FunctionDeclaration,
-    private val analyzedFunction: AnalyzedFunction,
+    val function: FunctionDeclaration,
+    val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionHandler {
-    companion object {
-        const val REGISTER_SIZE = 8
-    }
-
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable =
-        analyzedFunction.variables.associate { it.declaration to Variable.SourceVariable(it.declaration) }
+        (analyzedFunction.variables.map { it.declaration } union function.arguments).associateWith { Variable.SourceVariable(it) }
 
     private val variableAllocation: MutableMap<Variable, VariableAllocation> =
         run {
             val res = mutableMapOf<Variable, VariableAllocation>()
             val usedVars = analyzedFunction.variablesUsedInNestedFunctions
             val regVar =
-                analyzedFunction
-                    .declaredVariables()
-                    .map { it.declaration }
-                    .toSet()
+                (
+                    analyzedFunction
+                        .declaredVariables()
+                        .map { it.declaration } union function.arguments
+                ).toSet()
                     .minus(usedVars)
             regVar.forEach { varDef ->
                 res[definitionToVariable[varDef]!!] = VariableAllocation.InRegister(Register.VirtualRegister())
@@ -213,13 +210,16 @@ class FunctionHandlerImpl(
 
     override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
-    override fun generatePrologue(): List<CFGNode> {
-        TODO("Not yet implemented")
-    }
+    private val prologueEpilogueHandler =
+        PrologueEpilogueHandler(
+            this,
+            ::defaultCallConvention,
+            PRESERVED_REGISTERS,
+        )
 
-    override fun generateEpilogue(): List<CFGNode> {
-        TODO("Not yet implemented")
-    }
+    override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()
+
+    override fun generateEpilogue(): List<CFGNode> = prologueEpilogueHandler.generateEpilogue()
 
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     // Static link is created even if parent doesn't exist.
@@ -229,6 +229,91 @@ class FunctionHandlerImpl(
             VariableAllocation.OnStack(0),
         )
         analyzedFunction.auxVariables.add(staticLink)
+    }
+}
+
+fun defaultCallConvention(index: Int): CFGNode {
+    if (index < REGISTER_ARGUMENT_ORDER.size)
+        return registerUse(Register.FixedRegister(REGISTER_ARGUMENT_ORDER[index]))
+    val over = index - REGISTER_ARGUMENT_ORDER.size
+    // Assumes that the RSP has not changed after `call f`
+    return memoryAccess(registerUse(rsp) add integer((over + 1) * REGISTER_SIZE))
+}
+
+class PrologueEpilogueHandler(
+    private val handler: FunctionHandlerImpl,
+    private val callConvention: (Int) -> CFGNode,
+    private val preservedRegisters: List<HardwareRegister>, // without RSP
+) {
+    private val numberOfStackVariables =
+        with(handler) {
+            val variables =
+                analyzedFunction
+                    .declaredVariables()
+                    .map { getVariableFromDefinition(it.declaration) } +
+                    analyzedFunction.auxVariables
+            val stackVariables =
+                variables
+                    .map { getVariableAllocation(it) }
+                    .filterIsInstance<VariableAllocation.OnStack>()
+                    .sortedBy { it.offset }
+            run {
+                // Sanity checks
+                var offset = 0
+                for (variable in stackVariables) {
+                    if (variable.offset != offset)
+                        throw IllegalStateException("Holes in stack")
+                    offset += REGISTER_SIZE
+                }
+                if (preservedRegisters.contains(HardwareRegister.RSP))
+                    throw IllegalArgumentException("RSP amongst call preserved registers")
+            }
+            stackVariables.size
+        }
+
+    private fun lvalueFromAllocation(allocation: VariableAllocation): CFGNode.LValue =
+        when (allocation) {
+            is VariableAllocation.InRegister -> registerUse(allocation.register)
+            is VariableAllocation.OnStack -> memoryAccess(registerUse(rsp) sub integer(allocation.offset + REGISTER_SIZE))
+        }
+
+    fun generatePrologue(): List<CFGNode> {
+        val nodes = mutableListOf<CFGNode>()
+        with(handler) {
+            // Move first, then change RSP, so that the offsets from the callConvention hold
+            // However, keep the existence of red zone in mind
+
+            // Defined function arguments
+            for ((ind, arg) in function.arguments.withIndex()) {
+                nodes.add(
+                    lvalueFromAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
+                        callConvention(ind),
+                )
+            }
+            // Static link (implicit arg)
+            nodes.add(
+                lvalueFromAllocation(getVariableAllocation(getStaticLink())) assign
+                    callConvention(function.arguments.size),
+            )
+            // Space for all stack variables
+            nodes.add(registerUse(rsp) subeq integer(numberOfStackVariables * REGISTER_SIZE))
+            // Preserved registers
+            for (register in preservedRegisters) {
+                nodes.add(pushRegister(Register.FixedRegister(register)))
+            }
+        }
+        return nodes
+    }
+
+    fun generateEpilogue(): List<CFGNode> {
+        val nodes = mutableListOf<CFGNode>()
+        // Restoring preserved registers
+        for (register in preservedRegisters.reversed()) {
+            nodes.add(popRegister(Register.FixedRegister(register)))
+        }
+        // Restoring RSP
+        nodes.add(registerUse(rsp) addeq integer(numberOfStackVariables * REGISTER_SIZE))
+        return nodes
     }
 }
 
@@ -266,7 +351,7 @@ fun generateCall(
                     CFGNode.Modulo(
                         Addition(
                             RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                            Constant(stackArguments.size % 2 * FunctionHandlerImpl.REGISTER_SIZE),
+                            Constant(stackArguments.size % 2 * REGISTER_SIZE),
                         ),
                         Constant(16),
                     ),
@@ -296,7 +381,7 @@ fun generateCall(
                 RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                 Addition(
                     RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                    Constant(FunctionHandlerImpl.REGISTER_SIZE * stackArguments.size),
+                    Constant(REGISTER_SIZE * stackArguments.size),
                 ),
             ),
         )
