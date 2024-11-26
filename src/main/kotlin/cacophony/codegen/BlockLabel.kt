@@ -1,3 +1,3 @@
 package cacophony.codegen
 
-class BlockLabel(val name: String)
+data class BlockLabel(val name: String)
