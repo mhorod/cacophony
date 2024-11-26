@@ -94,14 +94,15 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
     private fun generateFirstFitOrder() {
         while (registers.isNotEmpty()) {
             while (true) {
-                val x = registers.find { neighbors(it).size < k && registerToCoalesce(it) == null }?.also { deposit(it) }
-                if (x != null) continue
                 val y =
                     registers
                         .map { it to registerToCoalesce(it) }
                         .firstOrNull { it.second != null }
                         ?.also { (a, b) -> coalesce(a, b!!) }
-                if (y == null) break
+                if (y != null) continue
+
+                val x = registers.find { neighbors(it).size < k && registerToCoalesce(it) == null }?.also { deposit(it) }
+                if (x == null) break
             }
             if (registers.isNotEmpty())
                 deposit(registers.minBy { if (it is Register.FixedRegister) Int.MAX_VALUE else neighbors(it).size })
