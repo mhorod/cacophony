@@ -8,6 +8,7 @@ data class SlotFill(
     val valueFill: Map<ValueLabel, Register>,
     val registerFill: Map<RegisterLabel, Register>,
     val constantFill: Map<ConstantLabel, CFGNode.Constant>,
+    val functionLabelFill: BlockLabel? = null,
 )
 
 sealed interface Pattern {

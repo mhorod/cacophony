@@ -146,6 +146,10 @@ class InstructionBuilder(val slotFill: SlotFill) {
         instructions.add(MovzxReg64Reg8(register, registerByte))
     }
 
+    fun call() {
+        instructions.add(Call(slotFill.functionLabelFill!!))
+    }
+
     fun ret() {
         instructions.add(Ret())
     }

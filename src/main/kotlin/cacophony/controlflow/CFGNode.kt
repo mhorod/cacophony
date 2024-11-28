@@ -36,10 +36,11 @@ sealed interface CFGNode {
         Leaf
 
     data class Call(
-        val declaration: Definition.FunctionDeclaration,
+        // declaration is nullable to create pattern without specific function
+        val declaration: Definition.FunctionDeclaration?,
     ) :
         Leaf {
-        override fun toString(): String = "call ${declaration.identifier}"
+        override fun toString(): String = "call ${declaration?.identifier}"
     }
 
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess

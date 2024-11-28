@@ -1,6 +1,7 @@
 package cacophony.codegen.instructions.matching
 
 import cacophony.codegen.BlockLabel
+import cacophony.codegen.functionBodyLabel
 import cacophony.codegen.instructions.InstructionMaker
 import cacophony.codegen.patterns.*
 import cacophony.controlflow.*
@@ -47,6 +48,7 @@ class InstructionMatcherImpl(
                         mapping,
                         metadata.registerFill,
                         metadata.constantFill,
+                        metadata.functionLabelFill,
                     ),
                 )
             }
@@ -76,6 +78,7 @@ class InstructionMatcherImpl(
         val registerFill: MutableMap<RegisterLabel, Register> = mutableMapOf(),
         val constantFill: MutableMap<ConstantLabel, CFGNode.Constant> = mutableMapOf(),
         val toFill: MutableMap<ValueLabel, CFGNode> = mutableMapOf(),
+        var functionLabelFill: BlockLabel? = null,
         var size: Int = 0,
     )
 
@@ -124,6 +127,13 @@ class InstructionMatcherImpl(
             if (pattern::class != node::class) return false
             for ((nestedNode, nestedPattern) in node.children().zip(pattern.children())) {
                 if (!tryMatch(nestedNode, nestedPattern, matchMetadata)) return false
+            }
+
+            if (node is CFGNode.Call) {
+                matchMetadata.functionLabelFill =
+                    functionBodyLabel(
+                        node.declaration ?: error("Creating function body label of a pattern node"),
+                    )
             }
         }
         return true

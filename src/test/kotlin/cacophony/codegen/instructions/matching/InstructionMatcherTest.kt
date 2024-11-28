@@ -1,8 +1,11 @@
 package cacophony.codegen.instructions.matching
 
+import cacophony.codegen.instructions.cacophonyInstructions.Call
 import cacophony.codegen.patterns.ValuePattern
 import cacophony.codegen.patterns.cacophonyPatterns.AdditionPattern
+import cacophony.codegen.patterns.cacophonyPatterns.CallPattern
 import cacophony.controlflow.*
+import cacophony.semantic.syntaxtree.Definition
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -90,5 +93,20 @@ class InstructionMatcherTest {
 
         val node = constNode add registerNode
         assertThat(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()).size).isEqualTo(1)
+    }
+
+    @Test
+    fun `matcher sets function call label`() {
+        val instructionMatcher = InstructionMatcherImpl(emptyList(), listOf(CallPattern), emptyList())
+        val function = Definition.FunctionDeclaration(mockk(), "f", mockk(), listOf(), mockk(), mockk())
+        val node = CFGNode.Call(function)
+
+        val match = instructionMatcher.findMatchesForSideEffects(node).elementAt(0)
+        val instructions = match.instructionMaker(emptyMap())
+
+        assertThat(instructions.size == 1)
+        val instruction = instructions[0]
+        assertThat(instruction is Call)
+        assertThat((instruction as Call).label.name).startsWith("f_0")
     }
 }
