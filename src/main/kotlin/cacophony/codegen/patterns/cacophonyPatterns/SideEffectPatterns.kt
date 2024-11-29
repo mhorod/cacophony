@@ -179,11 +179,13 @@ object ModuloAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTempla
 }
 
 object CallPattern : SideEffectPattern {
-    override val tree = CFGNode.Call(null)
+    private val functionLabel = FunctionLabel()
+
+    override val tree = CFGNode.Call(CFGNode.FunctionSlot(functionLabel))
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            call()
+            call(functionLabel)
         }
 }
 

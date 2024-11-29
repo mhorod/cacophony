@@ -1,7 +1,6 @@
 package cacophony.codegen.instructions.matching
 
 import cacophony.codegen.BlockLabel
-import cacophony.codegen.FunctionBodyLabel
 import cacophony.codegen.instructions.InstructionMaker
 import cacophony.codegen.patterns.*
 import cacophony.controlflow.*
@@ -30,6 +29,7 @@ class InstructionMatcherImpl(
                         mapping,
                         metadata.registerFill,
                         metadata.constantFill,
+                        metadata.functionFill,
                     ),
                     destinationRegister,
                 )
@@ -48,7 +48,7 @@ class InstructionMatcherImpl(
                         mapping,
                         metadata.registerFill,
                         metadata.constantFill,
-                        metadata.functionLabelFill,
+                        metadata.functionFill,
                     ),
                 )
             }
@@ -66,6 +66,7 @@ class InstructionMatcherImpl(
                         mapping,
                         metadata.registerFill,
                         metadata.constantFill,
+                        metadata.functionFill,
                     ),
                     destinationLabel,
                     jumpIf,
@@ -78,7 +79,7 @@ class InstructionMatcherImpl(
         val registerFill: MutableMap<RegisterLabel, Register> = mutableMapOf(),
         val constantFill: MutableMap<ConstantLabel, CFGNode.Constant> = mutableMapOf(),
         val toFill: MutableMap<ValueLabel, CFGNode> = mutableMapOf(),
-        var functionLabelFill: BlockLabel? = null,
+        var functionFill: MutableMap<FunctionLabel, CFGNode.Function> = mutableMapOf(),
         var size: Int = 0,
     )
 
@@ -122,18 +123,16 @@ class InstructionMatcherImpl(
                     if (node !is CFGNode.Value) return false
                     matchMetadata.toFill[pattern.label] = node
                 }
+
+                is CFGNode.FunctionSlot -> {
+                    if (node !is CFGNode.Function) return false
+                    matchMetadata.functionFill[pattern.label] = node
+                }
             }
         } else {
             if (pattern::class != node::class) return false
             for ((nestedNode, nestedPattern) in node.children().zip(pattern.children())) {
                 if (!tryMatch(nestedNode, nestedPattern, matchMetadata)) return false
-            }
-
-            if (node is CFGNode.Call) {
-                matchMetadata.functionLabelFill =
-                    FunctionBodyLabel(
-                        node.declaration ?: error("Creating function body label of a pattern node"),
-                    )
             }
         }
         return true

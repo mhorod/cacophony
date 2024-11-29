@@ -1,11 +1,13 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
 import cacophony.codegen.BlockLabel
+import cacophony.codegen.FunctionBodyLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.PRESERVED_REGISTERS
 import cacophony.controlflow.Register
+import cacophony.semantic.syntaxtree.Definition
 
 data class PushReg(
     val reg: Register,
@@ -78,7 +80,7 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
 data class Call(
-    val label: BlockLabel,
+    val function: Definition.FunctionDeclaration,
 ) : Instruction {
     override val registersRead: Set<Register> =
         setOf(Register.FixedRegister(HardwareRegister.RSP)).union(
@@ -86,7 +88,7 @@ data class Call(
         )
     override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${label.name}"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${FunctionBodyLabel(function).name}"
 }
 
 class Ret : Instruction {
