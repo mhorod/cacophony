@@ -20,11 +20,11 @@ abstract class StackCallConvention(private val registerOrder: List<HardwareRegis
             // Stack is
             // [arg2]
             // [arg1]
-            // [arg0] + 16
-            // [ret address] +8
-            // [old rbp] <- curr rbp
-            // so do your math
-            VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerOrder.size + 2))
+            // [arg0] + 24
+            // [ret address] + 16
+            // [old rbp] + 8
+            // [static link] <- curr rbp
+            VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerOrder.size + 3))
         }
 }
 
