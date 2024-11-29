@@ -1,7 +1,7 @@
 package cacophony.codegen.instructions.matching
 
 import cacophony.codegen.BlockLabel
-import cacophony.codegen.functionBodyLabel
+import cacophony.codegen.FunctionBodyLabel
 import cacophony.codegen.instructions.InstructionMaker
 import cacophony.codegen.patterns.*
 import cacophony.controlflow.*
@@ -131,7 +131,7 @@ class InstructionMatcherImpl(
 
             if (node is CFGNode.Call) {
                 matchMetadata.functionLabelFill =
-                    functionBodyLabel(
+                    FunctionBodyLabel(
                         node.declaration ?: error("Creating function body label of a pattern node"),
                     )
             }
