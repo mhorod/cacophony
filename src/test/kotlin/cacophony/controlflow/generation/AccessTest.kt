@@ -23,7 +23,7 @@ class AccessTest {
         val expectedCFG =
             cfg {
                 fragment(fDef, listOf(argReg(virReg), argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(rax, registerUse(virReg)) }
+                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), registerUse(virReg)) }
                 }
             }
 
@@ -53,13 +53,14 @@ class AccessTest {
                     "bodyEntry" does
                         jump("exit") {
                             writeRegister(
-                                rax,
-                                memoryAccess(memoryAccess(registerUse(rbp)) add integer(8)),
+                                getResultRegister(),
+                                memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)),
                             )
                         }
                 }
             }[innerDef]!!
-
+        println(actualFragment)
+        println(expectedFragment)
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 
@@ -95,13 +96,14 @@ class AccessTest {
                     "bodyEntry" does
                         jump("exit") {
                             writeRegister(
-                                rax,
-                                memoryAccess(memoryAccess(registerUse(rbp)) add integer(8)),
+                                getResultRegister(),
+                                memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)),
                             )
                         }
                 }
             }[innerDef]!!
-
+        println(actualFragment)
+        println(expectedFragment)
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 }

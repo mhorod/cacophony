@@ -20,7 +20,7 @@ class BlocksTest {
                 fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does
                         jump("exit") {
-                            writeRegister(rax, unit)
+                            writeRegister(getResultRegister(), unit)
                         }
                 }
             }
@@ -42,7 +42,7 @@ class BlocksTest {
                 fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does
                         jump("exit") {
-                            writeRegister(rax, writeRegister("x", integer(1)))
+                            writeRegister(getResultRegister(), writeRegister("x", integer(1)))
                         }
                 }
             }
@@ -75,7 +75,7 @@ class BlocksTest {
                         }
                     "write result to rax" does
                         jump("exit") {
-                            writeRegister(rax, writeRegister("y", integer(2)))
+                            writeRegister(getResultRegister(), writeRegister("y", integer(2)))
                         }
                 }
             }

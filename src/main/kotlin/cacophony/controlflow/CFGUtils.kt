@@ -24,7 +24,7 @@ val trueValue = CFGNode.TRUE
 val falseValue = CFGNode.FALSE
 val returnNode = CFGNode.Return
 
-fun integer(value: Int) = CFGNode.Constant(value)
+fun integer(value: Int) = CFGNode.ConstantReal(value)
 
 fun registerUse(register: Register) = CFGNode.RegisterUse(register)
 
@@ -80,11 +80,25 @@ fun not(node: CFGNode) = CFGNode.LogicalNot(node)
 
 fun writeRegister(register: Register, value: CFGNode) = CFGNode.Assignment(registerUse(register), value)
 
-class CFGFragmentBuilder {
+fun wrapAllocation(allocation: VariableAllocation): CFGNode.LValue =
+    when (allocation) {
+        is VariableAllocation.InRegister -> registerUse(allocation.register)
+        is VariableAllocation.OnStack -> memoryAccess(registerUse(rbp) sub integer(allocation.offset))
+    }
+
+class CFGFragmentBuilder() {
     private val labels: MutableMap<String, CFGLabel> = mutableMapOf()
     private val vertices = mutableMapOf<CFGLabel, CFGVertex>()
+    private val resultRegister = Register.VirtualRegister()
+    private var callConvention: CallConvention = SystemVAMD64CallConvention
 
     private fun getLabel(label: String): CFGLabel = labels.getOrPut(label) { CFGLabel() }
+
+    fun getResultRegister() = resultRegister
+
+    fun setCallConvention(newConvention: CallConvention) {
+        callConvention = newConvention
+    }
 
     fun build(): CFGFragment = CFGFragment(vertices, getLabel("entry"))
 
@@ -103,32 +117,31 @@ class CFGFragmentBuilder {
             curLabel = nextLabel.toString()
             nextLabel++
         }
-
+        val spaceForPreservedRegisters = callConvention.preservedRegisters().map { Register.VirtualRegister() }
         // prologue
-        for ((ind, allocation) in args.withIndex()) {
-            single {
-                when (allocation) {
-                    is VariableAllocation.InRegister -> writeRegister(allocation.register, defaultCallConvention(ind))
-                    is VariableAllocation.OnStack ->
-                        memoryAccess(registerUse(rsp) sub integer((allocation.offset + 1) * REGISTER_SIZE)) assign
-                            defaultCallConvention(ind)
-                }
-            }
+        single { pushRegister(rbp) }
+        single { registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantReal(REGISTER_SIZE)) }
+        single { registerUse(rsp) subeq CFGNode.ConstantLazy(stackSpace) }
+        for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+            single { registerUse(destination) assign registerUse(Register.FixedRegister(source)) }
         }
-        single { registerUse(rsp) subeq integer(stackSpace) }
-        for (register in PRESERVED_REGISTERS.dropLast(1)) {
-            single { pushRegister(Register.FixedRegister(register)) }
+        for ((ind, allocation) in args.dropLast(1).withIndex()) {
+            single { wrapAllocation(allocation) assign wrapAllocation(callConvention.argumentAllocation(ind)) }
         }
         // jump to body
-        curLabel does jump("bodyEntry") { pushRegister(Register.FixedRegister(PRESERVED_REGISTERS.last())) }
+        curLabel does
+            jump("bodyEntry") {
+                wrapAllocation(args.last()) assign wrapAllocation(callConvention.argumentAllocation(args.size - 1))
+            }
 
         // epilogue
         curLabel = "exit"
-        for (register in PRESERVED_REGISTERS.reversed()) {
-            single { popRegister(Register.FixedRegister(register)) }
+        for ((destination, source) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+            single { registerUse(Register.FixedRegister(destination)) assign registerUse(source) }
         }
-        curLabel does jump("return") { registerUse(rsp) addeq integer(stackSpace) }
-
+        single { registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(getResultRegister()) }
+        single { registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantReal(REGISTER_SIZE)) }
+        curLabel does jump("return") { popRegister(rbp) }
         "return" does final { returnNode }
     }
 
@@ -148,8 +161,8 @@ class CFGBuilder {
         init: CFGFragmentBuilder.() -> Unit,
     ) {
         val builder = CFGFragmentBuilder()
-        builder.init()
         builder.prologueAndEpilogue(args, stackSpace)
+        builder.init()
         programCFG[function] = builder.build()
     }
 

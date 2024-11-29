@@ -83,12 +83,18 @@ sealed interface CFGNode {
         override fun children(): List<CFGNode> = listOf(destination)
     }
 
-    data class Constant(
-        val value: Int,
+    sealed class Constant(
+        public open val value: Int,
     ) : Value,
         Leaf {
         override fun toString(): String = value.toString()
     }
+
+    data class ConstantReal(override val value: Int) : Constant(value)
+
+    data class ConstantLazy(
+        override var value: Int,
+    ) : Constant(value)
 
     sealed interface ArithmeticOperator : Value
 
@@ -240,9 +246,9 @@ sealed interface CFGNode {
     }
 
     companion object {
-        val UNIT = Constant(42)
-        val FALSE = Constant(0)
-        val TRUE = Constant(1)
+        val UNIT = ConstantReal(42)
+        val FALSE = ConstantReal(0)
+        val TRUE = ConstantReal(1)
     }
 
     /* Slots are used by patterns only. Each slot represents some CFGNode specifying some

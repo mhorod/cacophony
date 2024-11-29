@@ -32,7 +32,8 @@ class CFGGenerationTest {
         val expectedCFG =
             cfg {
                 fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(rax, UNIT) }
+                    val resReg = getResultRegister()
+                    "bodyEntry" does jump("exit") { writeRegister(resReg, UNIT) }
                 }
             }
 
@@ -51,7 +52,7 @@ class CFGGenerationTest {
         val expectedCFG =
             cfg {
                 fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(rax, TRUE) }
+                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), TRUE) }
                 }
             }
 
@@ -91,7 +92,7 @@ class CFGGenerationTest {
                         }
                     "true" does jump("end") { writeRegister(virtualRegister("t"), integer(11)) }
                     "false" does jump("end") { writeRegister(virtualRegister("t"), integer(22)) }
-                    "end" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("t"))) }
+                    "end" does jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("t"))) }
                 }
             }
 
@@ -134,7 +135,7 @@ class CFGGenerationTest {
                         jump("condition") {
                             readRegister("x") addeq integer(1)
                         }
-                    "exitWhile" does jump("exit") { writeRegister(rax, unit) }
+                    "exitWhile" does jump("exit") { writeRegister(getResultRegister(), unit) }
                 }
             }
 
