@@ -4,10 +4,10 @@ import cacophony.codegen.instructions.CacophonyInstructionCovering
 import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.linearization.linearize
-import cacophony.codegen.patterns.cacophonyPatterns.instructions
 import cacophony.codegen.registers.Liveness
 import cacophony.codegen.registers.RegisterAllocation
 import cacophony.controlflow.HardwareRegister
+import cacophony.controlflow.SystemVAMD64CallConvention
 import cacophony.controlflow.generateFunctionHandlers
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.controlflow.generation.generateCFG
@@ -164,16 +164,14 @@ class CacophonyPipeline(
         return result
     }
 
-    fun generateControlFlowGraph(input: Input): ProgramCFG {
-        return generateControlFlowGraph(generateAST(input))
-    }
+    fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
 
     fun generateControlFlowGraph(ast: AST): ProgramCFG {
         val resolvedVariables = resolveOverloads(ast)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
-        val functionHandlers = generateFunctionHandlers(analyzedFunctions)
+        val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention)
         val cfg = generateCFG(resolvedVariables, analyzedExpressions, functionHandlers)
         logger?.logSuccessfulControlFlowGraphGeneration(cfg)
         return cfg

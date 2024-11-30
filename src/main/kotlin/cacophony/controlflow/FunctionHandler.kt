@@ -1,7 +1,6 @@
 package cacophony.controlflow
 
 import cacophony.controlflow.CFGNode.Addition
-import cacophony.controlflow.CFGNode.Constant
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.semantic.AnalyzedFunction
@@ -10,7 +9,10 @@ import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.utils.CompileException
 
-fun generateFunctionHandlers(analyzedFunctions: FunctionAnalysisResult): Map<FunctionDeclaration, FunctionHandler> {
+fun generateFunctionHandlers(
+    analyzedFunctions: FunctionAnalysisResult,
+    callConvention: CallConvention,
+): Map<FunctionDeclaration, FunctionHandler> {
     val handlers = mutableMapOf<FunctionDeclaration, FunctionHandler>()
     val order = analyzedFunctions.entries.sortedBy { it.value.staticDepth }
 
@@ -18,14 +20,14 @@ fun generateFunctionHandlers(analyzedFunctions: FunctionAnalysisResult): Map<Fun
 
     for ((function, analyzedFunction) in order) {
         if (analyzedFunction.parentLink == null) {
-            handlers[function] = FunctionHandlerImpl(function, analyzedFunction, emptyList())
+            handlers[function] = FunctionHandlerImpl(function, analyzedFunction, emptyList(), callConvention)
         } else {
             val parentHandler =
                 handlers[analyzedFunction.parentLink.parent]
                     ?: throw CompileException("Parent function handler not found")
             val functionAncestorHandlers =
                 listOf(parentHandler) + (ancestorHandlers[analyzedFunction.parentLink.parent] ?: emptyList())
-            handlers[function] = FunctionHandlerImpl(function, analyzedFunction, functionAncestorHandlers)
+            handlers[function] = FunctionHandlerImpl(function, analyzedFunction, functionAncestorHandlers, callConvention)
             ancestorHandlers[function] = functionAncestorHandlers
         }
     }
@@ -71,6 +73,8 @@ interface FunctionHandler {
     fun generatePrologue(): List<CFGNode>
 
     fun generateEpilogue(): List<CFGNode>
+
+    fun getResultRegister(): Register.VirtualRegister
 }
 
 class GenerateVariableAccessException(
@@ -79,9 +83,10 @@ class GenerateVariableAccessException(
 
 class FunctionHandlerImpl(
     val function: FunctionDeclaration,
-    val analyzedFunction: AnalyzedFunction,
+    private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
+    callConvention: CallConvention,
 ) : FunctionHandler {
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable =
@@ -195,9 +200,9 @@ class FunctionHandlerImpl(
 
             is VariableAllocation.OnStack -> {
                 MemoryAccess(
-                    Addition(
+                    CFGNode.Subtraction(
                         generateAccessToFramePointer(definedInDeclaration),
-                        Constant(variableAllocation.offset),
+                        CFGNode.ConstantKnown(variableAllocation.offset),
                     ),
                 )
             }
@@ -216,43 +221,9 @@ class FunctionHandlerImpl(
 
     override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
-    private val prologueEpilogueHandler =
-        PrologueEpilogueHandler(
-            this,
-            ::defaultCallConvention,
-            PRESERVED_REGISTERS,
-        )
-
-    override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()
-
-    override fun generateEpilogue(): List<CFGNode> = prologueEpilogueHandler.generateEpilogue()
-
-    // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
-    // Static link is created even if parent doesn't exist.
-    private fun introduceStaticLinksParams() {
-        registerVariableAllocation(
-            staticLink,
-            VariableAllocation.OnStack(0),
-        )
-        analyzedFunction.auxVariables.add(staticLink)
-    }
-}
-
-fun defaultCallConvention(index: Int): CFGNode {
-    if (index < REGISTER_ARGUMENT_ORDER.size)
-        return registerUse(Register.FixedRegister(REGISTER_ARGUMENT_ORDER[index]))
-    val over = index - REGISTER_ARGUMENT_ORDER.size
-    // Assumes that the RSP has not changed after `call f`
-    return memoryAccess(registerUse(rsp) add integer((over + 1) * REGISTER_SIZE))
-}
-
-class PrologueEpilogueHandler(
-    private val handler: FunctionHandlerImpl,
-    private val callConvention: (Int) -> CFGNode,
-    private val preservedRegisters: List<HardwareRegister>, // without RSP
-) {
-    private val numberOfStackVariables =
-        with(handler) {
+    // Can be changed by `allocateFrameVariable()` method
+    private val stackSpace: CFGNode.ConstantLazy =
+        run {
             val variables =
                 analyzedFunction
                     .declaredVariables()
@@ -271,42 +242,77 @@ class PrologueEpilogueHandler(
                         throw IllegalStateException("Holes in stack")
                     offset += REGISTER_SIZE
                 }
-                if (preservedRegisters.contains(HardwareRegister.RSP))
+                if (callConvention.preservedRegisters().contains(HardwareRegister.RSP))
                     throw IllegalArgumentException("RSP amongst call preserved registers")
+                if (callConvention.preservedRegisters().contains(HardwareRegister.RBP))
+                    throw IllegalArgumentException("RBP amongst call preserved registers")
             }
-            stackVariables.size
+            CFGNode.ConstantLazy(stackVariables.size * REGISTER_SIZE)
         }
 
-    private fun lvalueFromAllocation(allocation: VariableAllocation): CFGNode.LValue =
-        when (allocation) {
-            is VariableAllocation.InRegister -> registerUse(allocation.register)
-            is VariableAllocation.OnStack -> memoryAccess(registerUse(rsp) sub integer(allocation.offset + REGISTER_SIZE))
+    private val resultRegister = Register.VirtualRegister()
+
+    override fun getResultRegister(): Register.VirtualRegister = resultRegister
+
+    private val prologueEpilogueHandler =
+        PrologueEpilogueHandler(
+            this,
+            callConvention,
+            stackSpace,
+            resultRegister,
+        )
+
+    override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()
+
+    override fun generateEpilogue(): List<CFGNode> = prologueEpilogueHandler.generateEpilogue()
+
+    // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
+    // Static link is created even if parent doesn't exist.
+    private fun introduceStaticLinksParams() {
+        registerVariableAllocation(
+            staticLink,
+            VariableAllocation.OnStack(0),
+        )
+        analyzedFunction.auxVariables.add(staticLink)
+    }
+}
+
+class PrologueEpilogueHandler(
+    private val handler: FunctionHandler,
+    private val callConvention: CallConvention,
+    private val stackSpace: CFGNode.ConstantLazy,
+    private val resultAccess: Register.VirtualRegister,
+) {
+    private val spaceForPreservedRegisters: List<Register.VirtualRegister> =
+        callConvention.preservedRegisters().map {
+            Register.VirtualRegister()
         }
 
     fun generatePrologue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
         with(handler) {
-            // Move first, then change RSP, so that the offsets from the callConvention hold
-            // However, keep the existence of red zone in mind
+            nodes.add(pushRegister(rbp))
+            nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
+            nodes.add(registerUse(rsp) subeq stackSpace)
+
+            // Preserved registers
+            for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+                nodes.add(registerUse(destination) assign registerUse(Register.FixedRegister(source)))
+            }
 
             // Defined function arguments
-            for ((ind, arg) in function.arguments.withIndex()) {
+            for ((ind, arg) in getFunctionDeclaration().arguments.withIndex()) {
                 nodes.add(
-                    lvalueFromAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
-                        callConvention(ind),
+                    wrapAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
+                        wrapAllocation(callConvention.argumentAllocation(ind)),
                 )
             }
+
             // Static link (implicit arg)
             nodes.add(
-                lvalueFromAllocation(getVariableAllocation(getStaticLink())) assign
-                    callConvention(function.arguments.size),
+                wrapAllocation(getVariableAllocation(getStaticLink())) assign
+                    wrapAllocation(callConvention.argumentAllocation(getFunctionDeclaration().arguments.size)),
             )
-            // Space for all stack variables
-            nodes.add(registerUse(rsp) subeq integer(numberOfStackVariables * REGISTER_SIZE))
-            // Preserved registers
-            for (register in preservedRegisters) {
-                nodes.add(pushRegister(Register.FixedRegister(register)))
-            }
         }
         return nodes
     }
@@ -314,11 +320,19 @@ class PrologueEpilogueHandler(
     fun generateEpilogue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
         // Restoring preserved registers
-        for (register in preservedRegisters.reversed()) {
-            nodes.add(popRegister(Register.FixedRegister(register)))
+        for ((destination, source) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+            nodes.add(registerUse(Register.FixedRegister(destination)) assign registerUse(source))
         }
+
+        // Write the result to its destination
+        nodes.add(registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(resultAccess))
+
         // Restoring RSP
-        nodes.add(registerUse(rsp) addeq integer(numberOfStackVariables * REGISTER_SIZE))
+        nodes.add(registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)))
+
+        // Restoring RBP
+        nodes.add(popRegister(rbp))
+
         return nodes
     }
 }
@@ -357,9 +371,9 @@ fun generateCall(
                     CFGNode.Modulo(
                         Addition(
                             RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                            Constant(stackArguments.size % 2 * REGISTER_SIZE),
+                            CFGNode.ConstantKnown(stackArguments.size % 2 * REGISTER_SIZE),
                         ),
-                        Constant(16),
+                        CFGNode.ConstantKnown(16),
                     ),
                 ),
             ),
@@ -387,7 +401,7 @@ fun generateCall(
                 RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                 Addition(
                     RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                    Constant(REGISTER_SIZE * stackArguments.size),
+                    CFGNode.ConstantKnown(REGISTER_SIZE * stackArguments.size),
                 ),
             ),
         )

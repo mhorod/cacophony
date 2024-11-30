@@ -40,7 +40,7 @@ class CallTest {
                     "restore rsp" does jump("extract result") { popRegister(rsp) }
                     // The called function returned something, and we are using it as a value - we need to extract it from rax
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                    "forward result" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("result"))) }
+                    "forward result" does jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
                 }
             }[callerDef]!!
 
@@ -87,11 +87,11 @@ class CallTest {
                     "call" does jump("restore rsp") { call(calleeDef) }
                     "restore rsp" does jump("write block result to rax") { popRegister(rsp) }
                     // The called function returned something, but we don't care - we only wanted it for side effects
-                    // We don't extract anything - instead, we prepare our own block result and move it to rax
+                    // We don't extract anything - instead, we prepare our own block result and move it to getResultRegister()
                     "write block result to rax" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 integer(2),
                             )
                         }
@@ -138,7 +138,7 @@ class CallTest {
                     "call" does jump("restore rsp") { call(calleeDef) }
                     "restore rsp" does jump("extract result") { popRegister(rsp) }
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                    "forward result" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("result"))) }
+                    "forward result" does jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
                 }
             }[callerDef]!!
 
@@ -202,7 +202,7 @@ class CallTest {
                     "clear arg6" does jump("restore rsp") { writeRegister(rsp, registerUse(rsp) add integer(8)) }
                     "restore rsp" does jump("extract result") { popRegister(rsp) }
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                    "forward result" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("result"))) }
+                    "forward result" does jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
                 }
             }[callerDef]!!
 
@@ -262,7 +262,8 @@ class CallTest {
                     "call out" does jump("restore rsp out") { call(calleeDef) }
                     "restore rsp out" does jump("extract result out") { popRegister(rsp) }
                     "extract result out" does jump("forward result out") { writeRegister("result out", registerUse(rax)) }
-                    "forward result out" does jump("exit") { writeRegister(rax, registerUse(virtualRegister("result out"))) }
+                    "forward result out" does
+                        jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result out"))) }
                 }
             }[callerDef]!!
 
@@ -302,7 +303,7 @@ class CallTest {
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
                     "forward result" does
                         jump("exit") {
-                            writeRegister(rax, integer(1) add registerUse(virtualRegister("result")))
+                            writeRegister(getResultRegister(), integer(1) add registerUse(virtualRegister("result")))
                         }
                 }
             }

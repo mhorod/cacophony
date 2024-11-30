@@ -17,7 +17,6 @@ import cacophony.controlflow.mod
 import cacophony.controlflow.mul
 import cacophony.controlflow.neq
 import cacophony.controlflow.not
-import cacophony.controlflow.rax
 import cacophony.controlflow.sub
 import cacophony.controlflow.trueValue
 import cacophony.controlflow.writeRegister
@@ -32,7 +31,7 @@ class SingleCFGNodeGenerationTest {
         val expectedCFG =
             cfg {
                 fragment(function, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(rax, expectedNode) }
+                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), expectedNode) }
                 }
             }
         assertEquivalent(programCFG, expectedCFG)

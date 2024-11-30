@@ -26,7 +26,6 @@ import cacophony.controlflow.generation.TestOperators.Companion.neqNode
 import cacophony.controlflow.generation.TestOperators.Companion.sub
 import cacophony.controlflow.generation.TestOperators.Companion.subNode
 import cacophony.controlflow.integer
-import cacophony.controlflow.rax
 import cacophony.controlflow.writeRegister
 import cacophony.lit
 import cacophony.semantic.functionDeclaration
@@ -77,7 +76,7 @@ class SideEffectSeparationTest {
                     "add" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 makeNode(
                                     readRegister("lhs"),
                                     (writeRegister("x", integer(20))),
@@ -123,7 +122,7 @@ class SideEffectSeparationTest {
                     "add" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 makeNode(
                                     readRegister("lhs"),
                                     (writeRegister("x", integer(20))),
@@ -169,7 +168,7 @@ class SideEffectSeparationTest {
                     "add" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 makeNode(
                                     readRegister("lhs"),
                                     readRegister("x"),

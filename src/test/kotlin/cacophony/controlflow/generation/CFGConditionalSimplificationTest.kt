@@ -27,7 +27,7 @@ class CFGConditionalSimplificationTest {
         val expectedCFG =
             cfg {
                 fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(rax, integer(11)) }
+                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), integer(11)) }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -49,7 +49,7 @@ class CFGConditionalSimplificationTest {
         val expectedCFG =
             cfg {
                 fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(rax, integer(22)) }
+                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), integer(22)) }
                 }
             }
         assertEquivalent(actualCFG, expectedCFG)
@@ -88,7 +88,7 @@ class CFGConditionalSimplificationTest {
                     "write result to rax" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 registerUse(virtualRegister("result")),
                             )
                         }
@@ -130,7 +130,7 @@ class CFGConditionalSimplificationTest {
                     "write result to rax" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 registerUse(virtualRegister("result")),
                             )
                         }
@@ -189,7 +189,7 @@ class CFGConditionalSimplificationTest {
                     "write result to rax" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 registerUse(virtualRegister("result")),
                             )
                         }
@@ -248,7 +248,7 @@ class CFGConditionalSimplificationTest {
                     "write result to rax" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 registerUse(virtualRegister("result")),
                             )
                         }
@@ -300,7 +300,7 @@ class CFGConditionalSimplificationTest {
                     "write result to rax" does
                         jump("exit") {
                             writeRegister(
-                                rax,
+                                getResultRegister(),
                                 registerUse(virtualRegister("result")),
                             )
                         }
@@ -364,7 +364,7 @@ class CFGConditionalSimplificationTest {
                         }
                     "write result to rax" does
                         jump("exit") {
-                            writeRegister(rax, registerUse(virtualRegister("y")))
+                            writeRegister(getResultRegister(), registerUse(virtualRegister("y")))
                         }
                 }
             }
@@ -411,7 +411,7 @@ class CFGConditionalSimplificationTest {
             cfg {
                 fragment(actualCFG.keys.first(), listOf(argStack(0)), 8) {
                     "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(12)) }
-                    "write result to rax" does jump("exit") { writeRegister(rax, readRegister("result")) }
+                    "write result to rax" does jump("exit") { writeRegister(getResultRegister(), readRegister("result")) }
                 }
             }
 
@@ -443,7 +443,7 @@ class CFGConditionalSimplificationTest {
             cfg {
                 fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(20)) }
-                    "write result to rax" does jump("exit") { writeRegister(rax, readRegister("result")) }
+                    "write result to rax" does jump("exit") { writeRegister(getResultRegister(), readRegister("result")) }
                 }
             }
 
@@ -483,7 +483,7 @@ class CFGConditionalSimplificationTest {
             cfg {
                 fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(11)) }
-                    "write result to rax" does jump("exit") { writeRegister(rax, readRegister("result")) }
+                    "write result to rax" does jump("exit") { writeRegister(getResultRegister(), readRegister("result")) }
                 }
             }
 
