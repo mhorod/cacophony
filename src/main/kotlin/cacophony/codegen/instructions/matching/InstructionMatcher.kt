@@ -79,7 +79,7 @@ class InstructionMatcherImpl(
         val registerFill: MutableMap<RegisterLabel, Register> = mutableMapOf(),
         val constantFill: MutableMap<ConstantLabel, CFGNode.Constant> = mutableMapOf(),
         val toFill: MutableMap<ValueLabel, CFGNode> = mutableMapOf(),
-        var functionFill: MutableMap<FunctionLabel, CFGNode.Function> = mutableMapOf(),
+        val functionFill: MutableMap<FunctionLabel, CFGNode.Function> = mutableMapOf(),
         var size: Int = 0,
     )
 
