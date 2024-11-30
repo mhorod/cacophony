@@ -70,10 +70,6 @@ class FunctionHandlerTest {
             run {
                 val functionHandlers = mutableListOf<FunctionHandlerImpl>()
                 for (i in 1..chainLength) {
-                    val analyzedFunction = mockAnalyzedFunction()
-                    val callConvention = mockk<CallConvention>()
-                    every { callConvention.preservedRegisters() } returns emptyList()
-
                     functionHandlers.add(
                         0,
                         makeDefaultHandler(
@@ -85,7 +81,7 @@ class FunctionHandlerTest {
                                 mockk(),
                                 mockk(),
                             ),
-                            analyzedFunction,
+                            mockAnalyzedFunction(),
                             functionHandlers.toList(),
                         ),
                     )
