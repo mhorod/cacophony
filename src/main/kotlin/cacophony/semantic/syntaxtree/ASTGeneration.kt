@@ -1,11 +1,10 @@
-package cacophony.semantic
+package cacophony.semantic.syntaxtree
 
 import cacophony.diagnostics.ASTDiagnostics
 import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyGrammarSymbol.*
-import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor

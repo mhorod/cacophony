@@ -1,6 +1,7 @@
-package cacophony.semantic
+package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.utils.getProperTransitiveClosure

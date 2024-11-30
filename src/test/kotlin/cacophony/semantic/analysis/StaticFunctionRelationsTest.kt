@@ -1,6 +1,7 @@
-package cacophony.semantic
+package cacophony.semantic.analysis
 
-import cacophony.*
+import cacophony.semantic.program
+import cacophony.semantic.programStaticRelation
 import cacophony.semantic.syntaxtree.Empty
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -10,9 +11,9 @@ class StaticFunctionRelationsTest {
     fun `should find variable in function`() {
         // given
         // f => let a
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val funF = functionDeclaration("f", varA)
-        val ast = astOf(funF)
+        val varA = cacophony.semantic.variableDeclaration("a", Empty(cacophony.semantic.mockRange()))
+        val funF = cacophony.semantic.functionDeclaration("f", varA)
+        val ast = cacophony.semantic.astOf(funF)
         val program = program(ast)
 
         // when
@@ -38,10 +39,10 @@ class StaticFunctionRelationsTest {
     fun `should find variable read`() {
         // given
         // f => let a
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val varAUse = variableUse("a")
-        val funF = functionDeclaration("f", block(varA, varAUse))
-        val ast = astOf(funF)
+        val varA = cacophony.semantic.variableDeclaration("a", Empty(cacophony.semantic.mockRange()))
+        val varAUse = cacophony.semantic.variableUse("a")
+        val funF = cacophony.semantic.functionDeclaration("f", cacophony.semantic.block(varA, varAUse))
+        val ast = cacophony.semantic.astOf(funF)
         val program = program(ast)
 
         // when
@@ -67,11 +68,11 @@ class StaticFunctionRelationsTest {
     fun `should find variable write`() {
         // given
         // f => (let a; a = ())
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val varAUse = variableUse("a")
-        val varAWrite = variableWrite(varAUse)
-        val funF = functionDeclaration("f", block(varA, varAWrite))
-        val ast = astOf(funF)
+        val varA = cacophony.semantic.variableDeclaration("a", Empty(cacophony.semantic.mockRange()))
+        val varAUse = cacophony.semantic.variableUse("a")
+        val varAWrite = cacophony.semantic.variableWrite(varAUse)
+        val funF = cacophony.semantic.functionDeclaration("f", cacophony.semantic.block(varA, varAWrite))
+        val ast = cacophony.semantic.astOf(funF)
         val program = program(ast)
 
         // when
@@ -97,13 +98,13 @@ class StaticFunctionRelationsTest {
     fun `should find variable read and write`() {
         // given
         // f => (let a; a = (); a)
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val varAUse1 = variableUse("a")
-        val varAWrite = variableWrite(varAUse1)
+        val varA = cacophony.semantic.variableDeclaration("a", Empty(cacophony.semantic.mockRange()))
+        val varAUse1 = cacophony.semantic.variableUse("a")
+        val varAWrite = cacophony.semantic.variableWrite(varAUse1)
 
-        val varAUse2 = variableUse("a")
-        val funF = functionDeclaration("f", block(varA, varAWrite, varAUse2))
-        val ast = astOf(funF)
+        val varAUse2 = cacophony.semantic.variableUse("a")
+        val funF = cacophony.semantic.functionDeclaration("f", cacophony.semantic.block(varA, varAWrite, varAUse2))
+        val ast = cacophony.semantic.astOf(funF)
         val program = program(ast)
 
         // when
@@ -132,11 +133,11 @@ class StaticFunctionRelationsTest {
     fun `should find multiple variables in block`() {
         // given
         // f => ( let a; let b; let c )
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val varB = variableDeclaration("b", Empty(mockRange()))
-        val varC = variableDeclaration("c", Empty(mockRange()))
-        val funF = functionDeclaration("f", block(varA, varB, varC))
-        val ast = astOf(funF)
+        val varA = cacophony.semantic.variableDeclaration("a", Empty(cacophony.semantic.mockRange()))
+        val varB = cacophony.semantic.variableDeclaration("b", Empty(cacophony.semantic.mockRange()))
+        val varC = cacophony.semantic.variableDeclaration("c", Empty(cacophony.semantic.mockRange()))
+        val funF = cacophony.semantic.functionDeclaration("f", cacophony.semantic.block(varA, varB, varC))
+        val ast = cacophony.semantic.astOf(funF)
         val program = program(ast)
 
         // when
@@ -162,9 +163,9 @@ class StaticFunctionRelationsTest {
     fun `should find nested function`() {
         // given
         // f => ( g => () )
-        val funG = functionDeclaration("g", Empty(mockRange()))
-        val funF = functionDeclaration("f", funG)
-        val ast = astOf(funF)
+        val funG = cacophony.semantic.functionDeclaration("g", Empty(cacophony.semantic.mockRange()))
+        val funF = cacophony.semantic.functionDeclaration("f", funG)
+        val ast = cacophony.semantic.astOf(funF)
         val program = program(ast)
 
         // when
@@ -197,10 +198,10 @@ class StaticFunctionRelationsTest {
     fun `should find multiple nested functions in block`() {
         // given
         // f => ( g => (); h => () )
-        val funG = functionDeclaration("g", Empty(mockRange()))
-        val funH = functionDeclaration("h", Empty(mockRange()))
-        val funF = functionDeclaration("f", block(funG, funH))
-        val ast = astOf(funF)
+        val funG = cacophony.semantic.functionDeclaration("g", Empty(cacophony.semantic.mockRange()))
+        val funH = cacophony.semantic.functionDeclaration("h", Empty(cacophony.semantic.mockRange()))
+        val funF = cacophony.semantic.functionDeclaration("f", cacophony.semantic.block(funG, funH))
+        val ast = cacophony.semantic.astOf(funF)
         val program = program(ast)
 
         // when
@@ -240,9 +241,9 @@ class StaticFunctionRelationsTest {
     fun `should analyze top level variables`() {
         // given
         // (let a; f => ())
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val funF = functionDeclaration("f", Empty(mockRange()))
-        val ast = astOf(varA, funF)
+        val varA = cacophony.semantic.variableDeclaration("a", Empty(cacophony.semantic.mockRange()))
+        val funF = cacophony.semantic.functionDeclaration("f", Empty(cacophony.semantic.mockRange()))
+        val ast = cacophony.semantic.astOf(varA, funF)
         val program = program(ast)
 
         // when
@@ -274,14 +275,14 @@ class StaticFunctionRelationsTest {
     fun `should find variables and functions in nested functions`() {
         // given
         // f => (let a; g => ( let b; h => ( let c ) ) )
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val varB = variableDeclaration("b", Empty(mockRange()))
-        val varC = variableDeclaration("C", Empty(mockRange()))
-        val funH = functionDeclaration("h", block(varC))
-        val funG = functionDeclaration("g", block(varB, funH))
-        val funF = functionDeclaration("f", block(varA, funG))
+        val varA = cacophony.semantic.variableDeclaration("a", Empty(cacophony.semantic.mockRange()))
+        val varB = cacophony.semantic.variableDeclaration("b", Empty(cacophony.semantic.mockRange()))
+        val varC = cacophony.semantic.variableDeclaration("C", Empty(cacophony.semantic.mockRange()))
+        val funH = cacophony.semantic.functionDeclaration("h", cacophony.semantic.block(varC))
+        val funG = cacophony.semantic.functionDeclaration("g", cacophony.semantic.block(varB, funH))
+        val funF = cacophony.semantic.functionDeclaration("f", cacophony.semantic.block(varA, funG))
 
-        val ast = astOf(funF)
+        val ast = cacophony.semantic.astOf(funF)
         val program = program(ast)
 
         // when
@@ -320,18 +321,18 @@ class StaticFunctionRelationsTest {
     fun `should find relations in complex nested functions`() {
         // given
         // (foo => (let a; g => h => a; i => (j => (); g())); main => foo())
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val varAUse = variableUse("a")
-        val funH = functionDeclaration("h", varAUse)
-        val funG = functionDeclaration("g", funH)
-        val funJ = functionDeclaration("j", block())
-        val varGUse = variableUse("g")
-        val funI = functionDeclaration("i", block(funJ, call(varGUse)))
-        val funFoo = functionDeclaration("foo", block(varA, funG, funI))
-        val varFooUse = variableUse("foo")
-        val funMain = functionDeclaration("main", call(varFooUse))
+        val varA = cacophony.semantic.variableDeclaration("a", Empty(cacophony.semantic.mockRange()))
+        val varAUse = cacophony.semantic.variableUse("a")
+        val funH = cacophony.semantic.functionDeclaration("h", varAUse)
+        val funG = cacophony.semantic.functionDeclaration("g", funH)
+        val funJ = cacophony.semantic.functionDeclaration("j", cacophony.semantic.block())
+        val varGUse = cacophony.semantic.variableUse("g")
+        val funI = cacophony.semantic.functionDeclaration("i", cacophony.semantic.block(funJ, cacophony.semantic.call(varGUse)))
+        val funFoo = cacophony.semantic.functionDeclaration("foo", cacophony.semantic.block(varA, funG, funI))
+        val varFooUse = cacophony.semantic.variableUse("foo")
+        val funMain = cacophony.semantic.functionDeclaration("main", cacophony.semantic.call(varFooUse))
 
-        val ast = astOf(funFoo, funMain)
+        val ast = cacophony.semantic.astOf(funFoo, funMain)
         val program = program(ast)
 
         // when

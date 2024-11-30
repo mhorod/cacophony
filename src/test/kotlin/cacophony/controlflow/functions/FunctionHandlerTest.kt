@@ -1,9 +1,14 @@
-package cacophony.controlflow
+package cacophony.controlflow.functions
 
-import cacophony.semantic.AnalyzedFunction
-import cacophony.semantic.AnalyzedVariable
-import cacophony.semantic.ParentLink
-import cacophony.semantic.VariableUseType
+import cacophony.controlflow.CFGNode
+import cacophony.controlflow.HardwareRegister
+import cacophony.controlflow.Register
+import cacophony.controlflow.Variable
+import cacophony.controlflow.VariableAllocation
+import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.AnalyzedVariable
+import cacophony.semantic.analysis.ParentLink
+import cacophony.semantic.analysis.VariableUseType
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 import io.mockk.*

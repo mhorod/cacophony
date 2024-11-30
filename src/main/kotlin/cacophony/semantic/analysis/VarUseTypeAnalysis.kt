@@ -1,5 +1,6 @@
-package cacophony.semantic
+package cacophony.semantic.analysis
 
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 
 typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseType>>

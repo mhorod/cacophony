@@ -1,8 +1,9 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
-import cacophony.semantic.ResolvedVariables
-import cacophony.semantic.UseTypeAnalysisResult
+import cacophony.controlflow.functions.FunctionHandler
+import cacophony.semantic.analysis.UseTypeAnalysisResult
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Empty
