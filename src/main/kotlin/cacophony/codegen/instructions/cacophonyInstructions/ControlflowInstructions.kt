@@ -94,7 +94,7 @@ data class Call(
 class Ret : Instruction {
     override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
     override val registersWritten: Set<Register> =
-        setOf(Register.FixedRegister(HardwareRegister.RSP)).union(
+        setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(HardwareRegister.RAX)).union(
             PRESERVED_REGISTERS.map { Register.FixedRegister(it) },
         )
 
