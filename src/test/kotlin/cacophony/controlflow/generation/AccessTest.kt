@@ -59,8 +59,7 @@ class AccessTest {
                         }
                 }
             }[innerDef]!!
-        println(actualFragment)
-        println(expectedFragment)
+
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 
@@ -102,8 +101,7 @@ class AccessTest {
                         }
                 }
             }[innerDef]!!
-        println(actualFragment)
-        println(expectedFragment)
+
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 }

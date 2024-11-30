@@ -202,7 +202,7 @@ class FunctionHandlerImpl(
                 MemoryAccess(
                     CFGNode.Subtraction(
                         generateAccessToFramePointer(definedInDeclaration),
-                        CFGNode.ConstantReal(variableAllocation.offset),
+                        CFGNode.ConstantKnown(variableAllocation.offset),
                     ),
                 )
             }
@@ -292,7 +292,7 @@ class PrologueEpilogueHandler(
         val nodes = mutableListOf<CFGNode>()
         with(handler) {
             nodes.add(pushRegister(rbp))
-            nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantReal(REGISTER_SIZE)))
+            nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
             nodes.add(registerUse(rsp) subeq stackSpace)
 
             // Preserved registers
@@ -328,7 +328,7 @@ class PrologueEpilogueHandler(
         nodes.add(registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(resultAccess))
 
         // Restoring RSP
-        nodes.add(registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantReal(REGISTER_SIZE)))
+        nodes.add(registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)))
 
         // Restoring RBP
         nodes.add(popRegister(rbp))
@@ -371,9 +371,9 @@ fun generateCall(
                     CFGNode.Modulo(
                         Addition(
                             RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                            CFGNode.ConstantReal(stackArguments.size % 2 * REGISTER_SIZE),
+                            CFGNode.ConstantKnown(stackArguments.size % 2 * REGISTER_SIZE),
                         ),
-                        CFGNode.ConstantReal(16),
+                        CFGNode.ConstantKnown(16),
                     ),
                 ),
             ),
@@ -401,7 +401,7 @@ fun generateCall(
                 RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                 Addition(
                     RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                    CFGNode.ConstantReal(REGISTER_SIZE * stackArguments.size),
+                    CFGNode.ConstantKnown(REGISTER_SIZE * stackArguments.size),
                 ),
             ),
         )

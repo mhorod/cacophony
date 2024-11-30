@@ -43,8 +43,7 @@ class CallTest {
                     "forward result" does jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
                 }
             }[callerDef]!!
-        println(actualFragment)
-        println(expectedFragment)
+
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 

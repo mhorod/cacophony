@@ -24,7 +24,7 @@ val trueValue = CFGNode.TRUE
 val falseValue = CFGNode.FALSE
 val returnNode = CFGNode.Return
 
-fun integer(value: Int) = CFGNode.ConstantReal(value)
+fun integer(value: Int) = CFGNode.ConstantKnown(value)
 
 fun registerUse(register: Register) = CFGNode.RegisterUse(register)
 
@@ -86,23 +86,17 @@ fun wrapAllocation(allocation: VariableAllocation): CFGNode.LValue =
         is VariableAllocation.OnStack -> memoryAccess(registerUse(rbp) sub integer(allocation.offset))
     }
 
-class CFGFragmentBuilder() {
+class CFGFragmentBuilder {
     private val labels: MutableMap<String, CFGLabel> = mutableMapOf()
     private val vertices = mutableMapOf<CFGLabel, CFGVertex>()
     private val resultRegister = Register.VirtualRegister()
-    private var callConvention: CallConvention = SystemVAMD64CallConvention
+    private val callConvention: CallConvention = SystemVAMD64CallConvention
 
     private fun getLabel(label: String): CFGLabel = labels.getOrPut(label) { CFGLabel() }
 
     fun getResultRegister() = resultRegister
 
-    fun setCallConvention(newConvention: CallConvention) {
-        callConvention = newConvention
-    }
-
     fun build(): CFGFragment = CFGFragment(vertices, getLabel("entry"))
-
-    fun final(node: () -> CFGNode) = CFGVertex.Final(node())
 
     fun jump(destination: String, node: () -> CFGNode): CFGVertex = CFGVertex.Jump(node(), getLabel(destination))
 
@@ -120,7 +114,7 @@ class CFGFragmentBuilder() {
         val spaceForPreservedRegisters = callConvention.preservedRegisters().map { Register.VirtualRegister() }
         // prologue
         single { pushRegister(rbp) }
-        single { registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantReal(REGISTER_SIZE)) }
+        single { registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)) }
         single { registerUse(rsp) subeq CFGNode.ConstantLazy(stackSpace) }
         for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
             single { registerUse(destination) assign registerUse(Register.FixedRegister(source)) }
@@ -140,9 +134,9 @@ class CFGFragmentBuilder() {
             single { registerUse(Register.FixedRegister(destination)) assign registerUse(source) }
         }
         single { registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(getResultRegister()) }
-        single { registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantReal(REGISTER_SIZE)) }
+        single { registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)) }
         curLabel does jump("return") { popRegister(rbp) }
-        "return" does final { returnNode }
+        "return" does CFGVertex.Final(returnNode)
     }
 
     infix fun String.does(vertex: CFGVertex) {

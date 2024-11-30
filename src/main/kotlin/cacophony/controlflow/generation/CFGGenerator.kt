@@ -27,13 +27,12 @@ internal class CFGGenerator(
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
     private val operatorHandler = OperatorHandler(cfg, this, sideEffectAnalyzer)
     private val assignmentHandler = AssignmentHandler(cfg, this)
-    private val functionHandler = functionHandlers[function]!!
     private val prologue = listOfNodesToExtracted(getCurrentFunctionHandler().generatePrologue())
     private val epilogue = listOfNodesToExtracted(getCurrentFunctionHandler().generateEpilogue())
 
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
-        val returnValueRegister = registerUse(functionHandler.getResultRegister())
+        val returnValueRegister = registerUse(getCurrentFunctionHandler().getResultRegister())
 
         val extended =
             when (bodyCFG) {
@@ -180,7 +179,7 @@ internal class CFGGenerator(
                 SubCFG.Immediate(
                     when (literal) {
                         is Literal.BoolLiteral -> if (literal.value) CFGNode.TRUE else CFGNode.FALSE
-                        is Literal.IntLiteral -> CFGNode.ConstantReal(literal.value)
+                        is Literal.IntLiteral -> CFGNode.ConstantKnown(literal.value)
                     },
                 )
 
@@ -284,7 +283,7 @@ internal class CFGGenerator(
     private fun visitReturnStatement(expression: Statement.ReturnStatement, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
-            CFGNode.Assignment(CFGNode.RegisterUse(functionHandler.getResultRegister()), valueCFG.access)
+            CFGNode.Assignment(CFGNode.RegisterUse(getCurrentFunctionHandler().getResultRegister()), valueCFG.access)
 
         val resultAssignmentVertex = cfg.addUnconditionalVertex(resultAssignment)
         resultAssignmentVertex.connect(epilogue.entry.label)

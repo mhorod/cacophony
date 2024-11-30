@@ -29,10 +29,10 @@ class InstructionMatcherTest {
         val standardAdditionPattern = AdditionPattern
         val instructionMatcher = InstructionMatcherImpl(listOf(standardAdditionPattern, oddNumberAdditionPattern), emptyList(), emptyList())
 
-        var node = CFGNode.ConstantReal(1) add CFGNode.ConstantReal(2)
+        var node = CFGNode.ConstantKnown(1) add CFGNode.ConstantKnown(2)
         assertThat(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()).size).isEqualTo(2)
 
-        node = CFGNode.ConstantReal(1) add CFGNode.ConstantReal(1)
+        node = CFGNode.ConstantKnown(1) add CFGNode.ConstantKnown(1)
         assertThat(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()).size).isEqualTo(1)
     }
 
@@ -52,7 +52,7 @@ class InstructionMatcherTest {
 
         val register = Register.VirtualRegister()
 
-        val nodes = listOf(CFGNode.ConstantReal(1), CFGNode.ConstantReal(2) add CFGNode.ConstantReal(3), CFGNode.RegisterUse(register))
+        val nodes = listOf(CFGNode.ConstantKnown(1), CFGNode.ConstantKnown(2) add CFGNode.ConstantKnown(3), CFGNode.RegisterUse(register))
 
 //            +
 //           / \
@@ -85,7 +85,7 @@ class InstructionMatcherTest {
         val standardAdditionPattern = AdditionPattern
         val instructionMatcher = InstructionMatcherImpl(listOf(standardAdditionPattern), emptyList(), emptyList())
 
-        val constNode = CFGNode.ConstantReal(1)
+        val constNode = CFGNode.ConstantKnown(1)
         val registerNode = CFGNode.RegisterUse(Register.VirtualRegister())
 
         val node = constNode add registerNode

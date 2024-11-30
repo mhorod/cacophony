@@ -11,7 +11,6 @@ import cacophony.controlflow.mod
 import cacophony.controlflow.unit
 import org.junit.jupiter.api.Test
 
-// @Disabled("TODO: Cannot handle return at the moment")
 class ReturnTest {
     @Test
     fun `return exits while(true) loop`() {

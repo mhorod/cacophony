@@ -30,11 +30,7 @@ abstract class StackCallConvention(private val registerOrder: List<HardwareRegis
 
 object SystemVAMD64CallConvention : StackCallConvention(REGISTER_ARGUMENT_ORDER) {
     private val preservedRegisters =
-        HardwareRegister.entries.filter {
-            it != HardwareRegister.RSP &&
-                it != HardwareRegister.RBP &&
-                it.isCallPreserved
-        }
+        listOf(HardwareRegister.RBX, HardwareRegister.R12, HardwareRegister.R13, HardwareRegister.R14, HardwareRegister.R15)
 
     override fun returnRegister(): HardwareRegister = HardwareRegister.RAX
 
