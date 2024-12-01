@@ -135,13 +135,13 @@ class FunctionHandlerImpl(
         respectStackAlignment: Boolean,
     ): List<CFGNode> {
         val staticLinkVar =
-            if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers[0]) {
+            if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
                 RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
             } else {
-                callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers[0].getFunctionDeclaration())
+                callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
             }
 
-        return generateCall(function, mutableListOf(staticLinkVar) + arguments, result, respectStackAlignment)
+        return generateCall(function, arguments + mutableListOf(staticLinkVar), result, respectStackAlignment)
     }
 
     private fun traverseStaticLink(depth: Int): CFGNode =

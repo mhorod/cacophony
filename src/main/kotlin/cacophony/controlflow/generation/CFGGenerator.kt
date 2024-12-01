@@ -124,7 +124,7 @@ internal class CFGGenerator(
                     .dropLast(1)
                     .map { visitExtracted(it, EvalMode.SideEffect, context) }
             val valueCFG = visit(last, mode, context)
-            val reduced = prerequisiteSubCFGs.reduce { subCFG, path -> subCFG merge path }
+            val reduced = prerequisiteSubCFGs.reduce(SubCFG.Extracted::merge)
 
             when (valueCFG) {
                 is SubCFG.Extracted -> reduced merge valueCFG
@@ -158,11 +158,11 @@ internal class CFGGenerator(
                     resultRegister,
                     true,
                 ).map { ensureExtracted(it) }
-                .reduce { path, next -> path merge next }
+                .reduce(SubCFG.Extracted::merge)
 
         val entry =
             if (argumentVertices.isNotEmpty()) {
-                val extractedArguments = argumentVertices.reduce { path, next -> path merge next }
+                val extractedArguments = argumentVertices.reduce(SubCFG.Extracted::merge)
                 extractedArguments.exit.connect(callSequence.entry.label)
                 extractedArguments.entry
             } else {
