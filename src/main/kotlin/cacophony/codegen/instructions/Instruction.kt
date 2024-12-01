@@ -30,7 +30,7 @@ interface Instruction {
 
     fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String
 
-    fun isNoop(): Boolean = false
+    fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping): Boolean = false
 }
 
 interface CopyInstruction : Instruction

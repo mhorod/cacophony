@@ -9,7 +9,7 @@ fun generateAsm(block: BasicBlock, registerAllocation: RegisterAllocation): Stri
     ".${block.label().name}:\n" +
         block
             .instructions()
-            .filterNot(Instruction::isNoop)
+            .filterNot { it.isNoop(registerAllocation.successful) }
             .map { it.toAsm(registerAllocation.successful) }
             .filter(String::isNotEmpty)
             .joinToString("\n")

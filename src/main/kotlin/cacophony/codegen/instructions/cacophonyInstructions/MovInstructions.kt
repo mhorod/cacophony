@@ -23,7 +23,7 @@ data class MovRegReg(
         return "mov $lhsHardwareReg, $rhsHardwareReg"
     }
 
-    override fun isNoop() = lhs == rhs
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping) = hardwareRegisterMapping[lhs] == hardwareRegisterMapping[rhs]
 }
 
 data class MovRegImm(
