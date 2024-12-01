@@ -1,5 +1,6 @@
 package cacophony.pipeline
 
+import cacophony.codegen.functionBodyLabel
 import cacophony.codegen.instructions.CacophonyInstructionCovering
 import cacophony.codegen.instructions.generateAsm
 import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
@@ -226,7 +227,7 @@ class CacophonyPipeline(
         return covering.mapValues { (function, loweredCFG) ->
             run {
                 val ra = registerAllocation[function] ?: error("No register allocation for function $function")
-                cacophony.codegen.instructions.generateAsm(function.identifier, loweredCFG, ra)
+                cacophony.codegen.instructions.generateAsm(functionBodyLabel(function), loweredCFG, ra)
             }
         }
     }

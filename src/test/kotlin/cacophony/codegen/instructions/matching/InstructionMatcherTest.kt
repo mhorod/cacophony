@@ -1,8 +1,10 @@
 package cacophony.codegen.instructions.matching
 
+import cacophony.codegen.patterns.SideEffectPattern
 import cacophony.codegen.patterns.ValuePattern
 import cacophony.codegen.patterns.cacophonyPatterns.AdditionPattern
 import cacophony.controlflow.*
+import cacophony.semantic.syntaxtree.Definition
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -73,7 +75,8 @@ class InstructionMatcherTest {
                 match {
                     it.constantFill == mapOf(constLabel to nodes[0]) &&
                         it.valueFill == mapOf(valueLabel to subOperationResult) &&
-                        it.registerFill == mapOf(registerLabel to register)
+                        it.registerFill == mapOf(registerLabel to register) &&
+                        it.functionFill == emptyMap<FunctionLabel, CFGNode.Function>()
                 },
                 resultRegister,
             )
@@ -90,5 +93,32 @@ class InstructionMatcherTest {
 
         val node = constNode add registerNode
         assertThat(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()).size).isEqualTo(1)
+    }
+
+    @Test
+    fun `function slot is filled`() {
+        val functionLabel = FunctionLabel()
+        val patternTree = CFGNode.Call(CFGNode.FunctionSlot(functionLabel))
+        val customCallPattern = mockk<SideEffectPattern>()
+        every { customCallPattern.tree } returns patternTree
+        every { customCallPattern.makeInstance(any()) } returns emptyList()
+
+        val instructionMatcher = InstructionMatcherImpl(emptyList(), listOf(customCallPattern), emptyList())
+        val function = Definition.FunctionDeclaration(mockk(), "f", mockk(), listOf(), mockk(), mockk())
+        val node = CFGNode.Call(function)
+
+        val match = instructionMatcher.findMatchesForSideEffects(node).elementAt(0)
+
+        match.instructionMaker(mapOf())
+        verify {
+            customCallPattern.makeInstance(
+                match {
+                    it.constantFill == emptyMap<ConstantLabel, CFGNode.Constant>() &&
+                        it.valueFill == emptyMap<ValueLabel, Register>() &&
+                        it.registerFill == emptyMap<ValueLabel, Register>() &&
+                        it.functionFill == mapOf(functionLabel to CFGNode.Function(function))
+                },
+            )
+        }
     }
 }
