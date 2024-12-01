@@ -1,7 +1,7 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
 import cacophony.codegen.BlockLabel
-import cacophony.codegen.FunctionBodyLabel
+import cacophony.codegen.functionBodyLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
@@ -88,7 +88,7 @@ data class Call(
         )
     override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${FunctionBodyLabel(function).name}"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
 class Ret : Instruction {
