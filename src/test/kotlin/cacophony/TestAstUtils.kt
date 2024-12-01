@@ -4,6 +4,7 @@ import cacophony.semantic.CallGraph
 import cacophony.semantic.MAIN_FUNCTION_IDENTIFIER
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
+import org.assertj.core.api.InstanceOfAssertFactories.type
 
 fun mockRange() = Pair(Location(0), Location(0))
 
@@ -21,11 +22,27 @@ fun functionDeclaration(identifier: String, body: Expression) =
         body,
     )
 
-fun arg(identifier: String) = Definition.FunctionArgument(mockRange(), identifier, unitType())
+fun typedArg(identifier: String, type: Type) = Definition.FunctionArgument(mockRange(), identifier, type)
+
+fun arg(identifier: String) = typedArg(identifier, unitType())
+
+fun typedFunctionDeclaration(
+    identifier: String,
+    argsType: Type.Functional?,
+    arguments: List<Definition.FunctionArgument>,
+    outType: Type,
+    body: Expression,
+) = Definition.FunctionDeclaration(
+    mockRange(),
+    identifier,
+    argsType,
+    arguments,
+    outType,
+    body,
+)
 
 fun functionDeclaration(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
-    Definition.FunctionDeclaration(
-        mockRange(),
+    typedFunctionDeclaration(
         identifier,
         null,
         arguments,
@@ -33,13 +50,15 @@ fun functionDeclaration(identifier: String, arguments: List<Definition.FunctionA
         body,
     )
 
-fun variableDeclaration(identifier: String, value: Expression) =
+fun typedVariableDeclaration(identifier: String, type: Type.Basic?, value: Expression) =
     Definition.VariableDeclaration(
         mockRange(),
         identifier,
-        null,
+        type,
         value,
     )
+
+fun variableDeclaration(identifier: String, value: Expression) = typedVariableDeclaration(identifier, null, value)
 
 fun variableUse(identifier: String) = VariableUse(mockRange(), identifier)
 
@@ -106,6 +125,14 @@ infix fun Expression.gt(rhs: Expression) = OperatorBinary.Greater(mockRange(), t
 
 infix fun Expression.addeq(rhs: Expression) = OperatorBinary.AdditionAssignment(mockRange(), this, rhs)
 
+infix fun Expression.subeq(rhs: Expression) = OperatorBinary.SubtractionAssignment(mockRange(), this, rhs)
+
+infix fun Expression.muleq(rhs: Expression) = OperatorBinary.MultiplicationAssignment(mockRange(), this, rhs)
+
+infix fun Expression.diveq(rhs: Expression) = OperatorBinary.DivisionAssignment(mockRange(), this, rhs)
+
+infix fun Expression.modeq(rhs: Expression) = OperatorBinary.ModuloAssignment(mockRange(), this, rhs)
+
 fun minus(expression: Expression) = OperatorUnary.Minus(mockRange(), expression)
 
 fun lnot(expr: Expression) = OperatorUnary.Negation(mockRange(), expr)
@@ -124,3 +151,7 @@ fun whileLoop(testExpression: Expression, doExpression: Expression) = Statement.
 fun breakStatement() = Statement.BreakStatement(mockRange())
 
 fun returnStatement(value: Expression) = Statement.ReturnStatement(mockRange(), value)
+
+fun basicType(identifier: String) = Type.Basic(mockRange(), identifier)
+
+fun functionalType(argTypes: List<Type>, resType: Type) = Type.Functional(mockRange(), argTypes.toList(), resType)
