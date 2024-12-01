@@ -91,7 +91,7 @@ sealed interface CFGNode {
 
     data class MemoryAccess(
         val destination: CFGNode,
-    ) : LValue {
+    ) : Value, LValue {
         override fun children(): List<CFGNode> = listOf(destination)
     }
 
