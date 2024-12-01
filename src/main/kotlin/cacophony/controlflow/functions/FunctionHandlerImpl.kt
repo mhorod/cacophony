@@ -1,8 +1,6 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
-import cacophony.controlflow.CFGNode.Addition
-import cacophony.controlflow.CFGNode.Constant
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.semantic.analysis.AnalyzedFunction
@@ -11,9 +9,10 @@ import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 
 class FunctionHandlerImpl(
     val function: FunctionDeclaration,
-    val analyzedFunction: AnalyzedFunction,
+    private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
+    callConvention: CallConvention,
 ) : FunctionHandler {
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable =
@@ -51,8 +50,6 @@ class FunctionHandlerImpl(
     }
 
     override fun getFunctionDeclaration(): FunctionDeclaration = function
-
-    override fun getFunctionAnalysis(): AnalyzedFunction = analyzedFunction
 
     // Wrapper for generateCall that additionally fills staticLink to parent function.
     // Since staticLink is not property of node itself, but rather of its children,
@@ -126,11 +123,12 @@ class FunctionHandlerImpl(
             is VariableAllocation.InRegister -> {
                 RegisterUse(variableAllocation.register)
             }
+
             is VariableAllocation.OnStack -> {
                 MemoryAccess(
-                    Addition(
+                    CFGNode.Subtraction(
                         generateAccessToFramePointer(definedInDeclaration),
-                        Constant(variableAllocation.offset),
+                        CFGNode.ConstantKnown(variableAllocation.offset),
                     ),
                 )
             }
@@ -149,11 +147,45 @@ class FunctionHandlerImpl(
 
     override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
+    // Can be changed by `allocateFrameVariable()` method
+    private val stackSpace: CFGNode.ConstantLazy =
+        run {
+            val variables =
+                analyzedFunction
+                    .declaredVariables()
+                    .map { getVariableFromDefinition(it.declaration) } +
+                    analyzedFunction.auxVariables
+            val stackVariables =
+                variables
+                    .map { getVariableAllocation(it) }
+                    .filterIsInstance<VariableAllocation.OnStack>()
+                    .sortedBy { it.offset }
+            run {
+                // Sanity checks
+                var offset = 0
+                for (variable in stackVariables) {
+                    if (variable.offset != offset)
+                        throw IllegalStateException("Holes in stack")
+                    offset += REGISTER_SIZE
+                }
+                if (callConvention.preservedRegisters().contains(HardwareRegister.RSP))
+                    throw IllegalArgumentException("RSP amongst call preserved registers")
+                if (callConvention.preservedRegisters().contains(HardwareRegister.RBP))
+                    throw IllegalArgumentException("RBP amongst call preserved registers")
+            }
+            CFGNode.ConstantLazy(stackVariables.size * REGISTER_SIZE)
+        }
+
+    private val resultRegister = Register.VirtualRegister()
+
+    override fun getResultRegister(): Register.VirtualRegister = resultRegister
+
     private val prologueEpilogueHandler =
         PrologueEpilogueHandler(
             this,
-            ::defaultCallConvention,
-            PRESERVED_REGISTERS,
+            callConvention,
+            stackSpace,
+            resultRegister,
         )
 
     override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()

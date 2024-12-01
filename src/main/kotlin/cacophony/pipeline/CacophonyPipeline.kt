@@ -10,7 +10,7 @@ import cacophony.codegen.patterns.cacophonyPatterns.instructions
 import cacophony.codegen.registers.Liveness
 import cacophony.codegen.registers.RegisterAllocation
 import cacophony.controlflow.HardwareRegister
-import cacophony.controlflow.SystemVAMD64CallConvention
+import cacophony.controlflow.functions.SystemVAMD64CallConvention
 import cacophony.controlflow.functions.generateFunctionHandlers
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.controlflow.generation.generateCFG
@@ -162,7 +162,7 @@ class CacophonyPipeline(
     fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, callGraph: CallGraph): FunctionAnalysisResult {
         val result =
             try {
-                assertEmptyDiagnosticsAfter { analyzeFunctions(ast, resolvedVariables, callGraph) }
+                assertEmptyDiagnosticsAfter { cacophony.semantic.analysis.analyzeFunctions(ast, resolvedVariables, callGraph) }
             } catch (e: CompileException) {
                 logger?.logFailedFunctionAnalysis()
                 throw e

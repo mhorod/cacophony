@@ -58,14 +58,14 @@ private fun constructFunctionArgument(
     diagnostics: Diagnostics,
 ): Definition.FunctionArgument {
     val tree = parseTree as ParseTree.Branch
-    assert(parseTree.children.size == 2)
-    val range = parseTree.range
-    val argName = parseTree.children[0]
+    assert(tree.children.size == 2)
+    val range = tree.range
+    val argName = tree.children[0]
     if (argName is ParseTree.Leaf<*>) {
         return Definition.FunctionArgument(
             range,
             argName.token.context,
-            constructType(parseTree.children[1], diagnostics),
+            constructType(tree.children[1], diagnostics),
         )
     } else {
         throw IllegalArgumentException("Expected argument identifier, got: $argName")
@@ -136,18 +136,19 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
         val childNum = parseTree.children.size
         return when (symbol) {
             START, BLOCK -> {
-                val newChildren: MutableList<Expression> = mutableListOf<Expression>()
+                val newChildren: MutableList<Expression> = mutableListOf()
                 var seekingExpression = true
                 parseTree.children.forEach {
-                    if (it is ParseTree.Leaf && it.token.category == SEMICOLON) {
-                        if (seekingExpression) {
-                            newChildren.add(Empty(Pair(first = it.range.first, second = it.range.first)))
+                    seekingExpression =
+                        if ((it is ParseTree.Leaf) && (it.token.category == SEMICOLON)) {
+                            if (seekingExpression) {
+                                newChildren.add(Empty(Pair(first = it.range.first, second = it.range.first)))
+                            }
+                            true
+                        } else {
+                            newChildren.add(generateASTInternal(it, diagnostics))
+                            false
                         }
-                        seekingExpression = true
-                    } else {
-                        newChildren.add(generateASTInternal(it, diagnostics))
-                        seekingExpression = false
-                    }
                 }
                 if (seekingExpression) {
                     newChildren.add(

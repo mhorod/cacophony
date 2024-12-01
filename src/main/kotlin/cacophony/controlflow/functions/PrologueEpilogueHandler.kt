@@ -4,65 +4,40 @@ import cacophony.controlflow.*
 
 class PrologueEpilogueHandler(
     private val handler: FunctionHandler,
-    private val callConvention: (Int) -> CFGNode,
-    private val preservedRegisters: List<HardwareRegister>, // without RSP
+    private val callConvention: CallConvention,
+    private val stackSpace: CFGNode.ConstantLazy,
+    private val resultAccess: Register.VirtualRegister,
 ) {
-    private val numberOfStackVariables =
-        with(handler) {
-            val variables =
-                getFunctionAnalysis()
-                    .declaredVariables()
-                    .map { getVariableFromDefinition(it.declaration) } +
-                    getFunctionAnalysis().auxVariables
-            val stackVariables =
-                variables
-                    .map { getVariableAllocation(it) }
-                    .filterIsInstance<VariableAllocation.OnStack>()
-                    .sortedBy { it.offset }
-            run {
-                // Sanity checks
-                var offset = 0
-                for (variable in stackVariables) {
-                    if (variable.offset != offset)
-                        throw IllegalStateException("Holes in stack")
-                    offset += REGISTER_SIZE
-                }
-                if (preservedRegisters.contains(HardwareRegister.RSP))
-                    throw IllegalArgumentException("RSP amongst call preserved registers")
-            }
-            stackVariables.size
-        }
-
-    private fun lvalueFromAllocation(allocation: VariableAllocation): CFGNode.LValue =
-        when (allocation) {
-            is VariableAllocation.InRegister -> registerUse(allocation.register)
-            is VariableAllocation.OnStack -> memoryAccess(registerUse(rsp) sub integer(allocation.offset + REGISTER_SIZE))
+    private val spaceForPreservedRegisters: List<Register.VirtualRegister> =
+        callConvention.preservedRegisters().map {
+            Register.VirtualRegister()
         }
 
     fun generatePrologue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
         with(handler) {
-            // Move first, then change RSP, so that the offsets from the callConvention hold
-            // However, keep the existence of red zone in mind
+            nodes.add(pushRegister(rbp))
+            nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
+            nodes.add(registerUse(rsp) subeq stackSpace)
+
+            // Preserved registers
+            for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+                nodes.add(registerUse(destination) assign registerUse(Register.FixedRegister(source)))
+            }
 
             // Defined function arguments
             for ((ind, arg) in getFunctionDeclaration().arguments.withIndex()) {
                 nodes.add(
-                    lvalueFromAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
-                        callConvention(ind),
+                    wrapAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
+                        wrapAllocation(callConvention.argumentAllocation(ind)),
                 )
             }
+
             // Static link (implicit arg)
             nodes.add(
-                lvalueFromAllocation(getVariableAllocation(getStaticLink())) assign
-                    callConvention(getFunctionDeclaration().arguments.size),
+                wrapAllocation(getVariableAllocation(getStaticLink())) assign
+                    wrapAllocation(callConvention.argumentAllocation(getFunctionDeclaration().arguments.size)),
             )
-            // Space for all stack variables
-            nodes.add(registerUse(rsp) subeq integer(numberOfStackVariables * REGISTER_SIZE))
-            // Preserved registers
-            for (register in preservedRegisters) {
-                nodes.add(pushRegister(Register.FixedRegister(register)))
-            }
         }
         return nodes
     }
@@ -70,11 +45,19 @@ class PrologueEpilogueHandler(
     fun generateEpilogue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
         // Restoring preserved registers
-        for (register in preservedRegisters.reversed()) {
-            nodes.add(popRegister(Register.FixedRegister(register)))
+        for ((destination, source) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+            nodes.add(registerUse(Register.FixedRegister(destination)) assign registerUse(source))
         }
+
+        // Write the result to its destination
+        nodes.add(registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(resultAccess))
+
         // Restoring RSP
-        nodes.add(registerUse(rsp) addeq integer(numberOfStackVariables * REGISTER_SIZE))
+        nodes.add(registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)))
+
+        // Restoring RBP
+        nodes.add(popRegister(rbp))
+
         return nodes
     }
 }

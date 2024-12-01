@@ -163,7 +163,7 @@ private fun analyzedVariables(
     resolvedVariables: ResolvedVariables,
     variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDeclaration>,
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
-) = relations.mapValues { (function, staticRelations) ->
+) = relations.mapValues { (function, _) ->
     getAnalyzedVariables(
         function,
         relations,

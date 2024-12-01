@@ -4,6 +4,8 @@ import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.ORDiagnostics
 import cacophony.semantic.syntaxtree.*
 
+typealias ResolvedVariables = Map<VariableUse, Definition>
+
 fun resolveOverloads(ast: AST, diagnostics: Diagnostics, nr: NameResolutionResult): ResolvedVariables {
     val resolvedVariables = mutableMapOf<VariableUse, Definition>()
 
@@ -77,5 +79,3 @@ fun resolveOverloads(ast: AST, diagnostics: Diagnostics, nr: NameResolutionResul
     resolveOverloadsRec(ast)
     return resolvedVariables
 }
-
-typealias ResolvedVariables = Map<VariableUse, Definition>

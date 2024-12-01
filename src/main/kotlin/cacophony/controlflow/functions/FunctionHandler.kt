@@ -4,13 +4,10 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
 import cacophony.controlflow.VariableAllocation
-import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
 
 interface FunctionHandler {
     fun getFunctionDeclaration(): Definition.FunctionDeclaration
-
-    fun getFunctionAnalysis(): AnalyzedFunction
 
     fun generateCallFrom(
         callerFunction: FunctionHandler,
@@ -37,4 +34,6 @@ interface FunctionHandler {
     fun generatePrologue(): List<CFGNode>
 
     fun generateEpilogue(): List<CFGNode>
+
+    fun getResultRegister(): Register.VirtualRegister
 }

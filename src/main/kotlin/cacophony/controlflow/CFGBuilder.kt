@@ -1,18 +1,21 @@
 package cacophony.controlflow
 
-import cacophony.controlflow.functions.defaultCallConvention
+import cacophony.controlflow.functions.CallConvention
+import cacophony.controlflow.functions.SystemVAMD64CallConvention
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.semantic.syntaxtree.Definition
 
 class CFGFragmentBuilder {
     private val labels: MutableMap<String, CFGLabel> = mutableMapOf()
     private val vertices = mutableMapOf<CFGLabel, CFGVertex>()
+    private val resultRegister = Register.VirtualRegister()
+    private val callConvention: CallConvention = SystemVAMD64CallConvention
 
     private fun getLabel(label: String): CFGLabel = labels.getOrPut(label) { CFGLabel() }
 
-    fun build(): CFGFragment = CFGFragment(vertices, getLabel("entry"))
+    fun getResultRegister() = resultRegister
 
-    fun final(node: () -> CFGNode) = CFGVertex.Final(node())
+    fun build(): CFGFragment = CFGFragment(vertices, getLabel("entry"))
 
     fun jump(destination: String, node: () -> CFGNode): CFGVertex = CFGVertex.Jump(node(), getLabel(destination))
 
@@ -27,33 +30,32 @@ class CFGFragmentBuilder {
             curLabel = nextLabel.toString()
             nextLabel++
         }
-
+        val spaceForPreservedRegisters = callConvention.preservedRegisters().map { Register.VirtualRegister() }
         // prologue
-        for ((ind, allocation) in args.withIndex()) {
-            single {
-                when (allocation) {
-                    is VariableAllocation.InRegister -> writeRegister(allocation.register, defaultCallConvention(ind))
-                    is VariableAllocation.OnStack ->
-                        memoryAccess(registerUse(rsp) sub integer((allocation.offset + 1) * REGISTER_SIZE)) assign
-                            defaultCallConvention(ind)
-                }
-            }
+        single { pushRegister(rbp) }
+        single { registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)) }
+        single { registerUse(rsp) subeq CFGNode.ConstantLazy(stackSpace) }
+        for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+            single { registerUse(destination) assign registerUse(Register.FixedRegister(source)) }
         }
-        single { registerUse(rsp) subeq integer(stackSpace) }
-        for (register in PRESERVED_REGISTERS.dropLast(1)) {
-            single { pushRegister(Register.FixedRegister(register)) }
+        for ((ind, allocation) in args.dropLast(1).withIndex()) {
+            single { wrapAllocation(allocation) assign wrapAllocation(callConvention.argumentAllocation(ind)) }
         }
         // jump to body
-        curLabel does jump("bodyEntry") { pushRegister(Register.FixedRegister(PRESERVED_REGISTERS.last())) }
+        curLabel does
+            jump("bodyEntry") {
+                wrapAllocation(args.last()) assign wrapAllocation(callConvention.argumentAllocation(args.size - 1))
+            }
 
         // epilogue
         curLabel = "exit"
-        for (register in PRESERVED_REGISTERS.reversed()) {
-            single { popRegister(Register.FixedRegister(register)) }
+        for ((destination, source) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+            single { registerUse(Register.FixedRegister(destination)) assign registerUse(source) }
         }
-        curLabel does jump("return") { registerUse(rsp) addeq integer(stackSpace) }
-
-        "return" does final { returnNode }
+        single { registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(getResultRegister()) }
+        single { registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)) }
+        curLabel does jump("return") { popRegister(rbp) }
+        "return" does CFGVertex.Final(returnNode)
     }
 
     infix fun String.does(vertex: CFGVertex) {
@@ -72,8 +74,8 @@ class CFGBuilder {
         init: CFGFragmentBuilder.() -> Unit,
     ) {
         val builder = CFGFragmentBuilder()
-        builder.init()
         builder.prologueAndEpilogue(args, stackSpace)
+        builder.init()
         programCFG[function] = builder.build()
     }
 

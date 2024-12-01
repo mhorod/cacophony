@@ -37,9 +37,9 @@ fun generateCall(
                     CFGNode.Modulo(
                         CFGNode.Addition(
                             CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                            CFGNode.Constant(stackArguments.size % 2 * REGISTER_SIZE),
+                            CFGNode.ConstantKnown(stackArguments.size % 2 * REGISTER_SIZE),
                         ),
-                        CFGNode.Constant(16),
+                        CFGNode.ConstantKnown(16),
                     ),
                 ),
             ),
@@ -67,7 +67,7 @@ fun generateCall(
                 CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
                 CFGNode.Addition(
                     CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                    CFGNode.Constant(REGISTER_SIZE * stackArguments.size),
+                    CFGNode.ConstantKnown(REGISTER_SIZE * stackArguments.size),
                 ),
             ),
         )

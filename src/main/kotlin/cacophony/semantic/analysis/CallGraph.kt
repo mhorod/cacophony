@@ -24,7 +24,7 @@ private class CallGraphProvider(
     private val diagnostics: Diagnostics,
     private val resolvedVariables: ResolvedVariables,
 ) {
-    public fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDeclaration?): CallGraph =
+    fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDeclaration?): CallGraph =
         when (node) {
             is Definition.FunctionDeclaration -> generateDirectCallGraph(node.body, node)
             is FunctionCall ->
