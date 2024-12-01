@@ -22,6 +22,8 @@ data class MovRegReg(
         }
         return "mov $lhsHardwareReg, $rhsHardwareReg"
     }
+
+    override fun isNoop() = lhs == rhs
 }
 
 data class MovRegImm(

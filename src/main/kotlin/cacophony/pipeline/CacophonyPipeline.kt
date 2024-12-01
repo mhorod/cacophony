@@ -1,6 +1,7 @@
 package cacophony.pipeline
 
 import cacophony.codegen.instructions.CacophonyInstructionCovering
+import cacophony.codegen.instructions.generateAsm
 import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.linearization.linearize
@@ -23,6 +24,10 @@ import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
 import cacophony.utils.Input
+import cacophony.utils.withExtension
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 
 class CacophonyPipeline(
     val diagnostics: Diagnostics,
@@ -220,9 +225,8 @@ class CacophonyPipeline(
 
         return covering.mapValues { (function, loweredCFG) ->
             run {
-                val instructions = loweredCFG.flatMap { fragment -> fragment.instructions() }
                 val ra = registerAllocation[function] ?: error("No register allocation for function $function")
-                cacophony.codegen.instructions.generateAsm(instructions, ra)
+                cacophony.codegen.instructions.generateAsm(function.identifier, loweredCFG, ra)
             }
         }
     }
@@ -231,5 +235,43 @@ class CacophonyPipeline(
         val asm = generateAsm(generateAST(input))
         asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return asm
+    }
+
+    fun generateAsm(input: Input, dest: Path) {
+        val defs = generateAsm(input)
+        Files.newBufferedWriter(dest, StandardOpenOption.CREATE).use { writer ->
+            defs.values.forEach {
+                writer.write(it)
+                writer.newLine()
+            }
+        }
+    }
+
+    fun compile(src: Path, dest: Path) {
+        System.out.println("Compiling generated assembly")
+        val nasm = ProcessBuilder("nasm", "-f", "elf64", "-o", dest.toString(), src.toString()).inheritIO().start()
+        nasm.waitFor().takeIf { it != 0 }?.let { status ->
+            System.err.println("nasm failed with exit code: $status")
+            throw CompileException("Unable to assemble generated code")
+        } ?: System.out.println("Successfully saved compiled object in $dest")
+    }
+
+    fun link(src: Path, dest: Path) {
+        System.out.println("Linking compiled ELF object")
+        val gcc = ProcessBuilder("gcc", "-no-pie", "-o", dest.toString(), src.toString()).inheritIO().start()
+        gcc.waitFor().takeIf { it != 0 }?.let { status ->
+            System.err.println("gcc failed with exit code: $status")
+            throw CompileException("Unable to link compiled code")
+        } ?: System.out.println("Successfully saved linked executable in $dest")
+    }
+
+    fun compile(input: Input, src: Path) {
+        val asmFile = withExtension(src, ".asm")
+        val objFile = withExtension(src, ".o")
+        val binFile = withExtension(src, "")
+
+        generateAsm(input, asmFile)
+        compile(asmFile, objFile)
+        link(objFile, binFile)
     }
 }
