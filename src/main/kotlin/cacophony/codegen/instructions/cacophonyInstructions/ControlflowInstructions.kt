@@ -1,10 +1,13 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
 import cacophony.codegen.BlockLabel
+import cacophony.codegen.functionBodyLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
+import cacophony.controlflow.PRESERVED_REGISTERS
 import cacophony.controlflow.Register
+import cacophony.semantic.syntaxtree.Definition
 
 data class PushReg(
     val reg: Register,
@@ -77,17 +80,30 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
 data class Call(
-    val label: BlockLabel,
+    val function: Definition.FunctionDeclaration,
 ) : Instruction {
-    override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
+    override val registersRead: Set<Register> =
+        setOf(Register.FixedRegister(HardwareRegister.RSP)).union(
+            PRESERVED_REGISTERS.map { Register.FixedRegister(it) },
+        )
     override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${label.name}"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
 class Ret : Instruction {
     override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
-    override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
+    override val registersWritten: Set<Register> =
+        setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(HardwareRegister.RAX)).union(
+            PRESERVED_REGISTERS.map { Register.FixedRegister(it) },
+        )
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "ret"
+}
+
+class Label(val label: BlockLabel) : Instruction {
+    override val registersRead: Set<Register> = setOf()
+    override val registersWritten: Set<Register> = setOf()
+
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "_${label.name}:"
 }
