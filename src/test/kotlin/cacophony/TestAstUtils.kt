@@ -9,6 +9,8 @@ fun mockRange() = Pair(Location(0), Location(0))
 
 fun unitType() = Type.Basic(mockRange(), "Unit")
 
+fun empty() = Empty(mockRange())
+
 fun functionDeclaration(identifier: String, body: Expression) =
     Definition.FunctionDeclaration(
         mockRange(),

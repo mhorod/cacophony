@@ -1,11 +1,10 @@
 package cacophony.semantic
 
+import cacophony.*
 import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Empty
 import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.VariableUse
 import cacophony.utils.Location
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -33,23 +32,15 @@ class CallGraphTest {
     @Test
     fun `finds basic call`() {
         // let f = [] -> B => (); let g = [] -> C => f[]
-        val fDef = Definition.FunctionDeclaration(loc(0, 4), "f", null, listOf(), ASTType.Basic(loc(3, 4), "B"), Empty(loc(4, 4)))
-        val fUse = VariableUse(loc(3, 4), "f")
+        val fDef = functionDeclaration("f", empty())
+        val fUse = variableUse("f")
         val gDef =
-            Definition.FunctionDeclaration(
-                loc(4, 8),
+            functionDeclaration(
                 "g",
-                null,
-                listOf(),
-                ASTType.Basic(loc(7, 8), "C"),
-                FunctionCall(loc(8, 9), fUse, listOf()),
+                call(fUse),
             )
 
-        val ast =
-            Block(
-                loc(0, 9),
-                listOf(fDef, gDef),
-            )
+        val ast = block(fDef, gDef)
         val resolvedVariables = mapOf(fUse to fDef)
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
@@ -62,36 +53,17 @@ class CallGraphTest {
     @Test
     fun `finds deeply nested call`() {
         // let f = [] -> B => (); let g = [] -> C => (((((f[])))))
-        val fDef = Definition.FunctionDeclaration(loc(0, 4), "f", null, listOf(), ASTType.Basic(loc(3, 4), "B"), Empty(loc(4, 4)))
-        val fUse = VariableUse(loc(3, 4), "f")
+        val fDef = functionDeclaration("f", empty())
+        val fUse = variableUse("f")
         val gDef =
-            Definition.FunctionDeclaration(
-                loc(4, 8),
+            functionDeclaration(
                 "g",
-                null,
-                listOf(),
-                ASTType.Basic(loc(7, 8), "C"),
-                Block(
-                    loc(4, 7),
-                    listOf(
-                        Block(
-                            loc(4, 7),
-                            listOf(
-                                Block(
-                                    loc(4, 7),
-                                    listOf(
-                                        Block(
-                                            loc(4, 7),
-                                            listOf(
-                                                Block(
-                                                    loc(4, 7),
-                                                    listOf(
-                                                        FunctionCall(loc(8, 9), fUse, listOf()),
-                                                    ),
-                                                ),
-                                            ),
-                                        ),
-                                    ),
+                block(
+                    block(
+                        block(
+                            block(
+                                block(
+                                    call(fUse),
                                 ),
                             ),
                         ),
@@ -100,10 +72,7 @@ class CallGraphTest {
             )
 
         val ast =
-            Block(
-                loc(0, 9),
-                listOf(fDef, gDef),
-            )
+            block(fDef, gDef)
         val resolvedVariables = mapOf(fUse to fDef)
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
@@ -116,22 +85,14 @@ class CallGraphTest {
     @Test
     fun `finds recursion`() {
         // let f = [] -> B => f[]
-        val fUse = VariableUse(loc(3, 4), "f")
+        val fUse = variableUse("f")
         val fDef =
-            Definition.FunctionDeclaration(
-                loc(0, 4),
+            functionDeclaration(
                 "f",
-                null,
-                listOf(),
-                ASTType.Basic(loc(3, 4), "B"),
-                FunctionCall(loc(8, 9), fUse, listOf()),
+                call(fUse),
             )
 
-        val ast =
-            Block(
-                loc(0, 9),
-                listOf(fDef),
-            )
+        val ast = block(fDef)
         val resolvedVariables = mapOf(fUse to fDef)
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
@@ -148,9 +109,9 @@ class CallGraphTest {
         //    g[]
         // );
         // let h = [] -> B => f[]
-        val fUseInG = VariableUse(loc(3, 4), "f")
-        val fUseInH = VariableUse(loc(8, 9), "f")
-        val gUse = VariableUse(loc(4, 5), "g")
+        val fUseInG = variableUse("f")
+        val fUseInH = variableUse("f")
+        val gUse = variableUse("g")
 
         val gDef =
             Definition.FunctionDeclaration(
@@ -209,34 +170,21 @@ class CallGraphTest {
         //    let g = f[];
         //    g
         // )
-        val fUse = VariableUse(loc(3, 4), "f")
-        val gUse = VariableUse(loc(3, 4), "g")
+        val fUse = variableUse("f")
+        val gUse = variableUse("g")
 
         val gDef =
-            Definition.VariableDeclaration(
-                loc(4, 8),
+            variableDeclaration(
                 "g",
-                null,
-                FunctionCall(loc(8, 9), fUse, listOf()),
+                call(fUse),
             )
         val fDef =
-            Definition.FunctionDeclaration(
-                loc(0, 4),
+            functionDeclaration(
                 "f",
-                null,
-                listOf(),
-                ASTType.Basic(loc(3, 4), "B"),
-                Block(
-                    loc(0, 2),
-                    listOf(gDef, gUse),
-                ),
+                block(gDef, gUse),
             )
 
-        val ast =
-            Block(
-                loc(0, 9),
-                listOf(fDef),
-            )
+        val ast = block(fDef)
         val resolvedVariables = mapOf(fUse to fDef, gUse to gDef)
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
