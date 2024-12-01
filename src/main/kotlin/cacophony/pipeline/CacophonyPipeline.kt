@@ -267,9 +267,9 @@ class CacophonyPipeline(
     }
 
     fun compile(input: Input, src: Path) {
-        val asmFile = withExtension(src, ".asm")
-        val objFile = withExtension(src, ".o")
-        val binFile = withExtension(src, "")
+        val asmFile = withExtension(src.fileName, ".asm")
+        val objFile = withExtension(src.fileName, ".o")
+        val binFile = withExtension(src.fileName, "")
 
         generateAsm(input, asmFile)
         compile(asmFile, objFile)
