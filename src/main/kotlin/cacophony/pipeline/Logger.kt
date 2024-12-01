@@ -10,6 +10,7 @@ import cacophony.semantic.*
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.token.Token
+import java.nio.file.Path
 
 interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymbol>> {
     fun logSuccessfulLexing(tokens: List<Token<TokenT>>)
@@ -55,4 +56,12 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
     fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>)
 
     fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDeclaration, Liveness>)
+
+    fun logSuccessfulAssembling(dest: Path)
+
+    fun logFailedAssembling(status: Int)
+
+    fun logSuccessfulLinking(dest: Path)
+
+    fun logFailedLinking(status: Int)
 }

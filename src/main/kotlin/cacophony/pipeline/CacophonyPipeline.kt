@@ -249,21 +249,19 @@ class CacophonyPipeline(
     }
 
     fun compile(src: Path, dest: Path) {
-        System.out.println("Compiling generated assembly")
         val nasm = ProcessBuilder("nasm", "-f", "elf64", "-o", dest.toString(), src.toString()).inheritIO().start()
         nasm.waitFor().takeIf { it != 0 }?.let { status ->
-            System.err.println("nasm failed with exit code: $status")
+            logger?.logFailedAssembling(status)
             throw CompileException("Unable to assemble generated code")
-        } ?: System.out.println("Successfully saved compiled object in $dest")
+        } ?: logger?.logSuccessfulAssembling(dest)
     }
 
     fun link(src: Path, dest: Path) {
-        System.out.println("Linking compiled ELF object")
         val gcc = ProcessBuilder("gcc", "-no-pie", "-o", dest.toString(), src.toString()).inheritIO().start()
         gcc.waitFor().takeIf { it != 0 }?.let { status ->
-            System.err.println("gcc failed with exit code: $status")
+            logger?.logFailedLinking(status)
             throw CompileException("Unable to link compiled code")
-        } ?: System.out.println("Successfully saved linked executable in $dest")
+        } ?: logger?.logSuccessfulLinking(dest)
     }
 
     fun compile(input: Input, src: Path) {
