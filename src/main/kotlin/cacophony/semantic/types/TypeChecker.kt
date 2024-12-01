@@ -1,7 +1,8 @@
-package cacophony.semantic
+package cacophony.semantic.types
 
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.TypeCheckerDiagnostics
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition

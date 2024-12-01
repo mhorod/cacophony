@@ -6,9 +6,11 @@ import cacophony.codegen.registers.RegisterAllocation
 import cacophony.controlflow.CFGFragment
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
-import cacophony.semantic.*
+import cacophony.semantic.analysis.*
+import cacophony.semantic.names.*
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.types.TypeCheckingResult
 import cacophony.token.Token
 
 interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymbol>> {

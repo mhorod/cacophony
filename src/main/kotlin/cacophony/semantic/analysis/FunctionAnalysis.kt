@@ -1,6 +1,7 @@
-package cacophony.semantic
+package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.utils.getProperTransitiveClosure
@@ -162,7 +163,7 @@ private fun analyzedVariables(
     resolvedVariables: ResolvedVariables,
     variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDeclaration>,
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
-) = relations.mapValues { (function, staticRelations) ->
+) = relations.mapValues { (function, _) ->
     getAnalyzedVariables(
         function,
         relations,

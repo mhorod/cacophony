@@ -1,4 +1,6 @@
-package cacophony.controlflow
+package cacophony.controlflow.functions
+
+import cacophony.controlflow.*
 
 interface CallConvention {
     // Where one can find the argument with the given index

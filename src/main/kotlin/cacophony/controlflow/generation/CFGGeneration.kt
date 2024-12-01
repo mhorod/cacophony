@@ -1,9 +1,9 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGFragment
-import cacophony.controlflow.FunctionHandler
-import cacophony.semantic.ResolvedVariables
-import cacophony.semantic.UseTypeAnalysisResult
+import cacophony.controlflow.functions.FunctionHandler
+import cacophony.semantic.analysis.UseTypeAnalysisResult
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.Definition
 
 typealias ProgramCFG = Map<Definition.FunctionDeclaration, CFGFragment>
