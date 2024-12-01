@@ -3,10 +3,7 @@ package cacophony.codegen.instructions.cacophonyInstructions
 import cacophony.codegen.BlockLabel
 import cacophony.codegen.functionBodyLabel
 import cacophony.codegen.instructions.Instruction
-import cacophony.controlflow.HardwareRegister
-import cacophony.controlflow.HardwareRegisterMapping
-import cacophony.controlflow.PRESERVED_REGISTERS
-import cacophony.controlflow.Register
+import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.Definition
 
 data class PushReg(
@@ -84,7 +81,7 @@ data class Call(
 ) : Instruction {
     override val registersRead: Set<Register> =
         setOf(Register.FixedRegister(HardwareRegister.RSP)).union(
-            PRESERVED_REGISTERS.map { Register.FixedRegister(it) },
+            SystemVAMD64CallConvention.preservedRegisters().map { Register.FixedRegister(it) },
         )
     override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
 
@@ -94,8 +91,8 @@ data class Call(
 class Ret : Instruction {
     override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
     override val registersWritten: Set<Register> =
-        setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(HardwareRegister.RAX)).union(
-            PRESERVED_REGISTERS.map { Register.FixedRegister(it) },
+        setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(SystemVAMD64CallConvention.returnRegister())).union(
+            SystemVAMD64CallConvention.preservedRegisters().map { Register.FixedRegister(it) },
         )
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "ret"
