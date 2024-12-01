@@ -33,7 +33,7 @@ val sideEffectPatterns =
         RegisterToMemoryWithSubtractedDisplacementAssignmentPattern,
         RegisterToMemoryAssignmentPattern,
         MemoryAssignmentPattern,
-        MemoryToRegisterAssignmentPattern
+        MemoryToRegisterAssignmentPattern,
     )
 
 object NoOpPattern : SideEffectPattern {
