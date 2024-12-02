@@ -3,18 +3,6 @@ package cacophony.controlflow.generation
 import cacophony.block
 import cacophony.controlflow.cfg
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.generation.TestOperators.Companion.eq
-import cacophony.controlflow.generation.TestOperators.Companion.eqNode
-import cacophony.controlflow.generation.TestOperators.Companion.geq
-import cacophony.controlflow.generation.TestOperators.Companion.geqNode
-import cacophony.controlflow.generation.TestOperators.Companion.gt
-import cacophony.controlflow.generation.TestOperators.Companion.gtNode
-import cacophony.controlflow.generation.TestOperators.Companion.leq
-import cacophony.controlflow.generation.TestOperators.Companion.leqNode
-import cacophony.controlflow.generation.TestOperators.Companion.lt
-import cacophony.controlflow.generation.TestOperators.Companion.ltNode
-import cacophony.controlflow.generation.TestOperators.Companion.neq
-import cacophony.controlflow.generation.TestOperators.Companion.neqNode
 import cacophony.controlflow.integer
 import cacophony.controlflow.writeRegister
 import cacophony.functionDeclaration
@@ -24,7 +12,6 @@ import cacophony.variableDeclaration
 import cacophony.variableUse
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.Arguments.argumentSet
 import org.junit.jupiter.params.provider.MethodSource
 
 class ConditionalOperatorsTest {
@@ -235,14 +222,6 @@ class ConditionalOperatorsTest {
 
     companion object {
         @JvmStatic
-        fun logicalOperators(): List<Arguments> =
-            listOf(
-                argumentSet("eq", eq, eqNode),
-                argumentSet("neq", neq, neqNode),
-                argumentSet("lt", lt, ltNode),
-                argumentSet("leq", leq, leqNode),
-                argumentSet("gt", gt, gtNode),
-                argumentSet("geq", geq, geqNode),
-            )
+        fun logicalOperators(): List<Arguments> = TestOperators.logicalOperators()
     }
 }
