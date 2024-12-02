@@ -2,6 +2,7 @@ package cacophony
 
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.utils.StringInput
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 // TODO: Once the debugging dust settles, these should be converted to proper tests in their appropriate domains
@@ -65,5 +66,25 @@ class DebugRegressionTest {
                 """.trimIndent(),
             ),
         )
+    }
+
+    @Test
+    fun `simple function call does not cause spills`() {
+        val ast =
+            pipeline.generateAST(
+                StringInput(
+                    """                
+                    let f = [] -> Bool => true;
+                    f[]
+                    """.trimIndent(),
+                ),
+            )
+
+        val liveness = pipeline.analyzeLiveness(ast)
+        val allocation = pipeline.allocateRegisters(liveness)
+
+        allocation.values.forEach {
+            assertThat(it.spills).isEmpty()
+        }
     }
 }
