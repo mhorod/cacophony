@@ -5,11 +5,10 @@ import kotlin.math.absoluteValue
 
 data class BlockLabel(val name: String)
 
-fun functionBodyLabel(function: Definition.FunctionDeclaration): BlockLabel {
-    return BlockLabel(
+fun functionBodyLabel(function: Definition.FunctionDeclaration): BlockLabel =
+    BlockLabel(
         when (function.identifier) {
-            "<program>" -> "start"
+            "<program>" -> "main"
             else -> "${function.identifier}_${function.arguments.size}_${function.hashCode().absoluteValue}"
         },
     )
-}

@@ -20,6 +20,7 @@ import cacophony.semantic.types.TypeCheckingResult
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.TreePrinter
+import java.nio.file.Path
 
 class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbol> {
     override fun logSuccessfulGrammarAnalysis(analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol>) =
@@ -162,6 +163,22 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
                     println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
             }
         }
+    }
+
+    override fun logSuccessfulAssembling(dest: Path) {
+        println("Successfully saved compiled object in $dest")
+    }
+
+    override fun logFailedAssembling(status: Int) {
+        println("nasm failed with exit code: $status")
+    }
+
+    override fun logSuccessfulLinking(dest: Path) {
+        println("Successfully saved linked executable in $dest")
+    }
+
+    override fun logFailedLinking(status: Int) {
+        println("gcc failed with exit code: $status")
     }
 
     private fun shortRegisterName(register: Register?) =

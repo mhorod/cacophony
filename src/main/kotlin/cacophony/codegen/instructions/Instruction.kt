@@ -29,6 +29,8 @@ interface Instruction {
     val registersWritten: Set<Register>
 
     fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String
+
+    fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping): Boolean = false
 }
 
 interface CopyInstruction : Instruction
