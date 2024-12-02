@@ -69,6 +69,94 @@ class DebugRegressionTest {
     }
 
     @Test
+    fun `missing assign from memory pattern`() {
+        pipeline.generateAsm(
+            StringInput(
+                """
+                let g = [] -> Bool => (
+                    return g[]
+                );
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun `variable as condition`() {
+        pipeline.generateAsm(
+            StringInput(
+                """
+                let x: Bool = true;
+                if x then ();
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun `double assignment`() {
+        pipeline.generateAsm(
+            StringInput(
+                """
+                let x: Bool = true;
+                let y: Bool = true;
+                x = y = false;
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun `return used in if condition generates asm`() {
+        pipeline.generateAsm(
+            StringInput(
+                """                
+                if return () then 2 else 3
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun `return used in while condition generates asm`() {
+        pipeline.generateAsm(
+            StringInput(
+                """                
+                while return () do ();
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun `break used in if condition generates asm`() {
+        pipeline.generateAsm(
+            StringInput(
+                """                
+                let c = 1;
+                while c == 1 do (
+                    while true && break do ();
+                );
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun `break used in while condition generates asm`() {
+        pipeline.generateAsm(
+            StringInput(
+                """                
+                let c = 1;
+                while c == 1 do (
+                    if c == 2 || break then 3 else 4
+                );
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
     fun `simple function call does not cause spills`() {
         val ast =
             pipeline.generateAST(

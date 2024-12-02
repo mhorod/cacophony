@@ -105,9 +105,9 @@ internal class CFGGenerator(
             is Literal -> visitLiteral(expression, mode)
             is OperatorBinary -> visitOperatorBinary(expression, mode, context)
             is OperatorUnary -> visitOperatorUnary(expression, mode, context)
-            is Statement.BreakStatement -> visitBreakStatement(context)
+            is Statement.BreakStatement -> visitBreakStatement(mode, context)
             is Statement.IfElseStatement -> visitIfElseStatement(expression, mode, context)
-            is Statement.ReturnStatement -> visitReturnStatement(expression, context)
+            is Statement.ReturnStatement -> visitReturnStatement(expression, mode, context)
             is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
             is VariableUse -> visitVariableUse(expression, mode)
             else -> error("Unexpected expression for CFG generation: $expression")
@@ -294,7 +294,7 @@ internal class CFGGenerator(
         }
     }
 
-    private fun visitReturnStatement(expression: Statement.ReturnStatement, context: Context): SubCFG {
+    private fun visitReturnStatement(expression: Statement.ReturnStatement, mode: EvalMode, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
             CFGNode.Assignment(CFGNode.RegisterUse(getCurrentFunctionHandler().getResultRegister()), valueCFG.access)
@@ -303,7 +303,7 @@ internal class CFGGenerator(
         resultAssignmentVertex.connect(epilogue.entry.label)
 
         // Similarly to break, return creates an artificial exit
-        val artificialExit = cfg.addUnconditionalVertex(CFGNode.NoOp)
+        val artificialExit = if (mode is EvalMode.Conditional) mode.exit else cfg.addUnconditionalVertex(CFGNode.NoOp)
 
         val entry =
             when (valueCFG) {
@@ -329,14 +329,14 @@ internal class CFGGenerator(
         return SubCFG.Extracted(condition.entry, exit, noOpOrUnit(mode))
     }
 
-    private fun visitBreakStatement(context: Context): SubCFG {
+    private fun visitBreakStatement(mode: EvalMode, context: Context): SubCFG {
         check(context.currentLoopExit != null) { "Break has to be inside while loop" }
         val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
         vertex.connect(context.currentLoopExit.label)
         // Break "breaks" control flow by jumping to a given label.
         // This means there's no real exit from the break statement, so we introduce an unreachable one
         //  that can be connected to expressions following the break statement
-        val artificialExit = cfg.addUnconditionalVertex(CFGNode.NoOp)
+        val artificialExit = if (mode is EvalMode.Conditional) mode.exit else cfg.addUnconditionalVertex(CFGNode.NoOp)
         return SubCFG.Extracted(vertex, artificialExit, CFGNode.NoOp)
     }
 
@@ -348,7 +348,13 @@ internal class CFGGenerator(
             is EvalMode.Value -> SubCFG.Immediate(variableAccess)
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
             is EvalMode.Conditional -> {
-                val conditionVertex = cfg.addConditionalVertex(variableAccess)
+                val conditionVertex =
+                    cfg.addConditionalVertex(
+                        CFGNode.NotEquals(
+                            variableAccess,
+                            CFGNode.ConstantKnown(0),
+                        ),
+                    )
                 conditionVertex.connectTrue(mode.trueEntry.label)
                 conditionVertex.connectFalse(mode.falseEntry.label)
                 SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)

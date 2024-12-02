@@ -88,7 +88,7 @@ class CFGGenerationTest {
                     "bodyEntry" does jump("condition") { writeRegister(virtualRegister("x"), integer(1)) }
                     "condition" does
                         conditional("true", "false") {
-                            registerUse(virtualRegister("x"))
+                            registerUse(virtualRegister("x")) neq integer(0)
                         }
                     "true" does jump("end") { writeRegister(virtualRegister("t"), integer(11)) }
                     "false" does jump("end") { writeRegister(virtualRegister("t"), integer(22)) }
