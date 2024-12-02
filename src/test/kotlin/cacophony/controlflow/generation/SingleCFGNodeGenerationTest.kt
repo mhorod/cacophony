@@ -9,7 +9,6 @@ import cacophony.controlflow.integer
 import cacophony.controlflow.minus
 import cacophony.controlflow.mod
 import cacophony.controlflow.mul
-import cacophony.controlflow.not
 import cacophony.controlflow.sub
 import cacophony.controlflow.writeRegister
 import org.junit.jupiter.api.Test
