@@ -6,6 +6,7 @@ import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
+import kotlin.math.max
 
 class FunctionHandlerImpl(
     val function: FunctionDeclaration,
@@ -17,10 +18,33 @@ class FunctionHandlerImpl(
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable =
         (analyzedFunction.variables.map { it.declaration } union function.arguments).associateWith { Variable.SourceVariable(it) }
+    private val stackSpace = CFGNode.ConstantLazy(0)
+    private val variableAllocation: MutableMap<Variable, VariableAllocation> = mutableMapOf()
 
-    private val variableAllocation: MutableMap<Variable, VariableAllocation> =
+    // This does not perform any checks and may override previous allocation.
+    // Holes in the stack may be also created if stack variables are directly allocated with this method.
+    override fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation) {
+        if (allocation is VariableAllocation.OnStack) {
+            stackSpace.value = max(stackSpace.value, allocation.offset + REGISTER_SIZE)
+        }
+        variableAllocation[variable] = allocation
+    }
+
+    override fun allocateFrameVariable(variable: Variable): CFGNode.LValue {
+        val currentStackSpace = stackSpace.value
+        registerVariableAllocation(variable, VariableAllocation.OnStack(stackSpace.value))
+        return MemoryAccess(
+            CFGNode.Subtraction(
+                RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+                CFGNode.ConstantKnown(currentStackSpace),
+            ),
+        )
+    }
+
+    init {
+        introduceStaticLinksParams()
+
         run {
-            val res = mutableMapOf<Variable, VariableAllocation>()
             val usedVars = analyzedFunction.variablesUsedInNestedFunctions
             val regVar =
                 (
@@ -30,23 +54,13 @@ class FunctionHandlerImpl(
                 ).toSet()
                     .minus(usedVars)
             regVar.forEach { varDef ->
-                res[definitionToVariable[varDef]!!] = VariableAllocation.InRegister(Register.VirtualRegister())
+                registerVariableAllocation(definitionToVariable[varDef]!!, VariableAllocation.InRegister(Register.VirtualRegister()))
             }
-            // offset starts at 8, since static link is placed at offset 0
-            var offset = REGISTER_SIZE
+
             usedVars.forEach { varDef ->
-                res[definitionToVariable[varDef]!!] = VariableAllocation.OnStack(offset)
-                offset += REGISTER_SIZE
+                allocateFrameVariable(definitionToVariable[varDef]!!)
             }
-            res
         }
-
-    init {
-        introduceStaticLinksParams()
-    }
-
-    override fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation) {
-        variableAllocation[variable] = allocation
     }
 
     override fun getFunctionDeclaration(): FunctionDeclaration = function
@@ -85,10 +99,6 @@ class FunctionHandlerImpl(
                 ancestorFunctionHandlers.indexOfFirst { it.getFunctionDeclaration() == other } + 1,
             )
         }
-
-    override fun allocateFrameVariable(): CFGNode.LValue {
-        TODO("Not yet implemented")
-    }
 
     override fun generateVariableAccess(variable: Variable): CFGNode.LValue {
         val definedInDeclaration =
@@ -147,34 +157,7 @@ class FunctionHandlerImpl(
 
     override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
-    // Can be changed by `allocateFrameVariable()` method
-    private val stackSpace: CFGNode.ConstantLazy =
-        run {
-            val variables =
-                analyzedFunction
-                    .declaredVariables()
-                    .map { getVariableFromDefinition(it.declaration) } +
-                    analyzedFunction.auxVariables
-            val stackVariables =
-                variables
-                    .map { getVariableAllocation(it) }
-                    .filterIsInstance<VariableAllocation.OnStack>()
-                    .sortedBy { it.offset }
-            run {
-                // Sanity checks
-                var offset = 0
-                for (variable in stackVariables) {
-                    if (variable.offset != offset)
-                        throw IllegalStateException("Holes in stack")
-                    offset += REGISTER_SIZE
-                }
-                if (callConvention.preservedRegisters().contains(HardwareRegister.RSP))
-                    throw IllegalArgumentException("RSP amongst call preserved registers")
-                if (callConvention.preservedRegisters().contains(HardwareRegister.RBP))
-                    throw IllegalArgumentException("RBP amongst call preserved registers")
-            }
-            CFGNode.ConstantLazy(stackVariables.size * REGISTER_SIZE)
-        }
+    public fun getStackSpace(): CFGNode.ConstantLazy = stackSpace
 
     private val resultRegister = Register.VirtualRegister()
 
