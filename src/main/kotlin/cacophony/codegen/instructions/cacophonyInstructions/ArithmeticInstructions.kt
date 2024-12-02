@@ -70,8 +70,8 @@ data class IMulRegReg(
     )
 
 class Cqo : InstructionTemplates.FixedRegistersInstruction() {
-    override val registersRead: Set<Register.FixedRegister> = setOf(Register.FixedRegister(HardwareRegister.RAX))
-    override val registersWritten: Set<Register.FixedRegister> = setOf(Register.FixedRegister(HardwareRegister.RDX))
+    override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RAX))
+    override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RDX))
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "cqo"
 }

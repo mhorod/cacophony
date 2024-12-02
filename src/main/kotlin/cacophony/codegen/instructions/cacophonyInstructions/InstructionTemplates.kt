@@ -58,8 +58,8 @@ class InstructionTemplates {
         open val label: BlockLabel,
         private val op: String,
     ) : FixedRegistersInstruction() {
-        override val registersRead: Set<Register.FixedRegister> = setOf()
-        override val registersWritten: Set<Register.FixedRegister> = setOf()
+        override val registersRead: Set<Register> = setOf()
+        override val registersWritten: Set<Register> = setOf()
 
         override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "$op ${label.name}"
     }
