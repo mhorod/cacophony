@@ -25,9 +25,9 @@ import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
 import cacophony.utils.Input
-import cacophony.utils.withExtension
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 
 class CacophonyPipeline(
@@ -265,9 +265,9 @@ class CacophonyPipeline(
     }
 
     fun compile(input: Input, src: Path) {
-        val asmFile = withExtension(src.fileName, ".asm")
-        val objFile = withExtension(src.fileName, ".o")
-        val binFile = withExtension(src.fileName, "")
+        val asmFile = Paths.get("${src.fileName}.asm")
+        val objFile = Paths.get("${src.fileName}.o")
+        val binFile = Paths.get("${src.fileName}.bin")
 
         generateAsm(input, asmFile)
         compile(asmFile, objFile)
