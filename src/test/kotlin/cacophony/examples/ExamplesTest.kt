@@ -67,7 +67,7 @@ class ExamplesTest {
     fun `correct examples compile without errors`(path: Path) {
         val input = FileInput(path.toString())
         val diagnostics = CacophonyDiagnostics(input)
-        CacophonyPipeline(diagnostics, null, lexer, parser).parse(input)
+        CacophonyPipeline(diagnostics, null, lexer, parser).process(input)
         diagnostics.getErrors().forEach {
             println(it)
         }
