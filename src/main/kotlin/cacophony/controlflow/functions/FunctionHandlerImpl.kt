@@ -21,6 +21,8 @@ class FunctionHandlerImpl(
     private val stackSpace = CFGNode.ConstantLazy(0)
     private val variableAllocation: MutableMap<Variable, VariableAllocation> = mutableMapOf()
 
+    // This does not perform any checks and may override previous allocation.
+    // Holes in the stack may be also created if stack variables are directly allocated with this method.
     override fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation) {
         if (allocation is VariableAllocation.OnStack) {
             stackSpace.value = max(stackSpace.value, allocation.offset + REGISTER_SIZE)
@@ -154,6 +156,8 @@ class FunctionHandlerImpl(
         }
 
     override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
+
+    public fun getStackSpace(): CFGNode.ConstantLazy = stackSpace
 
     private val resultRegister = Register.VirtualRegister()
 
