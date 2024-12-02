@@ -28,7 +28,7 @@ internal sealed class GeneralCFGVertex(val label: CFGLabel, open val node: CFGNo
             outgoing = label
         }
 
-        override fun getConnections() = listOf(outgoing ?: error("Vertex $this is not connected"))
+        override fun getConnections() = listOf(outgoing ?: error("Vertex $this (${this.node}) is not connected"))
 
         override fun replaceLabel(label: CFGLabel, newLabel: CFGLabel) {
             if (outgoing == label) outgoing = newLabel

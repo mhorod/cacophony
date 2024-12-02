@@ -446,6 +446,105 @@ class FunctionHandlerTest {
         assertThat(declaration).isEqualTo(fDef)
     }
 
+    @Test
+    fun `stack size is correctly calculated`() {
+        // setup
+        val argumentDef = mockk<Definition.FunctionArgument>()
+        val analyzedArgumentVariable = mockk<AnalyzedVariable>()
+        every { analyzedArgumentVariable.declaration } returns argumentDef
+
+        val ownVariableDef = mockk<Definition>()
+        val analyzedOwnVariable = mockk<AnalyzedVariable>()
+        every { analyzedOwnVariable.declaration } returns ownVariableDef
+
+        val nestedVarDef = mockk<Definition>()
+        val analyzedNestedVariable = mockk<AnalyzedVariable>()
+        every { analyzedNestedVariable.declaration } returns nestedVarDef
+
+        val noArgFunDef = mockk<Definition.FunctionDeclaration>()
+        every { noArgFunDef.arguments } returns emptyList()
+        val unaryFunDef = mockk<Definition.FunctionDeclaration>()
+        every { unaryFunDef.arguments } returns listOf(argumentDef)
+
+        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+
+        val noArgAnalyzedFunction = mockk<AnalyzedFunction>()
+        every { noArgAnalyzedFunction.variables } returns emptySet()
+        every { noArgAnalyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { noArgAnalyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { noArgAnalyzedFunction.declaredVariables() } returns emptyList()
+
+        val unaryAnalyzedFunction = mockk<AnalyzedFunction>()
+        every { unaryAnalyzedFunction.variables } returns setOf(analyzedArgumentVariable, analyzedOwnVariable, analyzedNestedVariable)
+        every { unaryAnalyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { unaryAnalyzedFunction.variablesUsedInNestedFunctions } returns setOf(nestedVarDef)
+        every { unaryAnalyzedFunction.declaredVariables() } returns listOf(analyzedOwnVariable)
+
+        // run
+        val noArgFunctionHandler = makeDefaultHandler(noArgFunDef, noArgAnalyzedFunction)
+        val unaryFunctionHandler = makeDefaultHandler(unaryFunDef, unaryAnalyzedFunction)
+        // check
+        assertEquals(8, noArgFunctionHandler.getStackSpace().value)
+        assertEquals(16, unaryFunctionHandler.getStackSpace().value)
+    }
+
+    @Test
+    fun `registering variables increases stack space`() {
+        val funDef = mockk<Definition.FunctionDeclaration>()
+        every { funDef.arguments } returns emptyList()
+
+        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+
+        val analyzedFunction = mockk<AnalyzedFunction>()
+        every { analyzedFunction.variables } returns emptySet()
+        every { analyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns emptyList()
+
+        val handler = makeDefaultHandler(funDef, analyzedFunction)
+        assertEquals(8, handler.getStackSpace().value)
+
+        handler.allocateFrameVariable(mockk<Variable.AuxVariable>())
+        assertEquals(16, handler.getStackSpace().value)
+
+        handler.registerVariableAllocation(mockk<Variable.SourceVariable>(), VariableAllocation.OnStack(32))
+        assertEquals(40, handler.getStackSpace().value)
+
+        handler.allocateFrameVariable(mockk<Variable.AuxVariable>())
+        assertEquals(48, handler.getStackSpace().value)
+    }
+
+    @Test
+    fun `allocateFrameVariable creates variable allocation`() {
+        val funDef = mockk<Definition.FunctionDeclaration>()
+        every { funDef.arguments } returns emptyList()
+
+        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+
+        val analyzedFunction = mockk<AnalyzedFunction>()
+        every { analyzedFunction.variables } returns emptySet()
+        every { analyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns emptyList()
+
+        val handler = makeDefaultHandler(funDef, analyzedFunction)
+        assertEquals(8, handler.getStackSpace().value)
+
+        var auxVariable = mockk<Variable.AuxVariable>()
+        handler.allocateFrameVariable(auxVariable)
+
+        var allocation = handler.getVariableAllocation(auxVariable)
+        require(allocation is VariableAllocation.OnStack)
+        assertEquals(8, allocation.offset)
+
+        auxVariable = mockk<Variable.AuxVariable>()
+        handler.allocateFrameVariable(auxVariable)
+
+        allocation = handler.getVariableAllocation(auxVariable)
+        require(allocation is VariableAllocation.OnStack)
+        assertEquals(16, allocation.offset)
+    }
+
     @Nested
     inner class GenerateVariableAccess {
         @Test

@@ -4,6 +4,7 @@ import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
 import cacophony.codegen.instructions.cacophonyInstructions.Jmp
+import cacophony.codegen.instructions.cacophonyInstructions.LocalLabel
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
@@ -13,6 +14,7 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.*
+import kotlin.math.absoluteValue
 
 class LinearizationTest {
     @MockK
@@ -69,28 +71,29 @@ class LinearizationTest {
                 ),
                 l1,
             )
+        val hash = cfg.hashCode().absoluteValue
 
         val linear = linearize(cfg, covering)
 
-        assertThat(linear[0].label().name).isEqualTo("bb0")
+        assertThat(linear[0].label().name).isEqualTo("bb0_$hash")
         assertThat(linear[0].successors()).isEqualTo(mutableSetOf(linear[1]))
         assertThat(linear[0].predecessors()).isEqualTo(mutableSetOf<BasicBlock>())
-        assertThat(linear[0].instructions()).isEqualTo(i1)
+        assertThat(linear[0].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb0_$hash"))) + i1)
 
-        assertThat(linear[1].label().name).isEqualTo("bb1")
+        assertThat(linear[1].label().name).isEqualTo("bb1_$hash")
         assertThat(linear[1].successors()).isEqualTo(mutableSetOf(linear[2]))
         assertThat(linear[1].predecessors()).isEqualTo(mutableSetOf(linear[0]))
-        assertThat(linear[1].instructions()).isEqualTo(i2)
+        assertThat(linear[1].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb1_$hash"))) + i2)
 
-        assertThat(linear[2].label().name).isEqualTo("bb2")
+        assertThat(linear[2].label().name).isEqualTo("bb2_$hash")
         assertThat(linear[2].successors()).isEqualTo(mutableSetOf(linear[3]))
         assertThat(linear[2].predecessors()).isEqualTo(mutableSetOf(linear[1]))
-        assertThat(linear[2].instructions()).isEqualTo(i3)
+        assertThat(linear[2].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb2_$hash"))) + i3)
 
-        assertThat(linear[3].label().name).isEqualTo("bb3")
+        assertThat(linear[3].label().name).isEqualTo("bb3_$hash")
         assertThat(linear[3].successors()).isEqualTo(mutableSetOf<BasicBlock>())
         assertThat(linear[3].predecessors()).isEqualTo(mutableSetOf(linear[2]))
-        assertThat(linear[3].instructions()).isEqualTo(i4)
+        assertThat(linear[3].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb3_$hash"))) + i4)
     }
 
     @Test
@@ -130,23 +133,26 @@ class LinearizationTest {
                 ),
                 l1,
             )
+        val hash = cfg.hashCode().absoluteValue
 
         val linear = linearize(cfg, covering)
 
-        assertThat(linear[0].label().name).isEqualTo("bb0")
+        assertThat(linear[0].label().name).isEqualTo("bb0_$hash")
         assertThat(linear[0].successors()).isEqualTo(mutableSetOf(linear[1]))
         assertThat(linear[0].predecessors()).isEqualTo(mutableSetOf(linear[2]))
-        assertThat(linear[0].instructions()).isEqualTo(i1)
+        assertThat(linear[0].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb0_$hash"))) + i1)
 
-        assertThat(linear[1].label().name).isEqualTo("bb1")
+        assertThat(linear[1].label().name).isEqualTo("bb1_$hash")
         assertThat(linear[1].successors()).isEqualTo(mutableSetOf(linear[2]))
         assertThat(linear[1].predecessors()).isEqualTo(mutableSetOf(linear[0]))
-        assertThat(linear[1].instructions()).isEqualTo(i2)
+        assertThat(linear[1].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb1_$hash"))) + i2)
 
-        assertThat(linear[2].label().name).isEqualTo("bb2")
+        assertThat(linear[2].label().name).isEqualTo("bb2_$hash")
         assertThat(linear[2].successors()).isEqualTo(mutableSetOf(linear[0]))
         assertThat(linear[2].predecessors()).isEqualTo(mutableSetOf(linear[1]))
-        assertThat(linear[2].instructions()).isEqualTo(i3 + listOf(Jmp(BlockLabel("bb0"))))
+        assertThat(linear[2].instructions()).isEqualTo(
+            listOf(LocalLabel(BlockLabel("bb2_$hash"))) + i3 + listOf(Jmp(BlockLabel("bb0_$hash"))),
+        )
     }
 
     @Test
@@ -189,11 +195,6 @@ class LinearizationTest {
                 every { trueDestination } returns l2
             }
 
-        every { covering.coverWithInstructionsAndJump(v1.tree, match { it.name == "bb2" }) } returns i1
-        every { covering.coverWithInstructionsAndJump(v2.tree, match { it.name == "bb0" }, false) } returns i2
-        every { covering.coverWithInstructionsAndJump(v3.tree, match { it.name == "bb2" }) } returns i3
-        every { covering.coverWithInstructionsAndJump(v4.tree, match { it.name == "bb1" }) } returns i4
-
         val cfg =
             CFGFragment(
                 mapOf(
@@ -204,29 +205,37 @@ class LinearizationTest {
                 ),
                 l1,
             )
+        val hash = cfg.hashCode().absoluteValue
+
+        every { covering.coverWithInstructionsAndJump(v1.tree, match { it.name == "bb2_$hash" }) } returns i1
+        every { covering.coverWithInstructionsAndJump(v2.tree, match { it.name == "bb0_$hash" }, false) } returns i2
+        every { covering.coverWithInstructionsAndJump(v3.tree, match { it.name == "bb2_$hash" }) } returns i3
+        every { covering.coverWithInstructionsAndJump(v4.tree, match { it.name == "bb1_$hash" }) } returns i4
 
         val linear = linearize(cfg, covering)
 
         assertThat(linear.size).isEqualTo(4)
 
-        assertThat(linear[0].label().name).isEqualTo("bb0")
+        assertThat(linear[0].label().name).isEqualTo("bb0_$hash")
         assertThat(linear[0].successors()).isEqualTo(mutableSetOf(linear[1], linear[2]))
         assertThat(linear[0].predecessors()).isEqualTo(mutableSetOf(linear[1], linear[3]))
-        assertThat(linear[0].instructions()).isEqualTo(i1)
+        assertThat(linear[0].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb0_$hash"))) + i1)
 
-        assertThat(linear[1].label().name).isEqualTo("bb1")
+        assertThat(linear[1].label().name).isEqualTo("bb1_$hash")
         assertThat(linear[1].successors()).isEqualTo(mutableSetOf(linear[0], linear[2]))
         assertThat(linear[1].predecessors()).isEqualTo(mutableSetOf(linear[0], linear[3]))
-        assertThat(linear[1].instructions()).isEqualTo(i2)
+        assertThat(linear[1].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb1_$hash"))) + i2)
 
-        assertThat(linear[2].label().name).isEqualTo("bb2")
+        assertThat(linear[2].label().name).isEqualTo("bb2_$hash")
         assertThat(linear[2].successors()).isEqualTo(mutableSetOf(linear[2], linear[3]))
         assertThat(linear[2].predecessors()).isEqualTo(mutableSetOf(linear[0], linear[1], linear[2]))
-        assertThat(linear[2].instructions()).isEqualTo(i3)
+        assertThat(linear[2].instructions()).isEqualTo(listOf(LocalLabel(BlockLabel("bb2_$hash"))) + i3)
 
-        assertThat(linear[3].label().name).isEqualTo("bb3")
+        assertThat(linear[3].label().name).isEqualTo("bb3_$hash")
         assertThat(linear[3].successors()).isEqualTo(mutableSetOf(linear[0], linear[1]))
         assertThat(linear[3].predecessors()).isEqualTo(mutableSetOf(linear[2]))
-        assertThat(linear[3].instructions()).isEqualTo(i4 + listOf(Jmp(BlockLabel("bb0"))))
+        assertThat(linear[3].instructions()).isEqualTo(
+            listOf(LocalLabel(BlockLabel("bb3_$hash"))) + i4 + listOf(Jmp(BlockLabel("bb0_$hash"))),
+        )
     }
 }

@@ -37,12 +37,15 @@ val valuePatterns =
         MultiplicationAssignmentRegisterValuePattern,
         DivisionAssignmentRegisterValuePattern,
         ModuloAssignmentRegisterValuePattern,
+        // access
+        MemoryAccessByRegisterPattern,
+        MemoryAccessByValuePattern,
     )
 
 // for now, we can always dump a constant into a register and call it a value
 object ConstantPattern : ValuePattern {
     val label = ConstantLabel()
-    val predicate: (Int) -> Boolean = { _ -> true }
+    private val predicate: (Int) -> Boolean = { _ -> true }
 
     override val tree = CFGNode.ConstantSlot(label, predicate)
 
@@ -86,7 +89,7 @@ object ConstantSubtractionPattern : ValuePattern {
     private val lhsLabel = ValueLabel()
     private val rhsLabel = ConstantLabel()
     private val lhsSlot = CFGNode.ValueSlot(lhsLabel)
-    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel, { true })
+    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel) { true }
     override val tree = lhsSlot sub rhsSlot
 
     override fun makeInstance(fill: SlotFill, destination: Register) =
@@ -246,5 +249,29 @@ object ModuloAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTe
             cqo()
             idiv(reg(rhsLabel))
             mov(destination, rdx)
+        }
+}
+
+object MemoryAccessByValuePattern : ValuePattern {
+    private val addressLabel = ValueLabel()
+    private val addressSlot = CFGNode.ValueSlot(addressLabel)
+
+    override val tree = CFGNode.MemoryAccess(addressSlot)
+
+    override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
+        instructions(fill) {
+            mov(destination, mem(reg(addressLabel)))
+        }
+}
+
+object MemoryAccessByRegisterPattern : ValuePattern {
+    private val addressLabel = RegisterLabel()
+    private val addressSlot = CFGNode.RegisterSlot(addressLabel)
+
+    override val tree = CFGNode.MemoryAccess(addressSlot)
+
+    override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
+        instructions(fill) {
+            mov(destination, mem(reg(addressLabel)))
         }
 }
