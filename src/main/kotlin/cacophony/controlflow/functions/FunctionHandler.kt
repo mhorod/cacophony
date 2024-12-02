@@ -29,7 +29,7 @@ interface FunctionHandler {
 
     fun generateAccessToFramePointer(other: Definition.FunctionDeclaration): CFGNode
 
-    fun allocateFrameVariable(): CFGNode.LValue
+    fun allocateFrameVariable(variable: Variable): CFGNode.LValue
 
     fun generatePrologue(): List<CFGNode>
 
