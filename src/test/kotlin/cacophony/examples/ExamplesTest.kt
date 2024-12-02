@@ -4,10 +4,10 @@ import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyParser
 import cacophony.pipeline.CacophonyPipeline
-import cacophony.semantic.FunctionAnalysisResult
-import cacophony.semantic.ResolvedVariables
-import cacophony.semantic.TypeCheckingResult
+import cacophony.semantic.analysis.FunctionAnalysisResult
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.types.TypeCheckingResult
 import cacophony.utils.*
 import com.karumi.kotlinsnapshot.matchWithSnapshot
 import org.assertj.core.api.Assertions.assertThat

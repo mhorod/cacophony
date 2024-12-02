@@ -1,10 +1,10 @@
-package cacophony.semantic
+package cacophony.semantic.names
 
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
-import cacophony.semantic.ResolvedName.Argument
-import cacophony.semantic.ResolvedName.Function
-import cacophony.semantic.ResolvedName.Variable
+import cacophony.semantic.names.ResolvedName.Argument
+import cacophony.semantic.names.ResolvedName.Function
+import cacophony.semantic.names.ResolvedName.Variable
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration

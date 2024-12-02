@@ -1,6 +1,7 @@
-package cacophony.semantic
+package cacophony.semantic.analysis
 
-import cacophony.semantic.syntaxtree.Empty
+import cacophony.semantic.*
+import cacophony.semantic.syntaxtree.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -175,7 +176,8 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funF,
                             ParentLink(
-                                program, true,
+                                program,
+                                true,
                             ),
                             setOf(AnalyzedVariable(varA, program, VariableUseType.READ_WRITE)),
                             mutableSetOf(),
@@ -209,7 +211,8 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funF,
                             ParentLink(
-                                program, false,
+                                program,
+                                false,
                             ),
                             emptySet(),
                             mutableSetOf(),
@@ -409,7 +412,8 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funFoo,
                             ParentLink(
-                                program, false,
+                                program,
+                                false,
                             ),
                             setOf(AnalyzedVariable(fooVarA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),

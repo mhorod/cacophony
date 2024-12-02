@@ -1,7 +1,8 @@
-package cacophony.semantic
+package cacophony.semantic.analysis
 
 import cacophony.diagnostics.CallGraphDiagnostics
 import cacophony.diagnostics.Diagnostics
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
@@ -23,7 +24,7 @@ private class CallGraphProvider(
     private val diagnostics: Diagnostics,
     private val resolvedVariables: ResolvedVariables,
 ) {
-    public fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDeclaration?): CallGraph =
+    fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDeclaration?): CallGraph =
         when (node) {
             is Definition.FunctionDeclaration -> generateDirectCallGraph(node.body, node)
             is FunctionCall ->

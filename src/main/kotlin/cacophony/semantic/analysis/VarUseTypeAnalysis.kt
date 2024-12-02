@@ -1,7 +1,9 @@
-package cacophony.semantic
+package cacophony.semantic.analysis
 
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 
+// Type of variables usage for each expression
 typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseType>>
 
 fun analyzeVarUseTypes(ast: AST, resolvedVariables: ResolvedVariables, functionAnalysis: FunctionAnalysisResult): UseTypeAnalysisResult {

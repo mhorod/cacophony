@@ -1,13 +1,10 @@
 package cacophony.semantic
 
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Empty
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.Type
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.AnalyzedVariable
+import cacophony.semantic.analysis.CallGraph
+import cacophony.semantic.analysis.StaticFunctionRelations
+import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 
 fun mockRange() = Pair(Location(0), Location(0))

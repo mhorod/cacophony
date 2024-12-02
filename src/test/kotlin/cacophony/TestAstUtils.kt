@@ -1,6 +1,6 @@
 package cacophony
 
-import cacophony.semantic.CallGraph
+import cacophony.semantic.analysis.CallGraph
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 
