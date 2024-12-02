@@ -71,7 +71,7 @@ sealed interface CFGNode {
     data class Assignment(
         val destination: LValue,
         val value: CFGNode,
-    ) : CFGNode {
+    ) : CFGNode, Value {
         override fun toString(): String = "($destination = $value)"
 
         override fun children(): List<CFGNode> = listOf(destination, value)

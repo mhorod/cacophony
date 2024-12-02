@@ -68,6 +68,44 @@ class DebugRegressionTest {
     }
 
     @Test
+    fun `missing assign from memory pattern`() {
+        pipeline.generateAsm(
+            StringInput(
+                """
+                let g = [] -> Bool => (
+                    return g[]
+                );
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun `variable as condition`() {
+        pipeline.generateAsm(
+            StringInput(
+                """
+                let x: Bool = true;
+                if x then ();
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
+    fun `double assignment`() {
+        pipeline.generateAsm(
+            StringInput(
+                """
+                let x: Bool = true;
+                let y: Bool = true;
+                x = y = false;
+                """.trimIndent(),
+            ),
+        )
+    }
+
+    @Test
     fun `return used in if condition generates asm`() {
         pipeline.generateAsm(
             StringInput(
