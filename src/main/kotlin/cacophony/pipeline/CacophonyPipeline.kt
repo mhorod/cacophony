@@ -252,7 +252,7 @@ class CacophonyPipeline(
         val nasm = ProcessBuilder("nasm", "-f", "elf64", "-o", dest.toString(), src.toString()).inheritIO().start()
         nasm.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedAssembling(status)
-            throw CompileException("Unable to assemble generated code")
+            throw RuntimeException("Unable to assemble generated code")
         } ?: logger?.logSuccessfulAssembling(dest)
     }
 
@@ -260,7 +260,7 @@ class CacophonyPipeline(
         val gcc = ProcessBuilder("gcc", "-no-pie", "-o", dest.toString(), src.toString()).inheritIO().start()
         gcc.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedLinking(status)
-            throw CompileException("Unable to link compiled code")
+            throw RuntimeException("Unable to link compiled code")
         } ?: logger?.logSuccessfulLinking(dest)
     }
 
