@@ -83,7 +83,7 @@ data class Call(val function: Definition.FunctionDeclaration) : Instruction {
             SystemVAMD64CallConvention.preservedRegisters().map(Register::FixedRegister)
     override val registersWritten: Set<Register> =
         HardwareRegister
-            .values()
+            .entries
             .filterNot(SystemVAMD64CallConvention.preservedRegisters()::contains)
             .map(Register::FixedRegister)
             .toSet()
