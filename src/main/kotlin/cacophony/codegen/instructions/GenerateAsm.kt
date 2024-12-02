@@ -14,5 +14,5 @@ fun generateAsm(block: BasicBlock, registerAllocation: RegisterAllocation): Stri
         .joinToString("\n")
 
 fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation: RegisterAllocation) =
-    Label(func).toAsm(registerAllocation.successful) + "\n" + (func.name.takeIf { it == "main" }?.let { "global main\n" } ?: "") +
+    Label(func).toAsm(registerAllocation.successful) + "\n" + (if (func.name == "main") "global main\n" else "") +
         blocks.map { generateAsm(it, registerAllocation) }.joinToString("\n")
