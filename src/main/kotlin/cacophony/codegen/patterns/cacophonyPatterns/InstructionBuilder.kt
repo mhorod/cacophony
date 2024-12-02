@@ -6,10 +6,7 @@ import cacophony.codegen.instructions.MemoryAddress
 import cacophony.codegen.instructions.RegisterByte
 import cacophony.codegen.instructions.cacophonyInstructions.*
 import cacophony.codegen.patterns.SlotFill
-import cacophony.controlflow.ConstantLabel
-import cacophony.controlflow.Register
-import cacophony.controlflow.RegisterLabel
-import cacophony.controlflow.ValueLabel
+import cacophony.controlflow.*
 
 class InstructionBuilder(val slotFill: SlotFill) {
     private val instructions = mutableListOf<Instruction>()
@@ -144,6 +141,15 @@ class InstructionBuilder(val slotFill: SlotFill) {
 
     fun movzx(register: Register, registerByte: RegisterByte) {
         instructions.add(MovzxReg64Reg8(register, registerByte))
+    }
+
+    fun call(label: FunctionLabel) {
+        instructions.add(
+            Call(
+                slotFill.functionFill.getValue(label).function
+                    ?: error("Creating function body label of a pattern node"),
+            ),
+        )
     }
 
     fun ret() {

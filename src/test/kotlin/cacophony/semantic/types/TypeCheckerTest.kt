@@ -1,4 +1,4 @@
-package cacophony.semantic
+package cacophony.semantic.types
 
 import cacophony.*
 import cacophony.diagnostics.Diagnostics

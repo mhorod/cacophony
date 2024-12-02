@@ -22,6 +22,7 @@ val sideEffectPatterns =
         DivisionAssignmentMemoryPattern,
         ModuloAssignmentRegisterPattern,
         ModuloAssignmentMemoryPattern,
+        CallPattern,
         ReturnPattern,
         PushPattern,
         PushRegPattern,
@@ -174,6 +175,17 @@ object ModuloAssignmentMemoryPattern : SideEffectPattern, MemoryAssignmentTempla
             cqo()
             idiv(reg(rhsLabel))
             mov(mem(reg(lhsLabel)), rdx)
+        }
+}
+
+object CallPattern : SideEffectPattern {
+    private val functionLabel = FunctionLabel()
+
+    override val tree = CFGNode.Call(CFGNode.FunctionSlot(functionLabel))
+
+    override fun makeInstance(fill: SlotFill) =
+        instructions(fill) {
+            call(functionLabel)
         }
 }
 

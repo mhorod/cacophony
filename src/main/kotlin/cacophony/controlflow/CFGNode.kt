@@ -14,6 +14,8 @@ class ValueLabel : SlotLabel
 
 class ConstantLabel : SlotLabel
 
+class FunctionLabel : SlotLabel
+
 /**
  * Single computation tree that has no control-flow or data-flow dependencies
  */
@@ -28,19 +30,29 @@ sealed interface CFGNode {
 
     sealed interface RegisterRef : Leaf, LValue
 
+    sealed interface FunctionRef : Leaf {
+        val function: Definition.FunctionDeclaration?
+    }
+
     data object NoOp : Leaf {
         override fun toString(): String = "nop"
     }
 
-    data object Return :
-        Leaf
+    // declaration is nullable to create pattern without specific function
+    data class Function(override val function: Definition.FunctionDeclaration?) : FunctionRef
 
     data class Call(
-        val declaration: Definition.FunctionDeclaration,
-    ) :
-        Leaf {
-        override fun toString(): String = "call ${declaration.identifier}"
+        val functionRef: FunctionRef,
+    ) : CFGNode {
+        constructor(function: Definition.FunctionDeclaration?) : this(Function(function))
+
+        override fun children(): List<CFGNode> = listOf(functionRef)
+
+        override fun toString(): String = "call ${functionRef.function?.identifier}"
     }
+
+    data object Return :
+        Leaf
 
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
     data class Push(
@@ -83,12 +95,18 @@ sealed interface CFGNode {
         override fun children(): List<CFGNode> = listOf(destination)
     }
 
-    data class Constant(
-        val value: Int,
+    sealed class Constant(
+        open val value: Int,
     ) : Value,
         Leaf {
         override fun toString(): String = value.toString()
     }
+
+    data class ConstantKnown(override val value: Int) : Constant(value)
+
+    data class ConstantLazy(
+        override var value: Int,
+    ) : Constant(value)
 
     sealed interface ArithmeticOperator : Value
 
@@ -240,9 +258,9 @@ sealed interface CFGNode {
     }
 
     companion object {
-        val UNIT = Constant(42)
-        val FALSE = Constant(0)
-        val TRUE = Constant(1)
+        val UNIT = ConstantKnown(42)
+        val FALSE = ConstantKnown(0)
+        val TRUE = ConstantKnown(1)
     }
 
     /* Slots are used by patterns only. Each slot represents some CFGNode specifying some
@@ -265,4 +283,11 @@ sealed interface CFGNode {
         override val label: ConstantLabel,
         val predicate: (Int) -> Boolean,
     ) : Slot, Value
+
+    data class FunctionSlot(
+        override val label: FunctionLabel,
+    ) : Slot, FunctionRef {
+        override val function: Definition.FunctionDeclaration?
+            get() = null
+    }
 }

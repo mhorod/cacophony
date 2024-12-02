@@ -1,6 +1,5 @@
 package cacophony
 
-import cacophony.semantic.MAIN_FUNCTION_IDENTIFIER
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 

@@ -1,7 +1,7 @@
 package cacophony.controlflow.generation
 
-import cacophony.semantic.UseTypeAnalysisResult
-import cacophony.semantic.VariableUseType
+import cacophony.semantic.analysis.UseTypeAnalysisResult
+import cacophony.semantic.analysis.VariableUseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Expression
 

@@ -52,7 +52,7 @@ class BreakTest {
                         jump("condition") {
                             readRegister("x") addeq integer(1)
                         }
-                    "exitWhile" does jump("exit") { writeRegister(rax, unit) }
+                    "exitWhile" does jump("exit") { writeRegister(getResultRegister(), unit) }
                 }
             }
 
@@ -108,7 +108,7 @@ class BreakTest {
                         conditional("exitWhile", "loop condition") {
                             (readRegister("x") mod integer(5)) eq integer(0)
                         }
-                    "exitWhile" does jump("exit") { writeRegister(rax, unit) }
+                    "exitWhile" does jump("exit") { writeRegister(getResultRegister(), unit) }
                 }
             }
 
@@ -139,7 +139,7 @@ class BreakTest {
             cfg {
                 fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does jump("write unit to rax") { writeRegister("x", integer(2)) }
-                    "write unit to rax" does jump("exit") { writeRegister(rax, unit) }
+                    "write unit to rax" does jump("exit") { writeRegister(getResultRegister(), unit) }
                 }
             }
 
@@ -179,13 +179,13 @@ class BreakTest {
                 fragment(fDef, listOf(argStack(0)), 8) {
                     "bodyEntry" does
                         jump("condition") {
-                            cacophony.controlflow.writeRegister(virtualRegister("x"), integer(2))
+                            writeRegister(virtualRegister("x"), integer(2))
                         }
                     "condition" does
                         conditional("exitWhile", "exitWhile") {
                             readRegister("x") eq integer(2)
                         }
-                    "exitWhile" does jump("exit") { writeRegister(rax, unit) }
+                    "exitWhile" does jump("exit") { writeRegister(getResultRegister(), unit) }
                 }
             }
 

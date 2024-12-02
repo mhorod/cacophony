@@ -1,4 +1,4 @@
-package cacophony.semantic
+package cacophony.semantic.analysis
 
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Block

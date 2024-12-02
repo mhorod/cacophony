@@ -1,9 +1,10 @@
 package cacophony.semantic
 
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.AnalyzedVariable
+import cacophony.semantic.analysis.CallGraph
+import cacophony.semantic.analysis.StaticFunctionRelations
+import cacophony.semantic.syntaxtree.*
 
 fun program(ast: Block) = ast.expressions[0] as Definition.FunctionDeclaration
 

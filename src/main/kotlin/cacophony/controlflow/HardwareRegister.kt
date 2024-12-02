@@ -2,25 +2,24 @@ package cacophony.controlflow
 
 const val REGISTER_SIZE = 8
 
-val PRESERVED_REGISTERS = HardwareRegister.entries.filter { it != HardwareRegister.RSP && it.isCallPreserved }
-
-enum class HardwareRegister(val isCallPreserved: Boolean) {
-    RAX(false),
-    RBX(true),
-    RCX(false),
-    RDX(false),
-    RSI(false),
-    RDI(false),
-    RSP(true),
-    RBP(true),
-    R8(false),
-    R9(false),
-    R10(false),
-    R11(false),
-    R12(true),
-    R13(true),
-    R14(true),
-    R15(true), ;
+enum class HardwareRegister {
+    RAX,
+    RBX,
+    RCX,
+    RDX,
+    RSI,
+    RDI,
+    RSP,
+    RBP,
+    R8,
+    R9,
+    R10,
+    R11,
+    R12,
+    R13,
+    R14,
+    R15,
+    ;
 
     override fun toString(): String = name.lowercase()
 }

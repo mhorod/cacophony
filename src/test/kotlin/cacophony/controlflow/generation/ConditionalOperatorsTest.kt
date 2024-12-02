@@ -16,7 +16,6 @@ import cacophony.controlflow.generation.TestOperators.Companion.ltNode
 import cacophony.controlflow.generation.TestOperators.Companion.neq
 import cacophony.controlflow.generation.TestOperators.Companion.neqNode
 import cacophony.controlflow.integer
-import cacophony.controlflow.rax
 import cacophony.controlflow.writeRegister
 import cacophony.functionDeclaration
 import cacophony.ifThenElse
@@ -67,7 +66,7 @@ class ConditionalOperatorsTest {
                         }
                     "write result to rax" does
                         jump("exit") {
-                            writeRegister(rax, readRegister("result"))
+                            writeRegister(getResultRegister(), readRegister("result"))
                         }
                 }
             }
@@ -119,7 +118,7 @@ class ConditionalOperatorsTest {
                         }
                     "write result to rax" does
                         jump("exit") {
-                            writeRegister(rax, readRegister("result"))
+                            writeRegister(getResultRegister(), readRegister("result"))
                         }
                 }
             }
@@ -171,7 +170,7 @@ class ConditionalOperatorsTest {
                         }
                     "write result to rax" does
                         jump("exit") {
-                            writeRegister(rax, readRegister("result"))
+                            writeRegister(getResultRegister(), readRegister("result"))
                         }
                 }
             }
@@ -227,7 +226,7 @@ class ConditionalOperatorsTest {
                         }
                     "write result to rax" does
                         jump("exit") {
-                            writeRegister(rax, readRegister("result"))
+                            writeRegister(getResultRegister(), readRegister("result"))
                         }
                 }
             }

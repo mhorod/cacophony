@@ -1,8 +1,9 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
-import cacophony.semantic.ResolvedVariables
-import cacophony.semantic.UseTypeAnalysisResult
+import cacophony.controlflow.functions.FunctionHandler
+import cacophony.semantic.analysis.UseTypeAnalysisResult
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Empty
@@ -27,10 +28,12 @@ internal class CFGGenerator(
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
     private val operatorHandler = OperatorHandler(cfg, this, sideEffectAnalyzer)
     private val assignmentHandler = AssignmentHandler(cfg, this)
+    private val prologue = listOfNodesToExtracted(getCurrentFunctionHandler().generatePrologue())
+    private val epilogue = listOfNodesToExtracted(getCurrentFunctionHandler().generateEpilogue())
 
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
-        val returnValueRegister = registerUse(rax)
+        val returnValueRegister = registerUse(getCurrentFunctionHandler().getResultRegister())
 
         val extended =
             when (bodyCFG) {
@@ -42,9 +45,6 @@ internal class CFGGenerator(
                 }
             }
 
-        val functionHandler = functionHandlers[function]!!
-        val prologue = listOfNodesToExtracted(functionHandler.generatePrologue())
-        val epilogue = listOfNodesToExtracted(functionHandler.generateEpilogue())
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)
 
         prologue.exit.connect(extended.entry.label)
@@ -125,7 +125,7 @@ internal class CFGGenerator(
                     .dropLast(1)
                     .map { visitExtracted(it, EvalMode.SideEffect, context) }
             val valueCFG = visit(last, mode, context)
-            val reduced = prerequisiteSubCFGs.reduce { subCFG, path -> subCFG merge path }
+            val reduced = prerequisiteSubCFGs.reduce(SubCFG.Extracted::merge)
 
             when (valueCFG) {
                 is SubCFG.Extracted -> reduced merge valueCFG
@@ -159,11 +159,11 @@ internal class CFGGenerator(
                     resultRegister,
                     true,
                 ).map { ensureExtracted(it) }
-                .reduce { path, next -> path merge next }
+                .reduce(SubCFG.Extracted::merge)
 
         val entry =
             if (argumentVertices.isNotEmpty()) {
-                val extractedArguments = argumentVertices.reduce { path, next -> path merge next }
+                val extractedArguments = argumentVertices.reduce(SubCFG.Extracted::merge)
                 extractedArguments.exit.connect(callSequence.entry.label)
                 extractedArguments.entry
             } else {
@@ -180,7 +180,7 @@ internal class CFGGenerator(
                 SubCFG.Immediate(
                     when (literal) {
                         is Literal.BoolLiteral -> if (literal.value) CFGNode.TRUE else CFGNode.FALSE
-                        is Literal.IntLiteral -> CFGNode.Constant(literal.value)
+                        is Literal.IntLiteral -> CFGNode.ConstantKnown(literal.value)
                     },
                 )
 
@@ -284,13 +284,12 @@ internal class CFGGenerator(
     private fun visitReturnStatement(expression: Statement.ReturnStatement, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
-            CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX)), valueCFG.access)
+            CFGNode.Assignment(CFGNode.RegisterUse(getCurrentFunctionHandler().getResultRegister()), valueCFG.access)
 
         val resultAssignmentVertex = cfg.addUnconditionalVertex(resultAssignment)
-        val returnVertex = cfg.addFinalVertex(CFGNode.Return)
-        resultAssignmentVertex.connect(returnVertex.label)
+        resultAssignmentVertex.connect(epilogue.entry.label)
 
-        // Similarily to break, return creates an artificial exit
+        // Similarly to break, return creates an artificial exit
         val artificialExit = cfg.addUnconditionalVertex(CFGNode.NoOp)
 
         return SubCFG.Extracted(resultAssignmentVertex, artificialExit, CFGNode.NoOp)

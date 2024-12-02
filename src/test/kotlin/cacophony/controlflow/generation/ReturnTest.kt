@@ -8,13 +8,9 @@ import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.controlflow.integer
 import cacophony.controlflow.lt
 import cacophony.controlflow.mod
-import cacophony.controlflow.rax
-import cacophony.controlflow.returnNode
 import cacophony.controlflow.unit
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-@Disabled("TODO: Cannot handle return at the moment")
 class ReturnTest {
     @Test
     fun `return exits while(true) loop`() {
@@ -62,10 +58,9 @@ class ReturnTest {
                             readRegister("x") addeq integer(1)
                         }
                     "return from loop" does
-                        jump("loop return") {
-                            cacophony.controlflow.writeRegister(rax, integer(0))
+                        jump("exit") {
+                            cacophony.controlflow.writeRegister(getResultRegister(), integer(0))
                         }
-                    "loop return" does final { returnNode }
                 }
             }
 
@@ -120,9 +115,8 @@ class ReturnTest {
                         conditional("return from loop", "loop condition") {
                             (readRegister("x") mod integer(5)) eq integer(0)
                         }
-                    "exitWhile" does jump("exit") { cacophony.controlflow.writeRegister(rax, unit) }
-                    "return from loop" does jump("loop return") { cacophony.controlflow.writeRegister(rax, integer(0)) }
-                    "loop return" does final { returnNode }
+                    "exitWhile" does jump("exit") { cacophony.controlflow.writeRegister(getResultRegister(), unit) }
+                    "return from loop" does jump("exit") { cacophony.controlflow.writeRegister(getResultRegister(), integer(0)) }
                 }
             }
 
@@ -148,7 +142,7 @@ class ReturnTest {
         val expectedCFG =
             cfg {
                 fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { cacophony.controlflow.writeRegister(rax, integer(1)) }
+                    "bodyEntry" does jump("exit") { cacophony.controlflow.writeRegister(getResultRegister(), integer(1)) }
                 }
             }
 
@@ -192,15 +186,13 @@ class ReturnTest {
                             readRegister("x") eq integer(2)
                         }
                     "write 1 to rax" does
-                        jump("return 1") {
-                            cacophony.controlflow.writeRegister(rax, integer(1))
+                        jump("exit") {
+                            cacophony.controlflow.writeRegister(getResultRegister(), integer(1))
                         }
                     "write 2 to rax" does
-                        jump("return 2") {
-                            cacophony.controlflow.writeRegister(rax, integer(2))
+                        jump("exit") {
+                            cacophony.controlflow.writeRegister(getResultRegister(), integer(2))
                         }
-                    "return 1" does final { returnNode }
-                    "return 2" does final { returnNode }
                 }
             }
 

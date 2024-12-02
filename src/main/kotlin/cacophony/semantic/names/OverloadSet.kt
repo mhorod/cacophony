@@ -1,4 +1,4 @@
-package cacophony.semantic
+package cacophony.semantic.names
 
 import cacophony.semantic.syntaxtree.Definition
 
