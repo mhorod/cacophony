@@ -4,6 +4,7 @@ import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
 import cacophony.codegen.instructions.cacophonyInstructions.Jmp
+import cacophony.codegen.instructions.cacophonyInstructions.LocalLabel
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGVertex
@@ -15,8 +16,7 @@ private typealias PartialLinearization = Pair<MutableBasicBlock, Iterator<Mutabl
 
 private class MutableBasicBlock(
     val label: BlockLabel,
-    val instructions: MutableList<Instruction> = mutableListOf(),
-//    val instructions: MutableList<Instruction> = mutableListOf(Label(label)),
+    val instructions: MutableList<Instruction> = mutableListOf(LocalLabel(label)),
     val successors: MutableSet<MutableBasicBlock> = mutableSetOf(),
     val predecessors: MutableSet<MutableBasicBlock> = mutableSetOf(),
 ) : BasicBlock {
