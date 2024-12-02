@@ -77,24 +77,24 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
-data class Call(
-    val function: Definition.FunctionDeclaration,
-) : Instruction {
-    override val registersRead: Set<Register> =
-        setOf(Register.FixedRegister(HardwareRegister.RSP)).union(
-            SystemVAMD64CallConvention.preservedRegisters().map { Register.FixedRegister(it) },
-        )
-    override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
+data class Call(val function: Definition.FunctionDeclaration) : Instruction {
+    override val registersRead =
+        setOf(Register.FixedRegister(HardwareRegister.RSP)) union
+            SystemVAMD64CallConvention.preservedRegisters().map(Register::FixedRegister)
+    override val registersWritten: Set<Register> =
+        HardwareRegister
+            .values()
+            .filterNot(SystemVAMD64CallConvention.preservedRegisters()::contains)
+            .map(Register::FixedRegister)
+            .toSet()
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
 class Ret : Instruction {
-    override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RSP))
-    override val registersWritten: Set<Register> =
-        setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(SystemVAMD64CallConvention.returnRegister())).union(
-            SystemVAMD64CallConvention.preservedRegisters().map { Register.FixedRegister(it) },
-        )
+    override val registersRead =
+        setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(SystemVAMD64CallConvention.returnRegister()))
+    override val registersWritten = setOf<Register>()
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "ret"
 }
