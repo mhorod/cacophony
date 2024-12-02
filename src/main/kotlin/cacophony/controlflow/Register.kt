@@ -5,10 +5,10 @@ sealed class Register {
         private val myNumber = number++
 
         override fun toString(): String = "reg$myNumber"
-    }
 
-    companion object {
-        var number: Int = 0
+        private companion object {
+            private var number: Int = 0
+        }
     }
 
     data class FixedRegister(
