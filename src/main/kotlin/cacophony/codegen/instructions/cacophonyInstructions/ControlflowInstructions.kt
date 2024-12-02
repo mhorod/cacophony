@@ -87,13 +87,12 @@ data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruc
 
 data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
-        setOf(Register.FixedRegister(HardwareRegister.RSP)) union
-            SystemVAMD64CallConvention.preservedRegisters().map(Register::FixedRegister)
+        setOf(Register.FixedRegister(HardwareRegister.RSP))
     override val registersWritten: Set<Register> =
         HardwareRegister
             .entries
             .filterNot(SystemVAMD64CallConvention.preservedRegisters()::contains)
-            .minus(setOf(HardwareRegister.R8, HardwareRegister.R9))
+            .filterNot { it == HardwareRegister.RSP }
             .map(Register::FixedRegister)
             .toSet()
 

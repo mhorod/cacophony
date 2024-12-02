@@ -27,8 +27,8 @@ import cacophony.controlflow.generation.TestOperators.Companion.sub
 import cacophony.controlflow.generation.TestOperators.Companion.subNode
 import cacophony.controlflow.integer
 import cacophony.controlflow.writeRegister
+import cacophony.functionDeclaration
 import cacophony.lit
-import cacophony.semantic.functionDeclaration
 import cacophony.variableDeclaration
 import cacophony.variableUse
 import cacophony.variableWrite
