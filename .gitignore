@@ -4,3 +4,7 @@ build/
 *.jar
 kls_database.db
 .kotlin
+
+*.asm
+*.o
+*.bin
