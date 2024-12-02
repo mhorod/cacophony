@@ -149,7 +149,15 @@ internal class CFGGenerator(
         val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
         val functionHandler = getFunctionHandler(function)
 
-        val resultRegister = if (mode is EvalMode.Value) Register.VirtualRegister() else null
+        val (resultRegister, resultAccess) =
+            if (mode is EvalMode.SideEffect) {
+                Pair(null, CFGNode.NoOp)
+            } else {
+                val register = Register.VirtualRegister()
+                val rawAccess = CFGNode.RegisterUse(register)
+                val access = if (mode is EvalMode.Conditional) CFGNode.NotEquals(rawAccess, CFGNode.ConstantKnown(0)) else rawAccess
+                Pair(register, access)
+            }
 
         val callSequence =
             functionHandler
@@ -170,8 +178,13 @@ internal class CFGGenerator(
                 callSequence.entry
             }
 
-        val resultAccess = resultRegister?.let { CFGNode.RegisterUse(it) } ?: CFGNode.NoOp
-        return SubCFG.Extracted(entry, callSequence.exit, resultAccess)
+        return if (mode is EvalMode.Conditional) {
+            val conditionVertex = cfg.addConditionalVertex(resultAccess)
+            callSequence.exit.connect(conditionVertex.label)
+            conditionVertex.connectTrue(mode.trueEntry.label)
+            conditionVertex.connectFalse(mode.falseEntry.label)
+            SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
+        } else SubCFG.Extracted(entry, callSequence.exit, resultAccess)
     }
 
     private fun visitLiteral(literal: Literal, mode: EvalMode): SubCFG =
