@@ -292,7 +292,16 @@ internal class CFGGenerator(
         // Similarly to break, return creates an artificial exit
         val artificialExit = cfg.addUnconditionalVertex(CFGNode.NoOp)
 
-        return SubCFG.Extracted(resultAssignmentVertex, artificialExit, CFGNode.NoOp)
+        val entry =
+            when (valueCFG) {
+                is SubCFG.Extracted -> {
+                    valueCFG.exit.connect(resultAssignmentVertex.label)
+                    valueCFG.entry
+                }
+                is SubCFG.Immediate -> resultAssignmentVertex
+            }
+
+        return SubCFG.Extracted(entry, artificialExit, CFGNode.NoOp)
     }
 
     private fun visitWhileStatement(expression: Statement.WhileStatement, mode: EvalMode, context: Context): SubCFG {
