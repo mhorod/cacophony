@@ -2,6 +2,7 @@ package cacophony.codegen.instructions.cacophonyInstructions
 
 import cacophony.codegen.instructions.MemoryAddress
 import cacophony.controlflow.HardwareRegisterMapping
+import cacophony.controlflow.Register
 
 fun MemoryAddress.toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
     val builder = StringBuilder()
@@ -16,3 +17,5 @@ fun MemoryAddress.toAsm(hardwareRegisterMapping: HardwareRegisterMapping): Strin
     builder.append("]")
     return builder.toString()
 }
+
+fun Register.substitute(registersSubstitution: Map<Register, Register>): Register = registersSubstitution.getOrDefault(this, this)

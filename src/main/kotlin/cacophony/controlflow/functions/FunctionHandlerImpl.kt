@@ -106,7 +106,6 @@ class FunctionHandlerImpl(
                 is Variable.SourceVariable -> {
                     analyzedFunction.variables.find { it.declaration == variable.definition }?.definedIn
                 }
-
                 is Variable.AuxVariable.StaticLinkVariable -> {
                     if (getStaticLink() == variable) {
                         function
@@ -114,12 +113,9 @@ class FunctionHandlerImpl(
                         ancestorFunctionHandlers.find { it.getStaticLink() == variable }?.getFunctionDeclaration()
                     }
                 }
-                // For whoever finds this place in the future because of compilation error after
-                // adding a new subtype of AuxVariable:
-                //   If generateVariableAccess should support the new type, implement new logic here.
-                //   If not, uncomment this else statement and add an appropriate unit test.
-                // else -> throw GenerateVariableAccessException(
-                //   "Cannot generate access to variables other than static links and source variables.")
+                else -> throw GenerateVariableAccessException(
+                    "Cannot generate access to variables other than static links and source variables.",
+                )
             }
 
         if (definedInDeclaration == null) {
@@ -157,7 +153,7 @@ class FunctionHandlerImpl(
 
     override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
-    public fun getStackSpace(): CFGNode.ConstantLazy = stackSpace
+    fun getStackSpace(): CFGNode.ConstantLazy = stackSpace
 
     private val resultRegister = Register.VirtualRegister()
 
