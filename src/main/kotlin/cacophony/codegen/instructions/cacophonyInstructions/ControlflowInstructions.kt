@@ -99,14 +99,14 @@ class Ret : Instruction {
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "ret"
 }
 
-class LocalLabel(val label: BlockLabel) : Instruction {
+data class LocalLabel(val label: BlockLabel) : Instruction {
     override val registersRead: Set<Register> = setOf()
     override val registersWritten: Set<Register> = setOf()
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = ".${label.name}:"
 }
 
-class Label(val label: BlockLabel) : Instruction {
+data class Label(val label: BlockLabel) : Instruction {
     override val registersRead: Set<Register> = setOf()
     override val registersWritten: Set<Register> = setOf()
 
