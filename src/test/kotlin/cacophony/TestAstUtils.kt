@@ -1,10 +1,8 @@
 package cacophony
 
-import cacophony.semantic.CallGraph
 import cacophony.semantic.MAIN_FUNCTION_IDENTIFIER
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
-import org.assertj.core.api.InstanceOfAssertFactories.type
 
 fun mockRange() = Pair(Location(0), Location(0))
 
@@ -93,9 +91,6 @@ fun astOf(vararg expressions: Expression) =
             call(variableUse(MAIN_FUNCTION_IDENTIFIER)),
         ),
     )
-
-fun callGraph(vararg calls: Pair<Definition.FunctionDeclaration, Definition.FunctionDeclaration>): CallGraph =
-    calls.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
 
 infix fun Expression.add(rhs: Expression) = OperatorBinary.Addition(mockRange(), this, rhs)
 
