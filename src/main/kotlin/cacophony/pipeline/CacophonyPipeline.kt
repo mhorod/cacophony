@@ -25,10 +25,10 @@ import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
 import cacophony.utils.Input
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
+import kotlin.io.path.writeLines
 
 class CacophonyPipeline(
     val diagnostics: Diagnostics,
@@ -239,13 +239,7 @@ class CacophonyPipeline(
     }
 
     fun generateAsm(input: Input, dest: Path) {
-        val defs = generateAsm(input)
-        Files.newBufferedWriter(dest, StandardOpenOption.CREATE).use { writer ->
-            defs.values.forEach {
-                writer.write(it)
-                writer.newLine()
-            }
-        }
+        dest.writeLines(generateAsm(input).values, Charsets.UTF_8, StandardOpenOption.CREATE)
     }
 
     fun compile(src: Path, dest: Path) {
