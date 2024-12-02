@@ -243,8 +243,8 @@ class CacophonyPipeline(
         return asm
     }
 
-    fun generateAsm(input: Input, dest: Path) {
-        dest.writeLines(generateAsm(input).values, Charsets.UTF_8, StandardOpenOption.CREATE)
+    fun saveAsm(asm: Collection<String>, dest: Path) {
+        dest.writeLines(asm, Charsets.UTF_8, StandardOpenOption.CREATE)
     }
 
     fun compile(src: Path, dest: Path) {
@@ -268,7 +268,7 @@ class CacophonyPipeline(
         val objFile = Paths.get("${src.fileName}.o")
         val binFile = Paths.get("${src.fileName}.bin")
 
-        generateAsm(input, asmFile)
+        saveAsm(generateAsm(input).values, asmFile)
         compile(asmFile, objFile)
         link(objFile, binFile)
     }
