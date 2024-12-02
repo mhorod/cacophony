@@ -4,9 +4,11 @@ import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
 import cacophony.codegen.instructions.cacophonyInstructions.Jmp
+import cacophony.codegen.instructions.cacophonyInstructions.LocalLabel
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGVertex
+import kotlin.math.absoluteValue
 
 typealias LoweredCFGFragment = List<BasicBlock>
 
@@ -14,8 +16,7 @@ private typealias PartialLinearization = Pair<MutableBasicBlock, Iterator<Mutabl
 
 private class MutableBasicBlock(
     val label: BlockLabel,
-    val instructions: MutableList<Instruction> = mutableListOf(),
-//    val instructions: MutableList<Instruction> = mutableListOf(Label(label)),
+    val instructions: MutableList<Instruction> = mutableListOf(LocalLabel(label)),
     val successors: MutableSet<MutableBasicBlock> = mutableSetOf(),
     val predecessors: MutableSet<MutableBasicBlock> = mutableSetOf(),
 ) : BasicBlock {
@@ -34,8 +35,7 @@ private class Linearizer(val fragment: CFGFragment, val covering: InstructionCov
     val visited = mutableMapOf<CFGLabel, MutableBasicBlock>()
     var blocks = 0
 
-    fun getLabel() = BlockLabel("bb${blocks++}")
-//    fun getLabel() = BlockLabel("bb${blocks++}_${fragment.hashCode().absoluteValue}")
+    fun getLabel() = BlockLabel("bb${blocks++}_${fragment.hashCode().absoluteValue}")
 
     fun dfs(label: CFGLabel): PartialLinearization {
         val vertex = fragment.vertices[label]!!

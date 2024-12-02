@@ -17,11 +17,10 @@ data class MovRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
-        if (lhsHardwareReg == rhsHardwareReg) {
-            return ""
-        }
         return "mov $lhsHardwareReg, $rhsHardwareReg"
     }
+
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping) = hardwareRegisterMapping[lhs] == hardwareRegisterMapping[rhs]
 }
 
 data class MovRegImm(
