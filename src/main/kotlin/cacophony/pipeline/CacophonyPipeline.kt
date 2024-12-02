@@ -32,7 +32,6 @@ import cacophony.utils.CompileException
 import cacophony.utils.Input
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
 import kotlin.io.path.writeLines
 
 class CacophonyPipeline(
@@ -243,10 +242,6 @@ class CacophonyPipeline(
         return asm
     }
 
-    fun saveAsm(asm: Collection<String>, dest: Path) {
-        dest.writeLines(asm, Charsets.UTF_8, StandardOpenOption.CREATE)
-    }
-
     fun compile(src: Path, dest: Path) {
         val nasm = ProcessBuilder("nasm", "-f", "elf64", "-o", dest.toString(), src.toString()).inheritIO().start()
         nasm.waitFor().takeIf { it != 0 }?.let { status ->
@@ -268,7 +263,7 @@ class CacophonyPipeline(
         val objFile = Paths.get("${src.fileName}.o")
         val binFile = Paths.get("${src.fileName}.bin")
 
-        saveAsm(generateAsm(input).values, asmFile)
+        asmFile.writeLines(generateAsm(input).values)
         compile(asmFile, objFile)
         link(objFile, binFile)
     }
