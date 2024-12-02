@@ -335,7 +335,13 @@ internal class CFGGenerator(
             is EvalMode.Value -> SubCFG.Immediate(variableAccess)
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
             is EvalMode.Conditional -> {
-                val conditionVertex = cfg.addConditionalVertex(variableAccess)
+                val conditionVertex =
+                    cfg.addConditionalVertex(
+                        CFGNode.NotEquals(
+                            variableAccess,
+                            CFGNode.ConstantKnown(0),
+                        ),
+                    )
                 conditionVertex.connectTrue(mode.trueEntry.label)
                 conditionVertex.connectFalse(mode.falseEntry.label)
                 SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)

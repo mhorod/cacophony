@@ -37,6 +37,7 @@ val valuePatterns =
         MultiplicationAssignmentRegisterValuePattern,
         DivisionAssignmentRegisterValuePattern,
         ModuloAssignmentRegisterValuePattern,
+        AssignmentValuePattern,
     )
 
 // for now, we can always dump a constant into a register and call it a value
@@ -246,5 +247,15 @@ object ModuloAssignmentRegisterValuePattern : ValuePattern, RegisterAssignmentTe
             cqo()
             idiv(reg(rhsLabel))
             mov(destination, rdx)
+        }
+}
+
+object AssignmentValuePattern : ValuePattern, RegisterAssignmentTemplate() {
+    override val tree = lhsSlot assign rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            mov(reg(lhsRegisterLabel), reg(rhsLabel))
+            mov(destination, reg(lhsRegisterLabel))
         }
 }

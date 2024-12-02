@@ -12,6 +12,7 @@ import cacophony.utils.*
 import com.karumi.kotlinsnapshot.matchWithSnapshot
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
@@ -67,7 +68,7 @@ class ExamplesTest {
     fun `correct examples compile without errors`(path: Path) {
         val input = FileInput(path.toString())
         val diagnostics = CacophonyDiagnostics(input)
-        CacophonyPipeline(diagnostics, null, lexer, parser).process(input)
+        CacophonyPipeline(diagnostics, null, lexer, parser).generateAsm(input)
         diagnostics.getErrors().forEach {
             println(it)
         }
@@ -86,6 +87,44 @@ class ExamplesTest {
         } catch (_: CompileException) {
         }
         assertThat(diagnostics.getErrors()).isNotEmpty()
+    }
+
+    @Test
+    fun `missing assign from memory pattern`() {
+        compileString(
+            """
+            let g = [] -> Bool => (
+                return g[]
+            );
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `variable as condition`() {
+        compileString(
+            """
+            let x: Bool = true;
+            if x then ();
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun `double assignment`() {
+        compileString(
+            """
+            let x: Bool = true;
+            let y: Bool = true;
+            x = y = false;
+            """.trimIndent(),
+        )
+    }
+
+    private fun compileString(program: String) {
+        val input = StringInput(program)
+        val diagnostics = CacophonyDiagnostics(input)
+        CacophonyPipeline(diagnostics, null, lexer, parser).generateAsm(input)
     }
 
     companion object {

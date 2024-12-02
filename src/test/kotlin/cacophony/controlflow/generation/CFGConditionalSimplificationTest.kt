@@ -170,7 +170,7 @@ class CFGConditionalSimplificationTest {
                     "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
                     "condition on x" does
                         conditional("write 11 to result", "write 22 to result") {
-                            registerUse(virtualRegister("x"))
+                            registerUse(virtualRegister("x")) neq integer(0)
                         }
                     "write 11 to result" does
                         jump("write result to rax") {
@@ -229,7 +229,7 @@ class CFGConditionalSimplificationTest {
                     "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
                     "condition on x" does
                         conditional("write 11 to result", "write 22 to result") {
-                            registerUse(virtualRegister("x"))
+                            registerUse(virtualRegister("x")) neq integer(0)
                         }
                     "write 11 to result" does
                         jump("write result to rax") {
