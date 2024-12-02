@@ -242,14 +242,16 @@ class CacophonyPipeline(
     ): Pair<
         Map<FunctionDeclaration, LoweredCFGFragment>,
         Map<FunctionDeclaration, RegisterAllocation>,
-        > {
+    > {
         if (registerAllocation.values.all { it.spills.isEmpty() }) {
             return covering to registerAllocation
         }
 
-        val spareRegisters = setOf(HardwareRegister.R8, HardwareRegister.R9)
+        val spareRegisters = setOf(Register.FixedRegister(HardwareRegister.R8), Register.FixedRegister(HardwareRegister.R9))
 
-        val newRegisterAllocation = allocateRegisters(liveness, allGPRs.minus(spareRegisters))
+        logger?.logSpillHandlingAttempt(spareRegisters)
+
+        val newRegisterAllocation = allocateRegisters(liveness, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
 
         if (newRegisterAllocation.values.all { it.spills.isEmpty() }) {
             return covering to newRegisterAllocation
@@ -264,7 +266,7 @@ class CacophonyPipeline(
                             functionHandlers[functionDeclaration]!!,
                             loweredCfg,
                             newRegisterAllocation[functionDeclaration]!!,
-                            spareRegisters.map { Register.FixedRegister(it) }.toSet(),
+                            spareRegisters,
                         )
                 }.toMap()
 
@@ -294,13 +296,13 @@ class CacophonyPipeline(
         }
     }
 
-    fun generateAsm(input: Input): Map<FunctionDeclaration, String> {
+    private fun generateAsm(input: Input): Map<FunctionDeclaration, String> {
         val asm = generateAsm(generateAST(input))
         asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return asm
     }
 
-    fun compile(src: Path, dest: Path) {
+    private fun compile(src: Path, dest: Path) {
         val nasm = ProcessBuilder("nasm", "-f", "elf64", "-o", dest.toString(), src.toString()).inheritIO().start()
         nasm.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedAssembling(status)

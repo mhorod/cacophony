@@ -93,6 +93,7 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
         HardwareRegister
             .entries
             .filterNot(SystemVAMD64CallConvention.preservedRegisters()::contains)
+            .minus(setOf(HardwareRegister.R8, HardwareRegister.R9))
             .map(Register::FixedRegister)
             .toSet()
 
