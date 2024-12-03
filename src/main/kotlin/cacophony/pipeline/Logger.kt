@@ -4,6 +4,7 @@ import cacophony.codegen.linearization.BasicBlock
 import cacophony.codegen.registers.Liveness
 import cacophony.codegen.registers.RegisterAllocation
 import cacophony.controlflow.CFGFragment
+import cacophony.controlflow.Register
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.semantic.analysis.*
@@ -58,6 +59,10 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
     fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>)
 
     fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDeclaration, Liveness>)
+
+    fun logSpillHandlingAttempt(spareRegisters: Set<Register.FixedRegister>)
+
+    fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>)
 
     fun logSuccessfulAssembling(dest: Path)
 

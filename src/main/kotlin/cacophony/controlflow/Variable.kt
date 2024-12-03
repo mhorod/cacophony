@@ -9,5 +9,7 @@ sealed class Variable {
 
     sealed class AuxVariable : Variable() {
         class StaticLinkVariable : AuxVariable()
+
+        class SpillVariable : AuxVariable()
     }
 }

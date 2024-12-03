@@ -134,8 +134,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
         println(programCfgToGraphviz(cfg))
     }
 
-    override fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>) {
-        println("Instruction covering successful :D")
+    private fun logCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>) {
         covering.forEach { (function, blocks) ->
             println("  $function (${function.identifier}/${function.arguments.size})")
             blocks.forEach { block ->
@@ -145,6 +144,11 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
                 }
             }
         }
+    }
+
+    override fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>) {
+        println("Instruction covering successful :D")
+        logCovering(covering)
     }
 
     override fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDeclaration, Liveness>) {
@@ -163,6 +167,18 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
                     println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
             }
         }
+    }
+
+    override fun logSpillHandlingAttempt(spareRegisters: Set<Register.FixedRegister>) {
+        println(
+            "Some virtual registers have spilled. Attempting to handle spills using spare registers: [" +
+                spareRegisters.joinToString(", ") { shortRegisterName(it) } + "]",
+        )
+    }
+
+    override fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>) {
+        println("Spill handling successful :D")
+        logCovering(covering)
     }
 
     override fun logSuccessfulAssembling(dest: Path) {
