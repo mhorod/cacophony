@@ -38,6 +38,7 @@ val valuePatterns =
         DivisionAssignmentRegisterValuePattern,
         ModuloAssignmentRegisterValuePattern,
         AssignmentValuePattern,
+        RegisterToMemoryAssignmentValuePattern,
         // access
         MemoryAccessByRegisterPattern,
         MemoryAccessByValuePattern,
@@ -284,5 +285,19 @@ object AssignmentValuePattern : ValuePattern, RegisterAssignmentTemplate() {
         instructions(fill) {
             mov(reg(lhsRegisterLabel), reg(rhsLabel))
             mov(destination, reg(lhsRegisterLabel))
+        }
+}
+
+object RegisterToMemoryAssignmentValuePattern : ValuePattern {
+    private val lhsLabel = ValueLabel()
+    private val rhsLabel = ValueLabel()
+    private val lhsSlot = CFGNode.MemoryAccess(CFGNode.ValueSlot(lhsLabel))
+    private val rhsSlot = CFGNode.ValueSlot(rhsLabel)
+    override val tree = lhsSlot assign rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
+        instructions(fill) {
+            mov(mem(reg(lhsLabel)), reg(rhsLabel))
+            mov(destination, reg(rhsLabel))
         }
 }

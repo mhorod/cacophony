@@ -29,7 +29,7 @@ class PrologueEpilogueHandler(
             for ((ind, arg) in getFunctionDeclaration().arguments.withIndex()) {
                 nodes.add(
                     wrapAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
-                        wrapAllocation(callConvention.argumentAllocation(ind)),
+                        wrapAllocation(callConvention.argumentAllocation(ind + 1)),
                 )
             }
 
