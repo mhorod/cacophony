@@ -34,6 +34,7 @@ val sideEffectPatterns =
         RegisterToMemoryAssignmentPattern,
         MemoryAssignmentPattern,
         MemoryToRegisterAssignmentPattern,
+        MemoryByRegisterWithSubtractionToRegisterAssignment,
     )
 
 object NoOpPattern : SideEffectPattern {
@@ -316,5 +317,25 @@ object RegisterToMemoryWithSubtractedDisplacementAssignmentPattern : SideEffectP
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
             mov(memWithDisplacement(reg(lhsLabel), -const(displacementLabel)), reg(rhsLabel))
+        }
+}
+
+object MemoryByRegisterWithSubtractionToRegisterAssignment : SideEffectPattern {
+    private val lhsRegister = RegisterLabel()
+    private val displacementLabel = ConstantLabel()
+    private val rhsRegister = RegisterLabel()
+
+    private val lhsSlot = CFGNode.RegisterSlot(lhsRegister)
+    private val rhsSlot =
+        memoryAccess(
+            CFGNode.RegisterSlot(rhsRegister)
+                sub
+                CFGNode.ConstantSlot(displacementLabel) { true },
+        )
+    override val tree = lhsSlot assign rhsSlot
+
+    override fun makeInstance(fill: SlotFill) =
+        instructions(fill) {
+            mov(reg(lhsRegister), memWithDisplacement(reg(rhsRegister), -const(displacementLabel)))
         }
 }
