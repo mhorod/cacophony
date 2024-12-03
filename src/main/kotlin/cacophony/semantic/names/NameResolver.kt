@@ -107,6 +107,8 @@ private fun emptySymbolsTable(): SymbolsTable {
                             }
                         }
                     }
+
+                    is Definition.ForeignFunctionDef -> TODO()
                 }
             }
         }

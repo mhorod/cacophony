@@ -85,6 +85,8 @@ private class Typer(
                     BuiltinType.UnitType
                 }
 
+                is Definition.ForeignFunctionDef -> TODO()
+
                 is Empty -> BuiltinType.UnitType
                 is FunctionCall -> {
                     val argsTypes = expression.arguments.map { typeExpression(it) }

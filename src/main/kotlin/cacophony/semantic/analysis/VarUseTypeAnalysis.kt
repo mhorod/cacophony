@@ -69,6 +69,7 @@ private class VarUseVisitor(
             is Block -> visitBlock(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
             is Definition.FunctionDeclaration -> visitFunctionDeclaration(expr)
+            is Definition.ForeignFunctionDef -> TODO()
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)

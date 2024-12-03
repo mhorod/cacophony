@@ -112,14 +112,34 @@ sealed class Definition(
                 areEquivalentTypes(type, other.type)
     }
 
-    class FunctionDeclaration(
+    sealed class FunctionDef(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type.Functional?,
-        val arguments: List<FunctionArgument>,
         val returnType: Type,
+    ) : Definition(range, identifier) {
+        override fun isEquivalent(other: Expression?): Boolean =
+            super.isEquivalent(other) &&
+                other is FunctionDeclaration &&
+                areEquivalentTypes(type, other.type) &&
+                areEquivalentTypes(returnType, other.returnType)
+    }
+
+    class ForeignFunctionDef(
+        range: Pair<Location, Location>,
+        identifier: String,
+        type: Type.Functional,
+        returnType: Type,
+    ) : FunctionDef(range, identifier, type, returnType), TreeLeaf
+
+    class FunctionDeclaration(
+        range: Pair<Location, Location>,
+        identifier: String,
+        type: Type.Functional?,
+        val arguments: List<FunctionArgument>,
+        returnType: Type,
         val body: Expression,
-    ) : Definition(range, identifier),
+    ) : FunctionDef(range, identifier, type, returnType),
         Tree {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} = [${arguments.joinToString(", ")}] -> $returnType"
 
