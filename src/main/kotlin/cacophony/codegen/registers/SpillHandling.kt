@@ -55,7 +55,7 @@ fun adjustLoweredCFGToHandleSpills(
             functionHandler.allocateFrameVariable(Variable.AuxVariable.SpillVariable())
         }
 
-    fun loadSpillIntoReg(spill: VirtualRegister, reg: FixedRegister): List<Instruction> =
+    fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
         instructionCovering.coverWithInstructions(
             CFGNode.Assignment(
                 CFGNode.RegisterUse(reg),
@@ -63,7 +63,7 @@ fun adjustLoweredCFGToHandleSpills(
             ),
         )
 
-    fun saveRegIntoSpill(reg: FixedRegister, spill: VirtualRegister): List<Instruction> =
+    fun saveRegIntoSpill(reg: Register, spill: VirtualRegister): List<Instruction> =
         instructionCovering.coverWithInstructions(
             CFGNode.Assignment(
                 spillsFrameAllocation[spill]!!,
@@ -83,17 +83,16 @@ fun adjustLoweredCFGToHandleSpills(
                 if (usedSpills.isEmpty()) {
                     listOf(instruction)
                 } else {
-                    if ((instruction.registersRead + instruction.registersWritten).intersect(spareRegisters).isNotEmpty()) {
-                        throw SpillHandlingException("Cannot handle spills in operation using spare registers.")
-                    }
-                    if (usedSpills.size > spareRegisters.size) {
+                    val availableSpareRegisters = spareRegisters.minus(instruction.registersWritten + instruction.registersRead)
+
+                    if (usedSpills.size > availableSpareRegisters.size) {
                         throw SpillHandlingException(
                             "Not enough spare registers: Detected instruction with ${usedSpills.size} registers," +
-                                "but only have ${spareRegisters.size} spare registers to use",
+                                "but only have ${availableSpareRegisters.size} available spare registers to use",
                         )
                     }
 
-                    val registersSubstitution: Map<Register, FixedRegister> = usedSpills.zip(spareRegisters).toMap()
+                    val registersSubstitution: Map<Register, Register> = usedSpills.zip(availableSpareRegisters).toMap()
 
                     val instructionPrologue = readSpills.flatMap { loadSpillIntoReg(it, registersSubstitution[it]!!) }
                     val instructionEpilogue =
