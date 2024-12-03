@@ -2,12 +2,12 @@ package cacophony.controlflow.generation
 
 import cacophony.block
 import cacophony.controlflow.cfg
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.controlflow.integer
 import cacophony.controlflow.writeRegister
-import cacophony.functionDeclaration
 import cacophony.ifThenElse
+import cacophony.intFunctionDeclaration
 import cacophony.lit
+import cacophony.testPipeline
 import cacophony.variableDeclaration
 import cacophony.variableUse
 import org.junit.jupiter.params.ParameterizedTest
@@ -20,7 +20,7 @@ class ConditionalOperatorsTest {
     fun `logical operators in conditional mode with non-extracted operands`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -33,7 +33,7 @@ class ConditionalOperatorsTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -65,7 +65,7 @@ class ConditionalOperatorsTest {
     fun `logical operators in conditional mode with extracted lhs`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -81,7 +81,7 @@ class ConditionalOperatorsTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -117,7 +117,7 @@ class ConditionalOperatorsTest {
     fun `logical operators in conditional mode with extracted rhs`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -133,7 +133,7 @@ class ConditionalOperatorsTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -169,7 +169,7 @@ class ConditionalOperatorsTest {
     fun `logical operators in conditional mode with extracted operands`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -185,7 +185,7 @@ class ConditionalOperatorsTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =

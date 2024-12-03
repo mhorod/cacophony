@@ -2,13 +2,13 @@ package cacophony.controlflow.generation
 
 import cacophony.block
 import cacophony.controlflow.cfg
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.generation.TestOperators.Companion.div
-import cacophony.controlflow.generation.TestOperators.Companion.mod
 import cacophony.controlflow.integer
+import cacophony.controlflow.unit
 import cacophony.controlflow.writeRegister
+import cacophony.empty
 import cacophony.functionDeclaration
 import cacophony.lit
+import cacophony.testPipeline
 import cacophony.variableDeclaration
 import cacophony.variableUse
 import cacophony.variableWrite
@@ -33,12 +33,13 @@ class SideEffectSeparationTest {
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    makeExpr(lhs, rhs),
+                    variableDeclaration("y", makeExpr(lhs, rhs)),
+                    empty(),
                 ),
             )
 
         // when
-        val cfg = pipeline.generateControlFlowGraph(fDef)
+        val cfg = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -53,14 +54,18 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", writeRegister("x", integer(10)))
                         }
                     "add" does
-                        jump("exit") {
+                        jump("empty") {
                             writeRegister(
-                                getResultRegister(),
+                                "y",
                                 makeNode(
                                     readRegister("lhs"),
                                     (writeRegister("x", integer(20))),
                                 ),
                             )
+                        }
+                    "empty" does
+                        jump("exit") {
+                            writeRegister(getResultRegister(), unit)
                         }
                 }
             }
@@ -79,12 +84,13 @@ class SideEffectSeparationTest {
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    makeExpr(lhs, rhs),
+                    variableDeclaration("y", makeExpr(lhs, rhs)),
+                    empty(),
                 ),
             )
 
         // when
-        val cfg = pipeline.generateControlFlowGraph(fDef)
+        val cfg = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -99,14 +105,18 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", readRegister("x"))
                         }
                     "add" does
-                        jump("exit") {
+                        jump("empty") {
                             writeRegister(
-                                getResultRegister(),
+                                "y",
                                 makeNode(
                                     readRegister("lhs"),
                                     (writeRegister("x", integer(20))),
                                 ),
                             )
+                        }
+                    "empty" does
+                        jump("exit") {
+                            writeRegister(getResultRegister(), unit)
                         }
                 }
             }
@@ -125,12 +135,13 @@ class SideEffectSeparationTest {
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    makeExpr(lhs, rhs),
+                    variableDeclaration("y", makeExpr(lhs, rhs)),
+                    empty(),
                 ),
             )
 
         // when
-        val cfg = pipeline.generateControlFlowGraph(fDef)
+        val cfg = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -145,14 +156,18 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", writeRegister("x", integer(10)))
                         }
                     "add" does
-                        jump("exit") {
+                        jump("empty") {
                             writeRegister(
-                                getResultRegister(),
+                                "y",
                                 makeNode(
                                     readRegister("lhs"),
                                     readRegister("x"),
                                 ),
                             )
+                        }
+                    "empty" does
+                        jump("exit") {
+                            writeRegister(getResultRegister(), unit)
                         }
                 }
             }

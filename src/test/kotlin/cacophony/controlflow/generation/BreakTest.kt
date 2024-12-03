@@ -2,7 +2,6 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.controlflow.mod
 import org.junit.jupiter.api.Test
 
@@ -34,7 +33,7 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -86,7 +85,7 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -132,7 +131,7 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -164,14 +163,14 @@ class BreakTest {
                             // else
                             breakStatement(),
                         ),
-                        variableDeclaration("y", lit(5)),
+                        variableDeclaration("y", empty()),
                         returnStatement(variableUse("y")),
                     ),
                 ),
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =

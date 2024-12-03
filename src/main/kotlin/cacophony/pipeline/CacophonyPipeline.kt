@@ -38,6 +38,7 @@ import kotlin.io.path.writeLines
 
 data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
+    val types: TypeCheckingResult,
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDeclaration, FunctionHandler>,
 )
@@ -59,6 +60,7 @@ class CacophonyPipeline(
     private fun <T> assertEmptyDiagnosticsAfter(action: () -> T): T {
         val x = action()
         if (diagnostics.getErrors().isNotEmpty()) {
+            println(diagnostics.getErrors())
             throw diagnostics.fatal()
         }
         return x
@@ -162,6 +164,7 @@ class CacophonyPipeline(
 
     private fun analyzeFunctions(ast: AST): FunctionAnalysisResult {
         val resolvedFunctions = resolveOverloads(ast)
+        checkTypes(ast, resolvedFunctions)
         return analyzeFunctions(ast, resolvedFunctions)
     }
 
@@ -184,11 +187,12 @@ class CacophonyPipeline(
 
     private fun analyzeAst(ast: AST): AstAnalysisResult {
         val resolvedVariables = resolveOverloads(ast)
+        val types = checkTypes(ast, resolvedVariables)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention)
-        return AstAnalysisResult(resolvedVariables, analyzedExpressions, functionHandlers)
+        return AstAnalysisResult(resolvedVariables, types, analyzedExpressions, functionHandlers)
     }
 
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))

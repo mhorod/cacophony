@@ -4,12 +4,13 @@ import cacophony.*
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.add
 import cacophony.controlflow.cfg
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.controlflow.integer
 import cacophony.controlflow.minus
 import cacophony.controlflow.mod
 import cacophony.controlflow.mul
+import cacophony.controlflow.not
 import cacophony.controlflow.sub
+import cacophony.controlflow.unit
 import cacophony.controlflow.writeRegister
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -24,7 +25,8 @@ class SingleCFGNodeGenerationTest {
         val expectedCFG =
             cfg {
                 fragment(function, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), expectedNode) }
+                    "bodyEntry" does jump("return unit") { writeRegister("y", expectedNode) }
+                    "return unit" does jump("exit") { writeRegister(getResultRegister(), unit) }
                 }
             }
         assertEquivalent(programCFG, expectedCFG)
@@ -34,27 +36,57 @@ class SingleCFGNodeGenerationTest {
     @MethodSource("binaryExpressions")
     fun `binary operator generates single cfg node`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
-        val fDef = functionDeclaration("f", makeExpr(lit(1), lit(2)))
+        val fDef =
+            functionDeclaration(
+                "f",
+                block(variableDeclaration("x", makeExpr(lit(1), lit(2))), empty()),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedNode = makeNode(integer(1), integer(2))
         assertGeneratedSingleNode(actualCFG, expectedNode)
     }
 
-    @ParameterizedTest
-    @MethodSource("unaryExpressions")
-    fun `unary operator generates single cfg node`(makeExpr: MakeUnaryExpression, makeNode: MakeUnaryNode) {
+    @Test
+    fun `minus operator generates single cfg node`() {
         // given
-        val fDef = functionDeclaration("f", makeExpr(lit(1)))
+        val fDef =
+            functionDeclaration(
+                "f",
+                block(
+                    variableDeclaration("x", minus(lit(1))),
+                    empty(),
+                ),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
-        val expectedNode = makeNode(integer(1))
+        val expectedNode = minus(integer(1))
+        assertGeneratedSingleNode(actualCFG, expectedNode)
+    }
+
+    @Test
+    fun `not operator generates single cfg node`() {
+        // given
+        val fDef =
+            functionDeclaration(
+                "f",
+                block(
+                    variableDeclaration("x", lnot(lit(false))),
+                    empty(),
+                ),
+            )
+
+        // when
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+
+        // then
+        val expectedNode = not(integer(0))
         assertGeneratedSingleNode(actualCFG, expectedNode)
     }
 
@@ -62,10 +94,13 @@ class SingleCFGNodeGenerationTest {
     fun `complex arithmetic expression generates single cfg node`() {
         // given
         val fDef =
-            functionDeclaration("f", expr)
+            functionDeclaration(
+                "f",
+                block(variableDeclaration("x", expr), empty()),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedNode = exprNode
@@ -76,10 +111,14 @@ class SingleCFGNodeGenerationTest {
     @MethodSource("binaryExpressions")
     fun `binary operator with complex operands generates single cfg node`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
-        val fDef = functionDeclaration("f", makeExpr(expr, expr))
+        val fDef =
+            functionDeclaration(
+                "f",
+                block(variableDeclaration("y", makeExpr(expr, expr)), empty()),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedNode = makeNode(exprNode, exprNode)

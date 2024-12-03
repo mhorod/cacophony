@@ -7,8 +7,15 @@ fun mockRange() = Pair(Location(0), Location(0))
 
 fun unitType() = Type.Basic(mockRange(), "Unit")
 
+fun intType() = Type.Basic(mockRange(), "Int")
+
+fun boolType() = Type.Basic(mockRange(), "Bool")
+
 fun empty() = Empty(mockRange())
 
+/**
+ * Declares a function of type [] -> Unit
+ */
 fun functionDeclaration(identifier: String, body: Expression) =
     Definition.FunctionDeclaration(
         mockRange(),
@@ -19,9 +26,50 @@ fun functionDeclaration(identifier: String, body: Expression) =
         body,
     )
 
+/**
+ * Declares a function of type [] -> returnType
+ */
+fun functionDeclaration(identifier: String, body: Expression, returnType: Type) =
+    Definition.FunctionDeclaration(
+        mockRange(),
+        identifier,
+        null,
+        emptyList(),
+        returnType,
+        body,
+    )
+
+/**
+ * Declares a function of type [] -> returnType
+ */
+fun functionDeclaration(identifier: String, args: List<Definition.FunctionArgument>, body: Expression, returnType: Type) =
+    Definition.FunctionDeclaration(
+        mockRange(),
+        identifier,
+        null,
+        args,
+        returnType,
+        body,
+    )
+
+/**
+ * Declares a function of type [] -> Int
+ */
+fun intFunctionDeclaration(identifier: String, body: Expression) = functionDeclaration(identifier, body, intType())
+
+fun intFunctionDeclaration(identifier: String, args: List<Definition.FunctionArgument>, body: Expression) =
+    functionDeclaration(identifier, args, body, intType())
+
+/**
+ * Declares a function of type [] -> Bool
+ */
+fun boolFunctionDeclaration(identifier: String, body: Expression) = functionDeclaration(identifier, body, boolType())
+
 fun typedArg(identifier: String, type: Type) = Definition.FunctionArgument(mockRange(), identifier, type)
 
 fun arg(identifier: String) = typedArg(identifier, unitType())
+
+fun intArg(identifier: String) = typedArg(identifier, intType())
 
 fun typedFunctionDeclaration(
     identifier: String,

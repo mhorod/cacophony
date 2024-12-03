@@ -2,7 +2,6 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import org.junit.jupiter.api.Test
 
 class AccessTest {
@@ -16,7 +15,7 @@ class AccessTest {
         val fDef = functionDeclaration("f", listOf(arg("x")), variableUse("x"))
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val virReg = Register.VirtualRegister()
@@ -44,7 +43,7 @@ class AccessTest {
         val outerDef = functionDeclaration("outer", listOf(arg("x")), block(innerDef, call("inner")))
 
         // when
-        val actualFragment = pipeline.generateControlFlowGraph(outerDef)[innerDef]!!
+        val actualFragment = testPipeline().generateControlFlowGraph(outerDef)[innerDef]!!
 
         // then
         val expectedFragment =
@@ -74,9 +73,9 @@ class AccessTest {
          *     inner[]
          * );
          */
-        val innerDef = functionDeclaration("inner", variableUse("x"))
+        val innerDef = intFunctionDeclaration("inner", variableUse("x"))
         val outerDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "outer",
                 block(
                     variableDeclaration("x", lit(1)),
@@ -86,7 +85,7 @@ class AccessTest {
             )
 
         // when
-        val actualFragment = pipeline.generateControlFlowGraph(outerDef)[innerDef]!!
+        val actualFragment = testPipeline().generateControlFlowGraph(outerDef)[innerDef]!!
 
         // then
         val expectedFragment =
