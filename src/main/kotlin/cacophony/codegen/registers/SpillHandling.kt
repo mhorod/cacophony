@@ -28,7 +28,9 @@ fun adjustLoweredCFGToHandleSpills(
     registerAllocation: RegisterAllocation,
     spareRegisters: Set<FixedRegister>,
 ): LoweredCFGFragment {
-    if (registerAllocation.successful.values
+    if (registerAllocation.successful
+            .filter { it.key is VirtualRegister }
+            .values
             .intersect(spareRegisters.map { it.hardwareRegister }.toSet())
             .isNotEmpty()
     ) {
@@ -72,23 +74,33 @@ fun adjustLoweredCFGToHandleSpills(
     return loweredCfg.map { block ->
         val newInstructions =
             block.instructions().flatMap { instruction ->
-                val readSpills = instruction.registersRead.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
-                val writtenSpills = instruction.registersWritten.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
+                val readSpills =
+                    instruction.registersRead.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
+                val writtenSpills =
+                    instruction.registersWritten.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
                 val usedSpills = readSpills + writtenSpills
 
-                if (usedSpills.size > spareRegisters.size) {
-                    throw SpillHandlingException(
-                        "Not enough spare registers: Detected instruction with ${usedSpills.size} registers," +
-                            "but only have ${spareRegisters.size} spare registers to use",
-                    )
+                if (usedSpills.isEmpty()) {
+                    listOf(instruction)
+                } else {
+                    if ((instruction.registersRead + instruction.registersWritten).intersect(spareRegisters).isNotEmpty()) {
+                        throw SpillHandlingException("Cannot handle spills in operation using spare registers.")
+                    }
+                    if (usedSpills.size > spareRegisters.size) {
+                        throw SpillHandlingException(
+                            "Not enough spare registers: Detected instruction with ${usedSpills.size} registers," +
+                                "but only have ${spareRegisters.size} spare registers to use",
+                        )
+                    }
+
+                    val registersSubstitution: Map<Register, FixedRegister> = usedSpills.zip(spareRegisters).toMap()
+
+                    val instructionPrologue = readSpills.flatMap { loadSpillIntoReg(it, registersSubstitution[it]!!) }
+                    val instructionEpilogue =
+                        writtenSpills.flatMap { saveRegIntoSpill(registersSubstitution[it]!!, it) }
+
+                    instructionPrologue + listOf(instruction.substituteRegisters(registersSubstitution)) + instructionEpilogue
                 }
-
-                val registersSubstitution: Map<Register, FixedRegister> = usedSpills.zip(spareRegisters).toMap()
-
-                val instructionPrologue = readSpills.flatMap { loadSpillIntoReg(it, registersSubstitution[it]!!) }
-                val instructionEpilogue = writtenSpills.flatMap { saveRegIntoSpill(registersSubstitution[it]!!, it) }
-
-                instructionPrologue + listOf(instruction.substituteRegisters(registersSubstitution)) + instructionEpilogue
             }
 
         object : BasicBlock {

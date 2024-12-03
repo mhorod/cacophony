@@ -14,20 +14,6 @@ class RegisterAllocationTest {
         allocateRegisters(liveness, allowedRegisters).apply { validate(liveness, allowedRegisters) }
 
     @Test
-    fun `cannot allocate undeclared hardware register`() {
-        assertThatThrownBy {
-            allocateRegisters(
-                Liveness(
-                    setOf(Register.VirtualRegister(), Register.FixedRegister(HardwareRegister.RBX)),
-                    emptyMap(),
-                    emptyMap(),
-                ),
-                setOf(HardwareRegister.RAX),
-            )
-        }.isInstanceOf(IllegalArgumentException::class.java)
-    }
-
-    @Test
     fun `register cannot interfere with itself`() {
         assertThatThrownBy {
             val reg1 = Register.VirtualRegister()

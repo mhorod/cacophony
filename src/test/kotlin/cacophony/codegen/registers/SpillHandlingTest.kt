@@ -363,6 +363,33 @@ class SpillHandlingTest {
     }
 
     @Test
+    fun `throws if encountered instruction with spills using one of spare registers`() {
+        // given
+        val spareReg = Register.FixedRegister(HardwareRegister.RAX)
+        val spilledReg = Register.VirtualRegister()
+
+        val spillSlot = mockk<CFGNode.LValue>()
+        val functionHandler = mockk<FunctionHandler>()
+        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot
+
+        val instructionCovering = mockk<InstructionCovering>()
+        val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledReg))
+        val instruction = mockInstruction(setOf(Register.FixedRegister(HardwareRegister.RAX)), setOf(spilledReg))
+        val block = mockBlock(listOf(instruction))
+
+        // when & then
+        assertThrows<SpillHandlingException> {
+            adjustLoweredCFGToHandleSpills(
+                instructionCovering,
+                functionHandler,
+                listOf(block),
+                registerAllocation,
+                setOf(spareReg),
+            )
+        }
+    }
+
+    @Test
     fun `throws if not enough spare registers have been provided`() {
         // given
         val spareReg = Register.FixedRegister(HardwareRegister.RAX)

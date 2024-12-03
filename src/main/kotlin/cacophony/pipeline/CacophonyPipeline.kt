@@ -210,7 +210,7 @@ class CacophonyPipeline(
         return covering
     }
 
-    private fun analyzeLiveness(ast: AST): Map<FunctionDeclaration, Liveness> =
+    fun analyzeLiveness(ast: AST): Map<FunctionDeclaration, Liveness> =
         coverWithInstructions(ast).mapValues { (_, loweredCFG) -> cacophony.codegen.registers.analyzeLiveness(loweredCFG) }
 
     private fun analyzeLiveness(covering: Map<FunctionDeclaration, LoweredCFGFragment>): Map<FunctionDeclaration, Liveness> {
@@ -222,7 +222,7 @@ class CacophonyPipeline(
     fun allocateRegisters(ast: AST, allowedRegisters: Set<HardwareRegister> = allGPRs): Map<FunctionDeclaration, RegisterAllocation> =
         analyzeLiveness(ast).mapValues { (_, liveness) -> cacophony.codegen.registers.allocateRegisters(liveness, allowedRegisters) }
 
-    private fun allocateRegisters(
+    fun allocateRegisters(
         liveness: Map<FunctionDeclaration, Liveness>,
         allowedRegisters: Set<HardwareRegister> = allGPRs,
     ): Map<FunctionDeclaration, RegisterAllocation> {
@@ -296,7 +296,7 @@ class CacophonyPipeline(
         }
     }
 
-    private fun generateAsm(input: Input): Map<FunctionDeclaration, String> {
+    fun generateAsm(input: Input): Map<FunctionDeclaration, String> {
         val asm = generateAsm(generateAST(input))
         asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return asm
