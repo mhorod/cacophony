@@ -326,11 +326,12 @@ object MemoryByRegisterWithSubtractionToRegisterAssignment : SideEffectPattern {
     private val rhsRegister = RegisterLabel()
 
     private val lhsSlot = CFGNode.RegisterSlot(lhsRegister)
-    private val rhsSlot = memoryAccess(
-         CFGNode.RegisterSlot(rhsRegister)
-            sub
-            CFGNode.ConstantSlot(displacementLabel) { true }
-    )
+    private val rhsSlot =
+        memoryAccess(
+            CFGNode.RegisterSlot(rhsRegister)
+                sub
+                CFGNode.ConstantSlot(displacementLabel) { true },
+        )
     override val tree = lhsSlot assign rhsSlot
 
     override fun makeInstance(fill: SlotFill) =
