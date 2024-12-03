@@ -936,13 +936,10 @@ class FunctionHandlerTest {
         fun `throws if requested generation access of variable other than source variable or static link`() {
             // given
             val fDef =
-                Definition.FunctionDeclaration(
-                    mockRange,
+                functionDeclaration(
                     "f",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Literal.IntLiteral(mockRange, 42),
+                    lit(42),
                 )
             val fAnalyzed =
                 AnalyzedFunction(

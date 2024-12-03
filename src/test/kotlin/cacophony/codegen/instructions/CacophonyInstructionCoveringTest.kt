@@ -116,4 +116,19 @@ class CacophonyInstructionCoveringTest {
         assertThat(instructions.indexOf(instr3)).isLessThan(instructions.indexOf(instr1))
         assertThat(instructions.indexOf(instr5)).isLessThan(instructions.indexOf(instr3))
     }
+
+    @Test
+    fun `largest instruction without virtual registers is chosen when matching without virtual registers`() {
+        val instrMatcher = mockk<InstructionMatcher>()
+        val instrCovering = CacophonyInstructionCovering(instrMatcher)
+        val root = mockk<CFGNode>()
+        val fill = mockk<CFGNode>()
+        val instr1 = mockk<Instruction>()
+        val match1 = Match({ _ -> listOf(instr1) }, mapOf(ValueLabel() to fill), 2)
+        val instr2 = mockk<Instruction>()
+        val match2 = Match({ _ -> listOf(instr2) }, emptyMap(), 1)
+        every { instrMatcher.findMatchesForSideEffects(root) } returns setOf(match1, match2)
+
+        assertThat(instrCovering.coverWithInstructionsWithoutVirtualRegisters(root)).containsExactly(instr2)
+    }
 }

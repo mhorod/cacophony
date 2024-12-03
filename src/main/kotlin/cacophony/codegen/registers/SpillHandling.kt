@@ -34,7 +34,7 @@ fun adjustLoweredCFGToHandleSpills(
             .intersect(spareRegisters.map { it.hardwareRegister }.toSet())
             .isNotEmpty()
     ) {
-        throw SpillHandlingException("Spare register is used in register allocation.")
+        throw SpillHandlingException("Spare register is used in virtual register allocation.")
     }
 
     if (registerAllocation.spills.isEmpty()) {
@@ -56,7 +56,7 @@ fun adjustLoweredCFGToHandleSpills(
         }
 
     fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
-        instructionCovering.coverWithInstructions(
+        instructionCovering.coverWithInstructionsWithoutVirtualRegisters(
             CFGNode.Assignment(
                 CFGNode.RegisterUse(reg),
                 spillsFrameAllocation[spill]!!,
@@ -64,7 +64,7 @@ fun adjustLoweredCFGToHandleSpills(
         )
 
     fun saveRegIntoSpill(reg: Register, spill: VirtualRegister): List<Instruction> =
-        instructionCovering.coverWithInstructions(
+        instructionCovering.coverWithInstructionsWithoutVirtualRegisters(
             CFGNode.Assignment(
                 spillsFrameAllocation[spill]!!,
                 CFGNode.RegisterUse(reg),
