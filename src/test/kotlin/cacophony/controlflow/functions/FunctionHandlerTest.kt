@@ -937,12 +937,12 @@ class FunctionHandlerTest {
             // given
             val fDef =
                 Definition.FunctionDeclaration(
-                    mockRange,
+                    mockRange(),
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Literal.IntLiteral(mockRange, 42),
+                    Type.Basic(mockRange(), "Int"),
+                    Literal.IntLiteral(mockRange(), 42),
                 )
             val fAnalyzed =
                 AnalyzedFunction(
