@@ -6,6 +6,8 @@ import cacophony.utils.TreeLeaf
 
 sealed interface LeafExpression
 
+sealed interface SyntaxTree
+
 typealias AST = Expression
 
 fun areEquivalentTypes(lhs: Type?, rhs: Type?): Boolean = lhs?.isEquivalent(rhs) ?: (rhs == null)
@@ -13,14 +15,20 @@ fun areEquivalentTypes(lhs: Type?, rhs: Type?): Boolean = lhs?.isEquivalent(rhs)
 fun areEquivalentTypes(lhs: List<Type?>, rhs: List<Type?>): Boolean =
     lhs.size == rhs.size && lhs.zip(rhs).all { areEquivalentTypes(it.first, it.second) }
 
+fun <T> areEquivalentTypes(lhs: Map<T, Type>, rhs: Map<T, Type>): Boolean =
+    lhs.size == rhs.size && lhs.all { (k, expr) -> areEquivalentTypes(expr, rhs[k]) }
+
 fun areEquivalentExpressions(lhs: Expression?, rhs: Expression?): Boolean = lhs?.isEquivalent(rhs) ?: (rhs == null)
 
 fun areEquivalentExpressions(lhs: List<Expression?>, rhs: List<Expression?>): Boolean =
     lhs.size == rhs.size && lhs.zip(rhs).all { areEquivalentExpressions(it.first, it.second) }
 
+fun <T> areEquivalentExpressions(lhs: Map<T, Expression>, rhs: Map<T, Expression>): Boolean =
+    lhs.size == rhs.size && lhs.all { (k, expr) -> areEquivalentExpressions(expr, rhs[k]) }
+
 sealed class Type(
     val range: Pair<Location, Location>,
-) {
+) : SyntaxTree {
     internal open fun isEquivalent(other: Type?): Boolean = other != null && range == other.range
 
     override fun toString(): String = "${this::class.simpleName}@${Integer.toHexString(hashCode())}"
@@ -50,12 +58,21 @@ sealed class Type(
                 areEquivalentTypes(argumentsType, other.argumentsType) &&
                 areEquivalentTypes(returnType, other.returnType)
     }
+
+    class Struct(range: Pair<Location, Location>, val fields: Map<String, Type>) : Type(range) {
+        override fun toString() = "{${fields.map { (k, v) -> "$k: $v" }.joinToString(", ")}}"
+
+        override fun isEquivalent(other: Type?) =
+            super.isEquivalent(other) &&
+                other is Struct &&
+                areEquivalentTypes(fields, other.fields)
+    }
 }
 
 // everything in cacophony is an expression
 sealed class Expression(
     val range: Pair<Location, Location>,
-) : Tree {
+) : Tree, SyntaxTree {
     override fun toString(): String = "${this::class.simpleName}@${Integer.toHexString(hashCode())}"
 
     internal open fun isEquivalent(other: Expression?): Boolean = other != null && range == other.range
@@ -167,17 +184,32 @@ class FunctionCall(
             areEquivalentExpressions(arguments, other.arguments)
 }
 
+class StructField(range: Pair<Location, Location>, val name: String, val type: Type?) : Expression(range), LeafExpression, TreeLeaf {
+    override fun toString() = "field ${name}${type?.let{": $it"} ?: ""}"
+
+    override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is StructField && name == other.name
+}
+
+class Struct(range: Pair<Location, Location>, val fields: Map<StructField, Expression>) : Expression(range), Tree {
+    override fun toString() = "Struct"
+
+    override fun children() = fields.entries.flatMap { (k, v) -> listOf(k, v) }
+
+    override fun isEquivalent(other: Expression?): Boolean =
+        super.isEquivalent(other) && other is Struct && areEquivalentExpressions(fields, other.fields)
+}
+
 sealed class Literal(
     range: Pair<Location, Location>,
 ) : Expression(range),
-    LeafExpression {
+    LeafExpression,
+    TreeLeaf {
     override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is Literal
 
     class IntLiteral(
         range: Pair<Location, Location>,
         val value: Int,
-    ) : Literal(range),
-        TreeLeaf {
+    ) : Literal(range) {
         override fun toString() = value.toString()
 
         override fun isEquivalent(other: Expression?): Boolean =
@@ -189,8 +221,7 @@ sealed class Literal(
     class BoolLiteral(
         range: Pair<Location, Location>,
         val value: Boolean,
-    ) : Literal(range),
-        TreeLeaf {
+    ) : Literal(range) {
         override fun toString() = value.toString()
 
         override fun isEquivalent(other: Expression?): Boolean =

@@ -3,18 +3,7 @@ package cacophony.semantic.types
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.TypeCheckerDiagnostics
 import cacophony.semantic.names.ResolvedVariables
-import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Empty
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.Literal
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.Statement
-import cacophony.semantic.syntaxtree.Type
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 
 typealias TypeCheckingResult = Map<Expression, TypeExpr>
@@ -83,6 +72,13 @@ private class Typer(
                         return null
                     }
                     BuiltinType.UnitType
+                }
+
+                is Struct -> {
+                    throw NotImplementedError("Type checking not available for structures")
+                }
+                is StructField -> {
+                    throw NotImplementedError("Type checking not available for structures")
                 }
 
                 is Empty -> BuiltinType.UnitType
@@ -283,6 +279,10 @@ private class Typer(
                     args.map { it ?: return null },
                     ret ?: return null,
                 )
+            }
+
+            is Type.Struct -> {
+                throw NotImplementedError("Type checking not available for structures")
             }
         }
     }

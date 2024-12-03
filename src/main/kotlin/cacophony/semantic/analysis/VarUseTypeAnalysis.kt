@@ -76,10 +76,22 @@ private class VarUseVisitor(
             is OperatorUnary -> visitUnaryOperator(expr)
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
+            is Struct -> visitStruct(expr)
             is LeafExpression -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
         }
+    }
+
+    private fun visitStruct(expr: Struct) {
+        useTypeAnalysis[expr] =
+            UseTypesForExpression.merge(
+                *expr.fields.values
+                    .map {
+                        visitExpression(it)
+                        useTypeAnalysis[it]
+                    }.toTypedArray(),
+            )
     }
 
     private fun visitVariableUse(expr: VariableUse) {
