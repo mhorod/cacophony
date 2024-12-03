@@ -18,8 +18,8 @@ class InstructionMatcherImpl(
     private val sideEffectPatterns: List<SideEffectPattern>,
     private val conditionPatterns: List<ConditionPattern>,
 ) : InstructionMatcher {
-    override fun findMatchesForValue(node: CFGNode, destinationRegister: Register): Set<Match> {
-        return findMatchesWithInstructionMaker(
+    override fun findMatchesForValue(node: CFGNode, destinationRegister: Register): Set<Match> =
+        findMatchesWithInstructionMaker(
             node,
             valuePatterns,
         ) { metadata: MatchMetadata, pattern: ValuePattern ->
@@ -35,10 +35,9 @@ class InstructionMatcherImpl(
                 )
             }
         }
-    }
 
-    override fun findMatchesForSideEffects(node: CFGNode): Set<Match> {
-        return findMatchesWithInstructionMaker(
+    override fun findMatchesForSideEffects(node: CFGNode): Set<Match> =
+        findMatchesWithInstructionMaker(
             node,
             sideEffectPatterns,
         ) { metadata: MatchMetadata, pattern: SideEffectPattern ->
@@ -53,10 +52,9 @@ class InstructionMatcherImpl(
                 )
             }
         }
-    }
 
-    override fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean): Set<Match> {
-        return findMatchesWithInstructionMaker(
+    override fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean): Set<Match> =
+        findMatchesWithInstructionMaker(
             node,
             conditionPatterns,
         ) { metadata: MatchMetadata, pattern: ConditionPattern ->
@@ -73,7 +71,6 @@ class InstructionMatcherImpl(
                 )
             }
         }
-    }
 
     data class MatchMetadata(
         val registerFill: MutableMap<RegisterLabel, Register> = mutableMapOf(),

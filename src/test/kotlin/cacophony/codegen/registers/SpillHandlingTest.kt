@@ -45,7 +45,7 @@ class SpillHandlingTest {
         var capturedNode2: CFGNode? = null
         val capture = slot<CFGNode>()
         val instructionCovering = mockk<InstructionCovering>()
-        every { instructionCovering.coverWithInstructions(capture(capture)) } answers {
+        every { instructionCovering.coverWithInstructionsWithoutVirtualRegisters(capture(capture)) } answers {
             capturedNode1 = capture.captured
             listOf(prologueInstructionA)
         } andThenAnswer {
@@ -117,7 +117,7 @@ class SpillHandlingTest {
         var capturedNode2: CFGNode? = null
         val capture = slot<CFGNode>()
         val instructionCovering = mockk<InstructionCovering>()
-        every { instructionCovering.coverWithInstructions(capture(capture)) } answers {
+        every { instructionCovering.coverWithInstructionsWithoutVirtualRegisters(capture(capture)) } answers {
             capturedNode1 = capture.captured
             listOf(epilogueInstructionA)
         } andThenAnswer {
@@ -189,7 +189,7 @@ class SpillHandlingTest {
         var capturedNode2: CFGNode? = null
         val capture = slot<CFGNode>()
         val instructionCovering = mockk<InstructionCovering>()
-        every { instructionCovering.coverWithInstructions(capture(capture)) } answers {
+        every { instructionCovering.coverWithInstructionsWithoutVirtualRegisters(capture(capture)) } answers {
             capturedNode1 = capture.captured
             listOf(prologueInstruction)
         } andThenAnswer {
@@ -258,7 +258,7 @@ class SpillHandlingTest {
 
         val prologueInstruction = mockk<Instruction>()
         val instructionCovering = mockk<InstructionCovering>()
-        every { instructionCovering.coverWithInstructions(any()) } returns listOf(prologueInstruction)
+        every { instructionCovering.coverWithInstructionsWithoutVirtualRegisters(any()) } returns listOf(prologueInstruction)
 
         val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledReg))
 
@@ -333,7 +333,7 @@ class SpillHandlingTest {
         var capturedNode: CFGNode? = null
         val capture = slot<CFGNode>()
         val instructionCovering = mockk<InstructionCovering>()
-        every { instructionCovering.coverWithInstructions(capture(capture)) } answers {
+        every { instructionCovering.coverWithInstructionsWithoutVirtualRegisters(capture(capture)) } answers {
             capturedNode = capture.captured
             listOf(prologueInstruction)
         }
@@ -432,7 +432,7 @@ class SpillHandlingTest {
         val prologueInstructionA = mockk<Instruction>()
         val prologueInstructionB = mockk<Instruction>()
         val instructionCovering = mockk<InstructionCovering>()
-        every { instructionCovering.coverWithInstructions(any()) } returns listOf(prologueInstructionA) andThen
+        every { instructionCovering.coverWithInstructionsWithoutVirtualRegisters(any()) } returns listOf(prologueInstructionA) andThen
             listOf(prologueInstructionB)
 
         val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledRegA, spilledRegB))

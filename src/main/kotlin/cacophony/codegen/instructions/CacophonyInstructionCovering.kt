@@ -22,15 +22,26 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
 
     private fun coverWithInstructionsForValue(node: CFGNode, register: Register): List<Instruction> {
         val matches = instructionMatcher.findMatchesForValue(node, register)
-        val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
+        val bestMatch =
+            matches.maxByOrNull { match -> match.size } ?: error("No match with instructions for value found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 
     override fun coverWithInstructions(node: CFGNode): List<Instruction> {
         val matches =
-            instructionMatcher.findMatchesForSideEffects(node)
+            instructionMatcher
+                .findMatchesForSideEffects(node)
                 .union(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()))
         val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
+        return coverGivenMatch(bestMatch)
+    }
+
+    override fun coverWithInstructionsWithoutVirtualRegisters(node: CFGNode): List<Instruction> {
+        val matches = instructionMatcher.findMatchesForSideEffects(node)
+        val bestMatch =
+            matches
+                .filter { it.toFill.isEmpty() }
+                .maxByOrNull { match -> match.size } ?: error("No match without virtual registers found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 
