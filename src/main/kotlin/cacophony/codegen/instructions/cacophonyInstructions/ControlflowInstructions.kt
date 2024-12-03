@@ -84,7 +84,6 @@ data class Call(val function: Definition.FunctionDeclaration) : Instruction {
         HardwareRegister
             .entries
             .filterNot(SystemVAMD64CallConvention.preservedRegisters()::contains)
-            .filterNot { it == HardwareRegister.RSP }
             .map(Register::FixedRegister)
             .toSet()
 

@@ -51,8 +51,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
             nextInstructions[instruction]!!
                 .flatMap {
                     liveIn[it]!!.toList()
-                }
-                .forEach {
+                }.forEach {
                     if (!liveOut[instruction]!!.contains(it)) {
                         fixedPointObtained = false
                         liveOut[instruction]!!.add(it)
@@ -73,7 +72,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
     val interference: RegisterRelations =
         allRegisters.associateWith { reg ->
             allInstructions
-                .filter { instruction -> instruction !is CopyInstruction }
+                // TODO: co na Teutatesa? czemu mov jest specjalny???
                 .flatMap { instruction ->
                     listOf(
                         if (liveIn[instruction]!!.contains(reg)) liveIn[instruction]!!.toList() else listOf(),

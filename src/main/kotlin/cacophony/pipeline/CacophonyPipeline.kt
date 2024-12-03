@@ -178,6 +178,7 @@ class CacophonyPipeline(
 
     fun generateControlFlowGraph(ast: AST): ProgramCFG {
         val resolvedVariables = resolveOverloads(ast)
+        // TODO: add typechecking
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)

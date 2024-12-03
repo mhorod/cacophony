@@ -43,7 +43,7 @@ class InstructionTemplates {
         override val registersRead: Set<Register> = setOf()
         override val registersWritten: Set<Register> = setOf()
 
-        override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "$op ${label.name}"
+        override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "$op .${label.name}"
     }
 
     abstract class SetccInstruction(

@@ -81,7 +81,7 @@ class FunctionHandlerImpl(
                 callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
             }
 
-        return generateCall(function, arguments + mutableListOf(staticLinkVar), result, respectStackAlignment)
+        return generateCall(function, mutableListOf(staticLinkVar) + arguments, result, respectStackAlignment)
     }
 
     private fun traverseStaticLink(depth: Int): CFGNode =
