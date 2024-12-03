@@ -69,7 +69,7 @@ data class IMulRegReg(
         "imul",
     )
 
-class Cqo : Instruction {
+class Cqo : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RAX))
     override val registersWritten: Set<Register> = setOf(Register.FixedRegister(HardwareRegister.RDX))
 
@@ -85,6 +85,8 @@ data class IDiv(val reg: Register) : Instruction {
         val hardwareReg = hardwareRegisterMapping[reg]
         return "idiv $hardwareReg"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): IDiv = IDiv(reg.substitute(map))
 }
 
 data class Sete(override val byte: RegisterByte) : InstructionTemplates.SetccInstruction(byte, "sete")

@@ -978,5 +978,34 @@ class FunctionHandlerTest {
                 )
             }
         }
+
+        @Test
+        fun `throws if requested generation access of variable other than source variable or static link`() {
+            // given
+            val fDef =
+                Definition.FunctionDeclaration(
+                    mockRange,
+                    "f",
+                    null,
+                    emptyList(),
+                    Type.Basic(mockRange, "Int"),
+                    Literal.IntLiteral(mockRange, 42),
+                )
+            val fAnalyzed =
+                AnalyzedFunction(
+                    fDef,
+                    null,
+                    setOf(),
+                    mutableSetOf(),
+                    0,
+                    emptySet(),
+                )
+            val fHandler = makeDefaultHandler(fDef, fAnalyzed)
+
+            // when & then
+            org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {
+                fHandler.generateVariableAccess(Variable.AuxVariable.SpillVariable())
+            }
+        }
     }
 }

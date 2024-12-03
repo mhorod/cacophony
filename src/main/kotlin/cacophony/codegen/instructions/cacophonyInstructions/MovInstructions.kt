@@ -21,6 +21,8 @@ data class MovRegReg(
     }
 
     override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping) = hardwareRegisterMapping[lhs] == hardwareRegisterMapping[rhs]
+
+    override fun substituteRegisters(map: Map<Register, Register>): MovRegReg = MovRegReg(lhs.substitute(map), rhs.substitute(map))
 }
 
 data class MovRegImm(
@@ -34,6 +36,8 @@ data class MovRegImm(
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         return "mov $lhsHardwareReg, $imm"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): MovRegImm = MovRegImm(lhs.substitute(map), imm)
 }
 
 data class MovRegMem(
@@ -47,6 +51,8 @@ data class MovRegMem(
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         return "mov $lhsHardwareReg, ${mem.toAsm(hardwareRegisterMapping)}"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): MovRegMem = MovRegMem(lhs.substitute(map), mem)
 }
 
 data class MovMemReg(
@@ -60,6 +66,8 @@ data class MovMemReg(
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
         return "mov ${mem.toAsm(hardwareRegisterMapping)}, $rhsHardwareReg"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): MovMemReg = MovMemReg(mem, rhs.substitute(map))
 }
 
 data class MovzxReg64Reg8(val lhs: Register, val rhs: RegisterByte) : Instruction {
@@ -71,4 +79,10 @@ data class MovzxReg64Reg8(val lhs: Register, val rhs: RegisterByte) : Instructio
         val rhsHardwareReg = rhs.map(hardwareRegisterMapping)
         return "movzx $lhsHardwareReg, $rhsHardwareReg"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): MovzxReg64Reg8 =
+        MovzxReg64Reg8(
+            lhs.substitute(map),
+            RegisterByte(rhs.register.substitute(map)),
+        )
 }

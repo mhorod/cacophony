@@ -25,10 +25,11 @@ data class MemoryAddress(val base: Register, val index: Register?, val scale: In
 
 interface Instruction {
     val registersRead: Set<Register>
-
     val registersWritten: Set<Register>
 
     fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String
+
+    fun substituteRegisters(map: Map<Register, Register>): Instruction
 
     fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping): Boolean = false
 }

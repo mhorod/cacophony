@@ -17,6 +17,8 @@ data class PushReg(
         val hardwareReg = hardwareRegisterMapping[reg]
         return "push $hardwareReg"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): PushReg = PushReg(reg.substitute(map))
 }
 
 data class Pop(
@@ -29,6 +31,8 @@ data class Pop(
         val hardwareReg = hardwareRegisterMapping[reg]
         return "pop $hardwareReg"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): Pop = Pop(reg.substitute(map))
 }
 
 data class TestRegReg(
@@ -43,6 +47,8 @@ data class TestRegReg(
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
         return "test $lhsHardwareReg, $rhsHardwareReg"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): TestRegReg = TestRegReg(lhs.substitute(map), rhs.substitute(map))
 }
 
 data class CmpRegReg(
@@ -57,6 +63,8 @@ data class CmpRegReg(
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
         return "cmp $lhsHardwareReg, $rhsHardwareReg"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>): CmpRegReg = CmpRegReg(lhs.substitute(map), rhs.substitute(map))
 }
 
 data class Jmp(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jmp")
@@ -77,7 +85,7 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
-data class Call(val function: Definition.FunctionDeclaration) : Instruction {
+data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(Register.FixedRegister(HardwareRegister.RSP))
     override val registersWritten: Set<Register> =
@@ -91,7 +99,7 @@ data class Call(val function: Definition.FunctionDeclaration) : Instruction {
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
-class Ret : Instruction {
+class Ret : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(SystemVAMD64CallConvention.returnRegister()))
     override val registersWritten = setOf<Register>()
@@ -99,14 +107,14 @@ class Ret : Instruction {
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "ret"
 }
 
-data class LocalLabel(val label: BlockLabel) : Instruction {
+data class LocalLabel(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = setOf()
     override val registersWritten: Set<Register> = setOf()
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = ".${label.name}:"
 }
 
-data class Label(val label: BlockLabel) : Instruction {
+data class Label(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = setOf()
     override val registersWritten: Set<Register> = setOf()
 

@@ -45,9 +45,10 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
 
     init {
         allowedRegisters.map { Register.FixedRegister(it) }.forEach { r ->
-            graph.getOrPut(r) {
-                mutableSetOf()
-            }.addAll(allowedRegisters.filter { it != r.hardwareRegister }.map { Register.FixedRegister(it) })
+            graph
+                .getOrPut(r) {
+                    mutableSetOf()
+                }.addAll(allowedRegisters.filter { it != r.hardwareRegister }.map { Register.FixedRegister(it) })
         }
     }
 
@@ -57,9 +58,6 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
     private val k = allowedRegisters.size
 
     init {
-        if (liveness.allRegisters.any { it is Register.FixedRegister && it.hardwareRegister !in allowedRegisters }) {
-            throw IllegalArgumentException("Unexpected hardware register")
-        }
         for ((register, interferences) in liveness.interference)
             if (register in interferences)
                 throw IllegalArgumentException("Register cannot interfere with itself")
@@ -163,7 +161,15 @@ class RegisterAllocator(private val liveness: Liveness, private val allowedRegis
 fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<HardwareRegister>) {
     require(spills union successful.keys == liveness.allRegisters) { "Spills and successful registers do not cover all registers" }
     require((spills intersect successful.keys).isEmpty()) { "Spills and successful registers intersect" }
-    require(successful.values.all { it in allowedRegisters }) { "Not allowed register was used" }
+    require(successful.filter { it.key is Register.VirtualRegister }.values.all { it in allowedRegisters }) {
+        "Not allowed hardware register was used for virtual register allocation"
+    }
+    require(
+        successful
+            .filter { it.key is Register.FixedRegister }
+            .mapKeys { it.key as Register.FixedRegister }
+            .all { it.value === it.key.hardwareRegister },
+    ) { "Hardware register was not allocated to itself" }
 
     for ((reg1, interferences) in liveness.interference.entries) {
         for (reg2 in interferences) {
