@@ -10,7 +10,7 @@ fun unitType() = Type.Basic(mockRange(), "Unit")
 fun empty() = Empty(mockRange())
 
 fun functionDeclaration(identifier: String, body: Expression) =
-    Definition.FunctionDeclaration(
+    Definition.FunctionDefinition(
         mockRange(),
         identifier,
         null,
@@ -29,7 +29,7 @@ fun typedFunctionDeclaration(
     arguments: List<Definition.FunctionArgument>,
     outType: Type,
     body: Expression,
-) = Definition.FunctionDeclaration(
+) = Definition.FunctionDefinition(
     mockRange(),
     identifier,
     argsType,

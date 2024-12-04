@@ -3,7 +3,7 @@
   "(Location(value\u003d-1), Location(value\u003d78))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [],
       "body": {
         "__class__": "Block",
@@ -32,7 +32,7 @@
                   "__class__": "Block",
                   "expressions": [
                     {
-                      "__class__": "FunctionDeclaration",
+                      "__class__": "FunctionDefinition",
                       "arguments": [],
                       "body": {
                         "__class__": "Block",
@@ -295,7 +295,7 @@
   "(Location(value\u003d18), Location(value\u003d49))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [],
       "body": {
         "__class__": "Block",
@@ -358,7 +358,7 @@
     "parentLink": {
       "__class__": "ParentLink",
       "parent": {
-        "__class__": "FunctionDeclaration",
+        "__class__": "FunctionDefinition",
         "arguments": [],
         "body": {
           "__class__": "Block",
@@ -387,7 +387,7 @@
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [],
                         "body": {
                           "__class__": "Block",

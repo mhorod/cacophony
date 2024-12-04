@@ -114,7 +114,7 @@ class CallGraphTest {
         val gUse = variableUse("g")
 
         val gDef =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 loc(4, 8),
                 "g",
                 null,
@@ -123,7 +123,7 @@ class CallGraphTest {
                 FunctionCall(loc(8, 9), fUseInG, listOf()),
             )
         val fDef =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 loc(0, 4),
                 "f",
                 null,
@@ -139,7 +139,7 @@ class CallGraphTest {
             )
 
         val hDef =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 loc(10, 20),
                 "h",
                 null,

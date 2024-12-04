@@ -5,11 +5,11 @@ import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
+import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import kotlin.math.max
 
 class FunctionHandlerImpl(
-    function: FunctionDeclaration,
+    function: FunctionDefinition,
     private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
@@ -63,7 +63,7 @@ class FunctionHandlerImpl(
         }
     }
 
-    override fun getFunctionDeclaration(): FunctionDeclaration = function
+    override fun getFunctionDeclaration(): FunctionDefinition = function
 
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {
@@ -72,7 +72,7 @@ class FunctionHandlerImpl(
             MemoryAccess(traverseStaticLink(depth - 1))
         }
 
-    override fun generateAccessToFramePointer(other: FunctionDeclaration): CFGNode =
+    override fun generateAccessToFramePointer(other: FunctionDefinition): CFGNode =
         if (other == function) {
             traverseStaticLink(0)
         } else {

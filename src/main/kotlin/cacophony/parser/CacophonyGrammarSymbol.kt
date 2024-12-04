@@ -65,7 +65,7 @@ enum class CacophonyGrammarSymbol(
     DECLARATION_TYPED(Definition::class),
     DECLARATION_UNTYPED(Definition::class),
     VARIABLE_DECLARATION(Definition.VariableDeclaration::class),
-    FUNCTION_DECLARATION(Definition.FunctionDeclaration::class),
+    FUNCTION_DECLARATION(Definition.FunctionDefinition::class),
     FUNCTION_ARGUMENT(Definition.FunctionArgument::class),
     TYPE(Type::class),
     ASSIGNMENT(OperatorBinary::class),

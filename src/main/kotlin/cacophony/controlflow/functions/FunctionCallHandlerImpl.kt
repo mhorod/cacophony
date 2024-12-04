@@ -4,10 +4,10 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
-import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
+import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 
 open class FunctionCallHandlerImpl(
-    val function: FunctionDeclaration,
+    val function: FunctionDefinition,
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
 ) : FunctionCallHandler {

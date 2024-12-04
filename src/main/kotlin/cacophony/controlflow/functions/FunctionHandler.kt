@@ -16,7 +16,7 @@ interface FunctionCallHandler {
 }
 
 interface FunctionHandler : FunctionCallHandler {
-    fun getFunctionDeclaration(): Definition.FunctionDeclaration
+    fun getFunctionDeclaration(): Definition.FunctionDefinition
 
     fun generateVariableAccess(variable: Variable): CFGNode.LValue
 
@@ -29,7 +29,7 @@ interface FunctionHandler : FunctionCallHandler {
 
     fun getVariableFromDefinition(varDef: Definition): Variable
 
-    fun generateAccessToFramePointer(other: Definition.FunctionDeclaration): CFGNode
+    fun generateAccessToFramePointer(other: Definition.FunctionDefinition): CFGNode
 
     fun allocateFrameVariable(variable: Variable): CFGNode.LValue
 

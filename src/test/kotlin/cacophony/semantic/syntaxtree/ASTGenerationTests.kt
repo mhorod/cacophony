@@ -49,7 +49,7 @@ class ASTGenerationTests {
 
     private fun mockWrapInFunction(originalAST: AST): AST {
         val program =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 anyLocation(),
                 "<program>",
                 Type.Functional(
@@ -221,7 +221,7 @@ class ASTGenerationTests {
     fun `recursive function`() {
         val actual = computeAST("let f = [x: Int] -> Int => f[f[x]]")
         val expected =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 anyLocation(),
                 "f",
                 null,
@@ -598,7 +598,7 @@ class ASTGenerationTests {
     fun `return statement`() {
         val actual = computeAST("let f = [x: Int] -> Int => return x")
         val expected =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 anyLocation(),
                 "f",
                 null,

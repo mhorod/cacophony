@@ -12,7 +12,7 @@ typealias CFGVertices = Map<CFGLabel, CFGVertex>
  */
 data class CFGFragment(val vertices: CFGVertices, val initialLabel: CFGLabel)
 
-fun programCfgToGraphviz(cfg: Map<Definition.FunctionDeclaration, CFGFragment>): String {
+fun programCfgToGraphviz(cfg: Map<Definition.FunctionDefinition, CFGFragment>): String {
     var nextNodeId = 0
     var clusterId = 0
     val builder = StringBuilder()

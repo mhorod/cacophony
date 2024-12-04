@@ -112,7 +112,7 @@ sealed class Definition(
                 areEquivalentTypes(type, other.type)
     }
 
-    sealed class FunctionDef(
+    sealed class FunctionDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type.Functional?,
@@ -125,21 +125,29 @@ sealed class Definition(
                 areEquivalentTypes(returnType, other.returnType)
     }
 
-    class ForeignFunctionDef(
+    class ForeignFunctionDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
         type: Type.Functional,
         returnType: Type,
-    ) : FunctionDef(range, identifier, type, returnType), TreeLeaf
+    ) : FunctionDeclaration(range, identifier, type, returnType), TreeLeaf {
+        override fun toString() = "foreign $identifier: $type "
 
-    class FunctionDeclaration(
+        override fun isEquivalent(other: Expression?) =
+            super.isEquivalent(other) &&
+                other is ForeignFunctionDeclaration &&
+                areEquivalentTypes(type, other.type) &&
+                areEquivalentTypes(returnType, other.returnType)
+    }
+
+    class FunctionDefinition(
         range: Pair<Location, Location>,
         identifier: String,
         type: Type.Functional?,
         val arguments: List<FunctionArgument>,
         returnType: Type,
         val body: Expression,
-    ) : FunctionDef(range, identifier, type, returnType),
+    ) : FunctionDeclaration(range, identifier, type, returnType),
         Tree {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} = [${arguments.joinToString(", ")}] -> $returnType"
 
@@ -147,7 +155,7 @@ sealed class Definition(
 
         override fun isEquivalent(other: Expression?): Boolean =
             super.isEquivalent(other) &&
-                other is FunctionDeclaration &&
+                other is FunctionDefinition &&
                 areEquivalentTypes(type, other.type) &&
                 areEquivalentExpressions(arguments, other.arguments) &&
                 areEquivalentTypes(returnType, other.returnType) &&

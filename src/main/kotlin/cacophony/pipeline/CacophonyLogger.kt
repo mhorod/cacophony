@@ -114,7 +114,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
 
     override fun logFailedFunctionAnalysis() = println("Function analysis failed :(")
 
-    override fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDeclaration, RegisterAllocation>) {
+    override fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>) {
         println("Register allocation successful :D")
         allocatedRegisters.forEach { (function, allocation) ->
             println("  $function (${function.identifier}/${function.arguments.size})")
@@ -129,12 +129,12 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
         }
     }
 
-    override fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDeclaration, CFGFragment>) {
+    override fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>) {
         println("Control flow graph generation successful :D")
         println(programCfgToGraphviz(cfg))
     }
 
-    private fun logCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>) {
+    private fun logCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>) {
         covering.forEach { (function, blocks) ->
             println("  $function (${function.identifier}/${function.arguments.size})")
             blocks.forEach { block ->
@@ -146,12 +146,12 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
         }
     }
 
-    override fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>) {
+    override fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>) {
         println("Instruction covering successful :D")
         logCovering(covering)
     }
 
-    override fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDeclaration, Liveness>) {
+    override fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDefinition, Liveness>) {
         println("Liveness generation successfull :D")
         liveness.forEach { (function, liveness) ->
             println("  Function $function liveness: ")
@@ -176,7 +176,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
         )
     }
 
-    override fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>) {
+    override fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>) {
         println("Spill handling successful :D")
         logCovering(covering)
     }

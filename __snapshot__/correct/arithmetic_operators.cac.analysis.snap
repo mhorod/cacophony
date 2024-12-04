@@ -3,7 +3,7 @@
   "(Location(value\u003d-1), Location(value\u003d441))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [],
       "body": {
         "__class__": "Block",
@@ -1550,7 +1550,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -3112,7 +3112,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -4660,7 +4660,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -6282,7 +6282,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -7949,7 +7949,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -9585,7 +9585,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",

@@ -60,7 +60,7 @@ fun pushRegister(register: Register) = CFGNode.Push(CFGNode.RegisterUse(register
 
 fun popRegister(register: Register) = CFGNode.Pop(CFGNode.RegisterUse(register))
 
-fun call(function: Definition.FunctionDeclaration) = CFGNode.Call(function)
+fun call(function: Definition.FunctionDefinition) = CFGNode.Call(function)
 
 // logical
 infix fun CFGNode.eq(other: CFGNode) = CFGNode.Equals(this, other)

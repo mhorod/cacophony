@@ -6,12 +6,12 @@ import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.Definition
 
-typealias ProgramCFG = Map<Definition.FunctionDeclaration, CFGFragment>
+typealias ProgramCFG = Map<Definition.FunctionDefinition, CFGFragment>
 
 fun generateCFG(
     resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
-    functionHandlers: Map<Definition.FunctionDeclaration, FunctionHandler>,
+    functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
 ): ProgramCFG {
     val result =
         functionHandlers.mapValues { (function, _) ->
@@ -21,8 +21,8 @@ fun generateCFG(
 }
 
 internal fun generateFunctionCFG(
-    function: Definition.FunctionDeclaration,
-    functionHandlers: Map<Definition.FunctionDeclaration, FunctionHandler>,
+    function: Definition.FunctionDefinition,
+    functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
     resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
 ): CFGFragment {

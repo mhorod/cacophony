@@ -3,7 +3,7 @@
   "(Location(value\u003d-1), Location(value\u003d372))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [],
       "body": {
         "__class__": "Block",
@@ -806,7 +806,7 @@
                 "__class__": "Block",
                 "expressions": [
                   {
-                    "__class__": "FunctionDeclaration",
+                    "__class__": "FunctionDefinition",
                     "arguments": [
                       {
                         "__class__": "FunctionArgument",
@@ -916,7 +916,7 @@
                     },
                     "arguments": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -1284,7 +1284,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -2087,7 +2087,7 @@
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -2197,7 +2197,7 @@
                         },
                         "arguments": [
                           {
-                            "__class__": "FunctionDeclaration",
+                            "__class__": "FunctionDefinition",
                             "arguments": [
                               {
                                 "__class__": "FunctionArgument",
@@ -2618,7 +2618,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -3421,7 +3421,7 @@
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -3531,7 +3531,7 @@
                         },
                         "arguments": [
                           {
-                            "__class__": "FunctionDeclaration",
+                            "__class__": "FunctionDefinition",
                             "arguments": [
                               {
                                 "__class__": "FunctionArgument",
@@ -3871,7 +3871,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -4674,7 +4674,7 @@
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -4784,7 +4784,7 @@
                         },
                         "arguments": [
                           {
-                            "__class__": "FunctionDeclaration",
+                            "__class__": "FunctionDefinition",
                             "arguments": [
                               {
                                 "__class__": "FunctionArgument",
@@ -5170,7 +5170,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -5973,7 +5973,7 @@
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -6083,7 +6083,7 @@
                         },
                         "arguments": [
                           {
-                            "__class__": "FunctionDeclaration",
+                            "__class__": "FunctionDefinition",
                             "arguments": [
                               {
                                 "__class__": "FunctionArgument",
@@ -6439,7 +6439,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -7242,7 +7242,7 @@
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -7352,7 +7352,7 @@
                         },
                         "arguments": [
                           {
-                            "__class__": "FunctionDeclaration",
+                            "__class__": "FunctionDefinition",
                             "arguments": [
                               {
                                 "__class__": "FunctionArgument",
@@ -7946,7 +7946,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -8749,7 +8749,7 @@
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -8859,7 +8859,7 @@
                         },
                         "arguments": [
                           {
-                            "__class__": "FunctionDeclaration",
+                            "__class__": "FunctionDefinition",
                             "arguments": [
                               {
                                 "__class__": "FunctionArgument",
@@ -9246,7 +9246,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [],
           "body": {
             "__class__": "Block",
@@ -10049,7 +10049,7 @@
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -10159,7 +10159,7 @@
                         },
                         "arguments": [
                           {
-                            "__class__": "FunctionDeclaration",
+                            "__class__": "FunctionDefinition",
                             "arguments": [
                               {
                                 "__class__": "FunctionArgument",
@@ -10460,7 +10460,7 @@
   "(Location(value\u003d248), Location(value\u003d278))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [
         {
           "__class__": "FunctionArgument",
@@ -10554,7 +10554,7 @@
     "parentLink": {
       "__class__": "ParentLink",
       "parent": {
-        "__class__": "FunctionDeclaration",
+        "__class__": "FunctionDefinition",
         "arguments": [],
         "body": {
           "__class__": "Block",
@@ -11357,7 +11357,7 @@
                   "__class__": "Block",
                   "expressions": [
                     {
-                      "__class__": "FunctionDeclaration",
+                      "__class__": "FunctionDefinition",
                       "arguments": [
                         {
                           "__class__": "FunctionArgument",
@@ -11467,7 +11467,7 @@
                       },
                       "arguments": [
                         {
-                          "__class__": "FunctionDeclaration",
+                          "__class__": "FunctionDefinition",
                           "arguments": [
                             {
                               "__class__": "FunctionArgument",
@@ -11768,7 +11768,7 @@
   "(Location(value\u003d287), Location(value\u003d315))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [
         {
           "__class__": "FunctionArgument",
@@ -11847,7 +11847,7 @@
     "parentLink": {
       "__class__": "ParentLink",
       "parent": {
-        "__class__": "FunctionDeclaration",
+        "__class__": "FunctionDefinition",
         "arguments": [],
         "body": {
           "__class__": "Block",
@@ -12650,7 +12650,7 @@
                   "__class__": "Block",
                   "expressions": [
                     {
-                      "__class__": "FunctionDeclaration",
+                      "__class__": "FunctionDefinition",
                       "arguments": [
                         {
                           "__class__": "FunctionArgument",
@@ -12760,7 +12760,7 @@
                       },
                       "arguments": [
                         {
-                          "__class__": "FunctionDeclaration",
+                          "__class__": "FunctionDefinition",
                           "arguments": [
                             {
                               "__class__": "FunctionArgument",
