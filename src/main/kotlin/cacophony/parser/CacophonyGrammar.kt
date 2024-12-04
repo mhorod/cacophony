@@ -123,7 +123,7 @@ class CacophonyGrammar {
                     STRUCT produces (
                         (
                             atomic(LEFT_CURLY_BRACE) concat
-                                atomic(STRUCT_FIELD) concat (atomic(COMMA) concat atomic(STRUCT_FIELD).star())
+                                atomic(STRUCT_FIELD) concat (atomic(COMMA) concat atomic(STRUCT_FIELD)).star()
                                 concat atomic(RIGHT_CURLY_BRACE)
                         ) or (atomic(LEFT_CURLY_BRACE) concat atomic(RIGHT_CURLY_BRACE))
                     ),

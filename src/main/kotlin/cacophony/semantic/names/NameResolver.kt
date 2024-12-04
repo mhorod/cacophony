@@ -202,7 +202,7 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
             }
 
             is Struct -> {
-                node.fields.values.forEach { traverseAst(it, false) }
+                node.fields.values.forEach { traverseAst(it, true) }
             }
 
             is LeafExpression -> {}

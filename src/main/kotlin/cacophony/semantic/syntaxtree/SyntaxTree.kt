@@ -1,5 +1,6 @@
 package cacophony.semantic.syntaxtree
 
+import cacophony.semantic.syntaxtree.areEquivalentTypes
 import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
@@ -16,7 +17,7 @@ fun areEquivalentTypes(lhs: List<Type?>, rhs: List<Type?>): Boolean =
     lhs.size == rhs.size && lhs.zip(rhs).all { areEquivalentTypes(it.first, it.second) }
 
 fun <T> areEquivalentTypes(lhs: Map<T, Type>, rhs: Map<T, Type>): Boolean =
-    lhs.size == rhs.size && lhs.all { (k, expr) -> areEquivalentTypes(expr, rhs[k]) }
+    lhs.size == rhs.size && lhs.all { (k, type) -> areEquivalentTypes(type, rhs[k]) }
 
 fun areEquivalentExpressions(lhs: Expression?, rhs: Expression?): Boolean = lhs?.isEquivalent(rhs) ?: (rhs == null)
 
@@ -187,7 +188,13 @@ class FunctionCall(
 class StructField(range: Pair<Location, Location>, val name: String, val type: Type?) : Expression(range), LeafExpression, TreeLeaf {
     override fun toString() = "field ${name}${type?.let{": $it"} ?: ""}"
 
-    override fun isEquivalent(other: Expression?): Boolean = super.isEquivalent(other) && other is StructField && name == other.name
+    override fun isEquivalent(other: Expression?): Boolean =
+        super.isEquivalent(other) &&
+            other is StructField &&
+            name == other.name &&
+            areEquivalentTypes(type, other.type)
+
+    override fun equals(other: Any?) = other is Expression? && this.isEquivalent(other)
 }
 
 class Struct(range: Pair<Location, Location>, val fields: Map<StructField, Expression>) : Expression(range), Tree {
@@ -196,7 +203,9 @@ class Struct(range: Pair<Location, Location>, val fields: Map<StructField, Expre
     override fun children() = fields.entries.flatMap { (k, v) -> listOf(k, v) }
 
     override fun isEquivalent(other: Expression?): Boolean =
-        super.isEquivalent(other) && other is Struct && areEquivalentExpressions(fields, other.fields)
+        super.isEquivalent(other) &&
+            other is Struct &&
+            areEquivalentExpressions(fields, other.fields)
 }
 
 sealed class Literal(

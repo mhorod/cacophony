@@ -2,7 +2,13 @@ package cacophony.semantic.syntaxtree
 
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
+import cacophony.structDeclaration
+import cacophony.structField
+import cacophony.structType
+import cacophony.typedArg
+import cacophony.typedFunctionDeclaration
 import cacophony.utils.*
+import cacophony.variableUse
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -590,6 +596,29 @@ class ASTGenerationTests {
                     literal(1),
                     literal(2),
                 ),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `simple struct`() {
+        val actual = computeAST("{x = x}")
+        val expected = structDeclaration(structField("x") to variableUse("x"))
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `nested structs`() {
+        val actual = computeAST("let f = [x: {a: {b: Int}, c: Int}] -> {x: {c: Int, a: {b: Int}}} => {x = x}")
+        val expected =
+            typedFunctionDeclaration(
+                "f",
+                null,
+                listOf(
+                    typedArg("x", structType("a" to structType("b" to basicType("Int")), "c" to basicType("Int"))),
+                ),
+                structType("x" to structType("a" to structType("b" to basicType("Int")), "c" to basicType("Int"))),
+                structDeclaration(structField("x") to variableUse("x")),
             )
         assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
