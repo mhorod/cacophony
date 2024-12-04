@@ -1,6 +1,5 @@
 package cacophony.semantic.syntaxtree
 
-import cacophony.semantic.syntaxtree.areEquivalentTypes
 import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
