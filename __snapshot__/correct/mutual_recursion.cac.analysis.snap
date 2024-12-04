@@ -3,53 +3,8 @@
   "(Location(value\u003d-1), Location(value\u003d470))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
-      "type": {
-        "__class__": "Functional",
-        "argumentsType": [],
-        "returnType": {
-          "__class__": "Basic",
-          "identifier": "Unit",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": -1
-            },
-            "second": {
-              "__class__": "Location",
-              "value": -1
-            }
-          }
-        },
-        "range": {
-          "__class__": "Pair",
-          "first": {
-            "__class__": "Location",
-            "value": -1
-          },
-          "second": {
-            "__class__": "Location",
-            "value": -1
-          }
-        }
-      },
+      "__class__": "FunctionDefinition",
       "arguments": [],
-      "returnType": {
-        "__class__": "Basic",
-        "identifier": "Unit",
-        "range": {
-          "__class__": "Pair",
-          "first": {
-            "__class__": "Location",
-            "value": -1
-          },
-          "second": {
-            "__class__": "Location",
-            "value": -1
-          }
-        }
-      },
       "body": {
         "__class__": "Block",
         "expressions": [
@@ -57,7 +12,7 @@
             "__class__": "Block",
             "expressions": [
               {
-                "__class__": "FunctionDeclaration",
+                "__class__": "FunctionDefinition",
                 "arguments": [
                   {
                     "__class__": "FunctionArgument",
@@ -90,26 +45,11 @@
                     }
                   }
                 ],
-                "returnType": {
-                  "__class__": "Basic",
-                  "identifier": "Bool",
-                  "range": {
-                    "__class__": "Pair",
-                    "first": {
-                      "__class__": "Location",
-                      "value": 26
-                    },
-                    "second": {
-                      "__class__": "Location",
-                      "value": 29
-                    }
-                  }
-                },
                 "body": {
                   "__class__": "Block",
                   "expressions": [
                     {
-                      "__class__": "FunctionDeclaration",
+                      "__class__": "FunctionDefinition",
                       "arguments": [
                         {
                           "__class__": "FunctionArgument",
@@ -142,21 +82,6 @@
                           }
                         }
                       ],
-                      "returnType": {
-                        "__class__": "Basic",
-                        "identifier": "Bool",
-                        "range": {
-                          "__class__": "Pair",
-                          "first": {
-                            "__class__": "Location",
-                            "value": 65
-                          },
-                          "second": {
-                            "__class__": "Location",
-                            "value": 68
-                          }
-                        }
-                      },
                       "body": {
                         "__class__": "Block",
                         "expressions": [
@@ -318,6 +243,21 @@
                           "second": {
                             "__class__": "Location",
                             "value": 160
+                          }
+                        }
+                      },
+                      "returnType": {
+                        "__class__": "Basic",
+                        "identifier": "Bool",
+                        "range": {
+                          "__class__": "Pair",
+                          "first": {
+                            "__class__": "Location",
+                            "value": 65
+                          },
+                          "second": {
+                            "__class__": "Location",
+                            "value": 68
                           }
                         }
                       },
@@ -495,6 +435,21 @@
                     }
                   }
                 },
+                "returnType": {
+                  "__class__": "Basic",
+                  "identifier": "Bool",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 26
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 29
+                    }
+                  }
+                },
                 "identifier": "is_even",
                 "range": {
                   "__class__": "Pair",
@@ -555,7 +510,7 @@
                 }
               },
               {
-                "__class__": "FunctionDeclaration",
+                "__class__": "FunctionDefinition",
                 "arguments": [
                   {
                     "__class__": "FunctionArgument",
@@ -588,26 +543,11 @@
                     }
                   }
                 ],
-                "returnType": {
-                  "__class__": "Basic",
-                  "identifier": "Int",
-                  "range": {
-                    "__class__": "Pair",
-                    "first": {
-                      "__class__": "Location",
-                      "value": 265
-                    },
-                    "second": {
-                      "__class__": "Location",
-                      "value": 267
-                    }
-                  }
-                },
                 "body": {
                   "__class__": "Block",
                   "expressions": [
                     {
-                      "__class__": "FunctionDeclaration",
+                      "__class__": "FunctionDefinition",
                       "arguments": [
                         {
                           "__class__": "FunctionArgument",
@@ -640,21 +580,6 @@
                           }
                         }
                       ],
-                      "returnType": {
-                        "__class__": "Basic",
-                        "identifier": "Int",
-                        "range": {
-                          "__class__": "Pair",
-                          "first": {
-                            "__class__": "Location",
-                            "value": 298
-                          },
-                          "second": {
-                            "__class__": "Location",
-                            "value": 300
-                          }
-                        }
-                      },
                       "body": {
                         "__class__": "Block",
                         "expressions": [
@@ -905,6 +830,21 @@
                           "second": {
                             "__class__": "Location",
                             "value": 392
+                          }
+                        }
+                      },
+                      "returnType": {
+                        "__class__": "Basic",
+                        "identifier": "Int",
+                        "range": {
+                          "__class__": "Pair",
+                          "first": {
+                            "__class__": "Location",
+                            "value": 298
+                          },
+                          "second": {
+                            "__class__": "Location",
+                            "value": 300
                           }
                         }
                       },
@@ -1171,6 +1111,21 @@
                     }
                   }
                 },
+                "returnType": {
+                  "__class__": "Basic",
+                  "identifier": "Int",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 265
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 267
+                    }
+                  }
+                },
                 "identifier": "f",
                 "range": {
                   "__class__": "Pair",
@@ -1284,6 +1239,51 @@
           }
         }
       },
+      "type": {
+        "__class__": "Functional",
+        "argumentsType": [],
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Unit",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": -1
+          },
+          "second": {
+            "__class__": "Location",
+            "value": -1
+          }
+        }
+      },
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Unit",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": -1
+          },
+          "second": {
+            "__class__": "Location",
+            "value": -1
+          }
+        }
+      },
       "identifier": "\u003cprogram\u003e",
       "range": {
         "__class__": "Pair",
@@ -1305,7 +1305,7 @@
   "(Location(value\u003d0), Location(value\u003d227))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [
         {
           "__class__": "FunctionArgument",
@@ -1338,26 +1338,11 @@
           }
         }
       ],
-      "returnType": {
-        "__class__": "Basic",
-        "identifier": "Bool",
-        "range": {
-          "__class__": "Pair",
-          "first": {
-            "__class__": "Location",
-            "value": 26
-          },
-          "second": {
-            "__class__": "Location",
-            "value": 29
-          }
-        }
-      },
       "body": {
         "__class__": "Block",
         "expressions": [
           {
-            "__class__": "FunctionDeclaration",
+            "__class__": "FunctionDefinition",
             "arguments": [
               {
                 "__class__": "FunctionArgument",
@@ -1390,21 +1375,6 @@
                 }
               }
             ],
-            "returnType": {
-              "__class__": "Basic",
-              "identifier": "Bool",
-              "range": {
-                "__class__": "Pair",
-                "first": {
-                  "__class__": "Location",
-                  "value": 65
-                },
-                "second": {
-                  "__class__": "Location",
-                  "value": 68
-                }
-              }
-            },
             "body": {
               "__class__": "Block",
               "expressions": [
@@ -1566,6 +1536,21 @@
                 "second": {
                   "__class__": "Location",
                   "value": 160
+                }
+              }
+            },
+            "returnType": {
+              "__class__": "Basic",
+              "identifier": "Bool",
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 65
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 68
                 }
               }
             },
@@ -1743,6 +1728,21 @@
           }
         }
       },
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Bool",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 26
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 29
+          }
+        }
+      },
       "identifier": "is_even",
       "range": {
         "__class__": "Pair",
@@ -1759,53 +1759,8 @@
     "parentLink": {
       "__class__": "ParentLink",
       "parent": {
-        "__class__": "FunctionDeclaration",
-        "type": {
-          "__class__": "Functional",
-          "argumentsType": [],
-          "returnType": {
-            "__class__": "Basic",
-            "identifier": "Unit",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": -1
-              },
-              "second": {
-                "__class__": "Location",
-                "value": -1
-              }
-            }
-          },
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": -1
-            },
-            "second": {
-              "__class__": "Location",
-              "value": -1
-            }
-          }
-        },
+        "__class__": "FunctionDefinition",
         "arguments": [],
-        "returnType": {
-          "__class__": "Basic",
-          "identifier": "Unit",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": -1
-            },
-            "second": {
-              "__class__": "Location",
-              "value": -1
-            }
-          }
-        },
         "body": {
           "__class__": "Block",
           "expressions": [
@@ -1813,7 +1768,7 @@
               "__class__": "Block",
               "expressions": [
                 {
-                  "__class__": "FunctionDeclaration",
+                  "__class__": "FunctionDefinition",
                   "arguments": [
                     {
                       "__class__": "FunctionArgument",
@@ -1846,26 +1801,11 @@
                       }
                     }
                   ],
-                  "returnType": {
-                    "__class__": "Basic",
-                    "identifier": "Bool",
-                    "range": {
-                      "__class__": "Pair",
-                      "first": {
-                        "__class__": "Location",
-                        "value": 26
-                      },
-                      "second": {
-                        "__class__": "Location",
-                        "value": 29
-                      }
-                    }
-                  },
                   "body": {
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -1898,21 +1838,6 @@
                             }
                           }
                         ],
-                        "returnType": {
-                          "__class__": "Basic",
-                          "identifier": "Bool",
-                          "range": {
-                            "__class__": "Pair",
-                            "first": {
-                              "__class__": "Location",
-                              "value": 65
-                            },
-                            "second": {
-                              "__class__": "Location",
-                              "value": 68
-                            }
-                          }
-                        },
                         "body": {
                           "__class__": "Block",
                           "expressions": [
@@ -2074,6 +1999,21 @@
                             "second": {
                               "__class__": "Location",
                               "value": 160
+                            }
+                          }
+                        },
+                        "returnType": {
+                          "__class__": "Basic",
+                          "identifier": "Bool",
+                          "range": {
+                            "__class__": "Pair",
+                            "first": {
+                              "__class__": "Location",
+                              "value": 65
+                            },
+                            "second": {
+                              "__class__": "Location",
+                              "value": 68
                             }
                           }
                         },
@@ -2251,6 +2191,21 @@
                       }
                     }
                   },
+                  "returnType": {
+                    "__class__": "Basic",
+                    "identifier": "Bool",
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 26
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 29
+                      }
+                    }
+                  },
                   "identifier": "is_even",
                   "range": {
                     "__class__": "Pair",
@@ -2311,7 +2266,7 @@
                   }
                 },
                 {
-                  "__class__": "FunctionDeclaration",
+                  "__class__": "FunctionDefinition",
                   "arguments": [
                     {
                       "__class__": "FunctionArgument",
@@ -2344,26 +2299,11 @@
                       }
                     }
                   ],
-                  "returnType": {
-                    "__class__": "Basic",
-                    "identifier": "Int",
-                    "range": {
-                      "__class__": "Pair",
-                      "first": {
-                        "__class__": "Location",
-                        "value": 265
-                      },
-                      "second": {
-                        "__class__": "Location",
-                        "value": 267
-                      }
-                    }
-                  },
                   "body": {
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -2396,21 +2336,6 @@
                             }
                           }
                         ],
-                        "returnType": {
-                          "__class__": "Basic",
-                          "identifier": "Int",
-                          "range": {
-                            "__class__": "Pair",
-                            "first": {
-                              "__class__": "Location",
-                              "value": 298
-                            },
-                            "second": {
-                              "__class__": "Location",
-                              "value": 300
-                            }
-                          }
-                        },
                         "body": {
                           "__class__": "Block",
                           "expressions": [
@@ -2661,6 +2586,21 @@
                             "second": {
                               "__class__": "Location",
                               "value": 392
+                            }
+                          }
+                        },
+                        "returnType": {
+                          "__class__": "Basic",
+                          "identifier": "Int",
+                          "range": {
+                            "__class__": "Pair",
+                            "first": {
+                              "__class__": "Location",
+                              "value": 298
+                            },
+                            "second": {
+                              "__class__": "Location",
+                              "value": 300
                             }
                           }
                         },
@@ -2927,6 +2867,21 @@
                       }
                     }
                   },
+                  "returnType": {
+                    "__class__": "Basic",
+                    "identifier": "Int",
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 265
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 267
+                      }
+                    }
+                  },
                   "identifier": "f",
                   "range": {
                     "__class__": "Pair",
@@ -3040,6 +2995,51 @@
             }
           }
         },
+        "type": {
+          "__class__": "Functional",
+          "argumentsType": [],
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Unit",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": -1
+              },
+              "second": {
+                "__class__": "Location",
+                "value": -1
+              }
+            }
+          },
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Unit",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
         "identifier": "\u003cprogram\u003e",
         "range": {
           "__class__": "Pair",
@@ -3089,7 +3089,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [
             {
               "__class__": "FunctionArgument",
@@ -3122,26 +3122,11 @@
               }
             }
           ],
-          "returnType": {
-            "__class__": "Basic",
-            "identifier": "Bool",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 26
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 29
-              }
-            }
-          },
           "body": {
             "__class__": "Block",
             "expressions": [
               {
-                "__class__": "FunctionDeclaration",
+                "__class__": "FunctionDefinition",
                 "arguments": [
                   {
                     "__class__": "FunctionArgument",
@@ -3174,21 +3159,6 @@
                     }
                   }
                 ],
-                "returnType": {
-                  "__class__": "Basic",
-                  "identifier": "Bool",
-                  "range": {
-                    "__class__": "Pair",
-                    "first": {
-                      "__class__": "Location",
-                      "value": 65
-                    },
-                    "second": {
-                      "__class__": "Location",
-                      "value": 68
-                    }
-                  }
-                },
                 "body": {
                   "__class__": "Block",
                   "expressions": [
@@ -3350,6 +3320,21 @@
                     "second": {
                       "__class__": "Location",
                       "value": 160
+                    }
+                  }
+                },
+                "returnType": {
+                  "__class__": "Basic",
+                  "identifier": "Bool",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 65
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 68
                     }
                   }
                 },
@@ -3527,6 +3512,21 @@
               }
             }
           },
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Bool",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 26
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 29
+              }
+            }
+          },
           "identifier": "is_even",
           "range": {
             "__class__": "Pair",
@@ -3581,7 +3581,7 @@
   "(Location(value\u003d40), Location(value\u003d160))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [
         {
           "__class__": "FunctionArgument",
@@ -3614,21 +3614,6 @@
           }
         }
       ],
-      "returnType": {
-        "__class__": "Basic",
-        "identifier": "Bool",
-        "range": {
-          "__class__": "Pair",
-          "first": {
-            "__class__": "Location",
-            "value": 65
-          },
-          "second": {
-            "__class__": "Location",
-            "value": 68
-          }
-        }
-      },
       "body": {
         "__class__": "Block",
         "expressions": [
@@ -3793,6 +3778,21 @@
           }
         }
       },
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Bool",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 65
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 68
+          }
+        }
+      },
       "identifier": "is_odd",
       "range": {
         "__class__": "Pair",
@@ -3809,7 +3809,7 @@
     "parentLink": {
       "__class__": "ParentLink",
       "parent": {
-        "__class__": "FunctionDeclaration",
+        "__class__": "FunctionDefinition",
         "arguments": [
           {
             "__class__": "FunctionArgument",
@@ -3842,26 +3842,11 @@
             }
           }
         ],
-        "returnType": {
-          "__class__": "Basic",
-          "identifier": "Bool",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": 26
-            },
-            "second": {
-              "__class__": "Location",
-              "value": 29
-            }
-          }
-        },
         "body": {
           "__class__": "Block",
           "expressions": [
             {
-              "__class__": "FunctionDeclaration",
+              "__class__": "FunctionDefinition",
               "arguments": [
                 {
                   "__class__": "FunctionArgument",
@@ -3894,21 +3879,6 @@
                   }
                 }
               ],
-              "returnType": {
-                "__class__": "Basic",
-                "identifier": "Bool",
-                "range": {
-                  "__class__": "Pair",
-                  "first": {
-                    "__class__": "Location",
-                    "value": 65
-                  },
-                  "second": {
-                    "__class__": "Location",
-                    "value": 68
-                  }
-                }
-              },
               "body": {
                 "__class__": "Block",
                 "expressions": [
@@ -4070,6 +4040,21 @@
                   "second": {
                     "__class__": "Location",
                     "value": 160
+                  }
+                }
+              },
+              "returnType": {
+                "__class__": "Basic",
+                "identifier": "Bool",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 65
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 68
                   }
                 }
               },
@@ -4247,6 +4232,21 @@
             }
           }
         },
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 26
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 29
+            }
+          }
+        },
         "identifier": "is_even",
         "range": {
           "__class__": "Pair",
@@ -4296,7 +4296,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [
             {
               "__class__": "FunctionArgument",
@@ -4329,21 +4329,6 @@
               }
             }
           ],
-          "returnType": {
-            "__class__": "Basic",
-            "identifier": "Bool",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 65
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 68
-              }
-            }
-          },
           "body": {
             "__class__": "Block",
             "expressions": [
@@ -4508,6 +4493,21 @@
               }
             }
           },
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Bool",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 65
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 68
+              }
+            }
+          },
           "identifier": "is_odd",
           "range": {
             "__class__": "Pair",
@@ -4556,7 +4556,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [
             {
               "__class__": "FunctionArgument",
@@ -4589,26 +4589,11 @@
               }
             }
           ],
-          "returnType": {
-            "__class__": "Basic",
-            "identifier": "Bool",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 26
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 29
-              }
-            }
-          },
           "body": {
             "__class__": "Block",
             "expressions": [
               {
-                "__class__": "FunctionDeclaration",
+                "__class__": "FunctionDefinition",
                 "arguments": [
                   {
                     "__class__": "FunctionArgument",
@@ -4641,21 +4626,6 @@
                     }
                   }
                 ],
-                "returnType": {
-                  "__class__": "Basic",
-                  "identifier": "Bool",
-                  "range": {
-                    "__class__": "Pair",
-                    "first": {
-                      "__class__": "Location",
-                      "value": 65
-                    },
-                    "second": {
-                      "__class__": "Location",
-                      "value": 68
-                    }
-                  }
-                },
                 "body": {
                   "__class__": "Block",
                   "expressions": [
@@ -4817,6 +4787,21 @@
                     "second": {
                       "__class__": "Location",
                       "value": 160
+                    }
+                  }
+                },
+                "returnType": {
+                  "__class__": "Basic",
+                  "identifier": "Bool",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 65
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 68
                     }
                   }
                 },
@@ -4994,6 +4979,21 @@
               }
             }
           },
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Bool",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 26
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 29
+              }
+            }
+          },
           "identifier": "is_even",
           "range": {
             "__class__": "Pair",
@@ -5017,7 +5017,7 @@
   "(Location(value\u003d245), Location(value\u003d462))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [
         {
           "__class__": "FunctionArgument",
@@ -5050,26 +5050,11 @@
           }
         }
       ],
-      "returnType": {
-        "__class__": "Basic",
-        "identifier": "Int",
-        "range": {
-          "__class__": "Pair",
-          "first": {
-            "__class__": "Location",
-            "value": 265
-          },
-          "second": {
-            "__class__": "Location",
-            "value": 267
-          }
-        }
-      },
       "body": {
         "__class__": "Block",
         "expressions": [
           {
-            "__class__": "FunctionDeclaration",
+            "__class__": "FunctionDefinition",
             "arguments": [
               {
                 "__class__": "FunctionArgument",
@@ -5102,21 +5087,6 @@
                 }
               }
             ],
-            "returnType": {
-              "__class__": "Basic",
-              "identifier": "Int",
-              "range": {
-                "__class__": "Pair",
-                "first": {
-                  "__class__": "Location",
-                  "value": 298
-                },
-                "second": {
-                  "__class__": "Location",
-                  "value": 300
-                }
-              }
-            },
             "body": {
               "__class__": "Block",
               "expressions": [
@@ -5367,6 +5337,21 @@
                 "second": {
                   "__class__": "Location",
                   "value": 392
+                }
+              }
+            },
+            "returnType": {
+              "__class__": "Basic",
+              "identifier": "Int",
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 298
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 300
                 }
               }
             },
@@ -5633,6 +5618,21 @@
           }
         }
       },
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Int",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 265
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 267
+          }
+        }
+      },
       "identifier": "f",
       "range": {
         "__class__": "Pair",
@@ -5649,53 +5649,8 @@
     "parentLink": {
       "__class__": "ParentLink",
       "parent": {
-        "__class__": "FunctionDeclaration",
-        "type": {
-          "__class__": "Functional",
-          "argumentsType": [],
-          "returnType": {
-            "__class__": "Basic",
-            "identifier": "Unit",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": -1
-              },
-              "second": {
-                "__class__": "Location",
-                "value": -1
-              }
-            }
-          },
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": -1
-            },
-            "second": {
-              "__class__": "Location",
-              "value": -1
-            }
-          }
-        },
+        "__class__": "FunctionDefinition",
         "arguments": [],
-        "returnType": {
-          "__class__": "Basic",
-          "identifier": "Unit",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": -1
-            },
-            "second": {
-              "__class__": "Location",
-              "value": -1
-            }
-          }
-        },
         "body": {
           "__class__": "Block",
           "expressions": [
@@ -5703,7 +5658,7 @@
               "__class__": "Block",
               "expressions": [
                 {
-                  "__class__": "FunctionDeclaration",
+                  "__class__": "FunctionDefinition",
                   "arguments": [
                     {
                       "__class__": "FunctionArgument",
@@ -5736,26 +5691,11 @@
                       }
                     }
                   ],
-                  "returnType": {
-                    "__class__": "Basic",
-                    "identifier": "Bool",
-                    "range": {
-                      "__class__": "Pair",
-                      "first": {
-                        "__class__": "Location",
-                        "value": 26
-                      },
-                      "second": {
-                        "__class__": "Location",
-                        "value": 29
-                      }
-                    }
-                  },
                   "body": {
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -5788,21 +5728,6 @@
                             }
                           }
                         ],
-                        "returnType": {
-                          "__class__": "Basic",
-                          "identifier": "Bool",
-                          "range": {
-                            "__class__": "Pair",
-                            "first": {
-                              "__class__": "Location",
-                              "value": 65
-                            },
-                            "second": {
-                              "__class__": "Location",
-                              "value": 68
-                            }
-                          }
-                        },
                         "body": {
                           "__class__": "Block",
                           "expressions": [
@@ -5964,6 +5889,21 @@
                             "second": {
                               "__class__": "Location",
                               "value": 160
+                            }
+                          }
+                        },
+                        "returnType": {
+                          "__class__": "Basic",
+                          "identifier": "Bool",
+                          "range": {
+                            "__class__": "Pair",
+                            "first": {
+                              "__class__": "Location",
+                              "value": 65
+                            },
+                            "second": {
+                              "__class__": "Location",
+                              "value": 68
                             }
                           }
                         },
@@ -6141,6 +6081,21 @@
                       }
                     }
                   },
+                  "returnType": {
+                    "__class__": "Basic",
+                    "identifier": "Bool",
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 26
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 29
+                      }
+                    }
+                  },
                   "identifier": "is_even",
                   "range": {
                     "__class__": "Pair",
@@ -6201,7 +6156,7 @@
                   }
                 },
                 {
-                  "__class__": "FunctionDeclaration",
+                  "__class__": "FunctionDefinition",
                   "arguments": [
                     {
                       "__class__": "FunctionArgument",
@@ -6234,26 +6189,11 @@
                       }
                     }
                   ],
-                  "returnType": {
-                    "__class__": "Basic",
-                    "identifier": "Int",
-                    "range": {
-                      "__class__": "Pair",
-                      "first": {
-                        "__class__": "Location",
-                        "value": 265
-                      },
-                      "second": {
-                        "__class__": "Location",
-                        "value": 267
-                      }
-                    }
-                  },
                   "body": {
                     "__class__": "Block",
                     "expressions": [
                       {
-                        "__class__": "FunctionDeclaration",
+                        "__class__": "FunctionDefinition",
                         "arguments": [
                           {
                             "__class__": "FunctionArgument",
@@ -6286,21 +6226,6 @@
                             }
                           }
                         ],
-                        "returnType": {
-                          "__class__": "Basic",
-                          "identifier": "Int",
-                          "range": {
-                            "__class__": "Pair",
-                            "first": {
-                              "__class__": "Location",
-                              "value": 298
-                            },
-                            "second": {
-                              "__class__": "Location",
-                              "value": 300
-                            }
-                          }
-                        },
                         "body": {
                           "__class__": "Block",
                           "expressions": [
@@ -6551,6 +6476,21 @@
                             "second": {
                               "__class__": "Location",
                               "value": 392
+                            }
+                          }
+                        },
+                        "returnType": {
+                          "__class__": "Basic",
+                          "identifier": "Int",
+                          "range": {
+                            "__class__": "Pair",
+                            "first": {
+                              "__class__": "Location",
+                              "value": 298
+                            },
+                            "second": {
+                              "__class__": "Location",
+                              "value": 300
                             }
                           }
                         },
@@ -6817,6 +6757,21 @@
                       }
                     }
                   },
+                  "returnType": {
+                    "__class__": "Basic",
+                    "identifier": "Int",
+                    "range": {
+                      "__class__": "Pair",
+                      "first": {
+                        "__class__": "Location",
+                        "value": 265
+                      },
+                      "second": {
+                        "__class__": "Location",
+                        "value": 267
+                      }
+                    }
+                  },
                   "identifier": "f",
                   "range": {
                     "__class__": "Pair",
@@ -6930,6 +6885,51 @@
             }
           }
         },
+        "type": {
+          "__class__": "Functional",
+          "argumentsType": [],
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Unit",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": -1
+              },
+              "second": {
+                "__class__": "Location",
+                "value": -1
+              }
+            }
+          },
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Unit",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
         "identifier": "\u003cprogram\u003e",
         "range": {
           "__class__": "Pair",
@@ -6979,7 +6979,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [
             {
               "__class__": "FunctionArgument",
@@ -7012,26 +7012,11 @@
               }
             }
           ],
-          "returnType": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 265
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 267
-              }
-            }
-          },
           "body": {
             "__class__": "Block",
             "expressions": [
               {
-                "__class__": "FunctionDeclaration",
+                "__class__": "FunctionDefinition",
                 "arguments": [
                   {
                     "__class__": "FunctionArgument",
@@ -7064,21 +7049,6 @@
                     }
                   }
                 ],
-                "returnType": {
-                  "__class__": "Basic",
-                  "identifier": "Int",
-                  "range": {
-                    "__class__": "Pair",
-                    "first": {
-                      "__class__": "Location",
-                      "value": 298
-                    },
-                    "second": {
-                      "__class__": "Location",
-                      "value": 300
-                    }
-                  }
-                },
                 "body": {
                   "__class__": "Block",
                   "expressions": [
@@ -7329,6 +7299,21 @@
                     "second": {
                       "__class__": "Location",
                       "value": 392
+                    }
+                  }
+                },
+                "returnType": {
+                  "__class__": "Basic",
+                  "identifier": "Int",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 298
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 300
                     }
                   }
                 },
@@ -7595,6 +7580,21 @@
               }
             }
           },
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 265
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 267
+              }
+            }
+          },
           "identifier": "f",
           "range": {
             "__class__": "Pair",
@@ -7649,7 +7649,7 @@
   "(Location(value\u003d278), Location(value\u003d392))": {
     "__class__": "AnalyzedFunction",
     "function": {
-      "__class__": "FunctionDeclaration",
+      "__class__": "FunctionDefinition",
       "arguments": [
         {
           "__class__": "FunctionArgument",
@@ -7682,21 +7682,6 @@
           }
         }
       ],
-      "returnType": {
-        "__class__": "Basic",
-        "identifier": "Int",
-        "range": {
-          "__class__": "Pair",
-          "first": {
-            "__class__": "Location",
-            "value": 298
-          },
-          "second": {
-            "__class__": "Location",
-            "value": 300
-          }
-        }
-      },
       "body": {
         "__class__": "Block",
         "expressions": [
@@ -7950,6 +7935,21 @@
           }
         }
       },
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Int",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 298
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 300
+          }
+        }
+      },
       "identifier": "g",
       "range": {
         "__class__": "Pair",
@@ -7966,7 +7966,7 @@
     "parentLink": {
       "__class__": "ParentLink",
       "parent": {
-        "__class__": "FunctionDeclaration",
+        "__class__": "FunctionDefinition",
         "arguments": [
           {
             "__class__": "FunctionArgument",
@@ -7999,26 +7999,11 @@
             }
           }
         ],
-        "returnType": {
-          "__class__": "Basic",
-          "identifier": "Int",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": 265
-            },
-            "second": {
-              "__class__": "Location",
-              "value": 267
-            }
-          }
-        },
         "body": {
           "__class__": "Block",
           "expressions": [
             {
-              "__class__": "FunctionDeclaration",
+              "__class__": "FunctionDefinition",
               "arguments": [
                 {
                   "__class__": "FunctionArgument",
@@ -8051,21 +8036,6 @@
                   }
                 }
               ],
-              "returnType": {
-                "__class__": "Basic",
-                "identifier": "Int",
-                "range": {
-                  "__class__": "Pair",
-                  "first": {
-                    "__class__": "Location",
-                    "value": 298
-                  },
-                  "second": {
-                    "__class__": "Location",
-                    "value": 300
-                  }
-                }
-              },
               "body": {
                 "__class__": "Block",
                 "expressions": [
@@ -8316,6 +8286,21 @@
                   "second": {
                     "__class__": "Location",
                     "value": 392
+                  }
+                }
+              },
+              "returnType": {
+                "__class__": "Basic",
+                "identifier": "Int",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 298
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 300
                   }
                 }
               },
@@ -8582,6 +8567,21 @@
             }
           }
         },
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 265
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 267
+            }
+          }
+        },
         "identifier": "f",
         "range": {
           "__class__": "Pair",
@@ -8631,7 +8631,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [
             {
               "__class__": "FunctionArgument",
@@ -8664,21 +8664,6 @@
               }
             }
           ],
-          "returnType": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 298
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 300
-              }
-            }
-          },
           "body": {
             "__class__": "Block",
             "expressions": [
@@ -8932,6 +8917,21 @@
               }
             }
           },
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 298
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 300
+              }
+            }
+          },
           "identifier": "g",
           "range": {
             "__class__": "Pair",
@@ -8980,7 +8980,7 @@
           }
         },
         "definedIn": {
-          "__class__": "FunctionDeclaration",
+          "__class__": "FunctionDefinition",
           "arguments": [
             {
               "__class__": "FunctionArgument",
@@ -9013,26 +9013,11 @@
               }
             }
           ],
-          "returnType": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 265
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 267
-              }
-            }
-          },
           "body": {
             "__class__": "Block",
             "expressions": [
               {
-                "__class__": "FunctionDeclaration",
+                "__class__": "FunctionDefinition",
                 "arguments": [
                   {
                     "__class__": "FunctionArgument",
@@ -9065,21 +9050,6 @@
                     }
                   }
                 ],
-                "returnType": {
-                  "__class__": "Basic",
-                  "identifier": "Int",
-                  "range": {
-                    "__class__": "Pair",
-                    "first": {
-                      "__class__": "Location",
-                      "value": 298
-                    },
-                    "second": {
-                      "__class__": "Location",
-                      "value": 300
-                    }
-                  }
-                },
                 "body": {
                   "__class__": "Block",
                   "expressions": [
@@ -9330,6 +9300,21 @@
                     "second": {
                       "__class__": "Location",
                       "value": 392
+                    }
+                  }
+                },
+                "returnType": {
+                  "__class__": "Basic",
+                  "identifier": "Int",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 298
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 300
                     }
                   }
                 },
@@ -9593,6 +9578,21 @@
               "second": {
                 "__class__": "Location",
                 "value": 462
+              }
+            }
+          },
+          "returnType": {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 265
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 267
               }
             }
           },

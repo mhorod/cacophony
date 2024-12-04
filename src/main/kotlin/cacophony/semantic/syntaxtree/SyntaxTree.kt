@@ -112,14 +112,42 @@ sealed class Definition(
                 areEquivalentTypes(type, other.type)
     }
 
-    class FunctionDeclaration(
+    sealed class FunctionDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type.Functional?,
-        val arguments: List<FunctionArgument>,
         val returnType: Type,
+    ) : Definition(range, identifier) {
+        override fun isEquivalent(other: Expression?): Boolean =
+            super.isEquivalent(other) &&
+                other is FunctionDeclaration &&
+                areEquivalentTypes(type, other.type) &&
+                areEquivalentTypes(returnType, other.returnType)
+    }
+
+    class ForeignFunctionDeclaration(
+        range: Pair<Location, Location>,
+        identifier: String,
+        type: Type.Functional,
+        returnType: Type,
+    ) : FunctionDeclaration(range, identifier, type, returnType), TreeLeaf {
+        override fun toString() = "foreign $identifier: $type "
+
+        override fun isEquivalent(other: Expression?) =
+            super.isEquivalent(other) &&
+                other is ForeignFunctionDeclaration &&
+                areEquivalentTypes(type, other.type) &&
+                areEquivalentTypes(returnType, other.returnType)
+    }
+
+    class FunctionDefinition(
+        range: Pair<Location, Location>,
+        identifier: String,
+        type: Type.Functional?,
+        val arguments: List<FunctionArgument>,
+        returnType: Type,
         val body: Expression,
-    ) : Definition(range, identifier),
+    ) : FunctionDeclaration(range, identifier, type, returnType),
         Tree {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} = [${arguments.joinToString(", ")}] -> $returnType"
 
@@ -127,7 +155,7 @@ sealed class Definition(
 
         override fun isEquivalent(other: Expression?): Boolean =
             super.isEquivalent(other) &&
-                other is FunctionDeclaration &&
+                other is FunctionDefinition &&
                 areEquivalentTypes(type, other.type) &&
                 areEquivalentExpressions(arguments, other.arguments) &&
                 areEquivalentTypes(returnType, other.returnType) &&

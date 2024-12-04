@@ -4,7 +4,7 @@ import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
-import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
+import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 import cacophony.semantic.syntaxtree.Type
 import cacophony.utils.CompileException
@@ -28,13 +28,13 @@ sealed interface ResolvedName {
 }
 
 private class OverloadSetImpl : OverloadSet {
-    private val overloads: MutableMap<Int, FunctionDeclaration> = mutableMapOf()
+    private val overloads: MutableMap<Int, FunctionDefinition> = mutableMapOf()
 
-    override fun get(arity: Int): FunctionDeclaration? = overloads.get(arity)
+    override fun get(arity: Int): FunctionDefinition? = overloads.get(arity)
 
-    override fun toMap(): Map<Int, FunctionDeclaration> = overloads
+    override fun toMap(): Map<Int, FunctionDefinition> = overloads
 
-    override fun withDeclaration(arity: Int, declaration: FunctionDeclaration): OverloadSet {
+    override fun withDeclaration(arity: Int, declaration: FunctionDefinition): OverloadSet {
         overloads[arity] = declaration
         return this
     }
@@ -89,7 +89,7 @@ private fun emptySymbolsTable(): SymbolsTable {
                         blocks.last()[id] = ResolvedName.Argument(definition)
                     }
 
-                    is FunctionDeclaration -> {
+                    is FunctionDefinition -> {
                         val arity = definition.arguments.size
 
                         when (blocks.last()[id]) {
@@ -107,6 +107,8 @@ private fun emptySymbolsTable(): SymbolsTable {
                             }
                         }
                     }
+
+                    is Definition.ForeignFunctionDeclaration -> TODO()
                 }
             }
         }
@@ -155,7 +157,7 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                 traverseAst(node.value, true)
             }
 
-            is FunctionDeclaration -> {
+            is FunctionDefinition -> {
                 symbolsTable.define(node.identifier, node)
                 // Open new block to make arguments visible in function body, but not after
                 // the whole function declaration.

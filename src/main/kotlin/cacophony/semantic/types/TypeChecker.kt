@@ -68,7 +68,7 @@ private class Typer(
                     argType
                 }
 
-                is Definition.FunctionDeclaration -> {
+                is Definition.FunctionDefinition -> {
                     // does not type anything inside if argument or result types are incorrect
                     val argsType = parseArgs(expression.arguments) ?: return null
                     val returnType = translateType(expression.returnType) ?: return null
@@ -84,6 +84,8 @@ private class Typer(
                     }
                     BuiltinType.UnitType
                 }
+
+                is Definition.ForeignFunctionDeclaration -> TODO()
 
                 is Empty -> BuiltinType.UnitType
                 is FunctionCall -> {

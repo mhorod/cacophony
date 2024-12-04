@@ -4,7 +4,7 @@ import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.Definition
 
 fun generateCall(
-    function: Definition.FunctionDeclaration,
+    function: Definition.FunctionDefinition,
     arguments: List<CFGNode>,
     result: Register?,
     respectStackAlignment: Boolean = false,

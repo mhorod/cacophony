@@ -21,8 +21,8 @@ import cacophony.semantic.syntaxtree.VariableUse
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
-    private val function: Definition.FunctionDeclaration,
-    private val functionHandlers: Map<Definition.FunctionDeclaration, FunctionHandler>,
+    private val function: Definition.FunctionDefinition,
+    private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
 ) {
     private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
@@ -98,7 +98,7 @@ internal class CFGGenerator(
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
-            is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
+            is Definition.FunctionDefinition -> visitFunctionDeclaration(mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
             is FunctionCall -> visitFunctionCall(expression, mode, context)
@@ -146,7 +146,7 @@ internal class CFGGenerator(
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
-        val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
+        val function = resolvedVariables[expression.function] as Definition.FunctionDefinition
         val functionHandler = getFunctionHandler(function)
 
         val (resultRegister, resultAccess) =
@@ -366,6 +366,6 @@ internal class CFGGenerator(
 
     internal fun resolveVariable(variable: VariableUse) = resolvedVariables[variable] ?: error("Unresolved variable $variable")
 
-    private fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler =
+    private fun getFunctionHandler(function: Definition.FunctionDefinition): FunctionHandler =
         functionHandlers[function] ?: error("Function $function has no handler")
 }

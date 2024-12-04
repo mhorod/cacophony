@@ -104,7 +104,7 @@ class InstructionMatcherTest {
         every { customCallPattern.makeInstance(any()) } returns emptyList()
 
         val instructionMatcher = InstructionMatcherImpl(emptyList(), listOf(customCallPattern), emptyList())
-        val function = Definition.FunctionDeclaration(mockk(), "f", mockk(), listOf(), mockk(), mockk())
+        val function = Definition.FunctionDefinition(mockk(), "f", mockk(), listOf(), mockk(), mockk())
         val node = CFGNode.Call(function)
 
         val match = instructionMatcher.findMatchesForSideEffects(node).elementAt(0)

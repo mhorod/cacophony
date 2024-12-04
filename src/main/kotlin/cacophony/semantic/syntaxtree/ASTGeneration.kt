@@ -200,7 +200,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                         val unparsedArguments = declarationKind.children.subList(0, branchesNum - 2)
                         arguments = unparsedArguments.map { constructFunctionArgument(it, diagnostics) } // non-empty function argument list
                     }
-                    return Definition.FunctionDeclaration(
+                    return Definition.FunctionDefinition(
                         range,
                         identifier.token.context,
                         type as Type.Functional?,
@@ -289,7 +289,7 @@ private fun wrapInFunction(originalAST: AST): AST {
     val beforeStart = Location(-1)
     val behindEnd = Location(originalAST.range.second.value + 1)
     val program =
-        Definition.FunctionDeclaration(
+        Definition.FunctionDefinition(
             Pair(beforeStart, behindEnd),
             MAIN_FUNCTION_IDENTIFIER,
             Type.Functional(
