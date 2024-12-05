@@ -59,12 +59,12 @@ sealed class Type(
                 areEquivalentTypes(returnType, other.returnType)
     }
 
-    class Struct(range: Pair<Location, Location>, val fields: Map<String, Type>) : Type(range) {
+    class Structural(range: Pair<Location, Location>, val fields: Map<String, Type>) : Type(range) {
         override fun toString() = "{${fields.map { (k, v) -> "$k: $v" }.joinToString(", ")}}"
 
         override fun isEquivalent(other: Type?) =
             super.isEquivalent(other) &&
-                other is Struct &&
+                other is Structural &&
                 areEquivalentTypes(fields, other.fields)
     }
 }

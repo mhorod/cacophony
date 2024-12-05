@@ -281,7 +281,7 @@ private class Typer(
                 )
             }
 
-            is Type.Struct -> {
+            is Type.Structural -> {
                 throw NotImplementedError("Type checking not available for structures")
             }
         }

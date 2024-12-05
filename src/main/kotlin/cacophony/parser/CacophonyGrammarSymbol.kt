@@ -75,7 +75,7 @@ enum class CacophonyGrammarSymbol(
     FUNCTION_ARGUMENT(Definition.FunctionArgument::class),
     TYPE(Type::class),
     FUNCTION_TYPE(Type.Functional::class),
-    STRUCT_TYPE(Type.Struct::class),
+    STRUCT_TYPE(Type.Structural::class),
     ASSIGNMENT(OperatorBinary::class),
     UNARY(OperatorUnary::class),
 

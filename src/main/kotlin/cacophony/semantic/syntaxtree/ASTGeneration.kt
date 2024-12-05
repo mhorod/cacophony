@@ -49,7 +49,7 @@ private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnost
         }
         STRUCT_TYPE -> {
             require(parseTree is ParseTree.Branch) { "Unable to construct structure type from leaf node $symbol" }
-            Type.Struct(
+            Type.Structural(
                 parseTree.range,
                 parseTree.children
                     .windowed(2, 2) { (ident, type) ->

@@ -165,4 +165,4 @@ fun basicType(identifier: String) = Type.Basic(mockRange(), identifier)
 
 fun functionalType(argTypes: List<Type>, resType: Type) = Type.Functional(mockRange(), argTypes.toList(), resType)
 
-fun structType(vararg fields: Pair<String, Type>) = Type.Struct(mockRange(), fields.toMap())
+fun structType(vararg fields: Pair<String, Type>) = Type.Structural(mockRange(), fields.toMap())
