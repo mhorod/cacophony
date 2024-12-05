@@ -9,7 +9,7 @@
         "argumentsType": [],
         "returnType": {
           "__class__": "Basic",
-          "identifier": "Unit",
+          "identifier": "Int",
           "range": {
             "__class__": "Pair",
             "first": {
@@ -37,7 +37,7 @@
       "arguments": [],
       "returnType": {
         "__class__": "Basic",
-        "identifier": "Unit",
+        "identifier": "Int",
         "range": {
           "__class__": "Pair",
           "first": {
@@ -1070,7 +1070,22 @@
             }
           },
           {
-            "__class__": "Empty",
+            "__class__": "ReturnStatement",
+            "value": {
+              "__class__": "IntLiteral",
+              "value": 0,
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 871
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 871
+                }
+              }
+            },
             "range": {
               "__class__": "Pair",
               "first": {
@@ -1255,7 +1270,7 @@
             "argumentsType": [],
             "returnType": {
               "__class__": "Basic",
-              "identifier": "Unit",
+              "identifier": "Int",
               "range": {
                 "__class__": "Pair",
                 "first": {
@@ -1283,7 +1298,7 @@
           "arguments": [],
           "returnType": {
             "__class__": "Basic",
-            "identifier": "Unit",
+            "identifier": "Int",
             "range": {
               "__class__": "Pair",
               "first": {
@@ -2316,7 +2331,22 @@
                 }
               },
               {
-                "__class__": "Empty",
+                "__class__": "ReturnStatement",
+                "value": {
+                  "__class__": "IntLiteral",
+                  "value": 0,
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 871
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 871
+                    }
+                  }
+                },
                 "range": {
                   "__class__": "Pair",
                   "first": {
@@ -2479,7 +2509,7 @@
           "argumentsType": [],
           "returnType": {
             "__class__": "Basic",
-            "identifier": "Unit",
+            "identifier": "Int",
             "range": {
               "__class__": "Pair",
               "first": {
@@ -2507,7 +2537,7 @@
         "arguments": [],
         "returnType": {
           "__class__": "Basic",
-          "identifier": "Unit",
+          "identifier": "Int",
           "range": {
             "__class__": "Pair",
             "first": {
@@ -3540,7 +3570,22 @@
               }
             },
             {
-              "__class__": "Empty",
+              "__class__": "ReturnStatement",
+              "value": {
+                "__class__": "IntLiteral",
+                "value": 0,
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 871
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 871
+                  }
+                }
+              },
               "range": {
                 "__class__": "Pair",
                 "first": {
@@ -3950,7 +3995,7 @@
           "argumentsType": [],
           "returnType": {
             "__class__": "Basic",
-            "identifier": "Unit",
+            "identifier": "Int",
             "range": {
               "__class__": "Pair",
               "first": {
@@ -3978,7 +4023,7 @@
         "arguments": [],
         "returnType": {
           "__class__": "Basic",
-          "identifier": "Unit",
+          "identifier": "Int",
           "range": {
             "__class__": "Pair",
             "first": {
@@ -5011,7 +5056,22 @@
               }
             },
             {
-              "__class__": "Empty",
+              "__class__": "ReturnStatement",
+              "value": {
+                "__class__": "IntLiteral",
+                "value": 0,
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 871
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 871
+                  }
+                }
+              },
               "range": {
                 "__class__": "Pair",
                 "first": {
@@ -5669,7 +5729,7 @@
           "argumentsType": [],
           "returnType": {
             "__class__": "Basic",
-            "identifier": "Unit",
+            "identifier": "Int",
             "range": {
               "__class__": "Pair",
               "first": {
@@ -5697,7 +5757,7 @@
         "arguments": [],
         "returnType": {
           "__class__": "Basic",
-          "identifier": "Unit",
+          "identifier": "Int",
           "range": {
             "__class__": "Pair",
             "first": {
@@ -6730,7 +6790,22 @@
               }
             },
             {
-              "__class__": "Empty",
+              "__class__": "ReturnStatement",
+              "value": {
+                "__class__": "IntLiteral",
+                "value": 0,
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 871
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 871
+                  }
+                }
+              },
               "range": {
                 "__class__": "Pair",
                 "first": {
@@ -6893,7 +6968,7 @@
           "argumentsType": [],
           "returnType": {
             "__class__": "Basic",
-            "identifier": "Unit",
+            "identifier": "Int",
             "range": {
               "__class__": "Pair",
               "first": {
@@ -6921,7 +6996,7 @@
         "arguments": [],
         "returnType": {
           "__class__": "Basic",
-          "identifier": "Unit",
+          "identifier": "Int",
           "range": {
             "__class__": "Pair",
             "first": {
@@ -7954,7 +8029,22 @@
               }
             },
             {
-              "__class__": "Empty",
+              "__class__": "ReturnStatement",
+              "value": {
+                "__class__": "IntLiteral",
+                "value": 0,
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 871
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 871
+                  }
+                }
+              },
               "range": {
                 "__class__": "Pair",
                 "first": {
@@ -8198,7 +8288,7 @@
           "argumentsType": [],
           "returnType": {
             "__class__": "Basic",
-            "identifier": "Unit",
+            "identifier": "Int",
             "range": {
               "__class__": "Pair",
               "first": {
@@ -8226,7 +8316,7 @@
         "arguments": [],
         "returnType": {
           "__class__": "Basic",
-          "identifier": "Unit",
+          "identifier": "Int",
           "range": {
             "__class__": "Pair",
             "first": {
@@ -9259,7 +9349,22 @@
               }
             },
             {
-              "__class__": "Empty",
+              "__class__": "ReturnStatement",
+              "value": {
+                "__class__": "IntLiteral",
+                "value": 0,
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 871
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 871
+                  }
+                }
+              },
               "range": {
                 "__class__": "Pair",
                 "first": {
@@ -9481,7 +9586,7 @@
           "argumentsType": [],
           "returnType": {
             "__class__": "Basic",
-            "identifier": "Unit",
+            "identifier": "Int",
             "range": {
               "__class__": "Pair",
               "first": {
@@ -9509,7 +9614,7 @@
         "arguments": [],
         "returnType": {
           "__class__": "Basic",
-          "identifier": "Unit",
+          "identifier": "Int",
           "range": {
             "__class__": "Pair",
             "first": {
@@ -10542,7 +10647,22 @@
               }
             },
             {
-              "__class__": "Empty",
+              "__class__": "ReturnStatement",
+              "value": {
+                "__class__": "IntLiteral",
+                "value": 0,
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 871
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 871
+                  }
+                }
+              },
               "range": {
                 "__class__": "Pair",
                 "first": {
