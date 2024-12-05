@@ -54,8 +54,16 @@ private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnost
                 parseTree.children
                     .windowed(2, 2) { (ident, type) ->
                         require(ident is ParseTree.Leaf) { "Field identifier ${getGrammarSymbol(ident)} is not a leaf" }
-                        ident.token.context to constructType(type, diagnostics)
-                    }.toMap(),
+                        ident.token to constructType(type, diagnostics)
+                    }.also {
+                        it.fold(mutableSetOf<String>()) { acc, (ident) ->
+                            if (!acc.add(ident.context)) {
+                                diagnostics.report(ASTDiagnostics.DuplicateField(ident.context), Pair(ident.rangeFrom, ident.rangeTo))
+                                throw diagnostics.fatal()
+                            } else acc
+                        }
+                    }.map { (ident, type) -> ident.context to type }
+                    .toMap(),
             )
         }
         else -> throw IllegalStateException("Can't construct type from node $symbol")
@@ -303,7 +311,20 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                 }
             }
 
-            STRUCT -> Struct(parseTree.range, parseTree.children.map { createStructField(it, diagnostics) }.toMap())
+            STRUCT ->
+                Struct(
+                    parseTree.range,
+                    parseTree.children
+                        .map { createStructField(it, diagnostics) }
+                        .also {
+                            it.fold(mutableSetOf<String>()) { acc, (field) ->
+                                if (!acc.add(field.name)) {
+                                    diagnostics.report(ASTDiagnostics.DuplicateField(field.name), field.range)
+                                    throw diagnostics.fatal()
+                                } else acc
+                            }
+                        }.toMap(),
+                )
 
             else -> throw IllegalArgumentException("Unexpected branch symbol: $symbol")
         }

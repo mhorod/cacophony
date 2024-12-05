@@ -129,9 +129,9 @@ class CacophonyGrammar {
                     ),
                     STRUCT_FIELD produces (
                         atomic(VARIABLE_IDENTIFIER) concat
-                            (atomic(STRUCT_FIELD_TYPED) or atomic(STRUCT_FIELD_UNTYPED))
+                            (atomic(STRUCT_FIELD_VALUE_TYPED) or atomic(STRUCT_FIELD_VALUE_UNTYPED))
                     ),
-                    STRUCT_FIELD_TYPED produces
+                    STRUCT_FIELD_VALUE_TYPED produces
                         (
                             atomic(COLON)
                                 concat
@@ -139,7 +139,7 @@ class CacophonyGrammar {
                                 concat atomic(OPERATOR_ASSIGNMENT)
                                 concat atomic(DECLARATION_LEVEL)
                         ),
-                    STRUCT_FIELD_UNTYPED produces
+                    STRUCT_FIELD_VALUE_UNTYPED produces
                         (
                             atomic(OPERATOR_ASSIGNMENT)
                                 concat atomic(DECLARATION_LEVEL)
