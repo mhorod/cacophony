@@ -36,18 +36,18 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
         return coverGivenMatch(bestMatch)
     }
 
-    override fun coverWithInstructionsWithoutVirtualRegisters(node: CFGNode): List<Instruction> {
-        val matches = instructionMatcher.findMatchesForSideEffects(node)
+    override fun coverWithInstructionsWithoutTemporaryRegisters(node: CFGNode): List<Instruction> {
+        val matches = instructionMatcher.findMatchesWithoutTemporaryRegisters(node)
         val bestMatch =
-            matches
-                .filter { it.toFill.isEmpty() }
-                .maxByOrNull { match -> match.size } ?: error("No match without virtual registers found for $node, ${node.javaClass}")
+            matches.maxByOrNull { match -> match.size } ?: error("No match without temporary registers found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 
     override fun coverWithInstructionsAndJump(node: CFGNode, label: BlockLabel, jumpIf: Boolean): List<Instruction> {
         val matches = instructionMatcher.findMatchesForCondition(node, label, jumpIf)
-        val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
+        val bestMatch =
+            matches.maxByOrNull { match -> match.size }
+                ?: error("No match with instructions for condition found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 }

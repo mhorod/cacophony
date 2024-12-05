@@ -10,6 +10,8 @@ interface InstructionMatcher {
 
     fun findMatchesForSideEffects(node: CFGNode): Set<Match>
 
+    fun findMatchesWithoutTemporaryRegisters(node: CFGNode): Set<Match>
+
     fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean = true): Set<Match>
 }
 
@@ -17,6 +19,7 @@ class InstructionMatcherImpl(
     private val valuePatterns: List<ValuePattern>,
     private val sideEffectPatterns: List<SideEffectPattern>,
     private val conditionPatterns: List<ConditionPattern>,
+    private val noTemporaryRegistersPatterns: List<NoTemporaryRegistersPattern>,
 ) : InstructionMatcher {
     override fun findMatchesForValue(node: CFGNode, destinationRegister: Register): Set<Match> =
         findMatchesWithInstructionMaker(
@@ -40,6 +43,23 @@ class InstructionMatcherImpl(
         findMatchesWithInstructionMaker(
             node,
             sideEffectPatterns,
+        ) { metadata: MatchMetadata, pattern: SideEffectPattern ->
+            { mapping: ValueSlotMapping ->
+                pattern.makeInstance(
+                    SlotFill(
+                        mapping,
+                        metadata.registerFill,
+                        metadata.constantFill,
+                        metadata.functionFill,
+                    ),
+                )
+            }
+        }
+
+    override fun findMatchesWithoutTemporaryRegisters(node: CFGNode): Set<Match> =
+        findMatchesWithInstructionMaker(
+            node,
+            noTemporaryRegistersPatterns,
         ) { metadata: MatchMetadata, pattern: SideEffectPattern ->
             { mapping: ValueSlotMapping ->
                 pattern.makeInstance(

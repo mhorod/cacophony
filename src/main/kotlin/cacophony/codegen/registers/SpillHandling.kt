@@ -56,7 +56,7 @@ fun adjustLoweredCFGToHandleSpills(
         }
 
     fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
-        instructionCovering.coverWithInstructionsWithoutVirtualRegisters(
+        instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
                 CFGNode.RegisterUse(reg),
                 spillsFrameAllocation[spill]!!,
@@ -64,7 +64,7 @@ fun adjustLoweredCFGToHandleSpills(
         )
 
     fun saveRegIntoSpill(reg: Register, spill: VirtualRegister): List<Instruction> =
-        instructionCovering.coverWithInstructionsWithoutVirtualRegisters(
+        instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
                 spillsFrameAllocation[spill]!!,
                 CFGNode.RegisterUse(reg),
