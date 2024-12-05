@@ -97,7 +97,7 @@ class FileInput(
         var content = ""
         if (lineIndBegin == lineIndEnd) {
             if (lines.elementAtOrNull(lineIndBegin) != null) {
-                content = lines[lineIndBegin].substring(posBegin, posEnd)
+                content = lines[lineIndBegin].substring(posBegin, posEnd + 1)
             }
         } else {
             content = lines[lineIndBegin].substring(posBegin)

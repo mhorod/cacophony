@@ -60,7 +60,6 @@ class CacophonyPipeline(
     private fun <T> assertEmptyDiagnosticsAfter(action: () -> T): T {
         val x = action()
         if (diagnostics.getErrors().isNotEmpty()) {
-            println(diagnostics.getErrors())
             throw diagnostics.fatal()
         }
         return x

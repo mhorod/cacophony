@@ -1214,5 +1214,41 @@ class NameResolverTest {
             verify(exactly = 1) { diagnostics.report(NRDiagnostics.IllegalFunctionalArgument("x"), functionalArgumentRange) }
             confirmVerified(diagnostics)
         }
+
+        @Test
+        fun `error when finds duplicated argument names`() {
+            // let f = [x: Int, x: Bool] -> Int => 0
+
+            // given
+            val firstArgumentRange = Location(1) to Location(1)
+            val secondArgumentRange = Location(2) to Location(2)
+            val ast =
+                block(
+                    functionDeclaration(
+                        "f",
+                        listOf(
+                            FunctionArgument(
+                                firstArgumentRange,
+                                "x",
+                                Type.Basic(mockRange(), "Int"),
+                            ),
+                            FunctionArgument(
+                                secondArgumentRange,
+                                "x",
+                                Type.Basic(mockRange(), "Int"),
+                            ),
+                        ),
+                        lit(0),
+                    ),
+                )
+
+            // when & then
+            resolveNames(ast, diagnostics)
+            verify(exactly = 1) {
+                diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument("x"), firstArgumentRange)
+                diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument("x"), secondArgumentRange)
+            }
+            confirmVerified(diagnostics)
+        }
     }
 }
