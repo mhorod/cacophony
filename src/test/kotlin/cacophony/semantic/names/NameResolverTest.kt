@@ -136,6 +136,28 @@ class NameResolverTest {
             }
 
             @Test
+            fun `variables in struct`() {
+                // let c = 1;
+                // let a = {x = let b = 2, y = c};
+
+                // given
+                val cDef = variableDeclaration("c", lit(1))
+                val cUse = variableUse("c")
+                val bDef = variableDeclaration("b", lit(2))
+                val aDef = variableDeclaration("a", structDeclaration(structField("x") to bDef, structField("y") to cUse))
+                val ast = block(cDef, aDef)
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasVariable(cUse to cDef)
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
             fun `arguments in single block`() {
                 // let f = [x: Bool, y: Int] -> Int => (
                 //     x;

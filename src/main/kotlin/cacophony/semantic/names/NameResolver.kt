@@ -201,7 +201,11 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                 traverseAst(node.rhs, true)
             }
 
-            else -> {}
+            is Struct -> {
+                node.fields.values.forEach { traverseAst(it, true) }
+            }
+
+            is LeafExpression -> {}
         }
 
         if (openNewBlock) symbolsTable.close()

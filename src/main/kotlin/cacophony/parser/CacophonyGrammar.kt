@@ -120,29 +120,71 @@ class CacophonyGrammar {
                     FUNCTION_ARGUMENT produces (
                         atomic(VARIABLE_IDENTIFIER) concat atomic(COLON) concat atomic(TYPE)
                     ),
+                    STRUCT produces (
+                        (
+                            atomic(LEFT_CURLY_BRACE) concat
+                                atomic(STRUCT_FIELD) concat (atomic(COMMA) concat atomic(STRUCT_FIELD)).star()
+                                concat atomic(RIGHT_CURLY_BRACE)
+                        ) or (atomic(LEFT_CURLY_BRACE) concat atomic(RIGHT_CURLY_BRACE))
+                    ),
+                    STRUCT_FIELD produces (
+                        atomic(VARIABLE_IDENTIFIER) concat
+                            (atomic(STRUCT_FIELD_VALUE_TYPED) or atomic(STRUCT_FIELD_VALUE_UNTYPED))
+                    ),
+                    STRUCT_FIELD_VALUE_TYPED produces
+                        (
+                            atomic(COLON)
+                                concat
+                                atomic(TYPE)
+                                concat atomic(OPERATOR_ASSIGNMENT)
+                                concat atomic(DECLARATION_LEVEL)
+                        ),
+                    STRUCT_FIELD_VALUE_UNTYPED produces
+                        (
+                            atomic(OPERATOR_ASSIGNMENT)
+                                concat atomic(DECLARATION_LEVEL)
+                        ),
                     TYPE produces
                         (
-                            atomic(TYPE_IDENTIFIER) or
-                                (
-                                    atomic(LEFT_BRACKET) concat
-                                        (
-                                            atomic(TYPE) concat
-                                                (
-                                                    atomic(COMMA) concat
-                                                        atomic(TYPE)
-                                                ).star()
-                                        ) concat
-                                        atomic(RIGHT_BRACKET) concat
-                                        atomic(ARROW) concat
-                                        atomic(TYPE)
-                                ) or
-                                (
-                                    atomic(LEFT_BRACKET) concat
-                                        atomic(RIGHT_BRACKET) concat
-                                        atomic(ARROW) concat
-                                        atomic(TYPE)
-                                )
+                            atomic(TYPE_IDENTIFIER) or atomic(FUNCTION_TYPE) or atomic(STRUCT_TYPE)
                         ),
+                    FUNCTION_TYPE produces (
+                        (
+                            atomic(LEFT_BRACKET) concat
+                                (
+                                    atomic(TYPE) concat
+                                        (
+                                            atomic(COMMA) concat
+                                                atomic(TYPE)
+                                        ).star()
+                                ) concat
+                                atomic(RIGHT_BRACKET) concat
+                                atomic(ARROW) concat
+                                atomic(TYPE)
+                        ) or
+                            (
+                                atomic(LEFT_BRACKET) concat
+                                    atomic(RIGHT_BRACKET) concat
+                                    atomic(ARROW) concat
+                                    atomic(TYPE)
+                            )
+                    ),
+                    STRUCT_TYPE produces (
+                        (
+                            atomic(LEFT_CURLY_BRACE) concat
+                                (
+                                    atomic(VARIABLE_IDENTIFIER) concat atomic(COLON) concat atomic(TYPE) concat
+                                        (
+                                            atomic(COMMA) concat atomic(VARIABLE_IDENTIFIER) concat atomic(COLON) concat
+                                                atomic(TYPE)
+                                        ).star()
+                                ) concat
+                                atomic(RIGHT_CURLY_BRACE)
+                        ) or (
+                            atomic(LEFT_CURLY_BRACE) concat atomic(RIGHT_CURLY_BRACE)
+                        )
+
+                    ),
                     ASSIGNMENT_LEVEL produces
                         (
                             atomic(LOGICAL_OPERATOR_LEVEL) or
@@ -256,6 +298,7 @@ class CacophonyGrammar {
                                 atomic(VARIABLE_IDENTIFIER) or
                                 atomic(BOOL_LITERAL) or
                                 atomic(INT_LITERAL) or
+                                atomic(STRUCT) or
                                 atomic(BLOCK)
                         ),
                     BLOCK produces

@@ -191,4 +191,24 @@ class CallGraphTest {
             mapOf(fDef to setOf(fDef)),
         )
     }
+
+    @Test
+    fun `finds calls in struct`() {
+        // let f = [] -> B => (
+        //    let g = [] => {res = f[]};
+        //    g[]
+        // )
+        val fUse = variableUse("f")
+        val gUse = variableUse("g")
+
+        val gDef = functionDeclaration("g", structDeclaration(structField("res") to call(fUse)))
+        val fDef = functionDeclaration("f", block(gDef, call(gUse)))
+
+        val ast = block(fDef)
+        val resolvedVariables = mapOf(fUse to fDef, gUse to gDef)
+
+        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+            mapOf(gDef to setOf(fDef), fDef to setOf(gDef)),
+        )
+    }
 }

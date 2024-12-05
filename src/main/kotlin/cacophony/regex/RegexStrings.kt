@@ -25,6 +25,8 @@ object RegexStrings {
             TokenCategorySpecific.RIGHT_PARENTHESIS to """\)""",
             TokenCategorySpecific.LEFT_BRACKET to """[""",
             TokenCategorySpecific.RIGHT_BRACKET to """]""",
+            TokenCategorySpecific.LEFT_CURLY_BRACE to """{""",
+            TokenCategorySpecific.RIGHT_CURLY_BRACE to """}""",
             TokenCategorySpecific.ARROW to """->""",
             TokenCategorySpecific.DOUBLE_ARROW to """=>""",
             TokenCategorySpecific.COLON to """:""",
@@ -69,11 +71,7 @@ object RegexStrings {
             TokenCategorySpecific.COMMENT to """#\N*""",
         )
 
-    fun getCategoryRegex(category: TokenCategoryGeneral): String? {
-        return generalCategoryMap.get(category)
-    }
+    fun getCategoryRegex(category: TokenCategoryGeneral): String? = generalCategoryMap.get(category)
 
-    fun getCategoryRegex(category: TokenCategorySpecific): String? {
-        return specificCategoryMap.get(category)
-    }
+    fun getCategoryRegex(category: TokenCategorySpecific): String? = specificCategoryMap.get(category)
 }

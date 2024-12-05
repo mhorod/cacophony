@@ -2,8 +2,17 @@ package cacophony
 
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
+import io.mockk.every
+import io.mockk.mockk
 
-fun mockRange() = Pair(Location(0), Location(0))
+fun mockRange(): Pair<Location, Location> {
+    val mock = mockk<Pair<Location, Location>>()
+    every { mock.toString() } returns "(any)"
+    every { mock == any() } returns true
+    every { mock.first } returns Location(-1)
+    every { mock.second } returns Location(-1)
+    return mock
+}
 
 fun unitType() = Type.Basic(mockRange(), "Unit")
 
@@ -46,6 +55,12 @@ fun functionDeclaration(identifier: String, arguments: List<Definition.FunctionA
         unitType(),
         body,
     )
+
+fun typedStructField(name: String, type: Type) = StructField(mockRange(), name, type)
+
+fun structField(name: String) = StructField(mockRange(), name, null)
+
+fun structDeclaration(vararg fields: Pair<StructField, Expression>) = Struct(mockRange(), fields.toMap())
 
 fun typedVariableDeclaration(identifier: String, type: Type.Basic?, value: Expression) =
     Definition.VariableDeclaration(
@@ -149,3 +164,5 @@ fun returnStatement(value: Expression) = Statement.ReturnStatement(mockRange(), 
 fun basicType(identifier: String) = Type.Basic(mockRange(), identifier)
 
 fun functionalType(argTypes: List<Type>, resType: Type) = Type.Functional(mockRange(), argTypes.toList(), resType)
+
+fun structType(vararg fields: Pair<String, Type>) = Type.Structural(mockRange(), fields.toMap())

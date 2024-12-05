@@ -12,6 +12,7 @@ import cacophony.semantic.syntaxtree.LeafExpression
 import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
+import cacophony.semantic.syntaxtree.Struct
 import cacophony.semantic.syntaxtree.VariableUse
 import kotlin.collections.mutableMapOf
 
@@ -57,6 +58,13 @@ private class CallGraphProvider(
 
             is Block ->
                 merge(*node.expressions.map { generateDirectCallGraph(it, currentFn) }.toTypedArray())
+
+            is Struct ->
+                merge(
+                    *node.fields.values
+                        .map { generateDirectCallGraph(it, currentFn) }
+                        .toTypedArray(),
+                )
 
             is LeafExpression -> mutableMapOf() // don't use else branch to prevent this from breaking when SyntaxTree is changed
             null -> mutableMapOf()
