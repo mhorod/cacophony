@@ -73,7 +73,6 @@ class ExamplesTest {
         assertThat(diagnostics.getErrors()).isEmpty()
     }
 
-    // TODO: Fix duplicated function params
     @ParameterizedTest
     @MethodSource("incorrectExamples")
     fun `incorrect examples give a compile error`(path: Path) {
