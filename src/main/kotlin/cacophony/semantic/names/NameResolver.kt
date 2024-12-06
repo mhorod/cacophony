@@ -163,9 +163,10 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                     .filter { it.value.size > 1 }
                     .values
                     .flatten()
-                    .forEach { argNode ->
+                    .onEach { argNode ->
                         diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument(argNode.identifier), argNode.range)
                     }
+                    .let { if (it.isNotEmpty()) throw diagnostics.fatal() }
 
                 // Open new block to make arguments visible in function body, but not after
                 // the whole function declaration.

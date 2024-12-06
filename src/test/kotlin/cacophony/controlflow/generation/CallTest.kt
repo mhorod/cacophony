@@ -49,7 +49,7 @@ class CallTest {
     @Test
     fun `call sequence for a function without parameters is correctly generated when the call is used for side effects`() {
         // given
-        val calleeDef = functionDeclaration("callee", variableDeclaration("x", lit(1)))
+        val calleeDef = unitFunctionDeclaration("callee", variableDeclaration("x", lit(1)))
         val callerDef =
             intFunctionDeclaration(
                 "caller",

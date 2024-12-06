@@ -6,9 +6,9 @@ import cacophony.controlflow.integer
 import cacophony.controlflow.unit
 import cacophony.controlflow.writeRegister
 import cacophony.empty
-import cacophony.functionDeclaration
 import cacophony.lit
 import cacophony.testPipeline
+import cacophony.unitFunctionDeclaration
 import cacophony.variableDeclaration
 import cacophony.variableUse
 import cacophony.variableWrite
@@ -29,7 +29,7 @@ class SideEffectSeparationTest {
         val rhs = variableWrite(variableUse("x"), lit(20))
 
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
@@ -80,7 +80,7 @@ class SideEffectSeparationTest {
         val rhs = variableWrite(variableUse("x"), lit(20))
 
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
@@ -131,7 +131,7 @@ class SideEffectSeparationTest {
         val rhs = variableUse("x")
 
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),

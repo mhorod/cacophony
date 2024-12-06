@@ -37,7 +37,7 @@ class SingleCFGNodeGenerationTest {
     fun `binary operator generates single cfg node`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(variableDeclaration("x", makeExpr(lit(1), lit(2))), empty()),
             )
@@ -54,7 +54,7 @@ class SingleCFGNodeGenerationTest {
     fun `minus operator generates single cfg node`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", minus(lit(1))),
@@ -74,7 +74,7 @@ class SingleCFGNodeGenerationTest {
     fun `not operator generates single cfg node`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lnot(lit(false))),
@@ -94,7 +94,7 @@ class SingleCFGNodeGenerationTest {
     fun `complex arithmetic expression generates single cfg node`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(variableDeclaration("x", expr), empty()),
             )
@@ -112,7 +112,7 @@ class SingleCFGNodeGenerationTest {
     fun `binary operator with complex operands generates single cfg node`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(variableDeclaration("y", makeExpr(expr, expr)), empty()),
             )

@@ -15,7 +15,7 @@ class CFGGenerationTest {
     fun `CFG of empty function`() {
         // given
         val emptyBlock = block()
-        val fDef = functionDeclaration("f", emptyBlock)
+        val fDef = unitFunctionDeclaration("f", emptyBlock)
 
         // when
         val cfg = testPipeline().generateControlFlowGraph(fDef)
@@ -95,7 +95,7 @@ class CFGGenerationTest {
     fun `CFG of while loop with variable condition`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -138,7 +138,7 @@ class CFGGenerationTest {
     fun `CFG of while with noop body`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     whileLoop(
