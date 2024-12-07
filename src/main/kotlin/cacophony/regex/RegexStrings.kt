@@ -39,6 +39,7 @@ object RegexStrings {
             TokenCategorySpecific.KEYWORD_DO to """do""",
             TokenCategorySpecific.KEYWORD_BREAK to """break""",
             TokenCategorySpecific.KEYWORD_RETURN to """return""",
+            TokenCategorySpecific.KEYWORD_FOREIGN to """foreign""",
             // operators
             TokenCategorySpecific.OPERATOR_EQUALS to """==""",
             TokenCategorySpecific.OPERATOR_NOT_EQUALS to """!=""",
@@ -69,11 +70,7 @@ object RegexStrings {
             TokenCategorySpecific.COMMENT to """#\N*""",
         )
 
-    fun getCategoryRegex(category: TokenCategoryGeneral): String? {
-        return generalCategoryMap.get(category)
-    }
+    fun getCategoryRegex(category: TokenCategoryGeneral): String? = generalCategoryMap.get(category)
 
-    fun getCategoryRegex(category: TokenCategorySpecific): String? {
-        return specificCategoryMap.get(category)
-    }
+    fun getCategoryRegex(category: TokenCategorySpecific): String? = specificCategoryMap.get(category)
 }

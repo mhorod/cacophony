@@ -1,5 +1,6 @@
 package cacophony.semantic.syntaxtree
 
+import cacophony.diagnostics.ASTDiagnostics
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.utils.*
@@ -617,6 +618,25 @@ class ASTGenerationTests {
                         "x",
                     ),
                 ),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `foreign with non-functional type throws`() {
+        val diagnostics = computeFailDiagnostics("foreign f: Int")
+        assertThat(diagnostics).anyMatch { it.contains(ASTDiagnostics.NonFunctionalForeign.getMessage()) }
+    }
+
+    @Test
+    fun `foreign statement`() {
+        val actual = computeAST("foreign f: [Int] -> Int")
+        val expected =
+            Definition.ForeignFunctionDeclaration(
+                anyLocation(),
+                "f",
+                Type.Functional(anyLocation(), listOf(basicType("Int")), basicType("Int")),
+                basicType("Int"),
             )
         assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
