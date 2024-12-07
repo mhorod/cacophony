@@ -180,41 +180,62 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
             // DECLARATION_LEVEL is in the pruned graph iff it corresponds to a declaration
             DECLARATION_LEVEL -> {
                 val identifier = parseTree.children[0] as ParseTree.Leaf
-                val isDeclarationTyped = parseTree.children[1] as ParseTree.Branch
-                var type: Type? = null
-                val declarationPosition: Int
-                if (getGrammarSymbol(isDeclarationTyped) == DECLARATION_TYPED) {
-                    type = constructType(isDeclarationTyped.children[0], diagnostics)
-                    declarationPosition = 2
-                } else {
-                    declarationPosition = 1
-                }
-                var declarationKind = isDeclarationTyped.children[declarationPosition]
-                if (getGrammarSymbol(declarationKind) == FUNCTION_DECLARATION) {
-                    declarationKind = declarationKind as ParseTree.Branch
-                    val branchesNum = declarationKind.children.size
-                    val returnType = declarationKind.children[branchesNum - 2]
-                    val body = declarationKind.children[branchesNum - 1]
-                    var arguments: List<Definition.FunctionArgument> = listOf()
-                    if (branchesNum >= 3) {
-                        val unparsedArguments = declarationKind.children.subList(0, branchesNum - 2)
-                        arguments = unparsedArguments.map { constructFunctionArgument(it, diagnostics) } // non-empty function argument list
+                val declaration = parseTree.children[1] as ParseTree.Branch
+                when (getGrammarSymbol(declaration)) {
+                    DECLARATION_TYPED, DECLARATION_UNTYPED -> {
+                        val declarationPosition: Int
+                        var type: Type? = null
+                        if (getGrammarSymbol(declaration) == DECLARATION_TYPED) {
+                            type = constructType(declaration.children[0], diagnostics)
+                            declarationPosition = 2
+                        } else {
+                            declarationPosition = 1
+                        }
+                        var declarationKind = declaration.children[declarationPosition]
+                        if (getGrammarSymbol(declarationKind) == FUNCTION_DECLARATION) {
+                            declarationKind = declarationKind as ParseTree.Branch
+                            val branchesNum = declarationKind.children.size
+                            val returnType = declarationKind.children[branchesNum - 2]
+                            val body = declarationKind.children[branchesNum - 1]
+                            var arguments: List<Definition.FunctionArgument> = listOf()
+                            if (branchesNum >= 3) {
+                                val unparsedArguments = declarationKind.children.subList(0, branchesNum - 2)
+                                arguments =
+                                    unparsedArguments.map { constructFunctionArgument(it, diagnostics) } // non-empty function argument list
+                            }
+                            return Definition.FunctionDefinition(
+                                range,
+                                identifier.token.context,
+                                type as Type.Functional?,
+                                arguments,
+                                constructType(returnType, diagnostics),
+                                generateASTInternal(body, diagnostics),
+                            )
+                        } else { // VARIABLE_DECLARATION, which was pruned
+                            return Definition.VariableDeclaration(
+                                range,
+                                identifier.token.context,
+                                type as Type.Basic?,
+                                generateASTInternal(declaration.children.last(), diagnostics),
+                            )
+                        }
                     }
-                    return Definition.FunctionDefinition(
-                        range,
-                        identifier.token.context,
-                        type as Type.Functional?,
-                        arguments,
-                        constructType(returnType, diagnostics),
-                        generateASTInternal(body, diagnostics),
-                    )
-                } else { // VARIABLE_DECLARATION, which was pruned
-                    return Definition.VariableDeclaration(
-                        range,
-                        identifier.token.context,
-                        type as Type.Basic?,
-                        generateASTInternal(isDeclarationTyped.children.last(), diagnostics),
-                    )
+
+                    FOREIGN_DECLARATION -> {
+                        val type = constructType(declaration.children[0], diagnostics)
+                        if (type !is Type.Functional) {
+                            diagnostics.report(ASTDiagnostics.NonFunctionalForeign, range)
+                            throw diagnostics.fatal()
+                        }
+                        return Definition.ForeignFunctionDeclaration(
+                            range,
+                            identifier.token.context,
+                            type,
+                            type.returnType,
+                        )
+                    }
+
+                    else -> throw IllegalArgumentException("Expected declaration with type")
                 }
             }
 
