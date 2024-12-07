@@ -138,13 +138,14 @@ class NameResolverTest {
             @Test
             fun `variables in struct`() {
                 // let c = 1;
-                // let a = {x = let b = 2, y = c};
+                // let a = {x = (let b = 2; b), y = c};
 
                 // given
                 val cDef = variableDeclaration("c", lit(1))
                 val cUse = variableUse("c")
+                val bUse = variableUse("b")
                 val bDef = variableDeclaration("b", lit(2))
-                val aDef = variableDeclaration("a", structDeclaration(structField("x") to bDef, structField("y") to cUse))
+                val aDef = variableDeclaration("a", structDeclaration(structField("x") to block(bDef, bUse), structField("y") to cUse))
                 val ast = block(cDef, aDef)
 
                 // when
@@ -152,6 +153,7 @@ class NameResolverTest {
 
                 // then
                 assertThatResolvedNames(resolvedNames)
+                    .hasVariable(bUse to bDef)
                     .hasVariable(cUse to cDef)
                     .andNothingElse()
                 verify { diagnostics wasNot Called }
@@ -1224,7 +1226,7 @@ class NameResolverTest {
                             FunctionArgument(
                                 functionalArgumentRange,
                                 "x",
-                                Type.Functional(mockRange(), listOf(), Type.Basic(mockRange(), "Int")),
+                                BaseType.Functional(mockRange(), listOf(), BaseType.Basic(mockRange(), "Int")),
                             ),
                         ),
                         lit(0),

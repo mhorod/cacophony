@@ -80,6 +80,9 @@ private class Typer(
                 is StructField -> {
                     throw NotImplementedError("Type checking not available for structures")
                 }
+                is FieldRef -> {
+                    throw NotImplementedError("Type checking not available for structures")
+                }
 
                 is Empty -> BuiltinType.UnitType
                 is FunctionCall -> {
@@ -266,13 +269,13 @@ private class Typer(
 
     private fun translateType(type: Type): TypeExpr? {
         return when (type) {
-            is Type.Basic ->
+            is BaseType.Basic ->
                 types[type.identifier] ?: run {
                     error.unknownType(type.range)
                     null
                 }
 
-            is Type.Functional -> {
+            is BaseType.Functional -> {
                 val args = type.argumentsType.map { translateType(it) }
                 val ret = translateType(type.returnType)
                 FunctionType(
@@ -281,7 +284,7 @@ private class Typer(
                 )
             }
 
-            is Type.Structural -> {
+            is BaseType.Structural -> {
                 throw NotImplementedError("Type checking not available for structures")
             }
         }

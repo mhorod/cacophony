@@ -58,13 +58,13 @@ class ASTGenerationTests {
             Definition.FunctionDeclaration(
                 anyLocation(),
                 "<program>",
-                Type.Functional(
+                BaseType.Functional(
                     anyLocation(),
                     emptyList(),
-                    Type.Basic(anyLocation(), "Unit"),
+                    BaseType.Basic(anyLocation(), "Unit"),
                 ),
                 emptyList(),
-                Type.Basic(anyLocation(), "Unit"),
+                BaseType.Basic(anyLocation(), "Unit"),
                 Block(
                     anyLocation(),
                     listOf(
@@ -99,7 +99,7 @@ class ASTGenerationTests {
         return diagnostics
     }
 
-    private fun basicType(value: String) = Type.Basic(anyLocation(), value)
+    private fun basicType(value: String) = BaseType.Basic(anyLocation(), value)
 
     private fun literal(value: Int) = Literal.IntLiteral(anyLocation(), value)
 

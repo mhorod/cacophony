@@ -54,6 +54,10 @@ fun resolveOverloads(ast: AST, diagnostics: Diagnostics, nr: NameResolutionResul
                 expr.fields.values.forEach { resolveOverloadsRec(it) }
             }
 
+            is FieldRef -> {
+                resolveOverloadsRec(expr.struct())
+            }
+
             is VariableUse -> {
                 when (val resName = nr[expr]!!) {
                     is ResolvedName.Variable -> {

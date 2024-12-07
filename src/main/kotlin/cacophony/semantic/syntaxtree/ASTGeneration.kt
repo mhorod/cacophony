@@ -39,17 +39,17 @@ private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnost
     when (val symbol = getGrammarSymbol(parseTree)) {
         TYPE_IDENTIFIER -> {
             require(parseTree is ParseTree.Leaf) { "Unable to construct atomic type from non-leaf node $symbol" }
-            Type.Basic(parseTree.range, parseTree.token.context)
+            BaseType.Basic(parseTree.range, parseTree.token.context)
         }
         FUNCTION_TYPE -> {
             require(parseTree is ParseTree.Branch) { "Unable to construct functional type from leaf node $symbol" }
             val returnType = constructType(parseTree.children.last(), diagnostics)
             val argumentsTypes = parseTree.children.slice(0..<parseTree.children.size - 1).map { constructType(it, diagnostics) }
-            Type.Functional(parseTree.range, argumentsTypes, returnType)
+            BaseType.Functional(parseTree.range, argumentsTypes, returnType)
         }
         STRUCT_TYPE -> {
             require(parseTree is ParseTree.Branch) { "Unable to construct structure type from leaf node $symbol" }
-            Type.Structural(
+            BaseType.Structural(
                 parseTree.range,
                 parseTree.children
                     .windowed(2, 2) { (ident, type) ->
@@ -235,7 +235,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     return Definition.FunctionDeclaration(
                         range,
                         identifier.token.context,
-                        type as Type.Functional?,
+                        type as BaseType.Functional?,
                         arguments,
                         constructType(returnType, diagnostics),
                         generateASTInternal(body, diagnostics),
@@ -244,7 +244,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     return Definition.VariableDeclaration(
                         range,
                         identifier.token.context,
-                        type as Type.Basic?,
+                        type as BaseType.Basic?,
                         generateASTInternal(isDeclarationTyped.children.last(), diagnostics),
                     )
                 }
@@ -339,13 +339,13 @@ private fun wrapInFunction(originalAST: AST): AST {
         Definition.FunctionDeclaration(
             Pair(beforeStart, behindEnd),
             MAIN_FUNCTION_IDENTIFIER,
-            Type.Functional(
+            BaseType.Functional(
                 Pair(beforeStart, beforeStart),
                 emptyList(),
-                Type.Basic(Pair(beforeStart, beforeStart), "Unit"),
+                BaseType.Basic(Pair(beforeStart, beforeStart), "Unit"),
             ),
             emptyList(),
-            Type.Basic(Pair(beforeStart, beforeStart), "Unit"),
+            BaseType.Basic(Pair(beforeStart, beforeStart), "Unit"),
             Block(
                 Pair(Location(0), behindEnd),
                 listOf(
