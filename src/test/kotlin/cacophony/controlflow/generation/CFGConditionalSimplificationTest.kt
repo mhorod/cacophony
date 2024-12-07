@@ -2,7 +2,6 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import org.junit.jupiter.api.Test
 
 /**
@@ -15,13 +14,13 @@ class CFGConditionalSimplificationTest {
     fun `if statement with true condition reduces to true branch`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(lit(true), lit(11), lit(22)),
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -37,13 +36,13 @@ class CFGConditionalSimplificationTest {
     fun `if statement with false condition reduces to false branch`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(lit(false), lit(11), lit(22)),
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -59,7 +58,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with logical and with false lhs skips computing rhs`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -78,7 +77,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -101,7 +100,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with logical or with true lhs skips computing rhs`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -120,7 +119,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -143,7 +142,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with logical or with false lhs computes rhs`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -161,7 +160,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -202,7 +201,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with logical and with true lhs computes rhs`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -220,7 +219,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -261,7 +260,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with nested ifs and ors`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     // if
@@ -290,7 +289,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -313,16 +312,17 @@ class CFGConditionalSimplificationTest {
     fun `while loop with true condition never exits`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 block(
                     whileLoop(lit(true), variableDeclaration("x", lit(10))),
                     variableDeclaration("y", lit(20)),
+                    variableUse("y"),
                 ),
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -342,7 +342,7 @@ class CFGConditionalSimplificationTest {
     fun `while loop with false condition never enters`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 block(
                     whileLoop(lit(false), variableDeclaration("x", lit(10))),
@@ -352,7 +352,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -375,7 +375,7 @@ class CFGConditionalSimplificationTest {
     fun `deep condition made of true, false, and, or simplifies to single branch`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     (
@@ -404,7 +404,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -422,7 +422,7 @@ class CFGConditionalSimplificationTest {
     fun `condition with nested ifs simplifies to single branch`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     ifThenElse(
@@ -436,7 +436,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -454,7 +454,7 @@ class CFGConditionalSimplificationTest {
     fun `condition if ifs nested in branches simplifies to single branch`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 ifThenElse(
                     lit(true),
@@ -476,7 +476,7 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =

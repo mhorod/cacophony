@@ -6,7 +6,6 @@ import cacophony.utils.*
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
@@ -55,15 +54,18 @@ class ASTGenerationTests {
                 Type.Functional(
                     anyLocation(),
                     emptyList(),
-                    Type.Basic(anyLocation(), "Unit"),
+                    Type.Basic(anyLocation(), "Int"),
                 ),
                 emptyList(),
-                Type.Basic(anyLocation(), "Unit"),
+                Type.Basic(anyLocation(), "Int"),
                 Block(
                     anyLocation(),
                     listOf(
                         originalAST,
-                        Empty(anyLocation()),
+                        Statement.ReturnStatement(
+                            anyLocation(),
+                            Literal.IntLiteral(anyLocation(), 0),
+                        ),
                     ),
                 ),
             )
@@ -107,8 +109,6 @@ class ASTGenerationTests {
         }
     }
 
-    // TODO fix diagnostics
-    @Disabled
     @Test
     fun `lexer fail causes ast to not generate`() {
         val diagnostics = computeFailDiagnostics("?1")

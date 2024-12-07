@@ -157,6 +157,17 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
 
             is FunctionDeclaration -> {
                 symbolsTable.define(node.identifier, node)
+
+                node.arguments
+                    .groupBy { it.identifier }
+                    .filter { it.value.size > 1 }
+                    .values
+                    .flatten()
+                    .onEach { argNode ->
+                        diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument(argNode.identifier), argNode.range)
+                    }
+                    .let { if (it.isNotEmpty()) throw diagnostics.fatal() }
+
                 // Open new block to make arguments visible in function body, but not after
                 // the whole function declaration.
                 symbolsTable.open()
