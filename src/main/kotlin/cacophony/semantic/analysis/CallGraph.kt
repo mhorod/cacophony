@@ -27,7 +27,6 @@ private class CallGraphProvider(
     fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDefinition?): CallGraph =
         when (node) {
             is Definition.FunctionDefinition -> generateDirectCallGraph(node.body, node)
-            is Definition.ForeignFunctionDeclaration -> TODO()
             is FunctionCall ->
                 merge(
                     handleDirectFunctionCall(node.function, currentFn),

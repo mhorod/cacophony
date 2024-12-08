@@ -130,7 +130,7 @@ sealed class Definition(
         identifier: String,
         type: Type.Functional,
         returnType: Type,
-    ) : FunctionDeclaration(range, identifier, type, returnType), TreeLeaf {
+    ) : FunctionDeclaration(range, identifier, type, returnType), TreeLeaf, LeafExpression {
         override fun toString() = "foreign $identifier: $type "
 
         override fun isEquivalent(other: Expression?) =
