@@ -85,7 +85,14 @@ private class Typer(
                     BuiltinType.UnitType
                 }
 
-                is Definition.ForeignFunctionDeclaration -> TODO()
+                is Definition.ForeignFunctionDeclaration -> {
+                    val functionType =
+                        translateType(
+                            expression.type ?: error("foreign function without a type"),
+                        ) ?: return null
+                    typedVariables[expression] = functionType
+                    BuiltinType.UnitType
+                }
 
                 is Empty -> BuiltinType.UnitType
                 is FunctionCall -> {
