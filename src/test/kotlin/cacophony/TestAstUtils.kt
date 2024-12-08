@@ -62,6 +62,10 @@ fun structField(name: String) = StructField(mockRange(), name, null)
 
 fun structDeclaration(vararg fields: Pair<StructField, Expression>) = Struct(mockRange(), fields.toMap())
 
+fun lvalueFieldRef(lhs: Assignable, field: String) = FieldRef.LValue(mockRange(), lhs, field)
+
+fun rvalueFieldRef(lhs: Expression, field: String) = FieldRef.RValue(mockRange(), lhs, field)
+
 fun typedVariableDeclaration(identifier: String, type: BaseType.Basic?, value: Expression) =
     Definition.VariableDeclaration(
         mockRange(),
