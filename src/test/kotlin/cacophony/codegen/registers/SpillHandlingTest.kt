@@ -7,12 +7,26 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.graphs.GraphColoring
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class SpillHandlingTest {
+    private val mockLiveness = Liveness(setOf(), mapOf(), mapOf())
+    private val mockGraphColoring = mockk<GraphColoring<Register.VirtualRegister, Int>>()
+
+    init {
+        val graphCapture = slot<Map<Register.VirtualRegister, Set<Register.VirtualRegister>>>()
+        val allowedColorsCapture = slot<Set<Int>>()
+        every { mockGraphColoring.doColor(capture(graphCapture), any(), any(), capture(allowedColorsCapture)) } answers {
+            graphCapture.captured.keys
+                .zip(allowedColorsCapture.captured)
+                .toMap()
+        }
+    }
+
     private fun mockInstruction(def: Set<Register>, use: Set<Register>): Instruction {
         val instruction = mockk<Instruction>()
         every { instruction.registersRead } returns use
@@ -67,8 +81,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg1, spareReg2),
+                mockGraphColoring,
             )
 
         // then
@@ -139,8 +155,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg1, spareReg2),
+                mockGraphColoring,
             )
 
         // then
@@ -211,8 +229,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg1, spareReg2),
+                mockGraphColoring,
             )
 
         // then
@@ -274,8 +294,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block, block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg),
+                mockGraphColoring,
             )
 
         // then
@@ -309,8 +331,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg),
+                mockGraphColoring,
             )
 
         // then
@@ -352,8 +376,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg1, spareReg2),
+                mockGraphColoring,
             )
 
         // then
@@ -389,8 +415,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg),
+                mockGraphColoring,
             )
         }
     }
@@ -411,8 +439,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg),
+                mockGraphColoring,
             )
         }
     }
@@ -449,8 +479,10 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg),
+                mockGraphColoring,
             )
         }
     }
@@ -476,9 +508,106 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
+                mockLiveness,
                 registerAllocation,
                 setOf(spareReg),
+                mockGraphColoring,
             )
         }
+    }
+
+    @Test
+    fun `allocates the same frame memory to spills colored with the same color`() {
+        // given
+        val spareReg = Register.FixedRegister(HardwareRegister.RAX)
+        val spilledRegA = Register.VirtualRegister()
+        val spilledRegB = Register.VirtualRegister()
+
+        val spillSlot1 = mockk<CFGNode.LValue>()
+        val spillSlot2 = mockk<CFGNode.LValue>()
+        val functionHandler = mockk<FunctionHandler>()
+        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot1 andThen spillSlot2
+
+        val prologueInstructionA = mockk<Instruction>()
+        val prologueInstructionB = mockk<Instruction>()
+
+        var capturedNode1: CFGNode? = null
+        var capturedNode2: CFGNode? = null
+        val capture = slot<CFGNode>()
+        val instructionCovering = mockk<InstructionCovering>()
+        every { instructionCovering.coverWithInstructions(capture(capture)) } answers {
+            capturedNode1 = capture.captured
+            listOf(prologueInstructionA)
+        } andThenAnswer {
+            capturedNode2 = capture.captured
+            listOf(prologueInstructionB)
+        }
+
+        val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledRegA, spilledRegB))
+
+        val instructionA = mockInstruction(setOf(), setOf(spilledRegA))
+        val instructionB = mockInstruction(setOf(), setOf(spilledRegB))
+        val instructionAWithSubRegisters = mockInstruction(setOf(), setOf(spareReg))
+        val instructionBWithSubRegisters = mockInstruction(setOf(), setOf(spareReg))
+        every { instructionA.substituteRegisters(any()) } returns instructionAWithSubRegisters
+        every { instructionB.substituteRegisters(any()) } returns instructionBWithSubRegisters
+
+        val liveness =
+            Liveness(
+                setOf(spilledRegA, spilledRegB, spareReg),
+                mapOf(),
+                mapOf(),
+            )
+
+        val graphColoring = mockk<GraphColoring<Register.VirtualRegister, Int>>()
+        every {
+            graphColoring.doColor(
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        }.returns(mapOf(spilledRegA to 0, spilledRegB to 0))
+
+        val block = mockBlock(listOf(instructionA, instructionB))
+
+        // when
+        val adjustedLoweredCFG =
+            adjustLoweredCFGToHandleSpills(
+                instructionCovering,
+                functionHandler,
+                listOf(block),
+                liveness,
+                registerAllocation,
+                setOf(spareReg),
+                graphColoring,
+            )
+
+        // then
+        // assert mocks were called with proper params
+        assert(
+            capturedNode1 != null &&
+                capturedNode2 != null &&
+                capturedNode1 is CFGNode.Assignment &&
+                capturedNode2 is CFGNode.Assignment,
+        )
+        val dest1 = (capturedNode1 as CFGNode.Assignment).destination
+        val dest2 = (capturedNode2 as CFGNode.Assignment).destination
+        val val1 = (capturedNode1 as CFGNode.Assignment).value
+        val val2 = (capturedNode2 as CFGNode.Assignment).value
+
+        assertThat(setOf(dest1, dest2)).containsExactly(CFGNode.RegisterUse(spareReg))
+        // assertThat(setOf(val1, val2)).containsExactly(spillSlot1)
+
+        verify(exactly = 1) { functionHandler.allocateFrameVariable(any()) }
+
+        // assert the result is correct
+        assertThat(adjustedLoweredCFG).hasSize(1)
+        assertThat(adjustedLoweredCFG[0].instructions()).containsExactly(
+            prologueInstructionA,
+            instructionAWithSubRegisters,
+            prologueInstructionB,
+            instructionBWithSubRegisters,
+        )
     }
 }

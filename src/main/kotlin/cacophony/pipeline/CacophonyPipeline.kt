@@ -18,6 +18,7 @@ import cacophony.controlflow.generation.ProgramCFG
 import cacophony.controlflow.generation.generateCFG
 import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
+import cacophony.graphs.FirstFitGraphColoring
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyParser
@@ -245,7 +246,7 @@ class CacophonyPipeline(
     ): Pair<
         Map<FunctionDeclaration, LoweredCFGFragment>,
         Map<FunctionDeclaration, RegisterAllocation>,
-        > {
+    > {
         if (registerAllocation.values.all { it.spills.isEmpty() }) {
             return covering to registerAllocation
         }
@@ -268,8 +269,10 @@ class CacophonyPipeline(
                             instructionCovering,
                             functionHandlers[functionDeclaration]!!,
                             loweredCfg,
+                            liveness[functionDeclaration]!!,
                             newRegisterAllocation[functionDeclaration]!!,
                             spareRegisters,
+                            FirstFitGraphColoring(),
                         )
                 }.toMap()
 
