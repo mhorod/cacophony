@@ -1,5 +1,9 @@
 package cacophony.utils
 
+import cacophony.graphs.getProperTransitiveClosure
+import cacophony.graphs.getReachableFrom
+import cacophony.graphs.getStronglyConnectedComponents
+import cacophony.graphs.getTransitiveClosure
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

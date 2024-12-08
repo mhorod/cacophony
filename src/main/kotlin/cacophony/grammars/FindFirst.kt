@@ -1,7 +1,7 @@
 package cacophony.grammars
 
 import cacophony.automata.DFA
-import cacophony.utils.getProperTransitiveClosure
+import cacophony.graphs.getProperTransitiveClosure
 
 data class GeneralizedSymbol<StateT, SymbolT, ResultT>(
     val state: DFAStateReference<StateT, SymbolT, ResultT>?,

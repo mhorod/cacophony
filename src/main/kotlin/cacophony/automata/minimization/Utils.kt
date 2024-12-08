@@ -2,7 +2,7 @@ package cacophony.automata.minimization
 
 import cacophony.automata.DFA
 import cacophony.automata.SimpleDFA
-import cacophony.utils.getReachableFrom
+import cacophony.graphs.getReachableFrom
 
 class DFAPreimagesCalculator<StateT, AtomT>(
     dfa: DFA<StateT, AtomT, *>,
