@@ -69,7 +69,6 @@ private class VarUseVisitor(
             is Block -> visitBlock(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
             is Definition.FunctionDefinition -> visitFunctionDeclaration(expr)
-            is Definition.ForeignFunctionDeclaration -> TODO()
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
@@ -203,7 +202,7 @@ private class VarUseVisitor(
                     it.declaration to it.useType
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
-        } else {
+        } else if (calledFunction !is Definition.ForeignFunctionDeclaration) {
             error("Left side of function call is not a function declaration")
         }
     }

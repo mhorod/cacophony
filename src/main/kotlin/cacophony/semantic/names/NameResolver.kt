@@ -3,7 +3,9 @@ package cacophony.semantic.names
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.syntaxtree.Definition.ForeignFunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
+import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 import cacophony.semantic.syntaxtree.Type
@@ -28,13 +30,13 @@ sealed interface ResolvedName {
 }
 
 private class OverloadSetImpl : OverloadSet {
-    private val overloads: MutableMap<Int, FunctionDefinition> = mutableMapOf()
+    private val overloads: MutableMap<Int, FunctionDeclaration> = mutableMapOf()
 
-    override fun get(arity: Int): FunctionDefinition? = overloads.get(arity)
+    override fun get(arity: Int): FunctionDeclaration? = overloads.get(arity)
 
-    override fun toMap(): Map<Int, FunctionDefinition> = overloads
+    override fun toMap(): Map<Int, FunctionDeclaration> = overloads
 
-    override fun withDeclaration(arity: Int, declaration: FunctionDefinition): OverloadSet {
+    override fun withDeclaration(arity: Int, declaration: FunctionDeclaration): OverloadSet {
         overloads[arity] = declaration
         return this
     }
@@ -89,8 +91,13 @@ private fun emptySymbolsTable(): SymbolsTable {
                         blocks.last()[id] = ResolvedName.Argument(definition)
                     }
 
-                    is FunctionDefinition -> {
-                        val arity = definition.arguments.size
+                    is FunctionDeclaration -> {
+                        val arity =
+                            when (definition) {
+                                is FunctionDefinition -> definition.arguments.size
+                                is ForeignFunctionDeclaration ->
+                                    (definition.type ?: error("foreign function without a type")).argumentsType.size
+                            }
 
                         when (blocks.last()[id]) {
                             is ResolvedName.Function -> {
@@ -107,8 +114,6 @@ private fun emptySymbolsTable(): SymbolsTable {
                             }
                         }
                     }
-
-                    is Definition.ForeignFunctionDeclaration -> TODO()
                 }
             }
         }
@@ -165,6 +170,10 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                 node.arguments.forEach { traverseAst(it, false) }
                 traverseAst(node.body, true)
                 symbolsTable.close()
+            }
+
+            is ForeignFunctionDeclaration -> {
+                symbolsTable.define(node.identifier, node)
             }
 
             is FunctionArgument -> {

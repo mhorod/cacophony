@@ -332,6 +332,30 @@ class TypeCheckerTest {
     }
 
     @Test
+    fun `ok - foreign function declaration - (Int) to Int`() {
+        val funDec = foreignFunctionDeclaration("f", listOf(testInt()), testInt())
+        val ast = block(funDec)
+        val result = checkTypes(ast, diagnostics, emptyMap())
+        assertTypeEquals(BuiltinType.UnitType, result[funDec])
+        assertTypeEquals(BuiltinType.UnitType, result[ast])
+        verify { diagnostics wasNot called }
+    }
+
+    @Test
+    fun `ok - foreign function call () to Int`() {
+        val funDec = foreignFunctionDeclaration("f", emptyList(), testInt())
+        val varUse = variableUse("f")
+        val funCall = call(varUse)
+        val ast = block(funDec, funCall)
+        val result = checkTypes(ast, diagnostics, mapOf(varUse to funDec))
+        assertTypeEquals(BuiltinType.UnitType, result[funDec])
+        assertTypeEquals(FunctionType(emptyList(), BuiltinType.IntegerType), result[varUse])
+        assertTypeEquals(BuiltinType.IntegerType, result[funCall])
+        assertTypeEquals(BuiltinType.IntegerType, result[ast])
+        verify { diagnostics wasNot called }
+    }
+
+    @Test
     fun `ok - int literal`() {
         val literal = lit(1)
         val ast = block(literal)
@@ -1130,6 +1154,22 @@ class TypeCheckerTest {
                 testUnit(),
                 empty(),
             )
+        val funUse = variableUse("f")
+        val body = call(funUse, booleanLiteral)
+        val ast = block(funDec, body)
+        checkTypes(ast, diagnostics, mapOf(funUse to funDec))
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
+
+    @Test
+    fun `error - wrong argument type in foreign function call`() {
+        val funDec = foreignFunctionDeclaration("f", listOf(testInt()), testInt())
         val funUse = variableUse("f")
         val body = call(funUse, booleanLiteral)
         val ast = block(funDec, body)

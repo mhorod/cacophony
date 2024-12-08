@@ -9,12 +9,12 @@ import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import kotlin.math.max
 
 class FunctionHandlerImpl(
-    function: FunctionDefinition,
+    private val function: FunctionDefinition,
     private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
     callConvention: CallConvention,
-) : FunctionHandler, FunctionCallHandlerImpl(function, ancestorFunctionHandlers) {
+) : FunctionHandler {
     private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
     private val definitionToVariable =
         (analyzedFunction.variables.map { it.declaration } union function.arguments).associateWith { Variable.SourceVariable(it) }
@@ -79,6 +79,15 @@ class FunctionHandlerImpl(
             traverseStaticLink(
                 ancestorFunctionHandlers.indexOfFirst { it.getFunctionDeclaration() == other } + 1,
             )
+        }
+
+    override fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode =
+        // Since staticLink is not property of node itself, but rather of its children,
+        // if caller is immediate parent, we have to fetch RBP instead.
+        if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
+            RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
+        } else {
+            callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
         }
 
     override fun generateVariableAccess(variable: Variable): CFGNode.LValue {

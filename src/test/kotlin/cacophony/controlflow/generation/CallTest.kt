@@ -102,6 +102,59 @@ class CallTest {
     }
 
     @Test
+    fun `call sequence for a foreign function without parameters is correctly generated when the call is used for side effects`() {
+        // given
+        val calleeDef = foreignFunctionDeclaration("callee", emptyList(), basicType("Int"))
+        val callerDef =
+            functionDeclaration(
+                "caller",
+                block(
+                    call("callee"),
+                    lit(2),
+                ),
+            )
+        /*
+         * foreign callee = [] -> Int
+         * let caller = [] -> Int => (callee[]; 2);
+         */
+        val program = block(calleeDef, callerDef)
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualFragment = actualCFG[callerDef]!!
+
+        // then
+        val expectedFragment =
+            cfg {
+                fragment(callerDef, listOf(argStack(0)), 8) {
+                    "bodyEntry" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
+                    "store rsp" does jump("pad") { pushRegister("temp rsp") }
+                    "pad" does jump("adjust rsp") { pushRegister("temp rsp") }
+                    "adjust rsp" does
+                        jump("call") {
+                            writeRegister(
+                                rsp,
+                                registerUse(rsp) add ((registerUse(rsp) add integer(0)) mod integer(16)),
+                            )
+                        }
+                    "call" does jump("restore rsp") { call(calleeDef) }
+                    "restore rsp" does jump("write block result to rax") { popRegister(rsp) }
+                    // The called function returned something, but we don't care - we only wanted it for side effects
+                    // We don't extract anything - instead, we prepare our own block result and move it to getResultRegister()
+                    "write block result to rax" does
+                        jump("exit") {
+                            writeRegister(
+                                getResultRegister(),
+                                integer(2),
+                            )
+                        }
+                }
+            }[callerDef]!!
+
+        assertFragmentIsEquivalent(actualFragment, expectedFragment)
+    }
+
+    @Test
     fun `call sequence for a function with one parameter correctly forwards the provided constant as argument`() {
         // given
         val calleeDef = functionDeclaration("callee", listOf(arg("x")), variableUse("x"))
@@ -135,6 +188,49 @@ class CallTest {
                     // ...and then it is passed to its destination register (according to the call convention)
                     "pass arg" does jump("pass static link") { writeRegister(rdi, registerUse(virtualRegister("arg"))) }
                     "pass static link" does jump("call") { writeRegister(rsi, registerUse(rbp)) }
+                    "call" does jump("restore rsp") { call(calleeDef) }
+                    "restore rsp" does jump("extract result") { popRegister(rsp) }
+                    "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
+                    "forward result" does jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                }
+            }[callerDef]!!
+
+        assertFragmentIsEquivalent(actualFragment, expectedFragment)
+    }
+
+    @Test
+    fun `call sequence for a foreign function with one parameter correctly forwards the provided constant as argument`() {
+        // given
+        val calleeDef = foreignFunctionDeclaration("callee", listOf(basicType("Int")), basicType("Int"))
+        val callerDef = functionDeclaration("caller", call("callee", lit(1)))
+        /*
+         * foreign callee = [Int] -> Int;
+         * let caller = [] -> Int => callee[1];
+         */
+        val program = block(calleeDef, callerDef)
+
+        // when
+        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualFragment = actualCFG[callerDef]!!
+
+        // then
+        val expectedFragment =
+            cfg {
+                fragment(callerDef, listOf(argStack(0)), 8) {
+                    // The argument is prepared in a temporary register...
+                    "bodyEntry" does jump("prepare rsp") { writeRegister("arg", integer(1)) }
+                    "prepare rsp" does jump("store rsp") { writeRegister("temp rsp", registerUse(rsp)) }
+                    "store rsp" does jump("pad") { pushRegister("temp rsp") }
+                    "pad" does jump("adjust rsp") { pushRegister("temp rsp") }
+                    "adjust rsp" does
+                        jump("pass arg") {
+                            writeRegister(
+                                rsp,
+                                registerUse(rsp) add ((registerUse(rsp) add integer(0)) mod integer(16)),
+                            )
+                        }
+                    // ...and then it is passed to its destination register (according to the call convention)
+                    "pass arg" does jump("call") { writeRegister(rdi, registerUse(virtualRegister("arg"))) }
                     "call" does jump("restore rsp") { call(calleeDef) }
                     "restore rsp" does jump("extract result") { popRegister(rsp) }
                     "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }

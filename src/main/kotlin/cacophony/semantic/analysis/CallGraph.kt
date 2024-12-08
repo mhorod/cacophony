@@ -27,7 +27,6 @@ private class CallGraphProvider(
     fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDefinition?): CallGraph =
         when (node) {
             is Definition.FunctionDefinition -> generateDirectCallGraph(node.body, node)
-            is Definition.ForeignFunctionDeclaration -> TODO()
             is FunctionCall ->
                 merge(
                     handleDirectFunctionCall(node.function, currentFn),
@@ -69,6 +68,8 @@ private class CallGraphProvider(
                 when (val decl = resolvedVariables[fn]) {
                     is Definition.FunctionDefinition ->
                         currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
+
+                    is Definition.ForeignFunctionDeclaration -> emptyMap()
 
                     is Definition -> {
                         diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)
