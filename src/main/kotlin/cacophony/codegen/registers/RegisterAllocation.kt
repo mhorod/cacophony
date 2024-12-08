@@ -3,7 +3,10 @@ package cacophony.codegen.registers
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
-import cacophony.utils.getTransitiveClosure
+import cacophony.graphs.FirstFitGraphColoring
+import cacophony.graphs.GraphColoring
+
+class RegisterAllocationException(reason: String) : Exception(reason)
 
 /**
  * @param successful Map describing the allocation of registers that made it into hardware registers
@@ -12,174 +15,91 @@ import cacophony.utils.getTransitiveClosure
 data class RegisterAllocation(val successful: HardwareRegisterMapping, val spills: Set<Register>)
 
 /**
- * @throws IllegalArgumentException if liveness object is invalid i.e.
- * - there are hardware registers that are expected to be allocated but are not allowed
- * - there is a register interfering with itself
+ * @throws IllegalArgumentException if liveness object is invalid i.e:
+ * - There is a register interfering with itself, or
  * - interference or copying mappings contain register outside of liveness.allRegisters
  */
 fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation {
-    val allocation = RegisterAllocator(liveness, allowedRegisters).allocate()
+    val allocation = RegisterAllocator(liveness, allowedRegisters, FirstFitGraphColoring()).allocate()
     allocation.validate(liveness, allowedRegisters)
     return allocation
 }
 
-class RegisterAllocator(private val liveness: Liveness, private val allowedRegisters: Set<HardwareRegister>) {
-    fun allocate(): RegisterAllocation {
-        generateFirstFitOrder()
-        return doColoring()
-    }
-
+class RegisterAllocator(
+    private val liveness: Liveness,
+    private val allowedRegisters: Set<HardwareRegister>,
+    private val graphColoring: GraphColoring<Register, HardwareRegister>,
+) {
     init {
         for (mapping in listOf(liveness.interference, liveness.copying)) {
             require(liveness.allRegisters.containsAll(mapping.keys union mapping.values.flatten())) { "Unexpected register" }
         }
-    }
-
-    private val graph =
-        symmetricClosure(
-            liveness.interference
-                .mapValues { (_, v) -> v.toMutableSet() },
-        )
-
-    private val originalGraph: Map<Register, Set<Register>> = symmetricClosure(liveness.interference)
-
-    init {
-        allowedRegisters.map { Register.FixedRegister(it) }.forEach { r ->
-            graph
-                .getOrPut(r) {
-                    mutableSetOf()
-                }.addAll(allowedRegisters.filter { it != r.hardwareRegister }.map { Register.FixedRegister(it) })
+        for ((register, interferences) in liveness.interference) {
+            require(register !in interferences) { "Register cannot interfere with itself" }
         }
     }
 
-    private val registers = liveness.allRegisters.toMutableSet()
-    private val copying = transitiveSymmetricClosure(liveness.copying)
-    private val stack = mutableListOf<Set<Register>>()
-    private val k = allowedRegisters.size
+    fun allocate(): RegisterAllocation {
+        val interferenceGraph = liveness.allRegisters.associateWith { liveness.interference.getOrDefault(it, emptySet()) }
 
-    init {
-        for ((register, interferences) in liveness.interference)
-            if (register in interferences)
-                throw IllegalArgumentException("Register cannot interfere with itself")
-    }
+        val registersColoring =
+            graphColoring.doColor(
+                interferenceGraph,
+                liveness.copying,
+                liveness.allRegisters
+                    .filterIsInstance<Register.FixedRegister>()
+                    .associateWith { (it as Register.FixedRegister).hardwareRegister },
+                allowedRegisters,
+            )
 
-    private val copyGroups = mutableMapOf<Register, Set<Register>>()
-
-    private fun originalNeighbors(r: Register) = originalGraph[r] ?: emptySet()
-
-    private fun neighbors(r: Register) = graph[r] ?: emptySet()
-
-    private fun copies(r: Register) = (copying[r] ?: emptySet()).filter { it in registers }
-
-    private fun deposit(r: Register) {
-        stack.add(copyGroup(r))
-        registers.removeAll(copyGroup(r))
-        graph[r]?.forEach {
-            graph[it]?.remove(r)
-        }
-    }
-
-    private fun copyGroup(r: Register) = (copyGroups[r] ?: setOf()) + setOf(r)
-
-    private fun coalesce(a: Register, b: Register) {
-        copyGroups[a] = copyGroup(a) + copyGroup(b)
-        registers.remove(b)
-        graph[b]?.forEach {
-            graph[it]?.remove(b)
-            graph[it]?.add(a)
-        }
-        graph.getOrPut(a) { mutableSetOf() }.addAll(graph[b] ?: emptySet())
-    }
-
-    private fun generateFirstFitOrder() {
-        while (registers.isNotEmpty()) {
-            while (true) {
-                val y =
-                    registers
-                        .map { it to registerToCoalesce(it) }
-                        .firstOrNull { it.second != null }
-                        ?.also { (a, b) -> coalesce(a, b!!) }
-                if (y != null) continue
-
-                val x = registers.find { neighbors(it).size < k && registerToCoalesce(it) == null }?.also { deposit(it) }
-                if (x == null) break
-            }
-            if (registers.isNotEmpty())
-                deposit(registers.minBy { if (it is Register.FixedRegister) Int.MAX_VALUE else neighbors(it).size })
-        }
-    }
-
-    private fun doColoring(): RegisterAllocation {
-        val coloring = mutableMapOf<Register, HardwareRegister>()
-        val spills = mutableSetOf<Register>()
-        stack.forEach { group ->
-            val fixedRegister = group.find { it is Register.FixedRegister }
-            if (fixedRegister != null) {
-                group.forEach {
-                    coloring[it] = (fixedRegister as Register.FixedRegister).hardwareRegister
-                }
-            }
-        }
-        stack.reversed().forEach { group ->
-            if (group.any { it is Register.FixedRegister }) return@forEach
-            val forbiddenColors = group.map { r -> originalNeighbors(r).mapNotNull { coloring[it] } }.flatten().toSet()
-            val color = (allowedRegisters - forbiddenColors).firstOrNull()
-            if (color == null) spills.addAll(group)
-            else group.forEach { coloring[it] = color }
-        }
-        return RegisterAllocation(coloring.filterKeys { it in liveness.allRegisters }, spills)
-    }
-
-    private fun registerToCoalesce(r: Register) = copies(r).find { shouldCoalesce(r, it) }
-
-    // Uses George criterion for safety
-    private fun isCoalesceSafe(a: Register, b: Register) =
-        neighbors(a).all {
-            it in neighbors(b) ||
-                neighbors(it).size < allowedRegisters.size
-        }
-
-    private fun shouldCoalesce(a: Register, b: Register): Boolean =
-        b !in neighbors(a) &&
-            b in copies(a) &&
-            isCoalesceSafe(a, b)
-
-    private fun <A> transitiveSymmetricClosure(graph: Map<A, Set<A>>): Map<A, Set<A>> {
-        val symmetric = symmetricClosure(graph)
-        return getTransitiveClosure(symmetric).mapValues { (k, v) -> v - setOf(k) }
-    }
-
-    private fun <A> symmetricClosure(graph: Map<A, Set<A>>): MutableMap<A, MutableSet<A>> {
-        val result = graph.mapValues { (_, v) -> v.toMutableSet() }.toMutableMap()
-        graph.forEach { (k, v) ->
-            v.forEach { result.getOrPut(it) { mutableSetOf() }.add(k) }
-        }
-        return result
+        return RegisterAllocation(registersColoring, liveness.allRegisters.filter { !registersColoring.containsKey(it) }.toSet())
     }
 }
 
+/**
+ * @throws RegisterAllocationException if:
+ * - Spills and successful mappings do not cover whole liveness.allRegisters,
+ * - spills and successful mappings intersect,
+ * - not allowed register was used for allocation of virtual register,
+ * - hardware register was not allocated to itself,
+ * - interfering registers received the same allocation, or
+ * - fixed register was not allocated
+ */
 fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<HardwareRegister>) {
-    require(spills union successful.keys == liveness.allRegisters) { "Spills and successful registers do not cover all registers" }
-    require((spills intersect successful.keys).isEmpty()) { "Spills and successful registers intersect" }
-    require(successful.filter { it.key is Register.VirtualRegister }.values.all { it in allowedRegisters }) {
-        "Not allowed hardware register was used for virtual register allocation"
+    if (spills union successful.keys != liveness.allRegisters) {
+        throw RegisterAllocationException("Spills and successful registers do not cover all registers")
     }
-    require(
+
+    if ((spills intersect successful.keys).isNotEmpty()) {
+        throw RegisterAllocationException("Spills and successful registers intersect")
+    }
+
+    if (successful.filter { it.key is Register.VirtualRegister }.values.all { it !in allowedRegisters }) {
+        throw RegisterAllocationException("Not allowed hardware register was used for virtual register allocation")
+    }
+
+    if (
         successful
             .filter { it.key is Register.FixedRegister }
             .mapKeys { it.key as Register.FixedRegister }
-            .all { it.value === it.key.hardwareRegister },
-    ) { "Hardware register was not allocated to itself" }
+            .any { it.value !== it.key.hardwareRegister }
+    ) {
+        throw RegisterAllocationException("Hardware register was not allocated to itself")
+    }
 
     for ((reg1, interferences) in liveness.interference.entries) {
         for (reg2 in interferences) {
             val hw1 = successful[reg1]
             val hw2 = successful[reg2]
-            require(hw1 == null || hw2 == null || hw1 != hw2)
+            if (hw1 != null && hw2 != null && hw1 == hw2) {
+                throw RegisterAllocationException("Interfering registers $reg1 and $reg2 received the same allocation: $hw1")
+            }
         }
     }
 
-    for (fixedRegister in liveness.allRegisters.filterIsInstance<Register.FixedRegister>()) {
-        require(successful.containsKey(fixedRegister)) { "Fixed register was not allocated" }
+    liveness.allRegisters.filterIsInstance<Register.FixedRegister>().forEach {
+        if (!successful.containsKey(it)) {
+            throw RegisterAllocationException("Fixed register $it was not allocated.")
+        }
     }
 }

@@ -1,4 +1,4 @@
-package cacophony.utils
+package cacophony.graphs
 
 import kotlin.math.min
 
@@ -48,6 +48,19 @@ fun <VertexT> getProperTransitiveClosure(graph: Map<VertexT, Collection<VertexT>
         component.forEach { closure[it] = reachable }
     }
     return closure
+}
+
+fun <VertexT> getSymmetricClosure(graph: Map<VertexT, Collection<VertexT>>): Map<VertexT, Set<VertexT>> {
+    val result = graph.mapValues { (_, v) -> v.toMutableSet() }.toMutableMap()
+    graph.forEach { (k, v) ->
+        v.forEach { result.getOrPut(it) { mutableSetOf() }.add(k) }
+    }
+    return result
+}
+
+fun <VertexT> getProperTransitiveSymmetricClosure(graph: Map<VertexT, Collection<VertexT>>): Map<VertexT, Set<VertexT>> {
+    val symmetric = getSymmetricClosure(graph)
+    return getTransitiveClosure(symmetric).mapValues { (k, v) -> v - setOf(k) }
 }
 
 // Returns a list of strongly connected components of a graph in a reverse topological order.
