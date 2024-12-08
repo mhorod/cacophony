@@ -85,7 +85,7 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
-data class Call(val function: Definition.FunctionDefinition) : InstructionTemplates.FixedRegistersInstruction() {
+data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(Register.FixedRegister(HardwareRegister.RSP))
     override val registersWritten: Set<Register> =

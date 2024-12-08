@@ -69,6 +69,8 @@ private class CallGraphProvider(
                     is Definition.FunctionDefinition ->
                         currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
 
+                    is Definition.ForeignFunctionDeclaration -> emptyMap()
+
                     is Definition -> {
                         diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)
                         throw diagnostics.fatal()

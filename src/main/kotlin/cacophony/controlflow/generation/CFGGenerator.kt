@@ -2,6 +2,7 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.generateCallFrom
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.Block
@@ -146,8 +147,12 @@ internal class CFGGenerator(
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
-        val function = resolvedVariables[expression.function] as Definition.FunctionDefinition
-        val functionHandler = getFunctionHandler(function)
+        val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
+        val functionHandler =
+            when (function) {
+                is Definition.FunctionDefinition -> getFunctionHandler(function)
+                is Definition.ForeignFunctionDeclaration -> null
+            }
 
         val (resultRegister, resultAccess) =
             if (mode is EvalMode.SideEffect) {
@@ -160,13 +165,14 @@ internal class CFGGenerator(
             }
 
         val callSequence =
-            functionHandler
-                .generateCallFrom(
-                    getCurrentFunctionHandler(),
-                    argumentVertices.map { it.access },
-                    resultRegister,
-                    true,
-                ).map { ensureExtracted(it) }
+            generateCallFrom(
+                getCurrentFunctionHandler(),
+                function,
+                functionHandler,
+                argumentVertices.map { it.access },
+                resultRegister,
+                true,
+            ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
         val entry =

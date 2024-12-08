@@ -38,8 +38,10 @@ class FunctionHandlerTest {
     inner class GenerateCall {
         private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: CFGNode) {
             mockkStatic(::generateCall)
-            callee.generateCallFrom(
+            generateCallFrom(
                 caller,
+                callee.getFunctionDeclaration(),
+                callee,
                 emptyList(),
                 null,
                 false,
@@ -188,8 +190,9 @@ class FunctionHandlerTest {
         @Test
         fun `function call argument count mismatch throws error`() {
             val handler = mockFunDeclarationAndFunHandler(1)
+            val caller = mockFunDeclarationAndFunHandler(0)
 
-            assertThatThrownBy { generateCall(handler.getFunctionDeclaration(), emptyList(), null) }
+            assertThatThrownBy { generateCallFrom(caller, handler.getFunctionDeclaration(), handler, emptyList(), null, false) }
                 .isInstanceOf(IllegalArgumentException::class.java)
         }
 
@@ -933,7 +936,7 @@ class FunctionHandlerTest {
 
             mockkStatic(::generateCall)
             // when
-            hHandler.generateCallFrom(fHandler, emptyList(), null, false)
+            generateCallFrom(fHandler, hDef, hHandler, emptyList(), null, false)
             verify {
                 generateCall(
                     any(),

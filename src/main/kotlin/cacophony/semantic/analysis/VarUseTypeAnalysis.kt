@@ -202,7 +202,7 @@ private class VarUseVisitor(
                     it.declaration to it.useType
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
-        } else {
+        } else if (calledFunction !is Definition.ForeignFunctionDeclaration) {
             error("Left side of function call is not a function declaration")
         }
     }
