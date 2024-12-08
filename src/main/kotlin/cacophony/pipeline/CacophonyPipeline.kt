@@ -184,12 +184,15 @@ class CacophonyPipeline(
 
     private fun analyzeAst(ast: AST): AstAnalysisResult {
         val resolvedVariables = resolveOverloads(ast)
+        val resolvedTypes = checkTypes(ast, resolvedVariables)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention)
         return AstAnalysisResult(resolvedVariables, analyzedExpressions, functionHandlers)
     }
+
+    fun createAndAnalyzeAst(input : Input) : AstAnalysisResult =analyzeAst(generateAST(input))
 
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
 
