@@ -274,17 +274,16 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
             ASSIGNMENT_LEVEL -> {
                 assert(childNum == 3)
                 val operatorKind = parseTree.children[1]
-                if (operatorKind is ParseTree.Leaf) {
-                    val assignmentSymbol = operatorKind.token.category
-                    return createInstanceBinary(
-                        assignmentSymbol.syntaxTreeClass!! as KClass<OperatorBinary>,
-                        range,
-                        generateASTInternal(parseTree.children[0], diagnostics),
-                        generateASTInternal(parseTree.children[2], diagnostics),
-                    )
-                } else {
-                    throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
+                require(operatorKind is ParseTree.Leaf) { "Expected the operator symbol, got: $operatorKind" }
+
+                val lhs = generateASTInternal(parseTree.children[0], diagnostics)
+                if (!(lhs is Assignable)) {
+                    diagnostics.report(ASTDiagnostics.ValueNotAssignable, range)
+                    throw diagnostics.fatal()
                 }
+
+                val rhs = generateASTInternal(parseTree.children[2], diagnostics)
+                createInstanceBinary(operatorKind.token.category.syntaxTreeClass!! as KClass<OperatorBinary>, range, lhs, rhs)
             }
 
             ADDITION_LEVEL, MULTIPLICATION_LEVEL, EQUALITY_LEVEL, COMPARATOR_LEVEL, LOGICAL_OPERATOR_LEVEL -> {

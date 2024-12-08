@@ -1,5 +1,6 @@
 package cacophony.semantic.syntaxtree
 
+import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
@@ -357,8 +358,10 @@ sealed class OperatorBinary(
 ) : BaseExpression(range) {
     sealed class ArithmeticOperator(range: Pair<Location, Location>, lhs: Expression, rhs: Expression) : OperatorBinary(range, lhs, rhs)
 
+    sealed class LValueOperator(range: Pair<Location, Location>, lhs: Assignable, rhs: Expression) : OperatorBinary(range, lhs, rhs)
+
     sealed class ArithmeticAssignmentOperator(range: Pair<Location, Location>, lhs: Assignable, rhs: Expression) :
-        OperatorBinary(range, lhs, rhs),
+        LValueOperator(range, lhs, rhs),
         Assignable
 
     sealed class LogicalOperator(range: Pair<Location, Location>, lhs: Expression, rhs: Expression) : OperatorBinary(range, lhs, rhs)
@@ -481,8 +484,9 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Assignable,
         rhs: Expression,
-    ) : OperatorBinary(range, lhs, rhs), Assignable {
-        override fun isEquivalent(other: SyntaxTree?): Boolean = super<OperatorBinary>.isEquivalent(other) && other is Assignment
+    ) : LValueOperator(range, lhs, rhs), Assignable {
+        override fun isEquivalent(other: SyntaxTree?): Boolean =
+            super<OperatorBinary.LValueOperator>.isEquivalent(other) && other is Assignment
     }
 
     class AdditionAssignment(

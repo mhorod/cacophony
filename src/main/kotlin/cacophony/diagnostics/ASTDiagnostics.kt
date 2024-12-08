@@ -12,4 +12,8 @@ class ASTDiagnostics {
     ) : DiagnosticMessage {
         override fun getMessage() = "Field $field already defined"
     }
+
+    object ValueNotAssignable : DiagnosticMessage {
+        override fun getMessage() = "Attempt to write to non-assignable value"
+    }
 }

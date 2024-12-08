@@ -4,6 +4,7 @@ import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.TypeCheckerDiagnostics
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import cacophony.utils.CompileException
 import cacophony.utils.Location
 
 typealias TypeCheckingResult = Map<Expression, TypeExpr>
@@ -75,13 +76,13 @@ private class Typer(
                 }
 
                 is Struct -> {
-                    throw NotImplementedError("Type checking not available for structures")
+                    throw CompileException("Type checking not available for structures")
                 }
                 is StructField -> {
-                    throw NotImplementedError("Type checking not available for structures")
+                    throw CompileException("Type checking not available for structures")
                 }
                 is FieldRef -> {
-                    throw NotImplementedError("Type checking not available for structures")
+                    throw CompileException("Type checking not available for structures")
                 }
 
                 is Empty -> BuiltinType.UnitType
