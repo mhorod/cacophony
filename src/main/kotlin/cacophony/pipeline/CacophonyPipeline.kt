@@ -246,7 +246,7 @@ class CacophonyPipeline(
     ): Pair<
         Map<FunctionDeclaration, LoweredCFGFragment>,
         Map<FunctionDeclaration, RegisterAllocation>,
-    > {
+        > {
         if (registerAllocation.values.all { it.spills.isEmpty() }) {
             return covering to registerAllocation
         }
