@@ -1,9 +1,11 @@
 package cacophony.controlflow.functions
 
+import cacophony.basicType
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
+import cacophony.foreignFunctionDeclaration
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
 import io.mockk.*
@@ -284,5 +286,23 @@ class GenerateCallKtTest {
             childHandler,
             CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
         )
+    }
+
+    @Test
+    fun `calling foreign functions respects stack alignment`() {
+        val caller = mockFunDeclarationAndFunHandler(0)
+        val function = foreignFunctionDeclaration("f", emptyList(), basicType("Int"))
+
+        mockkStatic(::generateCall)
+        generateCallFrom(caller, function, null, emptyList(), null, false)
+        verify {
+            generateCall(
+                any(),
+                any(),
+                any(),
+                true,
+            )
+        }
+        unmockkStatic(::generateCall)
     }
 }
