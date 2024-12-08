@@ -1,6 +1,5 @@
 package cacophony.semantic.syntaxtree
 
-import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
