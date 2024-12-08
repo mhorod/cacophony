@@ -13,6 +13,7 @@ enum class TokenCategorySpecific {
     COLON,
     SEMICOLON,
     COMMA,
+    PERIOD,
 
     // keywords
     KEYWORD_LET,

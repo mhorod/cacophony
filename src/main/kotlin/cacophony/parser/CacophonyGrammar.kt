@@ -295,11 +295,17 @@ class CacophonyGrammar {
                     ATOM_LEVEL produces
                         (
                             atomic(KEYWORD_BREAK) or
-                                atomic(VARIABLE_IDENTIFIER) or
                                 atomic(BOOL_LITERAL) or
                                 atomic(INT_LITERAL) or
-                                atomic(STRUCT) or
-                                atomic(BLOCK)
+                                atomic(FIELD_ACCESS)
+                        ),
+                    FIELD_ACCESS produces
+                        (
+                            (
+                                atomic(VARIABLE_IDENTIFIER) or
+                                    atomic(STRUCT) or
+                                    atomic(BLOCK)
+                            ) concat (atomic(PERIOD) concat atomic(VARIABLE_IDENTIFIER)).star()
                         ),
                     BLOCK produces
                         (

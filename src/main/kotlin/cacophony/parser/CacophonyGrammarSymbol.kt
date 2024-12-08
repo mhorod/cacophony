@@ -20,6 +20,7 @@ enum class CacophonyGrammarSymbol(
     COLON(null),
     SEMICOLON(null),
     COMMA(null),
+    PERIOD(null),
 
     // keywords
     KEYWORD_LET(null),
@@ -56,7 +57,7 @@ enum class CacophonyGrammarSymbol(
     // literals
     INT_LITERAL(Literal.IntLiteral::class),
     BOOL_LITERAL(Literal.BoolLiteral::class),
-    TYPE_IDENTIFIER(Type.Basic::class),
+    TYPE_IDENTIFIER(BaseType.Basic::class),
     VARIABLE_IDENTIFIER(VariableUse::class),
 
     // others
@@ -66,6 +67,7 @@ enum class CacophonyGrammarSymbol(
     STRUCT_FIELD(StructField::class),
     STRUCT_FIELD_VALUE_TYPED(StructField::class),
     STRUCT_FIELD_VALUE_UNTYPED(StructField::class),
+    FIELD_ACCESS(FieldRef::class),
     WHILE_CLAUSE(Statement.WhileStatement::class),
     IF_CLAUSE(Statement.IfElseStatement::class),
     DECLARATION_TYPED(Definition::class),
@@ -74,8 +76,8 @@ enum class CacophonyGrammarSymbol(
     FUNCTION_DECLARATION(Definition.FunctionDeclaration::class),
     FUNCTION_ARGUMENT(Definition.FunctionArgument::class),
     TYPE(Type::class),
-    FUNCTION_TYPE(Type.Functional::class),
-    STRUCT_TYPE(Type.Structural::class),
+    FUNCTION_TYPE(BaseType.Functional::class),
+    STRUCT_TYPE(BaseType.Structural::class),
     ASSIGNMENT(OperatorBinary::class),
     UNARY(OperatorUnary::class),
 

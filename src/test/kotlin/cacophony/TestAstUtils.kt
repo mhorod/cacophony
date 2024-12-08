@@ -14,7 +14,7 @@ fun mockRange(): Pair<Location, Location> {
     return mock
 }
 
-fun unitType() = Type.Basic(mockRange(), "Unit")
+fun unitType() = BaseType.Basic(mockRange(), "Unit")
 
 fun empty() = Empty(mockRange())
 
@@ -34,7 +34,7 @@ fun arg(identifier: String) = typedArg(identifier, unitType())
 
 fun typedFunctionDeclaration(
     identifier: String,
-    argsType: Type.Functional?,
+    argsType: BaseType.Functional?,
     arguments: List<Definition.FunctionArgument>,
     outType: Type,
     body: Expression,
@@ -62,7 +62,11 @@ fun structField(name: String) = StructField(mockRange(), name, null)
 
 fun structDeclaration(vararg fields: Pair<StructField, Expression>) = Struct(mockRange(), fields.toMap())
 
-fun typedVariableDeclaration(identifier: String, type: Type.Basic?, value: Expression) =
+fun lvalueFieldRef(lhs: Assignable, field: String) = FieldRef.LValue(mockRange(), lhs, field)
+
+fun rvalueFieldRef(lhs: Expression, field: String) = FieldRef.RValue(mockRange(), lhs, field)
+
+fun typedVariableDeclaration(identifier: String, type: BaseType.Basic?, value: Expression) =
     Definition.VariableDeclaration(
         mockRange(),
         identifier,
@@ -132,15 +136,15 @@ infix fun Expression.geq(rhs: Expression) = OperatorBinary.GreaterEqual(mockRang
 
 infix fun Expression.gt(rhs: Expression) = OperatorBinary.Greater(mockRange(), this, rhs)
 
-infix fun Expression.addeq(rhs: Expression) = OperatorBinary.AdditionAssignment(mockRange(), this, rhs)
+infix fun Assignable.addeq(rhs: Expression) = OperatorBinary.AdditionAssignment(mockRange(), this, rhs)
 
-infix fun Expression.subeq(rhs: Expression) = OperatorBinary.SubtractionAssignment(mockRange(), this, rhs)
+infix fun Assignable.subeq(rhs: Expression) = OperatorBinary.SubtractionAssignment(mockRange(), this, rhs)
 
-infix fun Expression.muleq(rhs: Expression) = OperatorBinary.MultiplicationAssignment(mockRange(), this, rhs)
+infix fun Assignable.muleq(rhs: Expression) = OperatorBinary.MultiplicationAssignment(mockRange(), this, rhs)
 
-infix fun Expression.diveq(rhs: Expression) = OperatorBinary.DivisionAssignment(mockRange(), this, rhs)
+infix fun Assignable.diveq(rhs: Expression) = OperatorBinary.DivisionAssignment(mockRange(), this, rhs)
 
-infix fun Expression.modeq(rhs: Expression) = OperatorBinary.ModuloAssignment(mockRange(), this, rhs)
+infix fun Assignable.modeq(rhs: Expression) = OperatorBinary.ModuloAssignment(mockRange(), this, rhs)
 
 fun minus(expression: Expression) = OperatorUnary.Minus(mockRange(), expression)
 
@@ -161,8 +165,8 @@ fun breakStatement() = Statement.BreakStatement(mockRange())
 
 fun returnStatement(value: Expression) = Statement.ReturnStatement(mockRange(), value)
 
-fun basicType(identifier: String) = Type.Basic(mockRange(), identifier)
+fun basicType(identifier: String) = BaseType.Basic(mockRange(), identifier)
 
-fun functionalType(argTypes: List<Type>, resType: Type) = Type.Functional(mockRange(), argTypes.toList(), resType)
+fun functionalType(argTypes: List<Type>, resType: Type) = BaseType.Functional(mockRange(), argTypes.toList(), resType)
 
-fun structType(vararg fields: Pair<String, Type>) = Type.Structural(mockRange(), fields.toMap())
+fun structType(vararg fields: Pair<String, Type>) = BaseType.Structural(mockRange(), fields.toMap())

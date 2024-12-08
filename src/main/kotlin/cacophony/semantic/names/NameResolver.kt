@@ -6,7 +6,6 @@ import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
-import cacophony.semantic.syntaxtree.Type
 import cacophony.utils.CompileException
 
 class NameResolutionException(
@@ -166,7 +165,7 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
             }
 
             is FunctionArgument -> {
-                if (node.type is Type.Functional) {
+                if (node.type is BaseType.Functional) {
                     diagnostics.report(NRDiagnostics.IllegalFunctionalArgument(node.identifier), node.range)
                 }
                 symbolsTable.define(node.identifier, node)
@@ -203,6 +202,10 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
 
             is Struct -> {
                 node.fields.values.forEach { traverseAst(it, true) }
+            }
+
+            is FieldRef -> {
+                traverseAst(node.struct(), false)
             }
 
             is LeafExpression -> {}

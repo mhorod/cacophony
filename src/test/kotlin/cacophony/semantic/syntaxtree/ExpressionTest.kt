@@ -5,7 +5,7 @@ import cacophony.utils.Location
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-private typealias BinaryOperatorConstructor = (Pair<Location, Location>, Expression, Expression) -> Expression
+private typealias BinaryOperatorConstructor = (Pair<Location, Location>, Assignable, Expression) -> Expression
 
 internal class ExpressionTest {
     companion object {
@@ -72,7 +72,7 @@ internal class ExpressionTest {
         var expression =
             Definition.VariableDeclaration(Pair(locBegin, locEnd), "index", null, Empty(Pair(locBegin, locEnd)))
         assertNull(expression.type)
-        val typeExpression = Type.Basic(Pair(locBegin, locEnd), "Int")
+        val typeExpression = BaseType.Basic(Pair(locBegin, locEnd), "Int")
         expression =
             Definition.VariableDeclaration(
                 Pair(locBegin, locEnd),
@@ -112,11 +112,11 @@ internal class ExpressionTest {
         val locFive = Location(5)
 
         val rangeHere = Pair(locOne, locThree)
-        val lhsHere = Literal.IntLiteral(Pair(locOne, locOne), 1)
+        val lhsHere = VariableUse(Pair(locOne, locOne), "x")
         val rhsHere = Literal.IntLiteral(Pair(locThree, locThree), 2)
 
         val rangeThere = Pair(locThree, locFive)
-        val lhsThere = Literal.IntLiteral(Pair(locThree, locThree), 1)
+        val lhsThere = VariableUse(Pair(locThree, locThree), "x")
         val rhsThere = Literal.IntLiteral(Pair(locFive, locFive), 2)
 
         val operationHere = constructor(rangeHere, lhsHere, rhsHere)
@@ -135,10 +135,10 @@ internal class ExpressionTest {
         val commonRhsRange = Pair(locThree, locThree)
         val commonFullRange = Pair(locOne, locThree)
 
-        val lhsA = Literal.IntLiteral(commonLhsRange, 1)
+        val lhsA = VariableUse(commonLhsRange, "x")
         val rhsA = Literal.IntLiteral(commonRhsRange, 2)
 
-        val lhsB = Literal.IntLiteral(commonLhsRange, 2)
+        val lhsB = VariableUse(commonLhsRange, "y")
         val rhsB = Literal.IntLiteral(commonRhsRange, 3)
 
         val operationA = constructor(commonFullRange, lhsA, rhsA)
@@ -158,7 +158,7 @@ internal class ExpressionTest {
         val commonRhsRange = Pair(locThree, locThree)
         val commonFullRange = Pair(locOne, locThree)
 
-        val commonLhs = Literal.IntLiteral(commonLhsRange, 1)
+        val commonLhs = VariableUse(commonLhsRange, "x")
         val commonRhs = Literal.IntLiteral(commonRhsRange, 2)
 
         val operationA = constructorA(commonFullRange, commonLhs, commonRhs)

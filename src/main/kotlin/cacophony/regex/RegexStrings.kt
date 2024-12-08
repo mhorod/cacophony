@@ -32,6 +32,7 @@ object RegexStrings {
             TokenCategorySpecific.COLON to """:""",
             TokenCategorySpecific.SEMICOLON to """;""",
             TokenCategorySpecific.COMMA to """,""",
+            TokenCategorySpecific.PERIOD to """.""",
             // keywords
             TokenCategorySpecific.KEYWORD_LET to """let""",
             TokenCategorySpecific.KEYWORD_IF to """if""",

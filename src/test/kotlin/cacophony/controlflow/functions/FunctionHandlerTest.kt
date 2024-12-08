@@ -429,7 +429,7 @@ class FunctionHandlerTest {
                 "f",
                 null,
                 emptyList(),
-                Type.Basic(mockRange, "Int"),
+                BaseType.Basic(mockRange, "Int"),
                 Empty(mockRange),
             )
         val fAnalyzed =
@@ -567,7 +567,7 @@ class FunctionHandlerTest {
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Block(
                         mockRange,
                         listOf(
@@ -617,7 +617,7 @@ class FunctionHandlerTest {
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Block(
                         mockRange,
                         listOf(
@@ -678,7 +678,7 @@ class FunctionHandlerTest {
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     VariableUse(mockRange, "x"),
                 )
             val gDef =
@@ -687,7 +687,7 @@ class FunctionHandlerTest {
                     "g",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     fDef,
                 )
             val hDef =
@@ -696,7 +696,7 @@ class FunctionHandlerTest {
                     "h",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Block(mockRange, listOf(xDef, gDef)),
                 )
 
@@ -769,7 +769,7 @@ class FunctionHandlerTest {
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val fAnalyzed =
@@ -813,7 +813,7 @@ class FunctionHandlerTest {
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val gDef =
@@ -822,7 +822,7 @@ class FunctionHandlerTest {
                     "g",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     fDef,
                 )
             val fAnalyzed =
@@ -878,7 +878,7 @@ class FunctionHandlerTest {
                     "h",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val fDef =
@@ -887,7 +887,7 @@ class FunctionHandlerTest {
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     FunctionCall(mockRange, VariableUse(mockRange, "h"), emptyList()),
                 )
             val gDef =
@@ -896,7 +896,7 @@ class FunctionHandlerTest {
                     "g",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Block(mockRange, listOf(hDef, fDef)),
                 )
             val hAnalyzed =
@@ -954,7 +954,7 @@ class FunctionHandlerTest {
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val fAnalyzed =
@@ -988,7 +988,7 @@ class FunctionHandlerTest {
                     "f",
                     null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
+                    BaseType.Basic(mockRange, "Int"),
                     Literal.IntLiteral(mockRange, 42),
                 )
             val fAnalyzed =
