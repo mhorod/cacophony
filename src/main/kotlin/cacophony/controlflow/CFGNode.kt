@@ -31,7 +31,7 @@ sealed interface CFGNode {
     sealed interface RegisterRef : Leaf, LValue
 
     sealed interface FunctionRef : Leaf {
-        val function: Definition.FunctionDefinition?
+        val function: Definition.FunctionDeclaration?
     }
 
     data object NoOp : Leaf {
@@ -39,12 +39,12 @@ sealed interface CFGNode {
     }
 
     // declaration is nullable to create pattern without specific function
-    data class Function(override val function: Definition.FunctionDefinition?) : FunctionRef
+    data class Function(override val function: Definition.FunctionDeclaration?) : FunctionRef
 
     data class Call(
         val functionRef: FunctionRef,
     ) : CFGNode {
-        constructor(function: Definition.FunctionDefinition?) : this(Function(function))
+        constructor(function: Definition.FunctionDeclaration?) : this(Function(function))
 
         override fun children(): List<CFGNode> = listOf(functionRef)
 

@@ -8,7 +8,7 @@ import cacophony.semantic.names.ResolvedName.Function
 import cacophony.semantic.names.ResolvedName.Variable
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 import cacophony.utils.Location
 import io.mockk.Called
@@ -34,7 +34,7 @@ class NameResolverTest {
 
         fun hasArgument(binding: Pair<VariableUse, FunctionArgument>): ResolvedNamesAssert
 
-        fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, FunctionDefinition>>): ResolvedNamesAssert
+        fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, FunctionDeclaration>>): ResolvedNamesAssert
 
         fun andNothingElse()
     }
@@ -61,7 +61,7 @@ class NameResolverTest {
                 return this
             }
 
-            override fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, FunctionDefinition>>): ResolvedNamesAssert {
+            override fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, FunctionDeclaration>>): ResolvedNamesAssert {
                 val overloadSet = resolvedNames[binding.first]
                 assert(overloadSet !== null)
                 assert(overloadSet is Function)
@@ -260,6 +260,90 @@ class NameResolverTest {
                     .andNothingElse()
                 verify { diagnostics wasNot Called }
             }
+
+            @Test
+            fun `foreign function in single block`() {
+                // foreign f = [] -> Bool;
+                // f
+
+                // given
+                val fDef =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(),
+                        Type.Basic(mockRange(), "Bool"),
+                    )
+                val fUse = variableUse("f")
+                val ast =
+                    block(fDef, fUse)
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(0 to fDef))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `foreign function is visible when calling it`() {
+                // foreign f = [] -> Bool;
+                // f[]
+
+                // given
+                val fDef =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(),
+                        Type.Basic(mockRange(), "Bool"),
+                    )
+                val fUse = variableUse("f")
+                val ast =
+                    block(
+                        fDef,
+                        call(fUse),
+                    )
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(0 to fDef))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `foreign function is visible when calling it with arguments`() {
+                // foreign f = [Int] -> Bool;
+                // f[5]
+
+                // given
+                val fDef =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(Type.Basic(mockRange(), "Int")),
+                        Type.Basic(mockRange(), "Bool"),
+                    )
+                val fUse = variableUse("f")
+                val ast =
+                    block(
+                        fDef,
+                        call(fUse, arg("5")),
+                    )
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(1 to fDef))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
         }
 
         @Nested
@@ -346,6 +430,70 @@ class NameResolverTest {
                 // then
                 assertThatResolvedNames(resolvedNames)
                     .hasOverloadSet(fUse to mapOf(0 to fDef2))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `foreign functions shadow functions in single scope`() {
+                // let f = [] -> Bool => false;
+                // foreign f = [] -> Bool;
+                // f
+
+                // given
+                val fUse = variableUse("f")
+                val fDef1 =
+                    functionDeclaration(
+                        "f",
+                        listOf(),
+                        lit(false),
+                    )
+                val fDef2 =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(),
+                        Type.Basic(mockRange(), "Bool"),
+                    )
+                val ast = block(fDef1, fDef2, fUse)
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(0 to fDef2))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `functions shadow foreign functions in single scope`() {
+                // foreign f = [] -> Bool;
+                // let f = [] -> Bool => false;
+                // f
+
+                // given
+                val fUse = variableUse("f")
+                val fDef1 =
+                    functionDeclaration(
+                        "f",
+                        listOf(),
+                        lit(false),
+                    )
+                val fDef2 =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(),
+                        Type.Basic(mockRange(), "Bool"),
+                    )
+                val ast = block(fDef2, fDef1, fUse)
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(0 to fDef1))
                     .andNothingElse()
                 verify { diagnostics wasNot Called }
             }
@@ -771,6 +919,38 @@ class NameResolverTest {
                     "f",
                     listOf(),
                     lit(true),
+                )
+            val fDef2 =
+                functionDeclaration(
+                    "f",
+                    listOf(arg("x")),
+                    lit(false),
+                )
+            val ast = block(fDef1, fDef2, fUse)
+
+            // when
+            val resolvedNames = resolveNames(ast, diagnostics)
+
+            // then
+            assertThatResolvedNames(resolvedNames)
+                .hasOverloadSet(fUse to mapOf(0 to fDef1, 1 to fDef2))
+                .andNothingElse()
+            verify { diagnostics wasNot Called }
+        }
+
+        @Test
+        fun `foreign function overloads other functions with the same name and different arity`() {
+            // foreign f = [] -> Bool => true;
+            // let f = [x: Bool] -> Bool => false;
+            // f
+
+            // given
+            val fUse = variableUse("f")
+            val fDef1 =
+                foreignFunctionDeclaration(
+                    "f",
+                    listOf(),
+                    Type.Basic(mockRange(), "Bool"),
                 )
             val fDef2 =
                 functionDeclaration(

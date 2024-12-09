@@ -47,6 +47,14 @@ fun functionDeclaration(identifier: String, arguments: List<Definition.FunctionA
         body,
     )
 
+fun foreignFunctionDeclaration(identifier: String, argumentsType: List<Type>, returnType: Type) =
+    Definition.ForeignFunctionDeclaration(
+        mockRange(),
+        identifier,
+        Type.Functional(mockRange(), argumentsType, returnType),
+        returnType,
+    )
+
 fun typedVariableDeclaration(identifier: String, type: Type.Basic?, value: Expression) =
     Definition.VariableDeclaration(
         mockRange(),
