@@ -251,11 +251,22 @@ class CacophonyPipeline(
             return covering to registerAllocation
         }
 
-        val spareRegisters = setOf(Register.FixedRegister(HardwareRegister.R8), Register.FixedRegister(HardwareRegister.R9))
+        val spareRegisters =
+            setOf(
+                Register.FixedRegister(HardwareRegister.R8),
+                Register.FixedRegister(HardwareRegister.R9),
+            )
 
         logger?.logSpillHandlingAttempt(spareRegisters)
 
-        val newRegisterAllocation = allocateRegisters(liveness, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
+        val newRegisterAllocation =
+            allocateRegisters(liveness, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
+                .mapValues { (_, value) ->
+                    RegisterAllocation(
+                        value.successful.plus(spareRegisters.associateWith { it.hardwareRegister }),
+                        value.spills,
+                    )
+                }
 
         if (newRegisterAllocation.values.all { it.spills.isEmpty() }) {
             return covering to newRegisterAllocation

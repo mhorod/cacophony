@@ -38,7 +38,7 @@ fun adjustLoweredCFGToHandleSpills(
             .intersect(spareRegisters.map { it.hardwareRegister }.toSet())
             .isNotEmpty()
     ) {
-        throw SpillHandlingException("Spare register is used in register allocation.")
+        throw SpillHandlingException("Spare register is used in virtual register allocation.")
     }
 
     if (registerAllocation.spills.isEmpty()) {
@@ -58,7 +58,7 @@ fun adjustLoweredCFGToHandleSpills(
     val spillsFrameAllocation = allocateFrameMemoryForSpills(functionHandler, spillsColoring)
 
     fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
-        instructionCovering.coverWithInstructions(
+        instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
                 CFGNode.RegisterUse(reg),
                 spillsFrameAllocation[spill]!!,
@@ -66,7 +66,7 @@ fun adjustLoweredCFGToHandleSpills(
         )
 
     fun saveRegIntoSpill(reg: Register, spill: VirtualRegister): List<Instruction> =
-        instructionCovering.coverWithInstructions(
+        instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
                 spillsFrameAllocation[spill]!!,
                 CFGNode.RegisterUse(reg),
@@ -80,7 +80,7 @@ fun adjustLoweredCFGToHandleSpills(
                     instruction.registersRead.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
                 val writtenSpills =
                     instruction.registersWritten.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
-                val usedSpills = readSpills + writtenSpills
+                val usedSpills = (readSpills + writtenSpills).toSet()
 
                 if (usedSpills.isEmpty()) {
                     listOf(instruction)
@@ -89,7 +89,7 @@ fun adjustLoweredCFGToHandleSpills(
 
                     if (usedSpills.size > availableSpareRegisters.size) {
                         throw SpillHandlingException(
-                            "Not enough spare registers: Detected instruction with ${usedSpills.size} registers," +
+                            "Not enough spare registers: Detected instruction $instruction using ${usedSpills.size} spilled registers, " +
                                 "but only have ${availableSpareRegisters.size} available spare registers to use",
                         )
                     }
