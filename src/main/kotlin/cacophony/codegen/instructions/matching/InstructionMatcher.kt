@@ -104,6 +104,7 @@ class InstructionMatcherImpl(
                         createInstructionMaker(metadata, pattern),
                         metadata.toFill,
                         metadata.size,
+                        pattern
                     ),
                 )
             }

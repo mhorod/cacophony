@@ -12,6 +12,7 @@ void write_char(char ch) {
 
 long long read_int() {
     long long x, unused = scanf("%lld", &x);
+    fprintf(stderr, "read %lld\n", x);
     return x;
 }
 

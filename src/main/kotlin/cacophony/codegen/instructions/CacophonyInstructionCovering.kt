@@ -20,8 +20,10 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
         return instructions
     }
 
+    private fun Pair<Int, Int>.toLong(): Long = first * (1L shl 32) + second
+
     private fun coverGivenMatches(node: CFGNode, matches: Set<Match>): List<Instruction> {
-        val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
+        val bestMatch = matches.maxByOrNull { match -> Pair(match.size, match.pattern.priority()).toLong() } ?: error("No match found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 

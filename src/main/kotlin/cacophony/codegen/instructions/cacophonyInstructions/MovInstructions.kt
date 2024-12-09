@@ -4,6 +4,7 @@ import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.MemoryAddress
 import cacophony.codegen.instructions.RegisterByte
+import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
 
@@ -27,14 +28,14 @@ data class MovRegReg(
 
 data class MovRegImm(
     val lhs: Register,
-    val imm: Int,
+    val imm: CFGNode.Constant,
 ) : Instruction {
     override val registersRead: Set<Register> = setOf()
     override val registersWritten: Set<Register> = setOf(lhs)
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
-        return "mov $lhsHardwareReg, $imm"
+        return "mov $lhsHardwareReg, ${imm.value}"
     }
 
     override fun substituteRegisters(map: Map<Register, Register>): MovRegImm = MovRegImm(lhs.substitute(map), imm)

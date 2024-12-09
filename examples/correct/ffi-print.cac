@@ -1,3 +1,6 @@
 let __extern__write_int = [x: Int] -> Int => 0;
-__extern__write_int[420];
+let __extern__write_char = [x: Int] -> Int => 0;
+__extern__write_int[200];
+__extern__write_char[32];
+__extern__write_int[100];
 return 1;

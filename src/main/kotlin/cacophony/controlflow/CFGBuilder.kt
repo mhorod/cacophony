@@ -34,7 +34,7 @@ class CFGFragmentBuilder {
         // prologue
         single { pushRegister(rbp) }
         single { registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)) }
-        single { registerUse(rsp) subeq CFGNode.ConstantLazy(stackSpace) }
+        single { registerUse(rsp) subeq CFGNode.ConstantLazy { stackSpace } }
         for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
             single { registerUse(destination) assign registerUse(Register.FixedRegister(source)) }
         }

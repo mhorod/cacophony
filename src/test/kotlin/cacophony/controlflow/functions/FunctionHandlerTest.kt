@@ -52,7 +52,7 @@ class FunctionHandlerTest {
                         expectedStaticLink,
                     ),
                     any(),
-                    false,
+                    null,
                 )
             }
 
@@ -103,7 +103,7 @@ class FunctionHandlerTest {
                 mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
                 (1..argumentCount + 1).map { mockk() },
                 result,
-                alignStack,
+                if (alignStack) CFGNode.ConstantLazy { 0 } else null,
             )
 
         private fun getArgumentRegisters(callNodes: List<CFGNode>): List<HardwareRegister> {
@@ -939,7 +939,7 @@ class FunctionHandlerTest {
                     any(),
                     listOf(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
                     any(),
-                    false,
+                    null,
                 )
             }
             unmockkStatic(::generateCall)

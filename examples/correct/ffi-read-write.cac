@@ -5,5 +5,5 @@ __extern__write_int[x];
 let y = __extern__read_int[];
 let z = __extern__read_int[];
 __extern__write_int[z];
-__extern__write_int[y+1];
+__extern__write_int[y];
 return 2;

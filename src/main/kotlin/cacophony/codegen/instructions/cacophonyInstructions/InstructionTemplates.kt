@@ -3,6 +3,7 @@ package cacophony.codegen.instructions.cacophonyInstructions
 import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.RegisterByte
+import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
 
@@ -35,7 +36,7 @@ class InstructionTemplates {
 
     open class BinaryRegConstInstruction(
         open val lhs: Register,
-        open val imm: Int,
+        open val imm: CFGNode.Constant,
         private val op: String,
     ) : Instruction {
         override val registersRead: Set<Register> by lazy { setOf(lhs) }
@@ -43,7 +44,7 @@ class InstructionTemplates {
 
         override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
             val lhsHardwareReg = hardwareRegisterMapping[lhs]
-            return "$op $lhsHardwareReg, $imm"
+            return "$op $lhsHardwareReg, ${imm.value}"
         }
 
         override fun substituteRegisters(map: Map<Register, Register>): BinaryRegConstInstruction =

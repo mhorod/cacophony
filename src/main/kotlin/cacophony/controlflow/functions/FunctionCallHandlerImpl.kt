@@ -27,6 +27,7 @@ open class FunctionCallHandlerImpl(
                 callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
             }
 
-        return generateCall(function, arguments + mutableListOf(staticLinkVar), result, respectStackAlignment)
+        val stackSize = if (respectStackAlignment) callerFunction.getStackSpace() else null
+        return generateCall(function, arguments + listOf(staticLinkVar), result, stackSize)
     }
 }

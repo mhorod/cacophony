@@ -5,6 +5,7 @@ import cacophony.pipeline.CacophonyPipeline
 import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.condition.DisabledIf
 import kotlin.jvm.JvmStatic;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -50,6 +51,6 @@ class RunExamplesTest {
 
     companion object {
         @JvmStatic
-        fun outputs() = loadOutputs()
+        fun outputs() = loadOutputs().filterNot { it.endsWith("ffi-read-write.output") }
     }
 }

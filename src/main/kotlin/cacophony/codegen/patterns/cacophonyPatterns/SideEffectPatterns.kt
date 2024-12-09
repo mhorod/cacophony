@@ -84,6 +84,8 @@ object ConstantAdditionAssignmentRegisterPattern : SideEffectPattern {
         instructions(fill) {
             add(reg(lhsLabel), const(rhsLabel))
         }
+
+    override fun priority(): Int = 10
 }
 
 object SubtractionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
@@ -118,6 +120,8 @@ object ConstantSubtractionAssignmentRegisterPattern : SideEffectPattern {
         instructions(fill) {
             sub(reg(lhsLabel), const(rhsLabel))
         }
+
+    override fun priority(): Int = 10
 }
 
 object MultiplicationAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
@@ -229,6 +233,8 @@ object PushRegPattern : SideEffectPattern {
         instructions(fill) {
             push(reg(childLabel))
         }
+
+    override fun priority(): Int = 10
 }
 
 object PopPattern : SideEffectPattern {
@@ -318,13 +324,13 @@ object RegisterToMemoryWithSubtractedDisplacementAssignmentPattern : SideEffectP
         memoryAccess(
             CFGNode.ValueSlot(lhsLabel)
                 sub
-                CFGNode.ConstantSlot(displacementLabel, { it in listOf(1, 2, 4, 8) }),
+                CFGNode.ConstantSlot(displacementLabel) { it in listOf(1, 2, 4, 8) },
         )
     private val rhsSlot = CFGNode.RegisterSlot(rhsLabel)
     override val tree = lhsSlot assign rhsSlot
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            mov(memWithDisplacement(reg(lhsLabel), -const(displacementLabel)), reg(rhsLabel))
+            mov(memWithDisplacement(reg(lhsLabel), CFGNode.ConstantLazy { -const(displacementLabel).value }), reg(rhsLabel))
         }
 }

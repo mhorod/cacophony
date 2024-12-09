@@ -100,18 +100,17 @@ sealed interface CFGNode {
         override fun children(): List<CFGNode> = listOf(destination)
     }
 
-    sealed class Constant(
-        open val value: Int,
-    ) : Value,
-        Leaf {
+    sealed class Constant: Value, Leaf {
+        abstract val value: Int
         override fun toString(): String = value.toString()
     }
 
-    data class ConstantKnown(override val value: Int) : Constant(value)
+    data class ConstantKnown(override val value: Int) : Constant()
 
-    data class ConstantLazy(
-        override var value: Int,
-    ) : Constant(value)
+    class ConstantLazy(private val lambda: () -> Int) : Constant() {
+        override val value: Int
+            get() = lambda()
+    }
 
     sealed interface ArithmeticOperator : Value
 
