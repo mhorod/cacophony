@@ -20,6 +20,7 @@ import io.mockk.just
 import io.mockk.runs
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -83,6 +84,7 @@ class NameResolverTest {
     fun setUpMocks() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         every { diagnostics.report(any(), any<Location>()) } just runs
+        every { diagnostics.fatal() } returns Throwable()
     }
 
     @Nested
@@ -149,7 +151,7 @@ class NameResolverTest {
                 val yUse = variableUse("y")
                 val ast =
                     block(
-                        functionDeclaration(
+                        unitFunctionDeclaration(
                             "f",
                             listOf(xDef, yDef),
                             block(
@@ -179,13 +181,13 @@ class NameResolverTest {
 
                 // given
                 val fDef =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(false),
                     )
                 val gDef =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "g",
                         listOf(),
                         lit(0),
@@ -214,7 +216,7 @@ class NameResolverTest {
                 // given
                 val fUse = variableUse("f")
                 val fDef =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(true),
@@ -242,7 +244,7 @@ class NameResolverTest {
                 // given
                 val fUse = variableUse("f")
                 val fDef =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         call(
@@ -327,13 +329,13 @@ class NameResolverTest {
                 // given
                 val fUse = variableUse("f")
                 val fDef1 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(false),
                     )
                 val fDef2 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(true),
@@ -363,13 +365,13 @@ class NameResolverTest {
                 val fUse1 = variableUse("f")
                 val fUse2 = variableUse("f")
                 val fDef1 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(false),
                     )
                 val fDef2 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(0),
@@ -404,13 +406,13 @@ class NameResolverTest {
                 val fUse1 = variableUse("f")
                 val fUse2 = variableUse("f")
                 val fDef2 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(0),
                     )
                 val fDef1 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         block(fDef2, fUse1),
@@ -442,13 +444,13 @@ class NameResolverTest {
                 val xDef1 = arg("x")
                 val xDef2 = arg("x")
                 val gDef =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "g",
                         listOf(xDef2),
                         xUse1,
                     )
                 val fDef =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(xDef1),
                         block(gDef, xUse2),
@@ -483,7 +485,7 @@ class NameResolverTest {
                 val xDef1 = arg("x")
                 val xDef2 = variableDeclaration("x")
                 val fDef =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(xDef1),
                         block(
@@ -519,7 +521,7 @@ class NameResolverTest {
                 val xDef1 = variableDeclaration("x")
                 val xDef2 = arg("x")
                 val fDef =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(xDef2),
                         xUse1,
@@ -551,7 +553,7 @@ class NameResolverTest {
                 val fUse1 = variableUse("f")
                 val fUse2 = variableUse("f")
                 val fDef1 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(true),
@@ -588,7 +590,7 @@ class NameResolverTest {
                 val fUse2 = variableUse("f")
                 val fDef2 = variableDeclaration("f")
                 val fDef1 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         block(fDef2, fUse1),
@@ -621,7 +623,7 @@ class NameResolverTest {
                 val aUse2 = variableUse("a")
                 val aDef1 = variableDeclaration("a")
                 val aDef2 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "a",
                         listOf(),
                         lit(true),
@@ -654,7 +656,7 @@ class NameResolverTest {
                 val fUse1 = variableUse("f")
                 val fUse2 = variableUse("f")
                 val fDef1 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(),
                         lit(true),
@@ -663,7 +665,7 @@ class NameResolverTest {
                 val ast =
                     block(
                         fDef1,
-                        functionDeclaration(
+                        unitFunctionDeclaration(
                             "g",
                             listOf(fDef2),
                             fUse1,
@@ -692,7 +694,7 @@ class NameResolverTest {
                 val fUse2 = variableUse("f")
                 val fDef2 = arg("f")
                 val fDef1 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(fDef2),
                         fUse1,
@@ -726,14 +728,14 @@ class NameResolverTest {
                 val xUse2 = variableUse("x")
                 val xDef1 = arg("x")
                 val xDef2 =
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "x",
                         listOf(),
                         lit(true),
                     )
                 val ast =
                     block(
-                        functionDeclaration(
+                        unitFunctionDeclaration(
                             "f",
                             listOf(xDef1),
                             block(
@@ -767,13 +769,13 @@ class NameResolverTest {
             // given
             val fUse = variableUse("f")
             val fDef1 =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     listOf(),
                     lit(true),
                 )
             val fDef2 =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     listOf(arg("x")),
                     lit(false),
@@ -804,19 +806,19 @@ class NameResolverTest {
             val fUse1 = variableUse("f")
             val fUse2 = variableUse("f")
             val fDef1 =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     listOf(),
                     lit(true),
                 )
             val fDef2 =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     listOf(arg("x")),
                     lit(false),
                 )
             val fDef3 =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     listOf(),
                     lit(1),
@@ -926,7 +928,7 @@ class NameResolverTest {
             val invalidUseRange2 = Location(6) to Location(13)
             val ast =
                 block(
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(
                             arg("x"),
@@ -1196,7 +1198,7 @@ class NameResolverTest {
             val functionalArgumentRange = Location(9) to Location(20)
             val ast =
                 block(
-                    functionDeclaration(
+                    unitFunctionDeclaration(
                         "f",
                         listOf(
                             FunctionArgument(
@@ -1212,6 +1214,43 @@ class NameResolverTest {
             // when & then
             resolveNames(ast, diagnostics)
             verify(exactly = 1) { diagnostics.report(NRDiagnostics.IllegalFunctionalArgument("x"), functionalArgumentRange) }
+            confirmVerified(diagnostics)
+        }
+
+        @Test
+        fun `error when finds duplicated argument names`() {
+            // let f = [x: Int, x: Bool] -> Int => 0
+
+            // given
+            val firstArgumentRange = Location(1) to Location(1)
+            val secondArgumentRange = Location(2) to Location(2)
+            val ast =
+                block(
+                    intFunctionDeclaration(
+                        "f",
+                        listOf(
+                            FunctionArgument(
+                                firstArgumentRange,
+                                "x",
+                                Type.Basic(mockRange(), "Int"),
+                            ),
+                            FunctionArgument(
+                                secondArgumentRange,
+                                "x",
+                                Type.Basic(mockRange(), "Int"),
+                            ),
+                        ),
+                        lit(0),
+                    ),
+                )
+
+            // when & then
+            assertThatThrownBy { resolveNames(ast, diagnostics) }.isInstanceOf(Throwable::class.java)
+            verify(exactly = 1) {
+                diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument("x"), firstArgumentRange)
+                diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument("x"), secondArgumentRange)
+                diagnostics.fatal()
+            }
             confirmVerified(diagnostics)
         }
     }

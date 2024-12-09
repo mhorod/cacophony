@@ -21,15 +21,15 @@
     "name": "Bool"
   },
   "(Location(value\u003d23), Location(value\u003d23))": {
-    "__class__": "UnitType",
-    "name": "Unit"
+    "__class__": "IntegerType",
+    "name": "Int"
   },
   "(Location(value\u003d0), Location(value\u003d23))": {
-    "__class__": "UnitType",
-    "name": "Unit"
+    "__class__": "VoidType",
+    "name": "Void"
   },
   "(Location(value\u003d-1), Location(value\u003d23))": {
-    "__class__": "UnitType",
-    "name": "Unit"
+    "__class__": "IntegerType",
+    "name": "Int"
   }
 }

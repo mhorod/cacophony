@@ -15,6 +15,15 @@ interface InstructionMatcher {
     fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean = true): Set<Match>
 }
 
+fun slotFillFromMetadata(valueMapping: ValueSlotMapping, metadata: InstructionMatcherImpl.MatchMetadata): SlotFill {
+    return SlotFill(
+        valueMapping,
+        metadata.registerFill,
+        metadata.constantFill,
+        metadata.functionFill,
+    )
+}
+
 class InstructionMatcherImpl(
     private val valuePatterns: List<ValuePattern>,
     private val sideEffectPatterns: List<SideEffectPattern>,
@@ -28,12 +37,7 @@ class InstructionMatcherImpl(
         ) { metadata: MatchMetadata, pattern: ValuePattern ->
             { mapping: ValueSlotMapping ->
                 pattern.makeInstance(
-                    SlotFill(
-                        mapping,
-                        metadata.registerFill,
-                        metadata.constantFill,
-                        metadata.functionFill,
-                    ),
+                    slotFillFromMetadata(mapping, metadata),
                     destinationRegister,
                 )
             }
@@ -46,12 +50,7 @@ class InstructionMatcherImpl(
         ) { metadata: MatchMetadata, pattern: SideEffectPattern ->
             { mapping: ValueSlotMapping ->
                 pattern.makeInstance(
-                    SlotFill(
-                        mapping,
-                        metadata.registerFill,
-                        metadata.constantFill,
-                        metadata.functionFill,
-                    ),
+                    slotFillFromMetadata(mapping, metadata),
                 )
             }
         }
@@ -63,12 +62,7 @@ class InstructionMatcherImpl(
         ) { metadata: MatchMetadata, pattern: SideEffectPattern ->
             { mapping: ValueSlotMapping ->
                 pattern.makeInstance(
-                    SlotFill(
-                        mapping,
-                        metadata.registerFill,
-                        metadata.constantFill,
-                        metadata.functionFill,
-                    ),
+                    slotFillFromMetadata(mapping, metadata),
                 )
             }
         }
@@ -80,12 +74,7 @@ class InstructionMatcherImpl(
         ) { metadata: MatchMetadata, pattern: ConditionPattern ->
             { mapping: ValueSlotMapping ->
                 pattern.makeInstance(
-                    SlotFill(
-                        mapping,
-                        metadata.registerFill,
-                        metadata.constantFill,
-                        metadata.functionFill,
-                    ),
+                    slotFillFromMetadata(mapping, metadata),
                     destinationLabel,
                     jumpIf,
                 )

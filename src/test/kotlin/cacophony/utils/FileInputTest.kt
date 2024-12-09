@@ -289,7 +289,7 @@ class FileInputTest {
         input.next()
 
         assertEquals(
-            "from line 0, position 1 to line 0, position 5 with \"bcd \"",
+            "from line 0, position 1 to line 0, position 5 with \"bcd e\"",
             input.locationRangeToString(locB, locE),
         )
     }
@@ -348,7 +348,7 @@ class FileInputTest {
         val locJ = input.getLocation()
         input.next()
         assertEquals(
-            "from line 2, position 0 to line 2, position 2 with \"hi\"",
+            "from line 2, position 0 to line 2, position 2 with \"hij\"",
             input.locationRangeToString(locH, locJ),
         )
         input.next()
