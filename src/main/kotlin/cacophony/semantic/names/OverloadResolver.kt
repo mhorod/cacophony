@@ -14,7 +14,6 @@ fun resolveOverloads(ast: AST, diagnostics: Diagnostics, nr: NameResolutionResul
             is Block -> expr.expressions.forEach { resolveOverloadsRec(it) }
             is Definition.VariableDeclaration -> resolveOverloadsRec(expr.value)
             is Definition.FunctionDefinition -> resolveOverloadsRec(expr.body)
-            is Definition.FunctionDeclaration -> TODO()
             is FunctionCall -> {
                 if (expr.function is VariableUse) {
                     when (val resName = nr[expr.function]!!) {

@@ -3,16 +3,38 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.Definition
 
-fun generateCall(
-    function: Definition.FunctionDefinition,
+/**
+ * Wrapper for generateCall that additionally fills staticLink to parent function.
+ */
+fun generateCallFrom(
+    callerFunction: FunctionHandler,
+    function: Definition.FunctionDeclaration,
+    functionHandler: FunctionHandler?,
     arguments: List<CFGNode>,
-    result: Register?,
-    callerFunctionStackSize: CFGNode.ConstantLazy? = null,
-): List<CFGNode> {
-    if (function.arguments.size + 1 != arguments.size) {
-        throw IllegalArgumentException("Wrong argument count")
+    result: Register?
+): List<CFGNode> =
+    when (function) {
+        is Definition.ForeignFunctionDeclaration -> {
+            if (function.type!!.argumentsType.size != arguments.size) {
+                throw IllegalArgumentException("Wrong argument count")
+            }
+            generateCall(function, arguments, result, callerFunction.getStackSpace())
+        }
+        is Definition.FunctionDefinition -> {
+            if (function.arguments.size != arguments.size) {
+                throw IllegalArgumentException("Wrong argument count")
+            }
+            val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
+            generateCall(function, arguments + mutableListOf(staticLinkVar), result, callerFunction.getStackSpace())
+        }
     }
 
+fun generateCall(
+    function: Definition.FunctionDeclaration,
+    arguments: List<CFGNode>,
+    result: Register?,
+    callerFunctionStackSize: CFGNode.ConstantLazy,
+): List<CFGNode> {
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
 
@@ -25,11 +47,7 @@ fun generateCall(
     // Finally, here we are going to increase the stack size to store all the stack arguments
     // Therefore we have to shift the stack by (callerFunctionStackSize.value + 8 * stackArguments.size) % 16 manually
 
-    val alignmentShift =
-        if (callerFunctionStackSize == null)
-            CFGNode.ConstantKnown(0)
-        else
-            CFGNode.ConstantLazy { (callerFunctionStackSize.value + 8 * stackArguments.size) % 16 }
+    val alignmentShift = CFGNode.ConstantLazy { (callerFunctionStackSize.value + 8 * stackArguments.size) % 16 }
 
     val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))
     nodes.add(CFGNode.SubtractionAssignment(rsp, alignmentShift))
