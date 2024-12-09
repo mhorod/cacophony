@@ -1,0 +1,2 @@
+let x = read_int[]
+write_int[x]

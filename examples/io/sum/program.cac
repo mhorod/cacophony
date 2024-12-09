@@ -1,0 +1,4 @@
+let n = read_int[];
+let sum = 0;
+while n > 0 do sum += read_int[];
+write_int[sum]
