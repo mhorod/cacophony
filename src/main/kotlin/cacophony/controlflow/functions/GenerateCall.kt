@@ -12,6 +12,7 @@ fun generateCall(
     if (function.arguments.size + 1 != arguments.size) {
         throw IllegalArgumentException("Wrong argument count")
     }
+
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
 
@@ -49,9 +50,8 @@ fun generateCall(
     nodes.add(CFGNode.Call(function))
     nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value + 8 * stackArguments.size }))
 
-    if (result != null) {
+    if (result != null)
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(result), CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX))))
-    }
 
     return nodes
 }

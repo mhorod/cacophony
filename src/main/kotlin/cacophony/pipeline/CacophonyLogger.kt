@@ -119,7 +119,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
         allocatedRegisters.forEach { (function, allocation) ->
             println("  $function (${function.identifier}/${function.arguments.size})")
             println("Successful registers:")
-            allocation.successful.forEach { (variable, register) ->
+            allocation.successful.toSortedMap(compareBy { it.toString() }).forEach { (variable, register) ->
                 println("  $variable -> $register")
             }
             println("Spilled registers:")

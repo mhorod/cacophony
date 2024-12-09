@@ -1,7 +1,6 @@
 package cacophony.codegen.instructions
 
 import cacophony.codegen.BlockLabel
-import cacophony.codegen.instructions.cacophonyInstructions.Comment
 import cacophony.codegen.instructions.cacophonyInstructions.Label
 import cacophony.codegen.linearization.BasicBlock
 import cacophony.codegen.linearization.LoweredCFGFragment

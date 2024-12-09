@@ -80,7 +80,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
     val interference: RegisterRelations =
         allRegisters.associateWith { reg ->
             allInstructions
-                .filter { instruction -> instruction !is CopyInstruction } // TODO: whyy?
+//                .filter { instruction -> instruction !is CopyInstruction } // TODO: whyy?
                 .flatMap { instruction ->
                     listOf(
                         if (liveIn[instruction]!!.contains(reg)) liveIn[instruction]!!.toList() else listOf(),

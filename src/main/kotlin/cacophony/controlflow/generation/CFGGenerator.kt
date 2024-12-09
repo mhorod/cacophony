@@ -153,14 +153,11 @@ internal class CFGGenerator(
             if (mode is EvalMode.SideEffect) {
                 Pair(null, CFGNode.NoOp)
             } else {
-                val register = Register.VirtualRegister()
+                val register = Register.VirtualRegister("retval ${functionHandler.getFunctionDeclaration().identifier}")
                 val rawAccess = CFGNode.RegisterUse(register)
                 val access = if (mode is EvalMode.Conditional) CFGNode.NotEquals(rawAccess, CFGNode.ConstantKnown(0)) else rawAccess
                 Pair(register, access)
             }
-
-        System.err.println("generate call from")
-        System.err.println(functionHandler.getFunctionDeclaration())
 
         val callSequence =
             functionHandler

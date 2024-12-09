@@ -2,6 +2,7 @@ package cacophony.codegen.patterns
 
 import cacophony.codegen.instructions.CacophonyInstructionCovering
 import cacophony.codegen.instructions.cacophonyInstructions.AddRegImm
+import cacophony.codegen.instructions.cacophonyInstructions.Call
 import cacophony.codegen.instructions.cacophonyInstructions.PushReg
 import cacophony.codegen.instructions.cacophonyInstructions.SubRegImm
 import cacophony.codegen.instructions.matching.InstructionMatcherImpl
@@ -10,6 +11,8 @@ import cacophony.codegen.patterns.cacophonyPatterns.conditionPatterns
 import cacophony.codegen.patterns.cacophonyPatterns.sideEffectPatterns
 import cacophony.codegen.patterns.cacophonyPatterns.valuePatterns
 import cacophony.controlflow.*
+import cacophony.controlflow.functions.SystemVAMD64CallConvention
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -71,5 +74,18 @@ class PatternsTest {
 
         val instructions = loweredFragment.first().instructions()
         assertThat(instructions).last().isEqualTo(AddRegImm(register, constant))
+    }
+
+    @Test
+    fun test() {
+        println(Call(mockk()).registersRead)
+        println(Call(mockk()).registersWritten)
+        val toSave = Call(mockk()).registersWritten.filterIsInstance<Register.FixedRegister>().map { it.hardwareRegister }
+        println(toSave)
+        println(SystemVAMD64CallConvention.preservedRegisters())
+        println(HardwareRegister.entries subtract SystemVAMD64CallConvention.preservedRegisters().toSet())
+        println(REGISTER_ARGUMENT_ORDER intersect toSave)
+        println(toSave subtract  REGISTER_ARGUMENT_ORDER)
+        println(REGISTER_ARGUMENT_ORDER subtract  toSave)
     }
 }
