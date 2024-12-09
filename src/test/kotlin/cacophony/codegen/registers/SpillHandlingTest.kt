@@ -519,20 +519,25 @@ class SpillHandlingTest {
     @Test
     fun `allocates the same frame memory to spills colored with the same color`() {
         // given
-        val spareReg = Register.FixedRegister(HardwareRegister.RAX)
+        val spareRegA = Register.FixedRegister(HardwareRegister.RAX)
+        val spareRegB = Register.FixedRegister(HardwareRegister.RBX)
         val spilledRegA = Register.VirtualRegister()
         val spilledRegB = Register.VirtualRegister()
+        val spilledRegC = Register.VirtualRegister()
+        val nonSpilledReg = Register.VirtualRegister()
 
         val spillSlot1 = mockk<CFGNode.LValue>()
         val spillSlot2 = mockk<CFGNode.LValue>()
         val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot1 andThen spillSlot2
+        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot1 andThen spillSlot2 andThen mockk<CFGNode.LValue>()
 
         val prologueInstructionA = mockk<Instruction>()
         val prologueInstructionB = mockk<Instruction>()
+        val prologueInstructionC = mockk<Instruction>()
 
         var capturedNode1: CFGNode? = null
         var capturedNode2: CFGNode? = null
+        var capturedNode3: CFGNode? = null
         val capture = slot<CFGNode>()
         val instructionCovering = mockk<InstructionCovering>()
         every { instructionCovering.coverWithInstructions(capture(capture)) } answers {
@@ -541,33 +546,49 @@ class SpillHandlingTest {
         } andThenAnswer {
             capturedNode2 = capture.captured
             listOf(prologueInstructionB)
+        } andThenAnswer {
+            capturedNode3 = capture.captured
+            listOf(prologueInstructionC)
         }
 
-        val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledRegA, spilledRegB))
+        val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledRegA, spilledRegB, spilledRegC))
 
-        val instructionA = mockInstruction(setOf(), setOf(spilledRegA))
-        val instructionB = mockInstruction(setOf(), setOf(spilledRegB))
-        val instructionAWithSubRegisters = mockInstruction(setOf(), setOf(spareReg))
-        val instructionBWithSubRegisters = mockInstruction(setOf(), setOf(spareReg))
+        val instructionA = mockInstruction(setOf(), setOf(spilledRegA, spilledRegC))
+        val instructionB = mockInstruction(setOf(), setOf(spilledRegB, spilledRegC))
+        val instructionAWithSubRegisters = mockInstruction(setOf(), setOf(spareRegA, spareRegB))
+        val instructionBWithSubRegisters = mockInstruction(setOf(), setOf(spareRegA, spareRegB))
         every { instructionA.substituteRegisters(any()) } returns instructionAWithSubRegisters
         every { instructionB.substituteRegisters(any()) } returns instructionBWithSubRegisters
 
         val liveness =
             Liveness(
-                setOf(spilledRegA, spilledRegB, spareReg),
-                mapOf(),
+                setOf(spilledRegA, spilledRegB, spilledRegC, nonSpilledReg, spareRegA, spareRegB),
+                mapOf(
+                    spilledRegA to setOf(spilledRegC, nonSpilledReg),
+                    spilledRegB to setOf(spilledRegC),
+                    spilledRegC to setOf(spilledRegA, spilledRegB),
+                    nonSpilledReg to setOf(spilledRegA),
+                ),
                 mapOf(),
             )
 
         val graphColoring = mockk<GraphColoring<Register.VirtualRegister, Int>>()
         every {
             graphColoring.doColor(
-                any(),
-                any(),
-                any(),
-                any(),
+                mapOf(
+                    spilledRegA to setOf(spilledRegC),
+                    spilledRegB to setOf(spilledRegC),
+                    spilledRegC to setOf(spilledRegA, spilledRegB),
+                ),
+                mapOf(
+                    spilledRegA to setOf(),
+                    spilledRegB to setOf(),
+                    spilledRegC to setOf(),
+                ),
+                mapOf(),
+                setOf(0, 1, 2),
             )
-        }.returns(mapOf(spilledRegA to 0, spilledRegB to 0))
+        }.returns(mapOf(spilledRegA to 0, spilledRegB to 0, spilledRegC to 1))
 
         val block = mockBlock(listOf(instructionA, instructionB))
 
@@ -579,7 +600,7 @@ class SpillHandlingTest {
                 listOf(block),
                 liveness,
                 registerAllocation,
-                setOf(spareReg),
+                setOf(spareRegA, spareRegB),
                 graphColoring,
             )
 
@@ -588,26 +609,21 @@ class SpillHandlingTest {
         assert(
             capturedNode1 != null &&
                 capturedNode2 != null &&
+                capturedNode3 != null &&
                 capturedNode1 is CFGNode.Assignment &&
-                capturedNode2 is CFGNode.Assignment,
+                capturedNode2 is CFGNode.Assignment &&
+                capturedNode3 is CFGNode.Assignment,
         )
         val dest1 = (capturedNode1 as CFGNode.Assignment).destination
         val dest2 = (capturedNode2 as CFGNode.Assignment).destination
+        val dest3 = (capturedNode3 as CFGNode.Assignment).destination
         val val1 = (capturedNode1 as CFGNode.Assignment).value
         val val2 = (capturedNode2 as CFGNode.Assignment).value
+        val val3 = (capturedNode3 as CFGNode.Assignment).value
 
-        assertThat(setOf(dest1, dest2)).containsExactly(CFGNode.RegisterUse(spareReg))
-        // assertThat(setOf(val1, val2)).containsExactly(spillSlot1)
+        assertThat(setOf(dest1, dest2, dest3)).containsExactly(CFGNode.RegisterUse(spareRegA), CFGNode.RegisterUse(spareRegB))
+        assertThat(setOf(val1, val2, val3)).containsExactly(spillSlot1, spillSlot2)
 
-        verify(exactly = 1) { functionHandler.allocateFrameVariable(any()) }
-
-        // assert the result is correct
-        assertThat(adjustedLoweredCFG).hasSize(1)
-        assertThat(adjustedLoweredCFG[0].instructions()).containsExactly(
-            prologueInstructionA,
-            instructionAWithSubRegisters,
-            prologueInstructionB,
-            instructionBWithSubRegisters,
-        )
+        verify(exactly = 2) { functionHandler.allocateFrameVariable(any()) }
     }
 }

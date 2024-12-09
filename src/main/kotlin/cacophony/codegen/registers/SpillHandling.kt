@@ -127,6 +127,7 @@ private fun colorSpills(
                 .getOrDefault(v, setOf())
                 .filterIsInstance<VirtualRegister>()
                 .filter { u -> spills.contains(u) }
+                .toSet()
         }
     val spillsCopying =
         spills.associateWith { v ->
@@ -134,6 +135,7 @@ private fun colorSpills(
                 .getOrDefault(v, setOf())
                 .filterIsInstance<VirtualRegister>()
                 .filter { u -> spills.contains(u) }
+                .toSet()
         }
 
     val spillsColoring =
