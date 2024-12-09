@@ -310,7 +310,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                 }
             }
 
-            FIELD_ACCESS -> {
+            ATOM_LEVEL -> {
                 require(childNum >= 2) { "Field access missing rhs: $parseTree" }
                 val lhs = parseTree.children[0]
                 parseTree.children.slice(1..<parseTree.children.size).fold(generateASTInternal(lhs, diagnostics)) { ast, field ->

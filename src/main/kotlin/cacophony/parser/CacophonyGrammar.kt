@@ -264,7 +264,7 @@ class CacophonyGrammar {
                             atomic(STATEMENT_LEVEL) or
                                 (
                                     atomic(UNARY) concat
-                                        atomic(ATOM_LEVEL)
+                                        atomic(LITERAL_LEVEL)
                                 )
 
                         ),
@@ -285,21 +285,21 @@ class CacophonyGrammar {
                         ),
                     CALL_LEVEL produces
                         (
-                            atomic(ATOM_LEVEL) or
+                            atomic(LITERAL_LEVEL) or
                                 (
-                                    atomic(ATOM_LEVEL) concat
+                                    atomic(LITERAL_LEVEL) concat
                                         atomic(FUNCTION_CALL)
                                 )
 
                         ),
-                    ATOM_LEVEL produces
+                    LITERAL_LEVEL produces
                         (
                             atomic(KEYWORD_BREAK) or
                                 atomic(BOOL_LITERAL) or
                                 atomic(INT_LITERAL) or
-                                atomic(FIELD_ACCESS)
+                                atomic(ATOM_LEVEL)
                         ),
-                    FIELD_ACCESS produces
+                    ATOM_LEVEL produces
                         (
                             (
                                 atomic(VARIABLE_IDENTIFIER) or

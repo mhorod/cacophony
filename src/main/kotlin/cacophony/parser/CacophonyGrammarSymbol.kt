@@ -67,7 +67,6 @@ enum class CacophonyGrammarSymbol(
     STRUCT_FIELD(StructField::class),
     STRUCT_FIELD_VALUE_TYPED(StructField::class),
     STRUCT_FIELD_VALUE_UNTYPED(StructField::class),
-    FIELD_ACCESS(FieldRef::class),
     WHILE_CLAUSE(Statement.WhileStatement::class),
     IF_CLAUSE(Statement.IfElseStatement::class),
     DECLARATION_TYPED(Definition::class),
@@ -99,6 +98,7 @@ enum class CacophonyGrammarSymbol(
     MULTIPLICATION_LEVEL(null),
     UNARY_LEVEL(null),
     CALL_LEVEL(null),
+    LITERAL_LEVEL(null),
     ATOM_LEVEL(null),
     ;
 

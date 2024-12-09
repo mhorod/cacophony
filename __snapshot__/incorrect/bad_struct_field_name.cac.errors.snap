@@ -41,7 +41,7 @@
     "__class__": "ReportedError",
     "message": {
       "__class__": "ChildrenEmpty",
-      "symbolName": "FIELD_ACCESS"
+      "symbolName": "ATOM_LEVEL"
     },
     "range": {
       "__class__": "Pair",
