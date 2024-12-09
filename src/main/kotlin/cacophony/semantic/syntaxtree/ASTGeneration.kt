@@ -244,7 +244,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     return Definition.VariableDeclaration(
                         range,
                         identifier.token.context,
-                        type as BaseType.Basic?,
+                        type,
                         generateASTInternal(isDeclarationTyped.children.last(), diagnostics),
                     )
                 }

@@ -73,10 +73,20 @@ private class Typer(
                 }
 
                 is Struct -> {
-                    throw NotImplementedError("Type checking not available for structures")
+                    StructType(
+                        expression.fields.map { (field, fieldExpr) ->
+                            field.name to (
+                                initializedType(
+                                    field.type,
+                                    (typeExpression(fieldExpr) ?: return null),
+                                    fieldExpr.range,
+                                ) ?: return null
+                            )
+                        }.toMap(),
+                    )
                 }
                 is StructField -> {
-                    throw NotImplementedError("Type checking not available for structures")
+                    BuiltinType.UnitType
                 }
 
                 is Empty -> BuiltinType.UnitType
