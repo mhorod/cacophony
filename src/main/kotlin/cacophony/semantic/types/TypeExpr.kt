@@ -1,6 +1,7 @@
 package cacophony.semantic.types
 
 import cacophony.diagnostics.Diagnostics
+import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 
 private val builtinTypes = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
@@ -51,13 +52,13 @@ class TypeTranslator(
 
     internal fun translateType(type: Type): TypeExpr? {
         return when (type) {
-            is Type.Basic ->
+            is BaseType.Basic ->
                 basicTypes[type.identifier] ?: run {
                     error.unknownType(type.range)
                     null
                 }
 
-            is Type.Functional -> {
+            is BaseType.Functional -> {
                 val args = type.argumentsType.map { translateType(it) }
                 val ret = translateType(type.returnType)
                 FunctionType(
@@ -66,7 +67,7 @@ class TypeTranslator(
                 )
             }
 
-            is Type.Structural -> {
+            is BaseType.Structural -> {
                 val fields =
                     type.fields.map {
                         it.key to (translateType(it.value) ?: return null)

@@ -20,6 +20,14 @@ internal class ErrorHandler(
         diagnostics.report(TypeCheckerDiagnostics.ExpectedFunction, range)
     }
 
+    fun expectedStructure(range: Pair<Location, Location>) {
+        diagnostics.report(TypeCheckerDiagnostics.ExpectedStruct, range)
+    }
+
+    fun noSuchField(range: Pair<Location, Location>, type: StructType, identifier: String)  {
+        diagnostics.report(TypeCheckerDiagnostics.NoSuchField(type.toString(), identifier), range)
+    }
+
     fun expectedLvalue(range: Pair<Location, Location>) {
         diagnostics.report(TypeCheckerDiagnostics.ExpectedLValueReference, range)
     }

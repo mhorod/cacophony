@@ -244,7 +244,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     return Definition.VariableDeclaration(
                         range,
                         identifier.token.context,
-                        type,
+                        type as BaseType?,
                         generateASTInternal(isDeclarationTyped.children.last(), diagnostics),
                     )
                 }
@@ -277,7 +277,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                 require(operatorKind is ParseTree.Leaf) { "Expected the operator symbol, got: $operatorKind" }
 
                 val lhs = generateASTInternal(parseTree.children[0], diagnostics)
-                if (!(lhs is Assignable)) {
+                if (lhs !is Assignable) {
                     diagnostics.report(ASTDiagnostics.ValueNotAssignable, range)
                     throw diagnostics.fatal()
                 }

@@ -3,7 +3,6 @@ package cacophony.semantic.types
 import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
-import cacophony.utils.CompileException
 import cacophony.utils.Location
 
 typealias TypeCheckingResult = Map<Expression, TypeExpr>
@@ -88,6 +87,18 @@ private class Typer(
                 is StructField -> {
                     BuiltinType.UnitType
                 }
+                is FieldRef -> {
+                    val structType = typeExpression(expression.struct())
+                    if (structType !is StructType) {
+                        error.expectedStructure(expression.struct().range)
+                        return null
+                    }
+                    val type = structType.fields[expression.field]
+                    if (type == null) {
+                        error.noSuchField(expression.range, structType, expression.field)
+                    }
+                    type
+                }
 
                 is Empty -> BuiltinType.UnitType
                 is FunctionCall -> {
@@ -130,7 +141,7 @@ private class Typer(
                 is OperatorBinary.ModuloAssignment -> typeOperatorAssignment(expression)
                 is OperatorBinary.Assignment -> {
                     val (lhsType, rhsType) = typeBinary(expression) ?: return null
-                    if (expression.lhs !is VariableUse) {
+                    if (expression.lhs !is Assignable) {
                         error.expectedLvalue(expression.lhs.range)
                         return null
                     }
@@ -282,7 +293,7 @@ private class Typer(
     // Handles +=, -=, etc.
     private fun typeOperatorAssignment(expression: OperatorBinary): TypeExpr? {
         val (lhsType, rhsType) = typeBinary(expression) ?: return null
-        if (expression.lhs !is VariableUse) {
+        if (expression.lhs !is Assignable) {
             error.expectedLvalue(expression.lhs.range)
             return null
         }
