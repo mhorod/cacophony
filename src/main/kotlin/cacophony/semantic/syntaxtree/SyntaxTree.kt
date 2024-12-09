@@ -111,7 +111,7 @@ sealed class Definition(
     class VariableDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
-        val type: BaseType.Basic?,
+        val type: BaseType?,
         val value: Expression,
     ) : Definition(range, identifier) {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} "

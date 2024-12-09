@@ -16,6 +16,17 @@ class TypeCheckerDiagnostics {
         override fun getMessage() = "Expected function"
     }
 
+    data object ExpectedStruct : DiagnosticMessage {
+        override fun getMessage() = "Expected structure"
+    }
+
+    data class NoSuchField(
+        val type: String,
+        val identifier: String,
+    ) : DiagnosticMessage {
+        override fun getMessage() = "Structure of type $type has no field $identifier"
+    }
+
     data object ExpectedLValueReference : DiagnosticMessage {
         override fun getMessage() = "Expected lvalue reference"
     }
