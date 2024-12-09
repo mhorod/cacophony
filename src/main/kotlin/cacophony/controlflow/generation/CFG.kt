@@ -3,7 +3,7 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGLabel
 import cacophony.controlflow.CFGNode
-import cacophony.utils.getReachableFrom
+import cacophony.graphs.getReachableFrom
 
 /**
  * Internal mutable representation of CFG that is being built

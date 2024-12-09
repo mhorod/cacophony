@@ -422,7 +422,7 @@ class FunctionHandlerTest {
     fun `returns correct function declaration`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 emptyList(),
                 empty(),
@@ -557,7 +557,7 @@ class FunctionHandlerTest {
             // given
             val xDef = variableDeclaration("x", lit(10))
             val fDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     emptyList(),
                     block(
@@ -601,7 +601,7 @@ class FunctionHandlerTest {
             // given
             val xDef = variableDeclaration("x", lit(10))
             val fDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     emptyList(),
                     block(
@@ -656,19 +656,19 @@ class FunctionHandlerTest {
             // given
             val xDef = variableDeclaration("x", lit(10))
             val fDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     emptyList(),
                     variableUse("x"),
                 )
             val gDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "g",
                     emptyList(),
                     fDef,
                 )
             val hDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "h",
                     emptyList(),
                     block(xDef, gDef),
@@ -738,7 +738,7 @@ class FunctionHandlerTest {
 
             // given
             val fDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     emptyList(),
                     lit(42),
@@ -779,13 +779,13 @@ class FunctionHandlerTest {
 
             // given
             val fDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     emptyList(),
                     lit(42),
                 )
             val gDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "g",
                     emptyList(),
                     fDef,
@@ -838,19 +838,19 @@ class FunctionHandlerTest {
 
             // given
             val hDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "h",
                     emptyList(),
                     lit(42),
                 )
             val fDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     emptyList(),
                     call(variableUse("h")),
                 )
             val gDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "g",
                     emptyList(),
                     block(hDef, fDef),
@@ -905,7 +905,7 @@ class FunctionHandlerTest {
         fun `throws if requested access to variable that is not accessible`() {
             // given
             val fDef =
-                functionDeclaration(
+                unitFunctionDeclaration(
                     "f",
                     emptyList(),
                     lit(42),
@@ -935,12 +935,7 @@ class FunctionHandlerTest {
         @Test
         fun `throws if requested generation access of variable other than source variable or static link`() {
             // given
-            val fDef =
-                functionDeclaration(
-                    "f",
-                    emptyList(),
-                    lit(42),
-                )
+            val fDef = unitFunctionDeclaration("f", emptyList(), lit(42))
             val fAnalyzed =
                 AnalyzedFunction(
                     fDef,

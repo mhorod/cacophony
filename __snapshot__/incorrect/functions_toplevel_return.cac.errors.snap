@@ -3,8 +3,8 @@
     "__class__": "ReportedError",
     "message": {
       "__class__": "TypeMismatch",
-      "expected": "Unit",
-      "found": "Int"
+      "expected": "Int",
+      "found": "Unit"
     },
     "range": {
       "__class__": "Pair",

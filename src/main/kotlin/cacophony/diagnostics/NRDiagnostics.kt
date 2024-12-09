@@ -12,4 +12,10 @@ class NRDiagnostics {
     ) : DiagnosticMessage {
         override fun getMessage() = "Illegal functional argument \"$identifier\""
     }
+
+    data class DuplicatedFunctionArgument(
+        val identifier: String,
+    ) : DiagnosticMessage {
+        override fun getMessage() = "Duplicated function argument \"$identifier\""
+    }
 }
