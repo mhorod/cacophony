@@ -11,7 +11,7 @@ data class SlotFill(
     val registerFill: Map<RegisterLabel, Register>,
     val constantFill: Map<ConstantLabel, CFGNode.Constant>,
     val functionFill: Map<FunctionLabel, CFGNode.Function>,
-    val nodeFill: Map<NodeLabel, CFGNode>
+    val nodeFill: Map<NodeLabel, CFGNode>,
 ) {
     fun <T : CFGNode> getNodeForNodeSlot(slot: CFGNode.NodeSlot<T>): T {
         return slot.clazz.cast(nodeFill[slot.label]!!)
@@ -20,6 +20,7 @@ data class SlotFill(
 
 sealed interface Pattern {
     val tree: CFGNode
+
     fun priority(): Int = 0
 }
 

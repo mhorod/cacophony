@@ -109,6 +109,7 @@ data class Call(val function: Definition.FunctionDefinition) : InstructionTempla
 data class Comment(private val comment: String) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = emptySet()
     override val registersWritten: Set<Register> = emptySet()
+
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         return "; $comment"
     }

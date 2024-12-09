@@ -6,20 +6,12 @@ import cacophony.codegen.instructions.cacophonyInstructions.Label
 import cacophony.codegen.linearization.BasicBlock
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.registers.RegisterAllocation
-import cacophony.controlflow.CFGNode
 
 fun generateAsm(block: BasicBlock, registerAllocation: RegisterAllocation): String =
     block
         .instructions()
-//        .filterNot { it.isNoop(registerAllocation.successful) }
-//        .map { it.toAsm(registerAllocation.successful) }
-        .map {
-            val asm = it.toAsm(registerAllocation.successful)
-            if (it.isNoop(registerAllocation.successful))
-                Comment(asm).toAsm(registerAllocation.successful)
-            else
-                asm
-        }
+        .filterNot { it.isNoop(registerAllocation.successful) }
+        .map { it.toAsm(registerAllocation.successful) }
         .joinToString("\n")
 
 fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation: RegisterAllocation) =

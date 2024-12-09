@@ -1,29 +1,27 @@
-package cacophony.examples;
+package cacophony.examples
 
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.condition.DisabledIf
-import kotlin.jvm.JvmStatic;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.name
 import kotlin.io.path.createTempFile
-import kotlin.io.path.deleteExisting
+import kotlin.io.path.name
 import kotlin.io.path.readText
+import kotlin.jvm.JvmStatic
 
 class RunExamplesTest {
     fun runBinary(binary: Path, inputFile: Path): Pair<Int, String> {
         val outputFile = createTempFile().toFile().apply { deleteOnExit() }
-        val returnCode = ProcessBuilder(binary.toString())
-            .redirectInput(inputFile.toFile())
-            .redirectOutput(outputFile)
-            .start()
-            .waitFor()
+        val returnCode =
+            ProcessBuilder(binary.toString())
+                .redirectInput(inputFile.toFile())
+                .redirectOutput(outputFile)
+                .start()
+                .waitFor()
         return Pair(returnCode, outputFile.readText())
     }
 
@@ -31,8 +29,8 @@ class RunExamplesTest {
     @MethodSource("outputs")
     fun `run examples`(outputPath: Path) {
         val testName = outputPath.name.removeSuffix(".output")
-        val inputPath = Paths.get("${outputPath.parent}/${testName}.input")
-        val path = Paths.get("${outputPath.parent.parent}/${testName}.cac")
+        val inputPath = Paths.get("${outputPath.parent}/$testName.input")
+        val path = Paths.get("${outputPath.parent.parent}/$testName.cac")
 
         val fileInput = FileInput(path.toString())
         val diagnostics = CacophonyDiagnostics(fileInput)

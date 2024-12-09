@@ -4,7 +4,6 @@ import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.InstructionMaker
 import cacophony.codegen.patterns.*
 import cacophony.controlflow.*
-import org.w3c.dom.Node
 
 interface InstructionMatcher {
     fun findMatchesForValue(node: CFGNode, destinationRegister: Register): Set<Match>
@@ -31,7 +30,7 @@ class InstructionMatcherImpl(
                         metadata.registerFill,
                         metadata.constantFill,
                         metadata.functionFill,
-                        metadata.nodeFill
+                        metadata.nodeFill,
                     ),
                     destinationRegister,
                 )
@@ -51,7 +50,7 @@ class InstructionMatcherImpl(
                         metadata.registerFill,
                         metadata.constantFill,
                         metadata.functionFill,
-                        metadata.nodeFill
+                        metadata.nodeFill,
                     ),
                 )
             }
@@ -70,7 +69,7 @@ class InstructionMatcherImpl(
                         metadata.registerFill,
                         metadata.constantFill,
                         metadata.functionFill,
-                        metadata.nodeFill
+                        metadata.nodeFill,
                     ),
                     destinationLabel,
                     jumpIf,
@@ -104,7 +103,7 @@ class InstructionMatcherImpl(
                         createInstructionMaker(metadata, pattern),
                         metadata.toFill,
                         metadata.size,
-                        pattern
+                        pattern,
                     ),
                 )
             }

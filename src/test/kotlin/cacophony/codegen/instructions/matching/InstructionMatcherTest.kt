@@ -3,8 +3,6 @@ package cacophony.codegen.instructions.matching
 import cacophony.codegen.patterns.SideEffectPattern
 import cacophony.codegen.patterns.ValuePattern
 import cacophony.codegen.patterns.cacophonyPatterns.AdditionPattern
-import cacophony.codegen.patterns.cacophonyPatterns.PushPattern
-import cacophony.codegen.patterns.cacophonyPatterns.PushRegPattern
 import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.Definition
 import io.mockk.every

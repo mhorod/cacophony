@@ -100,8 +100,9 @@ sealed interface CFGNode {
         override fun children(): List<CFGNode> = listOf(destination)
     }
 
-    sealed class Constant: Value, Leaf {
+    sealed class Constant : Value, Leaf {
         abstract val value: Int
+
         override fun toString(): String = value.toString()
     }
 
@@ -297,6 +298,6 @@ sealed interface CFGNode {
 
     data class NodeSlot<T : CFGNode>(
         override val label: NodeLabel,
-        val clazz: KClass<T>
+        val clazz: KClass<T>,
     ) : Slot
 }

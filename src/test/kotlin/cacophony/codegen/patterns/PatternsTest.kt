@@ -11,22 +11,23 @@ import cacophony.codegen.patterns.cacophonyPatterns.sideEffectPatterns
 import cacophony.codegen.patterns.cacophonyPatterns.valuePatterns
 import cacophony.controlflow.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class PatternsTest {
-    private val instructionCovering = CacophonyInstructionCovering(InstructionMatcherImpl(valuePatterns, sideEffectPatterns, conditionPatterns))
+    private val instructionCovering =
+        CacophonyInstructionCovering(InstructionMatcherImpl(valuePatterns, sideEffectPatterns, conditionPatterns))
 
     @Test
     fun `push rsp generates single instruction`() {
         val label = CFGLabel()
         val register = Register.FixedRegister(HardwareRegister.RSP)
-        val fragment = CFGFragment(
-            mapOf(
-                label to CFGVertex.Final(CFGNode.Push(CFGNode.RegisterUse(register))),
-            ),
-            label
-        )
+        val fragment =
+            CFGFragment(
+                mapOf(
+                    label to CFGVertex.Final(CFGNode.Push(CFGNode.RegisterUse(register))),
+                ),
+                label,
+            )
         val loweredFragment = linearize(fragment, instructionCovering)
         assertThat(loweredFragment).hasSize(1)
 
@@ -39,12 +40,13 @@ class PatternsTest {
         val label = CFGLabel()
         val register = Register.FixedRegister(HardwareRegister.RSP)
         val constant = CFGNode.ConstantKnown(8)
-        val fragment = CFGFragment(
-            mapOf(
-                label to CFGVertex.Final(CFGNode.SubtractionAssignment(CFGNode.RegisterUse(register), constant)),
-            ),
-            label
-        )
+        val fragment =
+            CFGFragment(
+                mapOf(
+                    label to CFGVertex.Final(CFGNode.SubtractionAssignment(CFGNode.RegisterUse(register), constant)),
+                ),
+                label,
+            )
         val loweredFragment = linearize(fragment, instructionCovering)
         assertThat(loweredFragment).hasSize(1)
 
@@ -57,12 +59,13 @@ class PatternsTest {
         val label = CFGLabel()
         val register = Register.FixedRegister(HardwareRegister.RSP)
         val constant = CFGNode.ConstantKnown(8)
-        val fragment = CFGFragment(
-            mapOf(
-                label to CFGVertex.Final(CFGNode.AdditionAssignment(CFGNode.RegisterUse(register), constant)),
-            ),
-            label
-        )
+        val fragment =
+            CFGFragment(
+                mapOf(
+                    label to CFGVertex.Final(CFGNode.AdditionAssignment(CFGNode.RegisterUse(register), constant)),
+                ),
+                label,
+            )
         val loweredFragment = linearize(fragment, instructionCovering)
         assertThat(loweredFragment).hasSize(1)
 

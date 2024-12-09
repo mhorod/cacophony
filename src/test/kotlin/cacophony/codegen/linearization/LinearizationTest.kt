@@ -1,22 +1,17 @@
 package cacophony.codegen.linearization
 
 import cacophony.codegen.BlockLabel
-import cacophony.codegen.instructions.CacophonyInstructionCovering
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
 import cacophony.codegen.instructions.cacophonyInstructions.Jmp
 import cacophony.codegen.instructions.cacophonyInstructions.LocalLabel
-import cacophony.codegen.instructions.matching.InstructionMatcherImpl
 import cacophony.codegen.patterns.cacophonyPatterns.*
-import cacophony.codegen.registers.allocateRegisters
-import cacophony.codegen.registers.analyzeLiveness
 import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.*
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.*
-import java.text.RuleBasedCollator
 import kotlin.math.absoluteValue
 
 class LinearizationTest {

@@ -34,7 +34,6 @@ import cacophony.utils.CompileException
 import cacophony.utils.Input
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
 
 data class AstAnalysisResult(
@@ -285,7 +284,7 @@ class CacophonyPipeline(
             extern get_mem
             extern put_mem
             SECTION .text
-        """.trimIndent()
+            """.trimIndent()
     }
 
     private fun generateAsmImpl(ast: AST): Pair<String, Map<FunctionDefinition, String>> {
@@ -303,12 +302,13 @@ class CacophonyPipeline(
                 registerAllocation,
             )
 
-        val asm = coveringWithSpillsHandled.mapValues { (function, loweredCFG) ->
-            run {
-                val ra = registerAllocationWithSpillsHandled[function] ?: error("No register allocation for function $function")
-                generateAsm(functionBodyLabel(function), loweredCFG, ra)
+        val asm =
+            coveringWithSpillsHandled.mapValues { (function, loweredCFG) ->
+                run {
+                    val ra = registerAllocationWithSpillsHandled[function] ?: error("No register allocation for function $function")
+                    generateAsm(functionBodyLabel(function), loweredCFG, ra)
+                }
             }
-        }
         asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return Pair(generateAsmPreamble(), asm)
     }
@@ -351,7 +351,7 @@ class CacophonyPipeline(
             input,
             Paths.get("${src.fileName}.asm"),
             Paths.get("${src.fileName}.o"),
-            Paths.get("${src.fileName}.bin")
+            Paths.get("${src.fileName}.bin"),
         )
     }
 }
