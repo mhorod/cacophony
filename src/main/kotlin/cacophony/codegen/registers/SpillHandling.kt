@@ -80,7 +80,7 @@ fun adjustLoweredCFGToHandleSpills(
                     instruction.registersRead.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
                 val writtenSpills =
                     instruction.registersWritten.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
-                val usedSpills = readSpills + writtenSpills
+                val usedSpills = (readSpills + writtenSpills).toSet()
 
                 if (usedSpills.isEmpty()) {
                     listOf(instruction)
@@ -89,7 +89,7 @@ fun adjustLoweredCFGToHandleSpills(
 
                     if (usedSpills.size > availableSpareRegisters.size) {
                         throw SpillHandlingException(
-                            "Not enough spare registers: Detected instruction with ${usedSpills.size} registers," +
+                            "Not enough spare registers: Detected instruction $instruction using ${usedSpills.size} spilled registers, " +
                                 "but only have ${availableSpareRegisters.size} available spare registers to use",
                         )
                     }

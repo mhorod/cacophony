@@ -251,7 +251,11 @@ class CacophonyPipeline(
             return covering to registerAllocation
         }
 
-        val spareRegisters = setOf(Register.FixedRegister(HardwareRegister.R8), Register.FixedRegister(HardwareRegister.R9))
+        val spareRegisters =
+            setOf(
+                Register.FixedRegister(HardwareRegister.R8),
+                Register.FixedRegister(HardwareRegister.R9),
+            )
 
         logger?.logSpillHandlingAttempt(spareRegisters)
 
