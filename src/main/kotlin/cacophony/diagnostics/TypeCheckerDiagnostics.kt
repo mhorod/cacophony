@@ -20,10 +20,10 @@ class TypeCheckerDiagnostics {
         override fun getMessage() = "Expected structure"
     }
 
-    data class NoSuchField (
+    data class NoSuchField(
         val type: String,
         val identifier: String,
-        ) : DiagnosticMessage {
+    ) : DiagnosticMessage {
         override fun getMessage() = "Structure of type $type has no field $identifier"
     }
 

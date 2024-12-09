@@ -24,7 +24,7 @@ internal class ErrorHandler(
         diagnostics.report(TypeCheckerDiagnostics.ExpectedStruct, range)
     }
 
-    fun noSuchField(range: Pair<Location, Location>, type: StructType, identifier: String)  {
+    fun noSuchField(range: Pair<Location, Location>, type: StructType, identifier: String) {
         diagnostics.report(TypeCheckerDiagnostics.NoSuchField(type.toString(), identifier), range)
     }
 
