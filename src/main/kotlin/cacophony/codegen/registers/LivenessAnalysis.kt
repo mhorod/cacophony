@@ -4,6 +4,7 @@ import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.linearization.BasicBlock
 import cacophony.codegen.linearization.LoweredCFGFragment
+import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.utils.CompileException
 
@@ -39,8 +40,14 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
 
     val allInstructions = nextInstructions.keys
 
-    val liveOut: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { it.registersWritten.toMutableSet() }
-    val liveIn: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { it.registersRead.toMutableSet() }
+    // TODO: discuss this hack during class
+    fun MutableSet<Register>.addRSP(): MutableSet<Register> {
+        add(Register.FixedRegister(HardwareRegister.RSP))
+        return this
+    }
+
+    val liveOut: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { it.registersWritten.toMutableSet().addRSP() }
+    val liveIn: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { it.registersRead.toMutableSet().addRSP() }
 
     var fixedPointObtained = false
 
@@ -73,7 +80,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
     val interference: RegisterRelations =
         allRegisters.associateWith { reg ->
             allInstructions
-                .filter { instruction -> instruction !is CopyInstruction }
+                .filter { instruction -> instruction !is CopyInstruction } // TODO: whyy?
                 .flatMap { instruction ->
                     listOf(
                         if (liveIn[instruction]!!.contains(reg)) liveIn[instruction]!!.toList() else listOf(),

@@ -8,6 +8,7 @@ import cacophony.controlflow.*
 val sideEffectPatterns =
     listOf(
         NoOpPattern,
+        CommentPattern,
         // +=
         AdditionAssignmentMemoryPattern,
         ConstantAdditionAssignmentRegisterPattern,
@@ -42,6 +43,15 @@ object NoOpPattern : SideEffectPattern {
     override fun makeInstance(fill: SlotFill) = emptyList<Instruction>()
 }
 
+object CommentPattern : SideEffectPattern {
+    override val tree = CFGNode.NodeSlot(NodeLabel(), CFGNode.Comment::class)
+
+    override fun makeInstance(fill: SlotFill): List<Instruction> =
+        instructions(fill) {
+            comment(fill.getNodeForNodeSlot(tree).comment)
+        }
+}
+
 object AdditionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
     override val tree = lhsSlot addeq rhsSlot
 
@@ -67,7 +77,7 @@ object ConstantAdditionAssignmentRegisterPattern : SideEffectPattern {
     private val lhsLabel = RegisterLabel()
     private val rhsLabel = ConstantLabel()
     private val lhsSlot = CFGNode.RegisterSlot(lhsLabel)
-    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel, { true })
+    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel) { true }
     override val tree = lhsSlot addeq rhsSlot
 
     override fun makeInstance(fill: SlotFill) =

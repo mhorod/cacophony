@@ -1,0 +1,70 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d39), Location(value\u003d39))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d0), Location(value\u003d39))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d42), Location(value\u003d60))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[] -\u003e Int"
+  },
+  "(Location(value\u003d42), Location(value\u003d62))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d65), Location(value\u003d83))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[] -\u003e Int"
+  },
+  "(Location(value\u003d65), Location(value\u003d85))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d88), Location(value\u003d106))": {
+    "__class__": "FunctionType",
+    "args": [],
+    "result": {
+      "__class__": "IntegerType",
+      "name": "Int"
+    },
+    "name": "[] -\u003e Int"
+  },
+  "(Location(value\u003d88), Location(value\u003d108))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d108), Location(value\u003d108))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d109))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d110), Location(value\u003d110))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d110))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d-1), Location(value\u003d110))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  }
+}

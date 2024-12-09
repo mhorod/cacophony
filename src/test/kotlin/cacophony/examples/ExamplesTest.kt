@@ -1,8 +1,6 @@
 package cacophony.examples
 
 import cacophony.diagnostics.CacophonyDiagnostics
-import cacophony.lexer.CacophonyLexer
-import cacophony.parser.CacophonyParser
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.names.ResolvedVariables
@@ -35,7 +33,7 @@ class ExamplesTest {
 
     private fun runTest(input: Input): TestResult {
         val diagnostics = CacophonyDiagnostics(input)
-        val pipeline = CacophonyPipeline(diagnostics, null, lexer, parser)
+        val pipeline = CacophonyPipeline(diagnostics)
 
         val result = TestResult()
 
@@ -67,7 +65,7 @@ class ExamplesTest {
     fun `correct examples compile without errors`(path: Path) {
         val input = FileInput(path.toString())
         val diagnostics = CacophonyDiagnostics(input)
-        CacophonyPipeline(diagnostics, null, lexer, parser).process(input)
+        CacophonyPipeline(diagnostics).process(input)
         diagnostics.getErrors().forEach {
             println(it)
         }
@@ -82,7 +80,7 @@ class ExamplesTest {
         val input = FileInput(path.toString())
         val diagnostics = CacophonyDiagnostics(input)
         try {
-            CacophonyPipeline(diagnostics, null, lexer, parser).process(input)
+            CacophonyPipeline(diagnostics).process(input)
         } catch (_: CompileException) {
         }
         assertThat(diagnostics.getErrors()).isNotEmpty()
@@ -97,8 +95,5 @@ class ExamplesTest {
 
         @JvmStatic
         fun incorrectExamples() = loadIncorrectExamples()
-
-        private val lexer = CacophonyLexer()
-        private val parser = CacophonyParser()
     }
 }

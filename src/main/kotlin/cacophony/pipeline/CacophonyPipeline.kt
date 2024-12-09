@@ -34,7 +34,8 @@ import cacophony.utils.CompileException
 import cacophony.utils.Input
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.writeLines
+import kotlin.io.path.createTempFile
+import kotlin.io.path.writeText
 
 data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
@@ -273,7 +274,21 @@ class CacophonyPipeline(
         return newCovering to newRegisterAllocation
     }
 
-    private fun generateAsm(ast: AST): Map<FunctionDefinition, String> {
+    private fun generateAsmPreamble(): String {
+        return """
+            SECTION .data
+            extern write_char
+            extern write_int
+            extern read_int
+            extern check_rsp
+            extern alloc
+            extern get_mem
+            extern put_mem
+            SECTION .text
+        """.trimIndent()
+    }
+
+    private fun generateAsmImpl(ast: AST): Pair<String, Map<FunctionDefinition, String>> {
         val analyzedAst = analyzeAst(ast)
         val cfg = generateControlFlowGraph(analyzedAst)
         val covering = coverWithInstructions(cfg)
@@ -288,43 +303,55 @@ class CacophonyPipeline(
                 registerAllocation,
             )
 
-        return coveringWithSpillsHandled.mapValues { (function, loweredCFG) ->
+        val asm = coveringWithSpillsHandled.mapValues { (function, loweredCFG) ->
             run {
                 val ra = registerAllocationWithSpillsHandled[function] ?: error("No register allocation for function $function")
                 generateAsm(functionBodyLabel(function), loweredCFG, ra)
             }
         }
+        asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
+        return Pair(generateAsmPreamble(), asm)
     }
 
-    fun generateAsm(input: Input): Map<FunctionDefinition, String> {
-        val asm = generateAsm(generateAST(input))
-        asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
-        return asm
+    private fun generateAsm(ast: AST): String {
+        val (preamble, functions) = generateAsmImpl(ast)
+        return (listOf(preamble) + functions.values).joinToString("\n")
+    }
+
+    fun generateAsm(input: Input): String {
+        return generateAsm(generateAST(input))
     }
 
     private fun compile(src: Path, dest: Path) {
-        val nasm = ProcessBuilder("nasm", "-f", "elf64", "-o", dest.toString(), src.toString()).inheritIO().start()
+        val options = listOf("nasm", "-f", "elf64", "-o", dest.toString(), src.toString())
+        val nasm = ProcessBuilder(options).inheritIO().start()
         nasm.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedAssembling(status)
             throw RuntimeException("Unable to assemble generated code")
         } ?: logger?.logSuccessfulAssembling(dest)
     }
 
-    fun link(src: Path, dest: Path) {
-        val gcc = ProcessBuilder("gcc", "-no-pie", "-o", dest.toString(), src.toString()).inheritIO().start()
+    fun link(sources: List<Path>, dest: Path) {
+        val options = listOf("gcc", "-no-pie", "-z", "noexecstack", "-o", dest.toString()) + sources.map { it.toString() }
+        val gcc = ProcessBuilder(options).inheritIO().start()
         gcc.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedLinking(status)
             throw RuntimeException("Unable to link compiled code")
         } ?: logger?.logSuccessfulLinking(dest)
     }
 
-    fun compile(input: Input, src: Path) {
-        val asmFile = Paths.get("${src.fileName}.asm")
-        val objFile = Paths.get("${src.fileName}.o")
-        val binFile = Paths.get("${src.fileName}.bin")
-
-        asmFile.writeLines(generateAsm(input).values)
+    fun compile(input: Input, asmFile: Path, objFile: Path, binFile: Path) {
+        asmFile.writeText(generateAsm(input))
         compile(asmFile, objFile)
-        link(objFile, binFile)
+        link(listOf(objFile, Paths.get("libcacophony.c")), binFile)
+    }
+
+    fun compile(input: Input, src: Path) {
+        compile(
+            input,
+            Paths.get("${src.fileName}.asm"),
+            Paths.get("${src.fileName}.o"),
+            Paths.get("${src.fileName}.bin")
+        )
     }
 }

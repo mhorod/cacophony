@@ -152,6 +152,10 @@ class InstructionBuilder(val slotFill: SlotFill) {
         )
     }
 
+    fun comment(comment: String) {
+        instructions.add(Comment(comment))
+    }
+
     fun ret() {
         instructions.add(Ret())
     }

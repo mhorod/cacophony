@@ -159,6 +159,9 @@ internal class CFGGenerator(
                 Pair(register, access)
             }
 
+        System.err.println("generate call from")
+        System.err.println(functionHandler.getFunctionDeclaration())
+
         val callSequence =
             functionHandler
                 .generateCallFrom(

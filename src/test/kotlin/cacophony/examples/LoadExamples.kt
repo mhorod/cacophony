@@ -6,9 +6,11 @@ import kotlin.io.path.isRegularFile
 
 fun loadExamples(): List<Path> = loadCorrectExamples() + loadIncorrectExamples()
 
-fun loadCorrectExamples(): List<Path> = getPathsMatching(Path.of("examples/correct"), Regex(".*"))
+fun loadCorrectExamples(): List<Path> = getPathsMatching(Path.of("examples/correct"), Regex(".*cac"))
 
-fun loadIncorrectExamples(): List<Path> = getPathsMatching(Path.of("examples/incorrect"), Regex(".*"))
+fun loadOutputs(): List<Path> = getPathsMatching(Path.of("examples/correct/run-data"), Regex(".*output"))
+
+fun loadIncorrectExamples(): List<Path> = getPathsMatching(Path.of("examples/incorrect"), Regex(".*cac"))
 
 fun getPathsMatching(root: Path, re: Regex): List<Path> =
     Files

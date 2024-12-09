@@ -16,6 +16,7 @@ fun generateCall(
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
 
     val nodes: MutableList<CFGNode> = mutableListOf()
+    nodes.add(CFGNode.Comment("call starts"))
 
     if (respectStackAlignment) {
         // we push two copies of RSP to the stack and either leave them both there,
@@ -23,8 +24,10 @@ fun generateCall(
         val oldRSP = Register.VirtualRegister()
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(oldRSP), CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))))
 
+        nodes.add(CFGNode.Comment("pre pushes"))
         nodes.add(CFGNode.Push(CFGNode.RegisterUse(oldRSP)))
         nodes.add(CFGNode.Push(CFGNode.RegisterUse(oldRSP)))
+        nodes.add(CFGNode.Comment("pre add"))
 
         // in an ideal world we would do something like "and rsp, ~15" or similar; for now this will do
         // at the very least split the computation of (RSP + stackArguments.size % 2 * 8) % 16
@@ -45,19 +48,25 @@ fun generateCall(
             ),
         )
     }
+    nodes.add(CFGNode.Comment("stack aligned"))
 
     // in what order should we evaluate arguments? gcc uses reversed order
     for ((argument, register) in registerArguments) {
+        nodes.add(CFGNode.Comment("reg arg #"))
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(register)), argument))
+        nodes.add(CFGNode.Comment("reg arg $"))
     }
+    nodes.add(CFGNode.Comment("register arguments filled"))
     for ((argument, register) in stackArguments) {
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(register), argument))
     }
+    nodes.add(CFGNode.Comment("stack arguments computed"))
 
     // is this indirection necessary?
     for ((_, register) in stackArguments.reversed()) {
         nodes.add(CFGNode.Push(CFGNode.RegisterUse(register)))
     }
+    nodes.add(CFGNode.Comment("stack arguments filled"))
 
     nodes.add(CFGNode.Call(function))
 
@@ -83,6 +92,7 @@ fun generateCall(
     if (result != null) {
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(result), CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX))))
     }
+    nodes.add(CFGNode.Comment("call ends"))
 
     return nodes
 }

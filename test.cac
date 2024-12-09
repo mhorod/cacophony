@@ -1,0 +1,5 @@
+let __extern__write_int = [x: Int] -> Int => 0;
+let __extern__read_int = [] -> Int => 0;
+let x = __extern__read_int[];
+__extern__write_int[x];
+return 2;

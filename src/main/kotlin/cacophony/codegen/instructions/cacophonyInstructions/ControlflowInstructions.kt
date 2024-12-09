@@ -96,7 +96,22 @@ data class Call(val function: Definition.FunctionDefinition) : InstructionTempla
             .map(Register::FixedRegister)
             .toSet()
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        if (!function.identifier.startsWith("__extern__"))
+            return "call ${functionBodyLabel(function).name}"
+
+        val label = function.identifier.removePrefix("__extern__")
+        return "call $label"
+    }
+}
+
+// TODO in which file should be this instruction
+data class Comment(private val comment: String) : InstructionTemplates.FixedRegistersInstruction() {
+    override val registersRead: Set<Register> = emptySet()
+    override val registersWritten: Set<Register> = emptySet()
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        return "; $comment"
+    }
 }
 
 class Ret : InstructionTemplates.FixedRegistersInstruction() {

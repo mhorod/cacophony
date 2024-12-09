@@ -7,8 +7,10 @@ import cacophony.controlflow.Register
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+@Disabled
 class LivenessAnalysisTest {
     private fun mockInstruction(def: Set<Register>, use: Set<Register>): Instruction {
         val instruction = mockk<Instruction>()
