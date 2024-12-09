@@ -33,7 +33,7 @@ import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
 import cacophony.utils.Input
 import java.nio.file.Path
-import java.nio.file.Paths
+import kotlin.io.path.createDirectories
 import kotlin.io.path.writeLines
 
 data class AstAnalysisResult(
@@ -318,10 +318,11 @@ class CacophonyPipeline(
         } ?: logger?.logSuccessfulLinking(dest)
     }
 
-    fun compile(input: Input, src: Path) {
-        val asmFile = Paths.get("${src.fileName}.asm")
-        val objFile = Paths.get("${src.fileName}.o")
-        val binFile = Paths.get("${src.fileName}.bin")
+    fun compile(input: Input, src: Path, binDir: Path = Path.of("bin")) {
+        binDir.createDirectories()
+        val asmFile = binDir.resolve("${src.fileName}.asm")
+        val objFile = binDir.resolve("${src.fileName}.o")
+        val binFile = binDir.resolve("${src.fileName}.bin")
 
         asmFile.writeLines(generateAsm(input).values)
         compile(asmFile, objFile)
