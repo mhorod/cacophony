@@ -3,7 +3,7 @@
 #include <assert.h>
 
 void write_int(long long x) {
-    printf("%lld", x);
+    printf("%lld\n", x);
 }
 
 void write_char(char ch) {
@@ -28,7 +28,7 @@ asm(
 
 void check_rsp_impl(long long rsp) {
     if (rsp % 16 != 8)
-        _Exit(66);
+        _Exit(50);
 }
 
 void * alloc(long long count) {
