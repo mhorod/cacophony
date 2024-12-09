@@ -23,7 +23,7 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
     private fun coverWithInstructionsForValue(node: CFGNode, register: Register): List<Instruction> {
         val matches = instructionMatcher.findMatchesForValue(node, register)
         val bestMatch =
-            matches.maxByOrNull { match -> match.size } ?: error("No match with instructions for value found for $node, ${node.javaClass}")
+            matches.maxByOrNull { match -> match.size } ?: error("No match for value found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 
@@ -47,7 +47,7 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
         val matches = instructionMatcher.findMatchesForCondition(node, label, jumpIf)
         val bestMatch =
             matches.maxByOrNull { match -> match.size }
-                ?: error("No match with instructions for condition found for $node, ${node.javaClass}")
+                ?: error("No match for condition found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 }
