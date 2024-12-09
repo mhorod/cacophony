@@ -1,11 +1,11 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
+import cacophony.graphs.getProperTransitiveClosure
+import cacophony.graphs.reverseGraph
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.utils.getProperTransitiveClosure
-import cacophony.utils.reverseGraph
 
 typealias FunctionAnalysisResult = Map<Definition.FunctionDeclaration, AnalyzedFunction>
 
@@ -97,13 +97,13 @@ fun variablesUsedInNestedFunctions(
 
 fun getArgumentFunctions(
     relations: Map<Definition.FunctionDeclaration, StaticFunctionRelations>,
-): Map<Definition.FunctionArgument, Definition.FunctionDeclaration> {
-    return relations.flatMap { (function, _) ->
-        function.arguments.map { argument ->
-            argument to function
-        }
-    }.toMap()
-}
+): Map<Definition.FunctionArgument, Definition.FunctionDeclaration> =
+    relations
+        .flatMap { (function, _) ->
+            function.arguments.map { argument ->
+                argument to function
+            }
+        }.toMap()
 
 fun makeAnalyzedFunction(
     function: Definition.FunctionDeclaration,
@@ -150,13 +150,13 @@ fun makeAnalyzedVariable(
 
 private fun getVariableDeclarationFunctions(
     relations: StaticFunctionRelationsMap,
-): Map<Definition.VariableDeclaration, Definition.FunctionDeclaration> {
-    return relations.flatMap { (function, staticRelations) ->
-        staticRelations.declaredVariables.map { variable ->
-            variable to function
-        }
-    }.toMap()
-}
+): Map<Definition.VariableDeclaration, Definition.FunctionDeclaration> =
+    relations
+        .flatMap { (function, staticRelations) ->
+            staticRelations.declaredVariables.map { variable ->
+                variable to function
+            }
+        }.toMap()
 
 private fun analyzedVariables(
     relations: StaticFunctionRelationsMap,
@@ -179,14 +179,14 @@ private fun getAnalyzedVariables(
     resolvedVariables: ResolvedVariables,
     variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDeclaration>,
     argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDeclaration>,
-): Set<AnalyzedVariable> {
-    return relations[function]!!.usedVariables
+): Set<AnalyzedVariable> =
+    relations[function]!!
+        .usedVariables
         .asSequence()
         .filter {
             resolvedVariables[it.variable] is Definition.VariableDeclaration ||
                 resolvedVariables[it.variable] is Definition.FunctionArgument
-        }
-        .map { makeAnalyzedVariable(it, resolvedVariables, variableDeclarationFunctions, argumentFunctions) }
+        }.map { makeAnalyzedVariable(it, resolvedVariables, variableDeclarationFunctions, argumentFunctions) }
         .toSet()
         .union(
             relations[function]!!.declaredVariables.map {
@@ -195,14 +195,11 @@ private fun getAnalyzedVariables(
         ).filter {
             relations[it.definedIn]!!.staticDepth < relations[function]!!.staticDepth ||
                 it.definedIn == function
-        }
-        .groupBy { it.declaration }
+        }.groupBy { it.declaration }
         .map {
             val useType = variableUseType(it.value.map { variable -> variable.useType })
             AnalyzedVariable(it.key, it.value.first().definedIn, useType)
-        }
-        .toSet()
-}
+        }.toSet()
 
 private fun variableUseType(useTypes: List<VariableUseType>) =
     if (useTypes.isEmpty()) {
