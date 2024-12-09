@@ -20,6 +20,7 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
         return instructions
     }
 
+    // Pair<Int, Int> does not implement Comparable
     private fun Pair<Int, Int>.toLong(): Long = first * (1L shl 32) + second
 
     private fun coverGivenMatches(node: CFGNode, matches: Set<Match>): List<Instruction> {

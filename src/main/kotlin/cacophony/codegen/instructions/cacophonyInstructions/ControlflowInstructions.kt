@@ -96,20 +96,15 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
             .map(Register::FixedRegister)
             .toSet()
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
-        if (!function.identifier.startsWith("__extern__"))
-            return "call ${functionBodyLabel(function).name}"
-
-        val label = function.identifier.removePrefix("__extern__")
-        return "call $label"
-    }
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
-// TODO in which file should be this instruction
+// Utility class to make asm a bit more readable.
 data class Comment(private val comment: String) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = emptySet()
     override val registersWritten: Set<Register> = emptySet()
 
+    // This class is not marked as noop, as we do not want to remove it.
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         return "; $comment"
     }

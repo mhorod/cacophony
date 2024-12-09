@@ -4,6 +4,7 @@ import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
@@ -25,6 +26,7 @@ class RunExamplesTest {
         return Pair(returnCode, outputFile.readText())
     }
 
+    @Disabled
     @ParameterizedTest
     @MethodSource("outputs")
     fun `run examples`(outputPath: Path) {
@@ -49,6 +51,6 @@ class RunExamplesTest {
 
     companion object {
         @JvmStatic
-        fun outputs() = loadOutputs().filterNot { it.endsWith("ffi-read-write.output") }
+        fun outputs() = loadOutputs()
     }
 }

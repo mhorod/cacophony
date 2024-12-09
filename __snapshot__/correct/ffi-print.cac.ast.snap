@@ -11,51 +11,50 @@
             "__class__": "Block",
             "expressions": [
               {
-                "__class__": "FunctionDefinition",
-                "arguments": [
-                  {
-                    "__class__": "FunctionArgument",
-                    "type": {
+                "__class__": "ForeignFunctionDeclaration",
+                "type": {
+                  "__class__": "Functional",
+                  "argumentsType": [
+                    {
                       "__class__": "Basic",
                       "identifier": "Int",
                       "range": {
                         "__class__": "Pair",
                         "first": {
                           "__class__": "Location",
-                          "value": 30
+                          "value": 20
                         },
                         "second": {
                           "__class__": "Location",
-                          "value": 32
+                          "value": 22
                         }
                       }
-                    },
-                    "identifier": "x",
+                    }
+                  ],
+                  "returnType": {
+                    "__class__": "Basic",
+                    "identifier": "Int",
                     "range": {
                       "__class__": "Pair",
                       "first": {
                         "__class__": "Location",
-                        "value": 27
+                        "value": 28
                       },
                       "second": {
                         "__class__": "Location",
-                        "value": 32
+                        "value": 30
                       }
                     }
-                  }
-                ],
-                "body": {
-                  "__class__": "IntLiteral",
-                  "value": 0,
+                  },
                   "range": {
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 45
+                      "value": 19
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 45
+                      "value": 30
                     }
                   }
                 },
@@ -66,15 +65,15 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 38
+                      "value": 28
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 40
+                      "value": 30
                     }
                   }
                 },
-                "identifier": "__extern__write_int",
+                "identifier": "write_int",
                 "range": {
                   "__class__": "Pair",
                   "first": {
@@ -83,56 +82,55 @@
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 45
+                    "value": 30
                   }
                 }
               },
               {
-                "__class__": "FunctionDefinition",
-                "arguments": [
-                  {
-                    "__class__": "FunctionArgument",
-                    "type": {
+                "__class__": "ForeignFunctionDeclaration",
+                "type": {
+                  "__class__": "Functional",
+                  "argumentsType": [
+                    {
                       "__class__": "Basic",
                       "identifier": "Int",
                       "range": {
                         "__class__": "Pair",
                         "first": {
                           "__class__": "Location",
-                          "value": 79
+                          "value": 54
                         },
                         "second": {
                           "__class__": "Location",
-                          "value": 81
+                          "value": 56
                         }
                       }
-                    },
-                    "identifier": "x",
+                    }
+                  ],
+                  "returnType": {
+                    "__class__": "Basic",
+                    "identifier": "Int",
                     "range": {
                       "__class__": "Pair",
                       "first": {
                         "__class__": "Location",
-                        "value": 76
+                        "value": 62
                       },
                       "second": {
                         "__class__": "Location",
-                        "value": 81
+                        "value": 64
                       }
                     }
-                  }
-                ],
-                "body": {
-                  "__class__": "IntLiteral",
-                  "value": 0,
+                  },
                   "range": {
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 94
+                      "value": 53
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 94
+                      "value": 64
                     }
                   }
                 },
@@ -143,24 +141,24 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 87
+                      "value": 62
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 89
+                      "value": 64
                     }
                   }
                 },
-                "identifier": "__extern__write_char",
+                "identifier": "write_char",
                 "range": {
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 48
+                    "value": 33
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 94
+                    "value": 64
                   }
                 }
               },
@@ -168,16 +166,16 @@
                 "__class__": "FunctionCall",
                 "function": {
                   "__class__": "VariableUse",
-                  "identifier": "__extern__write_int",
+                  "identifier": "write_int",
                   "range": {
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 97
+                      "value": 67
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 115
+                      "value": 75
                     }
                   }
                 },
@@ -189,11 +187,11 @@
                       "__class__": "Pair",
                       "first": {
                         "__class__": "Location",
-                        "value": 117
+                        "value": 77
                       },
                       "second": {
                         "__class__": "Location",
-                        "value": 119
+                        "value": 79
                       }
                     }
                   }
@@ -202,11 +200,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 97
+                    "value": 67
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 120
+                    "value": 80
                   }
                 }
               },
@@ -214,16 +212,16 @@
                 "__class__": "FunctionCall",
                 "function": {
                   "__class__": "VariableUse",
-                  "identifier": "__extern__write_char",
+                  "identifier": "write_char",
                   "range": {
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 123
+                      "value": 83
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 142
+                      "value": 92
                     }
                   }
                 },
@@ -235,11 +233,11 @@
                       "__class__": "Pair",
                       "first": {
                         "__class__": "Location",
-                        "value": 144
+                        "value": 94
                       },
                       "second": {
                         "__class__": "Location",
-                        "value": 145
+                        "value": 95
                       }
                     }
                   }
@@ -248,11 +246,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 123
+                    "value": 83
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 146
+                    "value": 96
                   }
                 }
               },
@@ -260,16 +258,16 @@
                 "__class__": "FunctionCall",
                 "function": {
                   "__class__": "VariableUse",
-                  "identifier": "__extern__write_int",
+                  "identifier": "write_int",
                   "range": {
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 149
+                      "value": 99
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 167
+                      "value": 107
                     }
                   }
                 },
@@ -281,11 +279,11 @@
                       "__class__": "Pair",
                       "first": {
                         "__class__": "Location",
-                        "value": 169
+                        "value": 109
                       },
                       "second": {
                         "__class__": "Location",
-                        "value": 171
+                        "value": 111
                       }
                     }
                   }
@@ -294,11 +292,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 149
+                    "value": 99
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 172
+                    "value": 112
                   }
                 }
               },
@@ -311,11 +309,11 @@
                     "__class__": "Pair",
                     "first": {
                       "__class__": "Location",
-                      "value": 182
+                      "value": 122
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 182
+                      "value": 122
                     }
                   }
                 },
@@ -323,11 +321,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 175
+                    "value": 115
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 182
+                    "value": 122
                   }
                 }
               },
@@ -337,11 +335,11 @@
                   "__class__": "Pair",
                   "first": {
                     "__class__": "Location",
-                    "value": 182
+                    "value": 122
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 182
+                    "value": 122
                   }
                 }
               }
@@ -354,7 +352,7 @@
               },
               "second": {
                 "__class__": "Location",
-                "value": 183
+                "value": 123
               }
             }
           },
@@ -364,11 +362,11 @@
               "__class__": "Pair",
               "first": {
                 "__class__": "Location",
-                "value": 184
+                "value": 124
               },
               "second": {
                 "__class__": "Location",
-                "value": 184
+                "value": 124
               }
             }
           }
@@ -381,7 +379,7 @@
           },
           "second": {
             "__class__": "Location",
-            "value": 184
+            "value": 124
           }
         }
       },
@@ -439,7 +437,7 @@
         },
         "second": {
           "__class__": "Location",
-          "value": 184
+          "value": 124
         }
       }
     },
@@ -452,11 +450,11 @@
           "__class__": "Pair",
           "first": {
             "__class__": "Location",
-            "value": 184
+            "value": 124
           },
           "second": {
             "__class__": "Location",
-            "value": 184
+            "value": 124
           }
         }
       },
@@ -465,11 +463,11 @@
         "__class__": "Pair",
         "first": {
           "__class__": "Location",
-          "value": 184
+          "value": 124
         },
         "second": {
           "__class__": "Location",
-          "value": 184
+          "value": 124
         }
       }
     }
@@ -482,7 +480,7 @@
     },
     "second": {
       "__class__": "Location",
-      "value": 184
+      "value": 124
     }
   }
 }

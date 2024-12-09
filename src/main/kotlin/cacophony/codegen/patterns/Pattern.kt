@@ -21,6 +21,7 @@ data class SlotFill(
 sealed interface Pattern {
     val tree: CFGNode
 
+    // Used to break ties in case two patterns cover the same amount of nodes.
     fun priority(): Int = 0
 }
 

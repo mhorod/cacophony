@@ -24,6 +24,7 @@ import cacophony.parser.CacophonyParser
 import cacophony.semantic.analysis.*
 import cacophony.semantic.names.*
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.generateAST
 import cacophony.semantic.types.TypeCheckingResult
@@ -40,6 +41,7 @@ data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
+    val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>
 )
 
 class CacophonyPipeline(
@@ -117,6 +119,9 @@ class CacophonyPipeline(
         return result
     }
 
+    private fun findForeignFunctions(nr: NameResolutionResult): Set<Definition.ForeignFunctionDeclaration> =
+        nr.values.filterIsInstance<ResolvedName.Function>().flatMap { it.def.toMap().values }.filterIsInstance<Definition.ForeignFunctionDeclaration>().toSet()
+
     fun resolveOverloads(ast: AST): ResolvedVariables {
         val nr = resolveNames(ast)
         return resolveOverloads(ast, nr)
@@ -183,12 +188,14 @@ class CacophonyPipeline(
     }
 
     private fun analyzeAst(ast: AST): AstAnalysisResult {
-        val resolvedVariables = resolveOverloads(ast)
+        val resolvedNames = resolveNames(ast)
+        val resolvedVariables = resolveOverloads(ast, resolvedNames)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention)
-        return AstAnalysisResult(resolvedVariables, analyzedExpressions, functionHandlers)
+        val foreignFunctions = findForeignFunctions(resolvedNames)
+        return AstAnalysisResult(resolvedVariables, analyzedExpressions, functionHandlers, foreignFunctions)
     }
 
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
@@ -273,19 +280,8 @@ class CacophonyPipeline(
         return newCovering to newRegisterAllocation
     }
 
-    private fun generateAsmPreamble(): String {
-        return """
-            SECTION .data
-            extern write_char
-            extern write_int
-            extern read_int
-            extern check_rsp
-            extern alloc
-            extern get_mem
-            extern put_mem
-            SECTION .text
-            """.trimIndent()
-    }
+    private fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclaration>): String =
+        (listOf("SECTION .data") + foreignFunctions.map { "extern ${it.identifier}" } + listOf("SECTION .text")).joinToString("\n")
 
     private fun generateAsmImpl(ast: AST): Pair<String, Map<FunctionDefinition, String>> {
         val analyzedAst = analyzeAst(ast)
@@ -310,7 +306,7 @@ class CacophonyPipeline(
                 }
             }
         asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
-        return Pair(generateAsmPreamble(), asm)
+        return Pair(generateAsmPreamble(analyzedAst.foreignFunctions), asm)
     }
 
     private fun generateAsm(ast: AST): String {

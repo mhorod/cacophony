@@ -75,17 +75,4 @@ class PatternsTest {
         val instructions = loweredFragment.first().instructions()
         assertThat(instructions).last().isEqualTo(AddRegImm(register, constant))
     }
-
-    @Test
-    fun test() {
-        println(Call(mockk()).registersRead)
-        println(Call(mockk()).registersWritten)
-        val toSave = Call(mockk()).registersWritten.filterIsInstance<Register.FixedRegister>().map { it.hardwareRegister }
-        println(toSave)
-        println(SystemVAMD64CallConvention.preservedRegisters())
-        println(HardwareRegister.entries subtract SystemVAMD64CallConvention.preservedRegisters().toSet())
-        println(REGISTER_ARGUMENT_ORDER intersect toSave)
-        println(toSave subtract  REGISTER_ARGUMENT_ORDER)
-        println(REGISTER_ARGUMENT_ORDER subtract  toSave)
-    }
 }

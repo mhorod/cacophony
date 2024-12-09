@@ -99,7 +99,7 @@ internal class CFGGenerator(
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
-            is Definition.FunctionDefinition -> visitFunctionDeclaration(mode)
+            is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
             is FunctionCall -> visitFunctionCall(expression, mode, context)
@@ -111,7 +111,7 @@ internal class CFGGenerator(
             is Statement.ReturnStatement -> visitReturnStatement(expression, mode, context)
             is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
             is VariableUse -> visitVariableUse(expression, mode)
-            else -> error("Unexpected expression for CFG generation: $expression")
+            else -> error("Unexpected expression for CFG generation: $expression ${expression::class}")
         }
 
     private fun visitBlock(expression: Block, mode: EvalMode, context: Context): SubCFG {

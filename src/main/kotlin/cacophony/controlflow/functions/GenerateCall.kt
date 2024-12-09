@@ -25,7 +25,7 @@ fun generateCallFrom(
                 throw IllegalArgumentException("Wrong argument count")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
-            generateCall(function, arguments + mutableListOf(staticLinkVar), result, callerFunction.getStackSpace())
+            generateCall(function, arguments + listOf(staticLinkVar), result, callerFunction.getStackSpace())
         }
     }
 
@@ -33,7 +33,7 @@ fun generateCall(
     function: Definition.FunctionDeclaration,
     arguments: List<CFGNode>,
     result: Register?,
-    callerFunctionStackSize: CFGNode.ConstantLazy,
+    callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }

@@ -10,11 +10,11 @@
       "__class__": "Pair",
       "first": {
         "__class__": "Location",
-        "value": 175
+        "value": 115
       },
       "second": {
         "__class__": "Location",
-        "value": 182
+        "value": 122
       }
     }
   }
