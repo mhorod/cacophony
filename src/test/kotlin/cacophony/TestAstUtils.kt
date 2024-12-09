@@ -66,7 +66,7 @@ fun lvalueFieldRef(lhs: Assignable, field: String) = FieldRef.LValue(mockRange()
 
 fun rvalueFieldRef(lhs: Expression, field: String) = FieldRef.RValue(mockRange(), lhs, field)
 
-fun typedVariableDeclaration(identifier: String, type: BaseType.Basic?, value: Expression) =
+fun typedVariableDeclaration(identifier: String, type: BaseType?, value: Expression) =
     Definition.VariableDeclaration(
         mockRange(),
         identifier,
@@ -135,6 +135,8 @@ infix fun Expression.lt(rhs: Expression) = OperatorBinary.Less(mockRange(), this
 infix fun Expression.geq(rhs: Expression) = OperatorBinary.GreaterEqual(mockRange(), this, rhs)
 
 infix fun Expression.gt(rhs: Expression) = OperatorBinary.Greater(mockRange(), this, rhs)
+
+infix fun Assignable.assign(rhs: Expression) = OperatorBinary.Assignment(mockRange(), this, rhs)
 
 infix fun Assignable.addeq(rhs: Expression) = OperatorBinary.AdditionAssignment(mockRange(), this, rhs)
 
