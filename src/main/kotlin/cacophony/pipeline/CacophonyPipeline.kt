@@ -41,7 +41,7 @@ data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
-    val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>
+    val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
 )
 
 class CacophonyPipeline(
@@ -120,7 +120,9 @@ class CacophonyPipeline(
     }
 
     private fun findForeignFunctions(nr: NameResolutionResult): Set<Definition.ForeignFunctionDeclaration> =
-        nr.values.filterIsInstance<ResolvedName.Function>().flatMap { it.def.toMap().values }.filterIsInstance<Definition.ForeignFunctionDeclaration>().toSet()
+        nr.values.filterIsInstance<ResolvedName.Function>().flatMap {
+            it.def.toMap().values
+        }.filterIsInstance<Definition.ForeignFunctionDeclaration>().toSet()
 
     fun resolveOverloads(ast: AST): ResolvedVariables {
         val nr = resolveNames(ast)

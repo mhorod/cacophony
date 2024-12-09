@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import kotlin.math.max
 
 @Disabled
 class GenerateCallKtTest {
@@ -46,7 +45,7 @@ class GenerateCallKtTest {
                     expectedStaticLink,
                 ),
                 any(),
-                any()
+                any(),
             )
         }
 
@@ -97,7 +96,7 @@ class GenerateCallKtTest {
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
             (1..argumentCount + 1).map { mockk() },
             result,
-            constant
+            constant,
         )
 
     private fun getArgumentRegisters(callNodes: List<CFGNode>): List<HardwareRegister> {
@@ -293,7 +292,7 @@ class GenerateCallKtTest {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         }
         unmockkStatic(::generateCall)

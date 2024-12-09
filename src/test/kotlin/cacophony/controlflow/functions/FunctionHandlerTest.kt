@@ -676,7 +676,7 @@ class FunctionHandlerTest {
                     any(),
                     listOf(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
                     any(),
-                    any()
+                    any(),
                 )
             }
             unmockkStatic(::generateCall)

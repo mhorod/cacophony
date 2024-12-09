@@ -11,7 +11,7 @@ fun generateCallFrom(
     function: Definition.FunctionDeclaration,
     functionHandler: FunctionHandler?,
     arguments: List<CFGNode>,
-    result: Register?
+    result: Register?,
 ): List<CFGNode> =
     when (function) {
         is Definition.ForeignFunctionDeclaration -> {

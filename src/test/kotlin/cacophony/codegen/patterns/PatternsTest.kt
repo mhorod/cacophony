@@ -2,7 +2,6 @@ package cacophony.codegen.patterns
 
 import cacophony.codegen.instructions.CacophonyInstructionCovering
 import cacophony.codegen.instructions.cacophonyInstructions.AddRegImm
-import cacophony.codegen.instructions.cacophonyInstructions.Call
 import cacophony.codegen.instructions.cacophonyInstructions.PushReg
 import cacophony.codegen.instructions.cacophonyInstructions.SubRegImm
 import cacophony.codegen.instructions.matching.InstructionMatcherImpl
@@ -11,8 +10,6 @@ import cacophony.codegen.patterns.cacophonyPatterns.conditionPatterns
 import cacophony.codegen.patterns.cacophonyPatterns.sideEffectPatterns
 import cacophony.codegen.patterns.cacophonyPatterns.valuePatterns
 import cacophony.controlflow.*
-import cacophony.controlflow.functions.SystemVAMD64CallConvention
-import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -21,7 +18,7 @@ class PatternsTest {
         CacophonyInstructionCovering(InstructionMatcherImpl(valuePatterns, sideEffectPatterns, conditionPatterns))
 
     @Test
-    fun `push rsp generates single instruction`() {
+    fun `push rsp generates a single instruction`() {
         val label = CFGLabel()
         val register = Register.FixedRegister(HardwareRegister.RSP)
         val fragment =
@@ -39,7 +36,7 @@ class PatternsTest {
     }
 
     @Test
-    fun `sub rsp 8 generates single instruction`() {
+    fun `sub rsp 8 generates a single instruction`() {
         val label = CFGLabel()
         val register = Register.FixedRegister(HardwareRegister.RSP)
         val constant = CFGNode.ConstantKnown(8)
@@ -58,7 +55,7 @@ class PatternsTest {
     }
 
     @Test
-    fun `add rsp 8 generates single instruction`() {
+    fun `add rsp 8 generates a single instruction`() {
         val label = CFGLabel()
         val register = Register.FixedRegister(HardwareRegister.RSP)
         val constant = CFGNode.ConstantKnown(8)

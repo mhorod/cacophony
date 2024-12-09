@@ -54,7 +54,10 @@ class FunctionHandlerImpl(
                 ).toSet()
                     .minus(usedVars)
             regVar.forEach { varDef ->
-                registerVariableAllocation(definitionToVariable[varDef]!!, VariableAllocation.InRegister(Register.VirtualRegister(varDef.identifier)))
+                registerVariableAllocation(
+                    definitionToVariable[varDef]!!,
+                    VariableAllocation.InRegister(Register.VirtualRegister(varDef.identifier)),
+                )
             }
 
             usedVars.forEach { varDef ->
