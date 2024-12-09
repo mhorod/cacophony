@@ -39,17 +39,17 @@ private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnost
     when (val symbol = getGrammarSymbol(parseTree)) {
         TYPE_IDENTIFIER -> {
             require(parseTree is ParseTree.Leaf) { "Unable to construct atomic type from non-leaf node $symbol" }
-            Type.Basic(parseTree.range, parseTree.token.context)
+            BaseType.Basic(parseTree.range, parseTree.token.context)
         }
         FUNCTION_TYPE -> {
             require(parseTree is ParseTree.Branch) { "Unable to construct functional type from leaf node $symbol" }
             val returnType = constructType(parseTree.children.last(), diagnostics)
             val argumentsTypes = parseTree.children.slice(0..<parseTree.children.size - 1).map { constructType(it, diagnostics) }
-            Type.Functional(parseTree.range, argumentsTypes, returnType)
+            BaseType.Functional(parseTree.range, argumentsTypes, returnType)
         }
         STRUCT_TYPE -> {
             require(parseTree is ParseTree.Branch) { "Unable to construct structure type from leaf node $symbol" }
-            Type.Structural(
+            BaseType.Structural(
                 parseTree.range,
                 parseTree.children
                     .windowed(2, 2) { (ident, type) ->
@@ -235,7 +235,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     return Definition.FunctionDeclaration(
                         range,
                         identifier.token.context,
-                        type as Type.Functional?,
+                        type as BaseType.Functional?,
                         arguments,
                         constructType(returnType, diagnostics),
                         generateASTInternal(body, diagnostics),
@@ -244,7 +244,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     return Definition.VariableDeclaration(
                         range,
                         identifier.token.context,
-                        type as Type.Basic?,
+                        type as BaseType.Basic?,
                         generateASTInternal(isDeclarationTyped.children.last(), diagnostics),
                     )
                 }
@@ -274,17 +274,16 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
             ASSIGNMENT_LEVEL -> {
                 assert(childNum == 3)
                 val operatorKind = parseTree.children[1]
-                if (operatorKind is ParseTree.Leaf) {
-                    val assignmentSymbol = operatorKind.token.category
-                    return createInstanceBinary(
-                        assignmentSymbol.syntaxTreeClass!! as KClass<OperatorBinary>,
-                        range,
-                        generateASTInternal(parseTree.children[0], diagnostics),
-                        generateASTInternal(parseTree.children[2], diagnostics),
-                    )
-                } else {
-                    throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
+                require(operatorKind is ParseTree.Leaf) { "Expected the operator symbol, got: $operatorKind" }
+
+                val lhs = generateASTInternal(parseTree.children[0], diagnostics)
+                if (!(lhs is Assignable)) {
+                    diagnostics.report(ASTDiagnostics.ValueNotAssignable, range)
+                    throw diagnostics.fatal()
                 }
+
+                val rhs = generateASTInternal(parseTree.children[2], diagnostics)
+                createInstanceBinary(operatorKind.token.category.syntaxTreeClass!! as KClass<OperatorBinary>, range, lhs, rhs)
             }
 
             ADDITION_LEVEL, MULTIPLICATION_LEVEL, EQUALITY_LEVEL, COMPARATOR_LEVEL, LOGICAL_OPERATOR_LEVEL -> {
@@ -308,6 +307,23 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     )
                 } else {
                     throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
+                }
+            }
+
+            ATOM_LEVEL -> {
+                require(childNum >= 2) { "Field access missing rhs: $parseTree" }
+                val lhs = parseTree.children[0]
+                parseTree.children.slice(1..<parseTree.children.size).fold(generateASTInternal(lhs, diagnostics)) { ast, field ->
+                    require(field is ParseTree.Leaf) { "Field access rhs should be a leaf: $field in $parseTree" }
+                    require(
+                        getGrammarSymbol(field) == VARIABLE_IDENTIFIER,
+                    ) { "Field access rhs should be an identifier: $field in $parseTree" }
+
+                    if (ast is Assignable) {
+                        FieldRef.LValue(field.range, ast, field.token.context)
+                    } else {
+                        FieldRef.RValue(field.range, ast, field.token.context)
+                    }
                 }
             }
 
@@ -339,13 +355,13 @@ private fun wrapInFunction(originalAST: AST): AST {
         Definition.FunctionDeclaration(
             Pair(beforeStart, behindEnd),
             MAIN_FUNCTION_IDENTIFIER,
-            Type.Functional(
+            BaseType.Functional(
                 Pair(beforeStart, beforeStart),
                 emptyList(),
-                Type.Basic(Pair(beforeStart, beforeStart), "Unit"),
+                BaseType.Basic(Pair(beforeStart, beforeStart), "Unit"),
             ),
             emptyList(),
-            Type.Basic(Pair(beforeStart, beforeStart), "Unit"),
+            BaseType.Basic(Pair(beforeStart, beforeStart), "Unit"),
             Block(
                 Pair(Location(0), behindEnd),
                 listOf(

@@ -1144,20 +1144,6 @@ class TypeCheckerTest {
     }
 
     @Test
-    fun `error - assignment to non lvalue reference`() {
-        val body = OperatorBinary.Assignment(mockRange(), empty(), booleanLiteral)
-        val ast = block(body)
-        checkTypes(ast, diagnostics, emptyMap())
-        verify(exactly = 1) {
-            diagnostics.report(
-                TypeCheckerDiagnostics.ExpectedLValueReference,
-                any<Pair<Location, Location>>(),
-            )
-        }
-        confirmVerified(diagnostics)
-    }
-
-    @Test
     fun `error - mismatch assignment`() {
         val varDec = typedVariableDeclaration("x", testBoolean(), booleanLiteral)
         val varUse = variableUse("x")
@@ -1342,20 +1328,6 @@ class TypeCheckerTest {
         verify(exactly = 1) {
             diagnostics.report(
                 TypeCheckerDiagnostics.TypeMismatch("Bool", "Unit"),
-                any<Pair<Location, Location>>(),
-            )
-        }
-        confirmVerified(diagnostics)
-    }
-
-    @Test
-    fun `error - operator assignment on non lvalue`() {
-        val body = intLiteral addeq lit(4)
-        val ast = block(body)
-        checkTypes(ast, diagnostics, emptyMap())
-        verify(exactly = 1) {
-            diagnostics.report(
-                TypeCheckerDiagnostics.ExpectedLValueReference,
                 any<Pair<Location, Location>>(),
             )
         }

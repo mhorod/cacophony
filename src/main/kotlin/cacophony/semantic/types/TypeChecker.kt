@@ -4,6 +4,7 @@ import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.TypeCheckerDiagnostics
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import cacophony.utils.CompileException
 import cacophony.utils.Location
 
 typealias TypeCheckingResult = Map<Expression, TypeExpr>
@@ -75,10 +76,13 @@ private class Typer(
                 }
 
                 is Struct -> {
-                    throw NotImplementedError("Type checking not available for structures")
+                    throw CompileException("Type checking not available for structures")
                 }
                 is StructField -> {
-                    throw NotImplementedError("Type checking not available for structures")
+                    throw CompileException("Type checking not available for structures")
+                }
+                is FieldRef -> {
+                    throw CompileException("Type checking not available for structures")
                 }
 
                 is Empty -> BuiltinType.UnitType
@@ -266,13 +270,13 @@ private class Typer(
 
     private fun translateType(type: Type): TypeExpr? {
         return when (type) {
-            is Type.Basic ->
+            is BaseType.Basic ->
                 types[type.identifier] ?: run {
                     error.unknownType(type.range)
                     null
                 }
 
-            is Type.Functional -> {
+            is BaseType.Functional -> {
                 val args = type.argumentsType.map { translateType(it) }
                 val ret = translateType(type.returnType)
                 FunctionType(
@@ -281,7 +285,7 @@ private class Typer(
                 )
             }
 
-            is Type.Structural -> {
+            is BaseType.Structural -> {
                 throw NotImplementedError("Type checking not available for structures")
             }
         }
