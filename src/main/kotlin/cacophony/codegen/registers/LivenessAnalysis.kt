@@ -42,7 +42,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
 
     // TODO: discuss this hack during class
     fun MutableSet<Register>.addRSP(): MutableSet<Register> {
-        add(Register.FixedRegister(HardwareRegister.RSP))
+//        add(Register.FixedRegister(HardwareRegister.RSP))
         return this
     }
 

@@ -1,7 +1,7 @@
 > Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :compileKotlin UP-TO-DATE
-> Task :compileJava NO-SOURCE
 > Task :processResources NO-SOURCE
+> Task :compileKotlin
+> Task :compileJava NO-SOURCE
 > Task :classes UP-TO-DATE
 
 > Task :run
@@ -31,23 +31,1881 @@ Found tokens:
   Token(category=DOUBLE_ARROW, context==>, rangeFrom=Location(value=83), rangeTo=Location(value=84))
   Token(category=INT_LITERAL, context=0, rangeFrom=Location(value=86), rangeTo=Location(value=86))
   Token(category=SEMICOLON, context=;, rangeFrom=Location(value=87), rangeTo=Location(value=87))
-  Token(category=VARIABLE_IDENTIFIER, context=val, rangeFrom=Location(value=89), rangeTo=Location(value=91))
-  Token(category=VARIABLE_IDENTIFIER, context=x, rangeFrom=Location(value=93), rangeTo=Location(value=93))
-  Token(category=OPERATOR_ASSIGNMENT, context==, rangeFrom=Location(value=95), rangeTo=Location(value=95))
-  Token(category=VARIABLE_IDENTIFIER, context=__extern__read_int, rangeFrom=Location(value=97), rangeTo=Location(value=114))
+  Token(category=KEYWORD_LET, context=let, rangeFrom=Location(value=89), rangeTo=Location(value=91))
+  Token(category=VARIABLE_IDENTIFIER, context=__extern__check_rsp, rangeFrom=Location(value=93), rangeTo=Location(value=111))
+  Token(category=OPERATOR_ASSIGNMENT, context==, rangeFrom=Location(value=113), rangeTo=Location(value=113))
   Token(category=LEFT_BRACKET, context=[, rangeFrom=Location(value=115), rangeTo=Location(value=115))
   Token(category=RIGHT_BRACKET, context=], rangeFrom=Location(value=116), rangeTo=Location(value=116))
-  Token(category=SEMICOLON, context=;, rangeFrom=Location(value=117), rangeTo=Location(value=117))
-  Token(category=VARIABLE_IDENTIFIER, context=__extern__write_int, rangeFrom=Location(value=119), rangeTo=Location(value=137))
-  Token(category=LEFT_BRACKET, context=[, rangeFrom=Location(value=138), rangeTo=Location(value=138))
-  Token(category=VARIABLE_IDENTIFIER, context=x, rangeFrom=Location(value=139), rangeTo=Location(value=139))
-  Token(category=RIGHT_BRACKET, context=], rangeFrom=Location(value=140), rangeTo=Location(value=140))
-  Token(category=SEMICOLON, context=;, rangeFrom=Location(value=141), rangeTo=Location(value=141))
-  Token(category=KEYWORD_RETURN, context=return, rangeFrom=Location(value=143), rangeTo=Location(value=148))
-  Token(category=INT_LITERAL, context=2, rangeFrom=Location(value=150), rangeTo=Location(value=150))
-  Token(category=SEMICOLON, context=;, rangeFrom=Location(value=151), rangeTo=Location(value=151))
-Parsing failed :(
-line 2, position 4 with 'x': Unable to continue parsing symbol VARIABLE_IDENTIFIER
+  Token(category=ARROW, context=->, rangeFrom=Location(value=118), rangeTo=Location(value=119))
+  Token(category=TYPE_IDENTIFIER, context=Int, rangeFrom=Location(value=121), rangeTo=Location(value=123))
+  Token(category=DOUBLE_ARROW, context==>, rangeFrom=Location(value=125), rangeTo=Location(value=126))
+  Token(category=INT_LITERAL, context=0, rangeFrom=Location(value=128), rangeTo=Location(value=128))
+  Token(category=SEMICOLON, context=;, rangeFrom=Location(value=129), rangeTo=Location(value=129))
+  Token(category=VARIABLE_IDENTIFIER, context=__extern__check_rsp, rangeFrom=Location(value=131), rangeTo=Location(value=149))
+  Token(category=LEFT_BRACKET, context=[, rangeFrom=Location(value=150), rangeTo=Location(value=150))
+  Token(category=RIGHT_BRACKET, context=], rangeFrom=Location(value=151), rangeTo=Location(value=151))
+  Token(category=SEMICOLON, context=;, rangeFrom=Location(value=152), rangeTo=Location(value=152))
+  Token(category=VARIABLE_IDENTIFIER, context=__extern__check_rsp, rangeFrom=Location(value=154), rangeTo=Location(value=172))
+  Token(category=LEFT_BRACKET, context=[, rangeFrom=Location(value=173), rangeTo=Location(value=173))
+  Token(category=RIGHT_BRACKET, context=], rangeFrom=Location(value=174), rangeTo=Location(value=174))
+  Token(category=SEMICOLON, context=;, rangeFrom=Location(value=175), rangeTo=Location(value=175))
+  Token(category=VARIABLE_IDENTIFIER, context=__extern__check_rsp, rangeFrom=Location(value=177), rangeTo=Location(value=195))
+  Token(category=LEFT_BRACKET, context=[, rangeFrom=Location(value=196), rangeTo=Location(value=196))
+  Token(category=RIGHT_BRACKET, context=], rangeFrom=Location(value=197), rangeTo=Location(value=197))
+  Token(category=SEMICOLON, context=;, rangeFrom=Location(value=198), rangeTo=Location(value=198))
+  Token(category=KEYWORD_RETURN, context=return, rangeFrom=Location(value=200), rangeTo=Location(value=205))
+  Token(category=INT_LITERAL, context=2, rangeFrom=Location(value=207), rangeTo=Location(value=207))
+  Token(category=SEMICOLON, context=;, rangeFrom=Location(value=208), rangeTo=Location(value=208))
+Parsing successful :D
+Parse tree:
+└┬START (Location(value=0), Location(value=208))
+ ├┬DECLARATION_LEVEL (Location(value=0), Location(value=45))
+ │├─KEYWORD_LET (Location(value=0), Location(value=2))
+ │├─VARIABLE_IDENTIFIER (Location(value=4), Location(value=22))
+ │└┬DECLARATION_UNTYPED (Location(value=24), Location(value=45))
+ │ ├─OPERATOR_ASSIGNMENT (Location(value=24), Location(value=24))
+ │ └┬FUNCTION_DECLARATION (Location(value=26), Location(value=45))
+ │  ├─LEFT_BRACKET (Location(value=26), Location(value=26))
+ │  ├┬FUNCTION_ARGUMENT (Location(value=27), Location(value=32))
+ │  │├─VARIABLE_IDENTIFIER (Location(value=27), Location(value=27))
+ │  │├─COLON (Location(value=28), Location(value=28))
+ │  │└┬TYPE (Location(value=30), Location(value=32))
+ │  │ └─TYPE_IDENTIFIER (Location(value=30), Location(value=32))
+ │  ├─RIGHT_BRACKET (Location(value=33), Location(value=33))
+ │  ├─ARROW (Location(value=35), Location(value=36))
+ │  ├┬TYPE (Location(value=38), Location(value=40))
+ │  │└─TYPE_IDENTIFIER (Location(value=38), Location(value=40))
+ │  ├─DOUBLE_ARROW (Location(value=42), Location(value=43))
+ │  └┬DECLARATION_LEVEL (Location(value=45), Location(value=45))
+ │   └┬ASSIGNMENT_LEVEL (Location(value=45), Location(value=45))
+ │    └┬LOGICAL_OPERATOR_LEVEL (Location(value=45), Location(value=45))
+ │     └┬COMPARATOR_LEVEL (Location(value=45), Location(value=45))
+ │      └┬EQUALITY_LEVEL (Location(value=45), Location(value=45))
+ │       └┬ADDITION_LEVEL (Location(value=45), Location(value=45))
+ │        └┬MULTIPLICATION_LEVEL (Location(value=45), Location(value=45))
+ │         └┬UNARY_LEVEL (Location(value=45), Location(value=45))
+ │          └┬STATEMENT_LEVEL (Location(value=45), Location(value=45))
+ │           └┬CALL_LEVEL (Location(value=45), Location(value=45))
+ │            └┬ATOM_LEVEL (Location(value=45), Location(value=45))
+ │             └─INT_LITERAL (Location(value=45), Location(value=45))
+ ├─SEMICOLON (Location(value=46), Location(value=46))
+ ├┬DECLARATION_LEVEL (Location(value=48), Location(value=86))
+ │├─KEYWORD_LET (Location(value=48), Location(value=50))
+ │├─VARIABLE_IDENTIFIER (Location(value=52), Location(value=69))
+ │└┬DECLARATION_UNTYPED (Location(value=71), Location(value=86))
+ │ ├─OPERATOR_ASSIGNMENT (Location(value=71), Location(value=71))
+ │ └┬FUNCTION_DECLARATION (Location(value=73), Location(value=86))
+ │  ├─LEFT_BRACKET (Location(value=73), Location(value=73))
+ │  ├─RIGHT_BRACKET (Location(value=74), Location(value=74))
+ │  ├─ARROW (Location(value=76), Location(value=77))
+ │  ├┬TYPE (Location(value=79), Location(value=81))
+ │  │└─TYPE_IDENTIFIER (Location(value=79), Location(value=81))
+ │  ├─DOUBLE_ARROW (Location(value=83), Location(value=84))
+ │  └┬DECLARATION_LEVEL (Location(value=86), Location(value=86))
+ │   └┬ASSIGNMENT_LEVEL (Location(value=86), Location(value=86))
+ │    └┬LOGICAL_OPERATOR_LEVEL (Location(value=86), Location(value=86))
+ │     └┬COMPARATOR_LEVEL (Location(value=86), Location(value=86))
+ │      └┬EQUALITY_LEVEL (Location(value=86), Location(value=86))
+ │       └┬ADDITION_LEVEL (Location(value=86), Location(value=86))
+ │        └┬MULTIPLICATION_LEVEL (Location(value=86), Location(value=86))
+ │         └┬UNARY_LEVEL (Location(value=86), Location(value=86))
+ │          └┬STATEMENT_LEVEL (Location(value=86), Location(value=86))
+ │           └┬CALL_LEVEL (Location(value=86), Location(value=86))
+ │            └┬ATOM_LEVEL (Location(value=86), Location(value=86))
+ │             └─INT_LITERAL (Location(value=86), Location(value=86))
+ ├─SEMICOLON (Location(value=87), Location(value=87))
+ ├┬DECLARATION_LEVEL (Location(value=89), Location(value=128))
+ │├─KEYWORD_LET (Location(value=89), Location(value=91))
+ │├─VARIABLE_IDENTIFIER (Location(value=93), Location(value=111))
+ │└┬DECLARATION_UNTYPED (Location(value=113), Location(value=128))
+ │ ├─OPERATOR_ASSIGNMENT (Location(value=113), Location(value=113))
+ │ └┬FUNCTION_DECLARATION (Location(value=115), Location(value=128))
+ │  ├─LEFT_BRACKET (Location(value=115), Location(value=115))
+ │  ├─RIGHT_BRACKET (Location(value=116), Location(value=116))
+ │  ├─ARROW (Location(value=118), Location(value=119))
+ │  ├┬TYPE (Location(value=121), Location(value=123))
+ │  │└─TYPE_IDENTIFIER (Location(value=121), Location(value=123))
+ │  ├─DOUBLE_ARROW (Location(value=125), Location(value=126))
+ │  └┬DECLARATION_LEVEL (Location(value=128), Location(value=128))
+ │   └┬ASSIGNMENT_LEVEL (Location(value=128), Location(value=128))
+ │    └┬LOGICAL_OPERATOR_LEVEL (Location(value=128), Location(value=128))
+ │     └┬COMPARATOR_LEVEL (Location(value=128), Location(value=128))
+ │      └┬EQUALITY_LEVEL (Location(value=128), Location(value=128))
+ │       └┬ADDITION_LEVEL (Location(value=128), Location(value=128))
+ │        └┬MULTIPLICATION_LEVEL (Location(value=128), Location(value=128))
+ │         └┬UNARY_LEVEL (Location(value=128), Location(value=128))
+ │          └┬STATEMENT_LEVEL (Location(value=128), Location(value=128))
+ │           └┬CALL_LEVEL (Location(value=128), Location(value=128))
+ │            └┬ATOM_LEVEL (Location(value=128), Location(value=128))
+ │             └─INT_LITERAL (Location(value=128), Location(value=128))
+ ├─SEMICOLON (Location(value=129), Location(value=129))
+ ├┬DECLARATION_LEVEL (Location(value=131), Location(value=151))
+ │└┬ASSIGNMENT_LEVEL (Location(value=131), Location(value=151))
+ │ └┬LOGICAL_OPERATOR_LEVEL (Location(value=131), Location(value=151))
+ │  └┬COMPARATOR_LEVEL (Location(value=131), Location(value=151))
+ │   └┬EQUALITY_LEVEL (Location(value=131), Location(value=151))
+ │    └┬ADDITION_LEVEL (Location(value=131), Location(value=151))
+ │     └┬MULTIPLICATION_LEVEL (Location(value=131), Location(value=151))
+ │      └┬UNARY_LEVEL (Location(value=131), Location(value=151))
+ │       └┬STATEMENT_LEVEL (Location(value=131), Location(value=151))
+ │        └┬CALL_LEVEL (Location(value=131), Location(value=151))
+ │         ├┬ATOM_LEVEL (Location(value=131), Location(value=149))
+ │         │└─VARIABLE_IDENTIFIER (Location(value=131), Location(value=149))
+ │         └┬FUNCTION_CALL (Location(value=150), Location(value=151))
+ │          ├─LEFT_BRACKET (Location(value=150), Location(value=150))
+ │          └─RIGHT_BRACKET (Location(value=151), Location(value=151))
+ ├─SEMICOLON (Location(value=152), Location(value=152))
+ ├┬DECLARATION_LEVEL (Location(value=154), Location(value=174))
+ │└┬ASSIGNMENT_LEVEL (Location(value=154), Location(value=174))
+ │ └┬LOGICAL_OPERATOR_LEVEL (Location(value=154), Location(value=174))
+ │  └┬COMPARATOR_LEVEL (Location(value=154), Location(value=174))
+ │   └┬EQUALITY_LEVEL (Location(value=154), Location(value=174))
+ │    └┬ADDITION_LEVEL (Location(value=154), Location(value=174))
+ │     └┬MULTIPLICATION_LEVEL (Location(value=154), Location(value=174))
+ │      └┬UNARY_LEVEL (Location(value=154), Location(value=174))
+ │       └┬STATEMENT_LEVEL (Location(value=154), Location(value=174))
+ │        └┬CALL_LEVEL (Location(value=154), Location(value=174))
+ │         ├┬ATOM_LEVEL (Location(value=154), Location(value=172))
+ │         │└─VARIABLE_IDENTIFIER (Location(value=154), Location(value=172))
+ │         └┬FUNCTION_CALL (Location(value=173), Location(value=174))
+ │          ├─LEFT_BRACKET (Location(value=173), Location(value=173))
+ │          └─RIGHT_BRACKET (Location(value=174), Location(value=174))
+ ├─SEMICOLON (Location(value=175), Location(value=175))
+ ├┬DECLARATION_LEVEL (Location(value=177), Location(value=197))
+ │└┬ASSIGNMENT_LEVEL (Location(value=177), Location(value=197))
+ │ └┬LOGICAL_OPERATOR_LEVEL (Location(value=177), Location(value=197))
+ │  └┬COMPARATOR_LEVEL (Location(value=177), Location(value=197))
+ │   └┬EQUALITY_LEVEL (Location(value=177), Location(value=197))
+ │    └┬ADDITION_LEVEL (Location(value=177), Location(value=197))
+ │     └┬MULTIPLICATION_LEVEL (Location(value=177), Location(value=197))
+ │      └┬UNARY_LEVEL (Location(value=177), Location(value=197))
+ │       └┬STATEMENT_LEVEL (Location(value=177), Location(value=197))
+ │        └┬CALL_LEVEL (Location(value=177), Location(value=197))
+ │         ├┬ATOM_LEVEL (Location(value=177), Location(value=195))
+ │         │└─VARIABLE_IDENTIFIER (Location(value=177), Location(value=195))
+ │         └┬FUNCTION_CALL (Location(value=196), Location(value=197))
+ │          ├─LEFT_BRACKET (Location(value=196), Location(value=196))
+ │          └─RIGHT_BRACKET (Location(value=197), Location(value=197))
+ ├─SEMICOLON (Location(value=198), Location(value=198))
+ ├┬DECLARATION_LEVEL (Location(value=200), Location(value=207))
+ │└┬ASSIGNMENT_LEVEL (Location(value=200), Location(value=207))
+ │ └┬LOGICAL_OPERATOR_LEVEL (Location(value=200), Location(value=207))
+ │  └┬COMPARATOR_LEVEL (Location(value=200), Location(value=207))
+ │   └┬EQUALITY_LEVEL (Location(value=200), Location(value=207))
+ │    └┬ADDITION_LEVEL (Location(value=200), Location(value=207))
+ │     └┬MULTIPLICATION_LEVEL (Location(value=200), Location(value=207))
+ │      └┬UNARY_LEVEL (Location(value=200), Location(value=207))
+ │       └┬STATEMENT_LEVEL (Location(value=200), Location(value=207))
+ │        └┬RETURN_STATEMENT (Location(value=200), Location(value=207))
+ │         ├─KEYWORD_RETURN (Location(value=200), Location(value=205))
+ │         └┬DECLARATION_LEVEL (Location(value=207), Location(value=207))
+ │          └┬ASSIGNMENT_LEVEL (Location(value=207), Location(value=207))
+ │           └┬LOGICAL_OPERATOR_LEVEL (Location(value=207), Location(value=207))
+ │            └┬COMPARATOR_LEVEL (Location(value=207), Location(value=207))
+ │             └┬EQUALITY_LEVEL (Location(value=207), Location(value=207))
+ │              └┬ADDITION_LEVEL (Location(value=207), Location(value=207))
+ │               └┬MULTIPLICATION_LEVEL (Location(value=207), Location(value=207))
+ │                └┬UNARY_LEVEL (Location(value=207), Location(value=207))
+ │                 └┬STATEMENT_LEVEL (Location(value=207), Location(value=207))
+ │                  └┬CALL_LEVEL (Location(value=207), Location(value=207))
+ │                   └┬ATOM_LEVEL (Location(value=207), Location(value=207))
+ │                    └─INT_LITERAL (Location(value=207), Location(value=207))
+ └─SEMICOLON (Location(value=208), Location(value=208))
+
+AST generation successful :D
+AST:
+└┬BLOCK
+ ├┬let <program>: [] => Unit = [] -> Unit
+ │└┬BLOCK
+ │ ├┬BLOCK
+ │ │├┬let __extern__write_int = [x: Int] -> Int
+ │ ││└─0
+ │ │├┬let __extern__read_int = [] -> Int
+ │ ││└─0
+ │ │├┬let __extern__check_rsp = [] -> Int
+ │ ││└─0
+ │ │├┬FunctionCall
+ │ ││└─__extern__check_rsp
+ │ │├┬FunctionCall
+ │ ││└─__extern__check_rsp
+ │ │├┬FunctionCall
+ │ ││└─__extern__check_rsp
+ │ │├┬Return
+ │ ││└─2
+ │ │└─empty
+ │ └─empty
+ └┬FunctionCall
+  └─<program>
+
+Name resolution successful :D
+Resolved names:
+  __extern__check_rsp -> cacophony.semantic.names.ResolvedName$Function@6121c9d6
+  __extern__check_rsp -> cacophony.semantic.names.ResolvedName$Function@87f383f
+  __extern__check_rsp -> cacophony.semantic.names.ResolvedName$Function@4eb7f003
+  <program> -> cacophony.semantic.names.ResolvedName$Function@eafc191
+Overload resolution successful :D
+Resolved variables:
+  __extern__check_rsp -> let __extern__check_rsp = [] -> Int
+  __extern__check_rsp -> let __extern__check_rsp = [] -> Int
+  __extern__check_rsp -> let __extern__check_rsp = [] -> Int
+  <program> -> let <program>: [] => Unit = [] -> Unit
+Call graph generation successful :D
+Calls:
+  let <program>: [] => Unit = [] -> Unit (<program>/0) calls:
+    let __extern__check_rsp = [] -> Int (__extern__check_rsp/0)
+Function analysis successful :D
+  let <program>: [] => Unit = [] -> Unit (<program>/0) at static depth 0:
+    Parent link: null
+    Used variables: 0
+    Variables used in nested functions: 0
+  let __extern__write_int = [x: Int] -> Int (__extern__write_int/1) at static depth 1:
+    Parent link: ParentLink(parent=let <program>: [] => Unit = [] -> Unit, used=false)
+    Used variables: 0
+    Variables used in nested functions: 0
+  let __extern__read_int = [] -> Int (__extern__read_int/0) at static depth 1:
+    Parent link: ParentLink(parent=let <program>: [] => Unit = [] -> Unit, used=false)
+    Used variables: 0
+    Variables used in nested functions: 0
+  let __extern__check_rsp = [] -> Int (__extern__check_rsp/0) at static depth 1:
+    Parent link: ParentLink(parent=let <program>: [] => Unit = [] -> Unit, used=false)
+    Used variables: 0
+    Variables used in nested functions: 0
+Control flow graph generation successful :D
+strict digraph {
+subgraph cluster_0 {
+label="<program>"
+color=black
+  node0 [label="Jump Push(value=rbp)", style="filled", fillcolor="green"]
+  node0 -> node1
+
+  node1 [label="Jump (rbp = (rsp - ConstantKnown(value=8)))"]
+  node1 -> node2
+
+  node2 [label="Jump (rsp -= ConstantLazy(value=8))"]
+  node2 -> node3
+
+  node3 [label="Jump (VReg(58134517) = rbx)"]
+  node3 -> node4
+
+  node4 [label="Jump (VReg(4206a205) = r12)"]
+  node4 -> node5
+
+  node5 [label="Jump (VReg(29ba4338) = r13)"]
+  node5 -> node6
+
+  node6 [label="Jump (VReg(57175e74) = r14)"]
+  node6 -> node7
+
+  node7 [label="Jump (VReg(7bb58ca3) = r15)"]
+  node7 -> node8
+
+  node8 [label="Jump (MemoryAccess(destination=(rbp - ConstantKnown(value=0))) = rdi)"]
+  node8 -> node17
+
+  node9 [label="Jump (rbx = VReg(58134517))"]
+  node9 -> node10
+
+  node10 [label="Jump (r12 = VReg(4206a205))"]
+  node10 -> node11
+
+  node11 [label="Jump (r13 = VReg(29ba4338))"]
+  node11 -> node12
+
+  node12 [label="Jump (r14 = VReg(57175e74))"]
+  node12 -> node13
+
+  node13 [label="Jump (r15 = VReg(7bb58ca3))"]
+  node13 -> node14
+
+  node14 [label="Jump (rax = VReg(0c540f5a))"]
+  node14 -> node15
+
+  node15 [label="Jump (rsp = (rbp + ConstantKnown(value=8)))"]
+  node15 -> node16
+
+  node16 [label="Jump Pop(register=rbp)"]
+  node16 -> node45
+
+  node17 [label="Jump (VReg(770c2e6b) = rsp)"]
+  node17 -> node18
+
+  node18 [label="Jump Push(value=VReg(770c2e6b))"]
+  node18 -> node19
+
+  node19 [label="Jump Push(value=VReg(770c2e6b))"]
+  node19 -> node20
+
+  node20 [label="Jump (rsp = (rsp + ((rsp + ConstantKnown(value=0)) % ConstantKnown(value=16))))"]
+  node20 -> node21
+
+  node21 [label="Jump (rdi = rbp)"]
+  node21 -> node22
+
+  node22 [label="Jump Comment(comment=register arguments filled)"]
+  node22 -> node23
+
+  node23 [label="Jump Comment(comment=stack arguments computed)"]
+  node23 -> node24
+
+  node24 [label="Jump call __extern__check_rsp"]
+  node24 -> node25
+
+  node25 [label="Jump Pop(register=rsp)"]
+  node25 -> node26
+
+  node26 [label="Jump (VReg(1a052a00) = rsp)"]
+  node26 -> node27
+
+  node27 [label="Jump Push(value=VReg(1a052a00))"]
+  node27 -> node28
+
+  node28 [label="Jump Push(value=VReg(1a052a00))"]
+  node28 -> node29
+
+  node29 [label="Jump (rsp = (rsp + ((rsp + ConstantKnown(value=0)) % ConstantKnown(value=16))))"]
+  node29 -> node30
+
+  node30 [label="Jump (rdi = rbp)"]
+  node30 -> node31
+
+  node31 [label="Jump Comment(comment=register arguments filled)"]
+  node31 -> node32
+
+  node32 [label="Jump Comment(comment=stack arguments computed)"]
+  node32 -> node33
+
+  node33 [label="Jump call __extern__check_rsp"]
+  node33 -> node34
+
+  node34 [label="Jump Pop(register=rsp)"]
+  node34 -> node35
+
+  node35 [label="Jump (VReg(4d826d77) = rsp)"]
+  node35 -> node36
+
+  node36 [label="Jump Push(value=VReg(4d826d77))"]
+  node36 -> node37
+
+  node37 [label="Jump Push(value=VReg(4d826d77))"]
+  node37 -> node38
+
+  node38 [label="Jump (rsp = (rsp + ((rsp + ConstantKnown(value=0)) % ConstantKnown(value=16))))"]
+  node38 -> node39
+
+  node39 [label="Jump (rdi = rbp)"]
+  node39 -> node40
+
+  node40 [label="Jump Comment(comment=register arguments filled)"]
+  node40 -> node41
+
+  node41 [label="Jump Comment(comment=stack arguments computed)"]
+  node41 -> node42
+
+  node42 [label="Jump call __extern__check_rsp"]
+  node42 -> node43
+
+  node43 [label="Jump Pop(register=rsp)"]
+  node43 -> node44
+
+  node44 [label="Jump (VReg(0c540f5a) = ConstantKnown(value=2))"]
+  node44 -> node9
+
+  node45 [label="Final Return", style="filled", fillcolor="red"]
+
+}
+subgraph cluster_1 {
+label="__extern__write_int"
+color=black
+  node46 [label="Jump Push(value=rbp)", style="filled", fillcolor="green"]
+  node46 -> node47
+
+  node47 [label="Jump (rbp = (rsp - ConstantKnown(value=8)))"]
+  node47 -> node48
+
+  node48 [label="Jump (rsp -= ConstantLazy(value=8))"]
+  node48 -> node49
+
+  node49 [label="Jump (VReg(61009542) = rbx)"]
+  node49 -> node50
+
+  node50 [label="Jump (VReg(77e9807f) = r12)"]
+  node50 -> node51
+
+  node51 [label="Jump (VReg(448ff1a8) = r13)"]
+  node51 -> node52
+
+  node52 [label="Jump (VReg(1a38c59b) = r14)"]
+  node52 -> node53
+
+  node53 [label="Jump (VReg(7f77e91b) = r15)"]
+  node53 -> node54
+
+  node54 [label="Jump (VReg(44a664f2) = rdi)"]
+  node54 -> node55
+
+  node55 [label="Jump (MemoryAccess(destination=(rbp - ConstantKnown(value=0))) = rsi)"]
+  node55 -> node64
+
+  node56 [label="Jump (rbx = VReg(61009542))"]
+  node56 -> node57
+
+  node57 [label="Jump (r12 = VReg(77e9807f))"]
+  node57 -> node58
+
+  node58 [label="Jump (r13 = VReg(448ff1a8))"]
+  node58 -> node59
+
+  node59 [label="Jump (r14 = VReg(1a38c59b))"]
+  node59 -> node60
+
+  node60 [label="Jump (r15 = VReg(7f77e91b))"]
+  node60 -> node61
+
+  node61 [label="Jump (rax = VReg(7f9fcf7f))"]
+  node61 -> node62
+
+  node62 [label="Jump (rsp = (rbp + ConstantKnown(value=8)))"]
+  node62 -> node63
+
+  node63 [label="Jump Pop(register=rbp)"]
+  node63 -> node65
+
+  node64 [label="Jump (VReg(7f9fcf7f) = ConstantKnown(value=0))"]
+  node64 -> node56
+
+  node65 [label="Final Return", style="filled", fillcolor="red"]
+
+}
+subgraph cluster_2 {
+label="__extern__read_int"
+color=black
+  node66 [label="Jump Push(value=rbp)", style="filled", fillcolor="green"]
+  node66 -> node67
+
+  node67 [label="Jump (rbp = (rsp - ConstantKnown(value=8)))"]
+  node67 -> node68
+
+  node68 [label="Jump (rsp -= ConstantLazy(value=8))"]
+  node68 -> node69
+
+  node69 [label="Jump (VReg(2357d90a) = rbx)"]
+  node69 -> node70
+
+  node70 [label="Jump (VReg(6328d34a) = r12)"]
+  node70 -> node71
+
+  node71 [label="Jump (VReg(145eaa29) = r13)"]
+  node71 -> node72
+
+  node72 [label="Jump (VReg(15bb6bea) = r14)"]
+  node72 -> node73
+
+  node73 [label="Jump (VReg(08b96fde) = r15)"]
+  node73 -> node74
+
+  node74 [label="Jump (MemoryAccess(destination=(rbp - ConstantKnown(value=0))) = rdi)"]
+  node74 -> node83
+
+  node75 [label="Jump (rbx = VReg(2357d90a))"]
+  node75 -> node76
+
+  node76 [label="Jump (r12 = VReg(6328d34a))"]
+  node76 -> node77
+
+  node77 [label="Jump (r13 = VReg(145eaa29))"]
+  node77 -> node78
+
+  node78 [label="Jump (r14 = VReg(15bb6bea))"]
+  node78 -> node79
+
+  node79 [label="Jump (r15 = VReg(08b96fde))"]
+  node79 -> node80
+
+  node80 [label="Jump (rax = VReg(2d2e5f00))"]
+  node80 -> node81
+
+  node81 [label="Jump (rsp = (rbp + ConstantKnown(value=8)))"]
+  node81 -> node82
+
+  node82 [label="Jump Pop(register=rbp)"]
+  node82 -> node84
+
+  node83 [label="Jump (VReg(2d2e5f00) = ConstantKnown(value=0))"]
+  node83 -> node75
+
+  node84 [label="Final Return", style="filled", fillcolor="red"]
+
+}
+subgraph cluster_3 {
+label="__extern__check_rsp"
+color=black
+  node85 [label="Jump Push(value=rbp)", style="filled", fillcolor="green"]
+  node85 -> node86
+
+  node86 [label="Jump (rbp = (rsp - ConstantKnown(value=8)))"]
+  node86 -> node87
+
+  node87 [label="Jump (rsp -= ConstantLazy(value=8))"]
+  node87 -> node88
+
+  node88 [label="Jump (VReg(4c40b76e) = rbx)"]
+  node88 -> node89
+
+  node89 [label="Jump (VReg(02ea6137) = r12)"]
+  node89 -> node90
+
+  node90 [label="Jump (VReg(41ee392b) = r13)"]
+  node90 -> node91
+
+  node91 [label="Jump (VReg(1e67a849) = r14)"]
+  node91 -> node92
+
+  node92 [label="Jump (VReg(57d5872c) = r15)"]
+  node92 -> node93
+
+  node93 [label="Jump (MemoryAccess(destination=(rbp - ConstantKnown(value=0))) = rdi)"]
+  node93 -> node102
+
+  node94 [label="Jump (rbx = VReg(4c40b76e))"]
+  node94 -> node95
+
+  node95 [label="Jump (r12 = VReg(02ea6137))"]
+  node95 -> node96
+
+  node96 [label="Jump (r13 = VReg(41ee392b))"]
+  node96 -> node97
+
+  node97 [label="Jump (r14 = VReg(1e67a849))"]
+  node97 -> node98
+
+  node98 [label="Jump (r15 = VReg(57d5872c))"]
+  node98 -> node99
+
+  node99 [label="Jump (rax = VReg(0667a738))"]
+  node99 -> node100
+
+  node100 [label="Jump (rsp = (rbp + ConstantKnown(value=8)))"]
+  node100 -> node101
+
+  node101 [label="Jump Pop(register=rbp)"]
+  node101 -> node103
+
+  node102 [label="Jump (VReg(0667a738) = ConstantKnown(value=0))"]
+  node102 -> node94
+
+  node103 [label="Final Return", style="filled", fillcolor="red"]
+
+}
+}
+Instruction covering successful :D
+  let <program>: [] => Unit = [] -> Unit (<program>/0)
+   BlockLabel(name=bb0_1503853118)
+     LocalLabel(label=BlockLabel(name=bb0_1503853118))
+     MovRegReg(lhs=reg127, rhs=RBP)
+     PushReg(reg=reg127)
+   BlockLabel(name=bb1_1503853118)
+     LocalLabel(label=BlockLabel(name=bb1_1503853118))
+     MovRegReg(lhs=reg125, rhs=RSP)
+     MovRegReg(lhs=reg124, rhs=reg125)
+     SubRegImm(lhs=reg124, imm=8)
+     MovRegReg(lhs=RBP, rhs=reg124)
+   BlockLabel(name=bb2_1503853118)
+     LocalLabel(label=BlockLabel(name=bb2_1503853118))
+     MovRegImm(lhs=reg122, imm=8)
+     SubRegReg(lhs=RSP, rhs=reg122)
+   BlockLabel(name=bb3_1503853118)
+     LocalLabel(label=BlockLabel(name=bb3_1503853118))
+     MovRegReg(lhs=reg120, rhs=RBX)
+     MovRegReg(lhs=reg1, rhs=reg120)
+   BlockLabel(name=bb4_1503853118)
+     LocalLabel(label=BlockLabel(name=bb4_1503853118))
+     MovRegReg(lhs=reg118, rhs=R12)
+     MovRegReg(lhs=reg2, rhs=reg118)
+   BlockLabel(name=bb5_1503853118)
+     LocalLabel(label=BlockLabel(name=bb5_1503853118))
+     MovRegReg(lhs=reg116, rhs=R13)
+     MovRegReg(lhs=reg3, rhs=reg116)
+   BlockLabel(name=bb6_1503853118)
+     LocalLabel(label=BlockLabel(name=bb6_1503853118))
+     MovRegReg(lhs=reg114, rhs=R14)
+     MovRegReg(lhs=reg4, rhs=reg114)
+   BlockLabel(name=bb7_1503853118)
+     LocalLabel(label=BlockLabel(name=bb7_1503853118))
+     MovRegReg(lhs=reg112, rhs=R15)
+     MovRegReg(lhs=reg5, rhs=reg112)
+   BlockLabel(name=bb8_1503853118)
+     LocalLabel(label=BlockLabel(name=bb8_1503853118))
+     MovRegReg(lhs=reg110, rhs=RBP)
+     MovRegReg(lhs=reg109, rhs=reg110)
+     SubRegImm(lhs=reg109, imm=0)
+     MovMemReg(mem=MemoryAddress(base=reg109, index=null, scale=null, displacement=null), rhs=RDI)
+   BlockLabel(name=bb9_1503853118)
+     LocalLabel(label=BlockLabel(name=bb9_1503853118))
+     MovRegReg(lhs=reg107, rhs=RSP)
+     MovRegReg(lhs=reg25, rhs=reg107)
+   BlockLabel(name=bb10_1503853118)
+     LocalLabel(label=BlockLabel(name=bb10_1503853118))
+     MovRegReg(lhs=reg105, rhs=reg25)
+     PushReg(reg=reg105)
+   BlockLabel(name=bb11_1503853118)
+     LocalLabel(label=BlockLabel(name=bb11_1503853118))
+     MovRegReg(lhs=reg103, rhs=reg25)
+     PushReg(reg=reg103)
+   BlockLabel(name=bb12_1503853118)
+     LocalLabel(label=BlockLabel(name=bb12_1503853118))
+     MovRegReg(lhs=reg96, rhs=RSP)
+     MovRegReg(lhs=reg100, rhs=RSP)
+     MovRegImm(lhs=reg101, imm=0)
+     MovRegReg(lhs=reg98, rhs=reg100)
+     AddRegReg(lhs=reg98, rhs=reg101)
+     MovRegImm(lhs=reg99, imm=16)
+     MovRegReg(lhs=RAX, rhs=reg98)
+     cacophony.codegen.instructions.cacophonyInstructions.Cqo@408d971b
+     IDiv(reg=reg99)
+     MovRegReg(lhs=reg97, rhs=RDX)
+     MovRegReg(lhs=reg95, rhs=reg96)
+     AddRegReg(lhs=reg95, rhs=reg97)
+     MovRegReg(lhs=RSP, rhs=reg95)
+   BlockLabel(name=bb13_1503853118)
+     LocalLabel(label=BlockLabel(name=bb13_1503853118))
+     MovRegReg(lhs=reg93, rhs=RBP)
+     MovRegReg(lhs=RDI, rhs=reg93)
+   BlockLabel(name=bb14_1503853118)
+     LocalLabel(label=BlockLabel(name=bb14_1503853118))
+     Comment(comment=register arguments filled)
+   BlockLabel(name=bb15_1503853118)
+     LocalLabel(label=BlockLabel(name=bb15_1503853118))
+     Comment(comment=stack arguments computed)
+   BlockLabel(name=bb16_1503853118)
+     LocalLabel(label=BlockLabel(name=bb16_1503853118))
+     Call(function=let __extern__check_rsp = [] -> Int)
+   BlockLabel(name=bb17_1503853118)
+     LocalLabel(label=BlockLabel(name=bb17_1503853118))
+     Pop(reg=RSP)
+   BlockLabel(name=bb18_1503853118)
+     LocalLabel(label=BlockLabel(name=bb18_1503853118))
+     MovRegReg(lhs=reg87, rhs=RSP)
+     MovRegReg(lhs=reg26, rhs=reg87)
+   BlockLabel(name=bb19_1503853118)
+     LocalLabel(label=BlockLabel(name=bb19_1503853118))
+     MovRegReg(lhs=reg85, rhs=reg26)
+     PushReg(reg=reg85)
+   BlockLabel(name=bb20_1503853118)
+     LocalLabel(label=BlockLabel(name=bb20_1503853118))
+     MovRegReg(lhs=reg83, rhs=reg26)
+     PushReg(reg=reg83)
+   BlockLabel(name=bb21_1503853118)
+     LocalLabel(label=BlockLabel(name=bb21_1503853118))
+     MovRegReg(lhs=reg76, rhs=RSP)
+     MovRegReg(lhs=reg80, rhs=RSP)
+     MovRegImm(lhs=reg81, imm=0)
+     MovRegReg(lhs=reg78, rhs=reg80)
+     AddRegReg(lhs=reg78, rhs=reg81)
+     MovRegImm(lhs=reg79, imm=16)
+     MovRegReg(lhs=RAX, rhs=reg78)
+     cacophony.codegen.instructions.cacophonyInstructions.Cqo@6c6cb480
+     IDiv(reg=reg79)
+     MovRegReg(lhs=reg77, rhs=RDX)
+     MovRegReg(lhs=reg75, rhs=reg76)
+     AddRegReg(lhs=reg75, rhs=reg77)
+     MovRegReg(lhs=RSP, rhs=reg75)
+   BlockLabel(name=bb22_1503853118)
+     LocalLabel(label=BlockLabel(name=bb22_1503853118))
+     MovRegReg(lhs=reg73, rhs=RBP)
+     MovRegReg(lhs=RDI, rhs=reg73)
+   BlockLabel(name=bb23_1503853118)
+     LocalLabel(label=BlockLabel(name=bb23_1503853118))
+     Comment(comment=register arguments filled)
+   BlockLabel(name=bb24_1503853118)
+     LocalLabel(label=BlockLabel(name=bb24_1503853118))
+     Comment(comment=stack arguments computed)
+   BlockLabel(name=bb25_1503853118)
+     LocalLabel(label=BlockLabel(name=bb25_1503853118))
+     Call(function=let __extern__check_rsp = [] -> Int)
+   BlockLabel(name=bb26_1503853118)
+     LocalLabel(label=BlockLabel(name=bb26_1503853118))
+     Pop(reg=RSP)
+   BlockLabel(name=bb27_1503853118)
+     LocalLabel(label=BlockLabel(name=bb27_1503853118))
+     MovRegReg(lhs=reg67, rhs=RSP)
+     MovRegReg(lhs=reg27, rhs=reg67)
+   BlockLabel(name=bb28_1503853118)
+     LocalLabel(label=BlockLabel(name=bb28_1503853118))
+     MovRegReg(lhs=reg65, rhs=reg27)
+     PushReg(reg=reg65)
+   BlockLabel(name=bb29_1503853118)
+     LocalLabel(label=BlockLabel(name=bb29_1503853118))
+     MovRegReg(lhs=reg63, rhs=reg27)
+     PushReg(reg=reg63)
+   BlockLabel(name=bb30_1503853118)
+     LocalLabel(label=BlockLabel(name=bb30_1503853118))
+     MovRegReg(lhs=reg56, rhs=RSP)
+     MovRegReg(lhs=reg60, rhs=RSP)
+     MovRegImm(lhs=reg61, imm=0)
+     MovRegReg(lhs=reg58, rhs=reg60)
+     AddRegReg(lhs=reg58, rhs=reg61)
+     MovRegImm(lhs=reg59, imm=16)
+     MovRegReg(lhs=RAX, rhs=reg58)
+     cacophony.codegen.instructions.cacophonyInstructions.Cqo@3c46e67a
+     IDiv(reg=reg59)
+     MovRegReg(lhs=reg57, rhs=RDX)
+     MovRegReg(lhs=reg55, rhs=reg56)
+     AddRegReg(lhs=reg55, rhs=reg57)
+     MovRegReg(lhs=RSP, rhs=reg55)
+   BlockLabel(name=bb31_1503853118)
+     LocalLabel(label=BlockLabel(name=bb31_1503853118))
+     MovRegReg(lhs=reg53, rhs=RBP)
+     MovRegReg(lhs=RDI, rhs=reg53)
+   BlockLabel(name=bb32_1503853118)
+     LocalLabel(label=BlockLabel(name=bb32_1503853118))
+     Comment(comment=register arguments filled)
+   BlockLabel(name=bb33_1503853118)
+     LocalLabel(label=BlockLabel(name=bb33_1503853118))
+     Comment(comment=stack arguments computed)
+   BlockLabel(name=bb34_1503853118)
+     LocalLabel(label=BlockLabel(name=bb34_1503853118))
+     Call(function=let __extern__check_rsp = [] -> Int)
+   BlockLabel(name=bb35_1503853118)
+     LocalLabel(label=BlockLabel(name=bb35_1503853118))
+     Pop(reg=RSP)
+   BlockLabel(name=bb36_1503853118)
+     LocalLabel(label=BlockLabel(name=bb36_1503853118))
+     MovRegImm(lhs=reg47, imm=2)
+     MovRegReg(lhs=reg0, rhs=reg47)
+   BlockLabel(name=bb37_1503853118)
+     LocalLabel(label=BlockLabel(name=bb37_1503853118))
+     MovRegReg(lhs=reg45, rhs=reg1)
+     MovRegReg(lhs=RBX, rhs=reg45)
+   BlockLabel(name=bb38_1503853118)
+     LocalLabel(label=BlockLabel(name=bb38_1503853118))
+     MovRegReg(lhs=reg43, rhs=reg2)
+     MovRegReg(lhs=R12, rhs=reg43)
+   BlockLabel(name=bb39_1503853118)
+     LocalLabel(label=BlockLabel(name=bb39_1503853118))
+     MovRegReg(lhs=reg41, rhs=reg3)
+     MovRegReg(lhs=R13, rhs=reg41)
+   BlockLabel(name=bb40_1503853118)
+     LocalLabel(label=BlockLabel(name=bb40_1503853118))
+     MovRegReg(lhs=reg39, rhs=reg4)
+     MovRegReg(lhs=R14, rhs=reg39)
+   BlockLabel(name=bb41_1503853118)
+     LocalLabel(label=BlockLabel(name=bb41_1503853118))
+     MovRegReg(lhs=reg37, rhs=reg5)
+     MovRegReg(lhs=R15, rhs=reg37)
+   BlockLabel(name=bb42_1503853118)
+     LocalLabel(label=BlockLabel(name=bb42_1503853118))
+     MovRegReg(lhs=reg35, rhs=reg0)
+     MovRegReg(lhs=RAX, rhs=reg35)
+   BlockLabel(name=bb43_1503853118)
+     LocalLabel(label=BlockLabel(name=bb43_1503853118))
+     MovRegReg(lhs=reg32, rhs=RBP)
+     MovRegImm(lhs=reg33, imm=8)
+     MovRegReg(lhs=reg31, rhs=reg32)
+     AddRegReg(lhs=reg31, rhs=reg33)
+     MovRegReg(lhs=RSP, rhs=reg31)
+   BlockLabel(name=bb44_1503853118)
+     LocalLabel(label=BlockLabel(name=bb44_1503853118))
+     Pop(reg=RBP)
+   BlockLabel(name=bb45_1503853118)
+     LocalLabel(label=BlockLabel(name=bb45_1503853118))
+     cacophony.codegen.instructions.cacophonyInstructions.Ret@c730b35
+  let __extern__write_int = [x: Int] -> Int (__extern__write_int/1)
+   BlockLabel(name=bb0_501385466)
+     LocalLabel(label=BlockLabel(name=bb0_501385466))
+     MovRegReg(lhs=reg169, rhs=RBP)
+     PushReg(reg=reg169)
+   BlockLabel(name=bb1_501385466)
+     LocalLabel(label=BlockLabel(name=bb1_501385466))
+     MovRegReg(lhs=reg167, rhs=RSP)
+     MovRegReg(lhs=reg166, rhs=reg167)
+     SubRegImm(lhs=reg166, imm=8)
+     MovRegReg(lhs=RBP, rhs=reg166)
+   BlockLabel(name=bb2_501385466)
+     LocalLabel(label=BlockLabel(name=bb2_501385466))
+     MovRegImm(lhs=reg164, imm=8)
+     SubRegReg(lhs=RSP, rhs=reg164)
+   BlockLabel(name=bb3_501385466)
+     LocalLabel(label=BlockLabel(name=bb3_501385466))
+     MovRegReg(lhs=reg162, rhs=RBX)
+     MovRegReg(lhs=reg8, rhs=reg162)
+   BlockLabel(name=bb4_501385466)
+     LocalLabel(label=BlockLabel(name=bb4_501385466))
+     MovRegReg(lhs=reg160, rhs=R12)
+     MovRegReg(lhs=reg9, rhs=reg160)
+   BlockLabel(name=bb5_501385466)
+     LocalLabel(label=BlockLabel(name=bb5_501385466))
+     MovRegReg(lhs=reg158, rhs=R13)
+     MovRegReg(lhs=reg10, rhs=reg158)
+   BlockLabel(name=bb6_501385466)
+     LocalLabel(label=BlockLabel(name=bb6_501385466))
+     MovRegReg(lhs=reg156, rhs=R14)
+     MovRegReg(lhs=reg11, rhs=reg156)
+   BlockLabel(name=bb7_501385466)
+     LocalLabel(label=BlockLabel(name=bb7_501385466))
+     MovRegReg(lhs=reg154, rhs=R15)
+     MovRegReg(lhs=reg12, rhs=reg154)
+   BlockLabel(name=bb8_501385466)
+     LocalLabel(label=BlockLabel(name=bb8_501385466))
+     MovRegReg(lhs=reg152, rhs=RDI)
+     MovRegReg(lhs=reg6, rhs=reg152)
+   BlockLabel(name=bb9_501385466)
+     LocalLabel(label=BlockLabel(name=bb9_501385466))
+     MovRegReg(lhs=reg150, rhs=RBP)
+     MovRegReg(lhs=reg149, rhs=reg150)
+     SubRegImm(lhs=reg149, imm=0)
+     MovMemReg(mem=MemoryAddress(base=reg149, index=null, scale=null, displacement=null), rhs=RSI)
+   BlockLabel(name=bb10_501385466)
+     LocalLabel(label=BlockLabel(name=bb10_501385466))
+     MovRegImm(lhs=reg147, imm=0)
+     MovRegReg(lhs=reg7, rhs=reg147)
+   BlockLabel(name=bb11_501385466)
+     LocalLabel(label=BlockLabel(name=bb11_501385466))
+     MovRegReg(lhs=reg145, rhs=reg8)
+     MovRegReg(lhs=RBX, rhs=reg145)
+   BlockLabel(name=bb12_501385466)
+     LocalLabel(label=BlockLabel(name=bb12_501385466))
+     MovRegReg(lhs=reg143, rhs=reg9)
+     MovRegReg(lhs=R12, rhs=reg143)
+   BlockLabel(name=bb13_501385466)
+     LocalLabel(label=BlockLabel(name=bb13_501385466))
+     MovRegReg(lhs=reg141, rhs=reg10)
+     MovRegReg(lhs=R13, rhs=reg141)
+   BlockLabel(name=bb14_501385466)
+     LocalLabel(label=BlockLabel(name=bb14_501385466))
+     MovRegReg(lhs=reg139, rhs=reg11)
+     MovRegReg(lhs=R14, rhs=reg139)
+   BlockLabel(name=bb15_501385466)
+     LocalLabel(label=BlockLabel(name=bb15_501385466))
+     MovRegReg(lhs=reg137, rhs=reg12)
+     MovRegReg(lhs=R15, rhs=reg137)
+   BlockLabel(name=bb16_501385466)
+     LocalLabel(label=BlockLabel(name=bb16_501385466))
+     MovRegReg(lhs=reg135, rhs=reg7)
+     MovRegReg(lhs=RAX, rhs=reg135)
+   BlockLabel(name=bb17_501385466)
+     LocalLabel(label=BlockLabel(name=bb17_501385466))
+     MovRegReg(lhs=reg132, rhs=RBP)
+     MovRegImm(lhs=reg133, imm=8)
+     MovRegReg(lhs=reg131, rhs=reg132)
+     AddRegReg(lhs=reg131, rhs=reg133)
+     MovRegReg(lhs=RSP, rhs=reg131)
+   BlockLabel(name=bb18_501385466)
+     LocalLabel(label=BlockLabel(name=bb18_501385466))
+     Pop(reg=RBP)
+   BlockLabel(name=bb19_501385466)
+     LocalLabel(label=BlockLabel(name=bb19_501385466))
+     cacophony.codegen.instructions.cacophonyInstructions.Ret@206a70ef
+  let __extern__read_int = [] -> Int (__extern__read_int/0)
+   BlockLabel(name=bb0_504310870)
+     LocalLabel(label=BlockLabel(name=bb0_504310870))
+     MovRegReg(lhs=reg209, rhs=RBP)
+     PushReg(reg=reg209)
+   BlockLabel(name=bb1_504310870)
+     LocalLabel(label=BlockLabel(name=bb1_504310870))
+     MovRegReg(lhs=reg207, rhs=RSP)
+     MovRegReg(lhs=reg206, rhs=reg207)
+     SubRegImm(lhs=reg206, imm=8)
+     MovRegReg(lhs=RBP, rhs=reg206)
+   BlockLabel(name=bb2_504310870)
+     LocalLabel(label=BlockLabel(name=bb2_504310870))
+     MovRegImm(lhs=reg204, imm=8)
+     SubRegReg(lhs=RSP, rhs=reg204)
+   BlockLabel(name=bb3_504310870)
+     LocalLabel(label=BlockLabel(name=bb3_504310870))
+     MovRegReg(lhs=reg202, rhs=RBX)
+     MovRegReg(lhs=reg14, rhs=reg202)
+   BlockLabel(name=bb4_504310870)
+     LocalLabel(label=BlockLabel(name=bb4_504310870))
+     MovRegReg(lhs=reg200, rhs=R12)
+     MovRegReg(lhs=reg15, rhs=reg200)
+   BlockLabel(name=bb5_504310870)
+     LocalLabel(label=BlockLabel(name=bb5_504310870))
+     MovRegReg(lhs=reg198, rhs=R13)
+     MovRegReg(lhs=reg16, rhs=reg198)
+   BlockLabel(name=bb6_504310870)
+     LocalLabel(label=BlockLabel(name=bb6_504310870))
+     MovRegReg(lhs=reg196, rhs=R14)
+     MovRegReg(lhs=reg17, rhs=reg196)
+   BlockLabel(name=bb7_504310870)
+     LocalLabel(label=BlockLabel(name=bb7_504310870))
+     MovRegReg(lhs=reg194, rhs=R15)
+     MovRegReg(lhs=reg18, rhs=reg194)
+   BlockLabel(name=bb8_504310870)
+     LocalLabel(label=BlockLabel(name=bb8_504310870))
+     MovRegReg(lhs=reg192, rhs=RBP)
+     MovRegReg(lhs=reg191, rhs=reg192)
+     SubRegImm(lhs=reg191, imm=0)
+     MovMemReg(mem=MemoryAddress(base=reg191, index=null, scale=null, displacement=null), rhs=RDI)
+   BlockLabel(name=bb9_504310870)
+     LocalLabel(label=BlockLabel(name=bb9_504310870))
+     MovRegImm(lhs=reg189, imm=0)
+     MovRegReg(lhs=reg13, rhs=reg189)
+   BlockLabel(name=bb10_504310870)
+     LocalLabel(label=BlockLabel(name=bb10_504310870))
+     MovRegReg(lhs=reg187, rhs=reg14)
+     MovRegReg(lhs=RBX, rhs=reg187)
+   BlockLabel(name=bb11_504310870)
+     LocalLabel(label=BlockLabel(name=bb11_504310870))
+     MovRegReg(lhs=reg185, rhs=reg15)
+     MovRegReg(lhs=R12, rhs=reg185)
+   BlockLabel(name=bb12_504310870)
+     LocalLabel(label=BlockLabel(name=bb12_504310870))
+     MovRegReg(lhs=reg183, rhs=reg16)
+     MovRegReg(lhs=R13, rhs=reg183)
+   BlockLabel(name=bb13_504310870)
+     LocalLabel(label=BlockLabel(name=bb13_504310870))
+     MovRegReg(lhs=reg181, rhs=reg17)
+     MovRegReg(lhs=R14, rhs=reg181)
+   BlockLabel(name=bb14_504310870)
+     LocalLabel(label=BlockLabel(name=bb14_504310870))
+     MovRegReg(lhs=reg179, rhs=reg18)
+     MovRegReg(lhs=R15, rhs=reg179)
+   BlockLabel(name=bb15_504310870)
+     LocalLabel(label=BlockLabel(name=bb15_504310870))
+     MovRegReg(lhs=reg177, rhs=reg13)
+     MovRegReg(lhs=RAX, rhs=reg177)
+   BlockLabel(name=bb16_504310870)
+     LocalLabel(label=BlockLabel(name=bb16_504310870))
+     MovRegReg(lhs=reg174, rhs=RBP)
+     MovRegImm(lhs=reg175, imm=8)
+     MovRegReg(lhs=reg173, rhs=reg174)
+     AddRegReg(lhs=reg173, rhs=reg175)
+     MovRegReg(lhs=RSP, rhs=reg173)
+   BlockLabel(name=bb17_504310870)
+     LocalLabel(label=BlockLabel(name=bb17_504310870))
+     Pop(reg=RBP)
+   BlockLabel(name=bb18_504310870)
+     LocalLabel(label=BlockLabel(name=bb18_504310870))
+     cacophony.codegen.instructions.cacophonyInstructions.Ret@292b08d6
+  let __extern__check_rsp = [] -> Int (__extern__check_rsp/0)
+   BlockLabel(name=bb0_838566610)
+     LocalLabel(label=BlockLabel(name=bb0_838566610))
+     MovRegReg(lhs=reg249, rhs=RBP)
+     PushReg(reg=reg249)
+   BlockLabel(name=bb1_838566610)
+     LocalLabel(label=BlockLabel(name=bb1_838566610))
+     MovRegReg(lhs=reg247, rhs=RSP)
+     MovRegReg(lhs=reg246, rhs=reg247)
+     SubRegImm(lhs=reg246, imm=8)
+     MovRegReg(lhs=RBP, rhs=reg246)
+   BlockLabel(name=bb2_838566610)
+     LocalLabel(label=BlockLabel(name=bb2_838566610))
+     MovRegImm(lhs=reg244, imm=8)
+     SubRegReg(lhs=RSP, rhs=reg244)
+   BlockLabel(name=bb3_838566610)
+     LocalLabel(label=BlockLabel(name=bb3_838566610))
+     MovRegReg(lhs=reg242, rhs=RBX)
+     MovRegReg(lhs=reg20, rhs=reg242)
+   BlockLabel(name=bb4_838566610)
+     LocalLabel(label=BlockLabel(name=bb4_838566610))
+     MovRegReg(lhs=reg240, rhs=R12)
+     MovRegReg(lhs=reg21, rhs=reg240)
+   BlockLabel(name=bb5_838566610)
+     LocalLabel(label=BlockLabel(name=bb5_838566610))
+     MovRegReg(lhs=reg238, rhs=R13)
+     MovRegReg(lhs=reg22, rhs=reg238)
+   BlockLabel(name=bb6_838566610)
+     LocalLabel(label=BlockLabel(name=bb6_838566610))
+     MovRegReg(lhs=reg236, rhs=R14)
+     MovRegReg(lhs=reg23, rhs=reg236)
+   BlockLabel(name=bb7_838566610)
+     LocalLabel(label=BlockLabel(name=bb7_838566610))
+     MovRegReg(lhs=reg234, rhs=R15)
+     MovRegReg(lhs=reg24, rhs=reg234)
+   BlockLabel(name=bb8_838566610)
+     LocalLabel(label=BlockLabel(name=bb8_838566610))
+     MovRegReg(lhs=reg232, rhs=RBP)
+     MovRegReg(lhs=reg231, rhs=reg232)
+     SubRegImm(lhs=reg231, imm=0)
+     MovMemReg(mem=MemoryAddress(base=reg231, index=null, scale=null, displacement=null), rhs=RDI)
+   BlockLabel(name=bb9_838566610)
+     LocalLabel(label=BlockLabel(name=bb9_838566610))
+     MovRegImm(lhs=reg229, imm=0)
+     MovRegReg(lhs=reg19, rhs=reg229)
+   BlockLabel(name=bb10_838566610)
+     LocalLabel(label=BlockLabel(name=bb10_838566610))
+     MovRegReg(lhs=reg227, rhs=reg20)
+     MovRegReg(lhs=RBX, rhs=reg227)
+   BlockLabel(name=bb11_838566610)
+     LocalLabel(label=BlockLabel(name=bb11_838566610))
+     MovRegReg(lhs=reg225, rhs=reg21)
+     MovRegReg(lhs=R12, rhs=reg225)
+   BlockLabel(name=bb12_838566610)
+     LocalLabel(label=BlockLabel(name=bb12_838566610))
+     MovRegReg(lhs=reg223, rhs=reg22)
+     MovRegReg(lhs=R13, rhs=reg223)
+   BlockLabel(name=bb13_838566610)
+     LocalLabel(label=BlockLabel(name=bb13_838566610))
+     MovRegReg(lhs=reg221, rhs=reg23)
+     MovRegReg(lhs=R14, rhs=reg221)
+   BlockLabel(name=bb14_838566610)
+     LocalLabel(label=BlockLabel(name=bb14_838566610))
+     MovRegReg(lhs=reg219, rhs=reg24)
+     MovRegReg(lhs=R15, rhs=reg219)
+   BlockLabel(name=bb15_838566610)
+     LocalLabel(label=BlockLabel(name=bb15_838566610))
+     MovRegReg(lhs=reg217, rhs=reg19)
+     MovRegReg(lhs=RAX, rhs=reg217)
+   BlockLabel(name=bb16_838566610)
+     LocalLabel(label=BlockLabel(name=bb16_838566610))
+     MovRegReg(lhs=reg214, rhs=RBP)
+     MovRegImm(lhs=reg215, imm=8)
+     MovRegReg(lhs=reg213, rhs=reg214)
+     AddRegReg(lhs=reg213, rhs=reg215)
+     MovRegReg(lhs=RSP, rhs=reg213)
+   BlockLabel(name=bb17_838566610)
+     LocalLabel(label=BlockLabel(name=bb17_838566610))
+     Pop(reg=RBP)
+   BlockLabel(name=bb18_838566610)
+     LocalLabel(label=BlockLabel(name=bb18_838566610))
+     cacophony.codegen.instructions.cacophonyInstructions.Ret@22555ebf
+Liveness generation successfull :D
+  Function let <program>: [] => Unit = [] -> Unit liveness: 
+        Interference:
+          RBP -> [RSP, RBX, R12, R13, R14, R15, RDI, reg122, reg1, reg2, reg3, reg4, reg5, reg109, reg25, reg105, reg103, reg100, reg96, reg101, reg98, reg99, RAX, RDX, reg95, reg97, RCX, RSI, R8, R9, R10, R11, reg26, reg85, reg83, reg80, reg76, reg81, reg78, reg79, reg75, reg77, reg27, reg65, reg63, reg60, reg56, reg61, reg58, reg59, reg55, reg57, reg47, reg0]
+          reg127 -> [RSP, RBX, R12, R13, R14, R15, RDI]
+          RSP -> [RBP, RBX, R12, R13, R14, R15, RDI, reg127, reg124, reg122, reg1, reg2, reg3, reg4, reg5, reg109, reg25, reg105, reg103, reg100, reg96, reg101, reg98, reg99, RAX, RDX, reg95, reg97, RCX, RSI, R8, R9, R10, R11, reg26, reg85, reg83, reg80, reg76, reg81, reg78, reg79, reg75, reg77, reg27, reg65, reg63, reg60, reg56, reg61, reg58, reg59, reg55, reg57, reg47, reg0, reg32, reg33, reg31]
+          reg124 -> [RSP, RBX, R12, R13, R14, R15, RDI]
+          reg122 -> [RSP, RBX, R12, R13, R14, R15, RBP, RDI]
+          RBX -> [RSP, RBP, R12, R13, R14, R15, RDI, reg127, reg124, reg122]
+          reg1 -> [RSP, R12, R13, R14, R15, RBP, RDI, reg2, reg3, reg4, reg5, reg109, reg25, reg105, reg103, reg100, reg96, reg101, reg98, reg99, RAX, RDX, reg95, reg97, RCX, RSI, R8, R9, R10, R11, reg26, reg85, reg83, reg80, reg76, reg81, reg78, reg79, reg75, reg77, reg27, reg65, reg63, reg60, reg56, reg61, reg58, reg59, reg55, reg57, reg47, reg0]
+          R12 -> [RSP, RBP, RBX, R13, R14, R15, RDI, reg127, reg124, reg122, reg1]
+          reg2 -> [RSP, R13, R14, R15, RBP, RDI, reg1, reg3, reg4, reg5, reg109, reg25, reg105, reg103, reg100, reg96, reg101, reg98, reg99, RAX, RDX, reg95, reg97, RCX, RSI, R8, R9, R10, R11, reg26, reg85, reg83, reg80, reg76, reg81, reg78, reg79, reg75, reg77, reg27, reg65, reg63, reg60, reg56, reg61, reg58, reg59, reg55, reg57, reg47, reg0]
+          R13 -> [RSP, RBP, RBX, R12, R14, R15, RDI, reg127, reg124, reg122, reg1, reg2]
+          reg3 -> [RSP, R14, R15, RBP, RDI, reg1, reg2, reg4, reg5, reg109, reg25, reg105, reg103, reg100, reg96, reg101, reg98, reg99, RAX, RDX, reg95, reg97, RCX, RSI, R8, R9, R10, R11, reg26, reg85, reg83, reg80, reg76, reg81, reg78, reg79, reg75, reg77, reg27, reg65, reg63, reg60, reg56, reg61, reg58, reg59, reg55, reg57, reg47, reg0]
+          R14 -> [RSP, RBP, RBX, R12, R13, R15, RDI, reg127, reg124, reg122, reg1, reg2, reg3]
+          reg4 -> [RSP, R15, RBP, RDI, reg1, reg2, reg3, reg5, reg109, reg25, reg105, reg103, reg100, reg96, reg101, reg98, reg99, RAX, RDX, reg95, reg97, RCX, RSI, R8, R9, R10, R11, reg26, reg85, reg83, reg80, reg76, reg81, reg78, reg79, reg75, reg77, reg27, reg65, reg63, reg60, reg56, reg61, reg58, reg59, reg55, reg57, reg47, reg0]
+          R15 -> [RSP, RBP, RBX, R12, R13, R14, RDI, reg127, reg124, reg122, reg1, reg2, reg3, reg4]
+          reg5 -> [RSP, RBP, RDI, reg1, reg2, reg3, reg4, reg109, reg25, reg105, reg103, reg100, reg96, reg101, reg98, reg99, RAX, RDX, reg95, reg97, RCX, RSI, R8, R9, R10, R11, reg26, reg85, reg83, reg80, reg76, reg81, reg78, reg79, reg75, reg77, reg27, reg65, reg63, reg60, reg56, reg61, reg58, reg59, reg55, reg57, reg47, reg0]
+          reg109 -> [RSP, RDI, RBP, reg1, reg2, reg3, reg4, reg5]
+          RDI -> [RSP, RBP, RBX, R12, R13, R14, R15, reg127, reg124, reg122, reg1, reg2, reg3, reg4, reg5, reg109, RAX, RCX, RDX, RSI, R8, R9, R10, R11]
+          reg25 -> [RSP, RBP, reg1, reg2, reg3, reg4, reg5, reg105]
+          reg105 -> [RSP, reg25, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg103 -> [RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg96 -> [RSP, reg100, RBP, reg1, reg2, reg3, reg4, reg5, reg101, reg98, reg99, RAX, RDX]
+          reg100 -> [RSP, reg96, RBP, reg1, reg2, reg3, reg4, reg5, reg101]
+          reg101 -> [RSP, reg100, reg96, RBP, reg1, reg2, reg3, reg4, reg5, reg98]
+          reg98 -> [reg101, RSP, reg96, RBP, reg1, reg2, reg3, reg4, reg5, reg99]
+          reg99 -> [RSP, reg98, reg96, RBP, reg1, reg2, reg3, reg4, reg5, RAX, RDX]
+          RAX -> [RSP, reg99, reg96, RBP, reg1, reg2, reg3, reg4, reg5, RDX, RCX, RSI, RDI, R8, R9, R10, R11, reg79, reg76, reg59, reg56, reg32, reg33, reg31]
+          RDX -> [RSP, RAX, reg99, reg96, RBP, reg1, reg2, reg3, reg4, reg5, RCX, RSI, RDI, R8, R9, R10, R11, reg79, reg76, reg59, reg56]
+          reg97 -> [reg95, RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg95 -> [reg97, RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          RCX -> [RAX, RDX, RSI, RDI, RBP, R8, R9, R10, R11, RSP, reg1, reg2, reg3, reg4, reg5]
+          RSI -> [RAX, RCX, RDX, RDI, RBP, R8, R9, R10, R11, RSP, reg1, reg2, reg3, reg4, reg5]
+          R8 -> [RAX, RCX, RDX, RSI, RDI, RBP, R9, R10, R11, RSP, reg1, reg2, reg3, reg4, reg5]
+          R9 -> [RAX, RCX, RDX, RSI, RDI, RBP, R8, R10, R11, RSP, reg1, reg2, reg3, reg4, reg5]
+          R10 -> [RAX, RCX, RDX, RSI, RDI, RBP, R8, R9, R11, RSP, reg1, reg2, reg3, reg4, reg5]
+          R11 -> [RAX, RCX, RDX, RSI, RDI, RBP, R8, R9, R10, RSP, reg1, reg2, reg3, reg4, reg5]
+          reg26 -> [RSP, RBP, reg1, reg2, reg3, reg4, reg5, reg85]
+          reg85 -> [RSP, reg26, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg83 -> [RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg76 -> [RSP, reg80, RBP, reg1, reg2, reg3, reg4, reg5, reg81, reg78, reg79, RAX, RDX]
+          reg80 -> [RSP, reg76, RBP, reg1, reg2, reg3, reg4, reg5, reg81]
+          reg81 -> [RSP, reg80, reg76, RBP, reg1, reg2, reg3, reg4, reg5, reg78]
+          reg78 -> [reg81, RSP, reg76, RBP, reg1, reg2, reg3, reg4, reg5, reg79]
+          reg79 -> [RSP, reg78, reg76, RBP, reg1, reg2, reg3, reg4, reg5, RAX, RDX]
+          reg77 -> [reg75, RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg75 -> [reg77, RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg27 -> [RSP, RBP, reg1, reg2, reg3, reg4, reg5, reg65]
+          reg65 -> [RSP, reg27, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg63 -> [RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg56 -> [RSP, reg60, RBP, reg1, reg2, reg3, reg4, reg5, reg61, reg58, reg59, RAX, RDX]
+          reg60 -> [RSP, reg56, RBP, reg1, reg2, reg3, reg4, reg5, reg61]
+          reg61 -> [RSP, reg60, reg56, RBP, reg1, reg2, reg3, reg4, reg5, reg58]
+          reg58 -> [reg61, RSP, reg56, RBP, reg1, reg2, reg3, reg4, reg5, reg59]
+          reg59 -> [RSP, reg58, reg56, RBP, reg1, reg2, reg3, reg4, reg5, RAX, RDX]
+          reg57 -> [reg55, RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg55 -> [reg57, RSP, RBP, reg1, reg2, reg3, reg4, reg5]
+          reg47 -> [RSP, reg1, reg2, reg3, reg4, reg5, RBP]
+          reg0 -> [RSP, reg1, reg2, reg3, reg4, reg5, RBP]
+          reg32 -> [RSP, RAX, reg33]
+          reg33 -> [RSP, reg32, RAX, reg31]
+          reg31 -> [reg33, RSP, RAX]
+        Copying:
+          RBP -> [reg127, reg110, reg93, reg73, reg53, reg32]
+          RSP -> [reg125, reg107, reg87, reg67]
+          reg125 -> [reg124]
+          reg124 -> [RBP]
+          RBX -> [reg120]
+          reg120 -> [reg1]
+          reg1 -> [reg45]
+          R12 -> [reg118]
+          reg118 -> [reg2]
+          reg2 -> [reg43]
+          R13 -> [reg116]
+          reg116 -> [reg3]
+          reg3 -> [reg41]
+          R14 -> [reg114]
+          reg114 -> [reg4]
+          reg4 -> [reg39]
+          R15 -> [reg112]
+          reg112 -> [reg5]
+          reg5 -> [reg37]
+          reg110 -> [reg109]
+          reg107 -> [reg25]
+          reg25 -> [reg103]
+          reg96 -> [reg95]
+          reg100 -> [reg98]
+          reg98 -> [RAX]
+          RDX -> [reg97, reg77, reg57]
+          reg93 -> [RDI]
+          reg87 -> [reg26]
+          reg26 -> [reg83]
+          reg76 -> [reg75]
+          reg80 -> [reg78]
+          reg78 -> [RAX]
+          reg73 -> [RDI]
+          reg67 -> [reg27]
+          reg27 -> [reg63]
+          reg56 -> [reg55]
+          reg60 -> [reg58]
+          reg58 -> [RAX]
+          reg53 -> [RDI]
+          reg47 -> [reg0]
+          reg0 -> [reg35]
+          reg45 -> [RBX]
+          reg43 -> [R12]
+          reg41 -> [R13]
+          reg39 -> [R14]
+          reg37 -> [R15]
+          reg35 -> [RAX]
+          reg32 -> [reg31]
+  Function let __extern__write_int = [x: Int] -> Int liveness: 
+        Interference:
+          RBP -> [RSP, RBX, R12, R13, R14, R15, RDI, RSI, reg164, reg8, reg9, reg10, reg11, reg12, reg149, reg147, reg7, RAX]
+          reg169 -> [RSP, RBX, R12, R13, R14, R15, RDI, RSI]
+          RSP -> [RBP, RBX, R12, R13, R14, R15, RDI, RSI, reg169, reg166, reg164, reg8, reg9, reg10, reg11, reg12, reg149, reg147, reg7, RAX, reg132, reg133, reg131]
+          reg166 -> [RSP, RBX, R12, R13, R14, R15, RDI, RSI]
+          reg164 -> [RSP, RBX, R12, R13, R14, R15, RDI, RBP, RSI]
+          RBX -> [RSP, RBP, R12, R13, R14, R15, RDI, RSI, reg169, reg166, reg164]
+          reg8 -> [RSP, R12, R13, R14, R15, RDI, RBP, RSI, reg9, reg10, reg11, reg12, reg149, reg147, reg7]
+          R12 -> [RSP, RBP, RBX, R13, R14, R15, RDI, RSI, reg169, reg166, reg164, reg8]
+          reg9 -> [RSP, R13, R14, R15, RDI, RBP, RSI, reg8, reg10, reg11, reg12, reg149, reg147, reg7]
+          R13 -> [RSP, RBP, RBX, R12, R14, R15, RDI, RSI, reg169, reg166, reg164, reg8, reg9]
+          reg10 -> [RSP, R14, R15, RDI, RBP, RSI, reg8, reg9, reg11, reg12, reg149, reg147, reg7]
+          R14 -> [RSP, RBP, RBX, R12, R13, R15, RDI, RSI, reg169, reg166, reg164, reg8, reg9, reg10]
+          reg11 -> [RSP, R15, RDI, RBP, RSI, reg8, reg9, reg10, reg12, reg149, reg147, reg7]
+          R15 -> [RSP, RBP, RBX, R12, R13, R14, RDI, RSI, reg169, reg166, reg164, reg8, reg9, reg10, reg11]
+          reg12 -> [RSP, RDI, RBP, RSI, reg8, reg9, reg10, reg11, reg149, reg147, reg7]
+          RDI -> [RSP, RBP, RBX, R12, R13, R14, R15, RSI, reg169, reg166, reg164, reg8, reg9, reg10, reg11, reg12]
+          reg149 -> [RSP, RSI, reg8, reg9, reg10, reg11, reg12, RBP]
+          RSI -> [RSP, RBP, RBX, R12, R13, R14, R15, RDI, reg169, reg166, reg164, reg8, reg9, reg10, reg11, reg12, reg149]
+          reg147 -> [RSP, reg8, reg9, reg10, reg11, reg12, RBP]
+          reg7 -> [RSP, reg8, reg9, reg10, reg11, reg12, RBP]
+          RAX -> [RSP, RBP, reg132, reg133, reg131]
+          reg132 -> [RSP, RAX, reg133]
+          reg133 -> [RSP, reg132, RAX, reg131]
+          reg131 -> [reg133, RSP, RAX]
+        Copying:
+          RBP -> [reg169, reg150, reg132]
+          RSP -> [reg167]
+          reg167 -> [reg166]
+          reg166 -> [RBP]
+          RBX -> [reg162]
+          reg162 -> [reg8]
+          reg8 -> [reg145]
+          R12 -> [reg160]
+          reg160 -> [reg9]
+          reg9 -> [reg143]
+          R13 -> [reg158]
+          reg158 -> [reg10]
+          reg10 -> [reg141]
+          R14 -> [reg156]
+          reg156 -> [reg11]
+          reg11 -> [reg139]
+          R15 -> [reg154]
+          reg154 -> [reg12]
+          reg12 -> [reg137]
+          RDI -> [reg152]
+          reg152 -> [reg6]
+          reg150 -> [reg149]
+          reg147 -> [reg7]
+          reg7 -> [reg135]
+          reg145 -> [RBX]
+          reg143 -> [R12]
+          reg141 -> [R13]
+          reg139 -> [R14]
+          reg137 -> [R15]
+          reg135 -> [RAX]
+          reg132 -> [reg131]
+  Function let __extern__read_int = [] -> Int liveness: 
+        Interference:
+          RBP -> [RSP, RBX, R12, R13, R14, R15, RDI, reg204, reg14, reg15, reg16, reg17, reg18, reg191, reg189, reg13, RAX]
+          reg209 -> [RSP, RBX, R12, R13, R14, R15, RDI]
+          RSP -> [RBP, RBX, R12, R13, R14, R15, RDI, reg209, reg206, reg204, reg14, reg15, reg16, reg17, reg18, reg191, reg189, reg13, RAX, reg174, reg175, reg173]
+          reg206 -> [RSP, RBX, R12, R13, R14, R15, RDI]
+          reg204 -> [RSP, RBX, R12, R13, R14, R15, RBP, RDI]
+          RBX -> [RSP, RBP, R12, R13, R14, R15, RDI, reg209, reg206, reg204]
+          reg14 -> [RSP, R12, R13, R14, R15, RBP, RDI, reg15, reg16, reg17, reg18, reg191, reg189, reg13]
+          R12 -> [RSP, RBP, RBX, R13, R14, R15, RDI, reg209, reg206, reg204, reg14]
+          reg15 -> [RSP, R13, R14, R15, RBP, RDI, reg14, reg16, reg17, reg18, reg191, reg189, reg13]
+          R13 -> [RSP, RBP, RBX, R12, R14, R15, RDI, reg209, reg206, reg204, reg14, reg15]
+          reg16 -> [RSP, R14, R15, RBP, RDI, reg14, reg15, reg17, reg18, reg191, reg189, reg13]
+          R14 -> [RSP, RBP, RBX, R12, R13, R15, RDI, reg209, reg206, reg204, reg14, reg15, reg16]
+          reg17 -> [RSP, R15, RBP, RDI, reg14, reg15, reg16, reg18, reg191, reg189, reg13]
+          R15 -> [RSP, RBP, RBX, R12, R13, R14, RDI, reg209, reg206, reg204, reg14, reg15, reg16, reg17]
+          reg18 -> [RSP, RBP, RDI, reg14, reg15, reg16, reg17, reg191, reg189, reg13]
+          reg191 -> [RSP, RDI, reg14, reg15, reg16, reg17, reg18, RBP]
+          RDI -> [RSP, RBP, RBX, R12, R13, R14, R15, reg209, reg206, reg204, reg14, reg15, reg16, reg17, reg18, reg191]
+          reg189 -> [RSP, reg14, reg15, reg16, reg17, reg18, RBP]
+          reg13 -> [RSP, reg14, reg15, reg16, reg17, reg18, RBP]
+          RAX -> [RSP, RBP, reg174, reg175, reg173]
+          reg174 -> [RSP, RAX, reg175]
+          reg175 -> [RSP, reg174, RAX, reg173]
+          reg173 -> [reg175, RSP, RAX]
+        Copying:
+          RBP -> [reg209, reg192, reg174]
+          RSP -> [reg207]
+          reg207 -> [reg206]
+          reg206 -> [RBP]
+          RBX -> [reg202]
+          reg202 -> [reg14]
+          reg14 -> [reg187]
+          R12 -> [reg200]
+          reg200 -> [reg15]
+          reg15 -> [reg185]
+          R13 -> [reg198]
+          reg198 -> [reg16]
+          reg16 -> [reg183]
+          R14 -> [reg196]
+          reg196 -> [reg17]
+          reg17 -> [reg181]
+          R15 -> [reg194]
+          reg194 -> [reg18]
+          reg18 -> [reg179]
+          reg192 -> [reg191]
+          reg189 -> [reg13]
+          reg13 -> [reg177]
+          reg187 -> [RBX]
+          reg185 -> [R12]
+          reg183 -> [R13]
+          reg181 -> [R14]
+          reg179 -> [R15]
+          reg177 -> [RAX]
+          reg174 -> [reg173]
+  Function let __extern__check_rsp = [] -> Int liveness: 
+        Interference:
+          RBP -> [RSP, RBX, R12, R13, R14, R15, RDI, reg244, reg20, reg21, reg22, reg23, reg24, reg231, reg229, reg19, RAX]
+          reg249 -> [RSP, RBX, R12, R13, R14, R15, RDI]
+          RSP -> [RBP, RBX, R12, R13, R14, R15, RDI, reg249, reg246, reg244, reg20, reg21, reg22, reg23, reg24, reg231, reg229, reg19, RAX, reg214, reg215, reg213]
+          reg246 -> [RSP, RBX, R12, R13, R14, R15, RDI]
+          reg244 -> [RSP, RBX, R12, R13, R14, R15, RBP, RDI]
+          RBX -> [RSP, RBP, R12, R13, R14, R15, RDI, reg249, reg246, reg244]
+          reg20 -> [RSP, R12, R13, R14, R15, RBP, RDI, reg21, reg22, reg23, reg24, reg231, reg229, reg19]
+          R12 -> [RSP, RBP, RBX, R13, R14, R15, RDI, reg249, reg246, reg244, reg20]
+          reg21 -> [RSP, R13, R14, R15, RBP, RDI, reg20, reg22, reg23, reg24, reg231, reg229, reg19]
+          R13 -> [RSP, RBP, RBX, R12, R14, R15, RDI, reg249, reg246, reg244, reg20, reg21]
+          reg22 -> [RSP, R14, R15, RBP, RDI, reg20, reg21, reg23, reg24, reg231, reg229, reg19]
+          R14 -> [RSP, RBP, RBX, R12, R13, R15, RDI, reg249, reg246, reg244, reg20, reg21, reg22]
+          reg23 -> [RSP, R15, RBP, RDI, reg20, reg21, reg22, reg24, reg231, reg229, reg19]
+          R15 -> [RSP, RBP, RBX, R12, R13, R14, RDI, reg249, reg246, reg244, reg20, reg21, reg22, reg23]
+          reg24 -> [RSP, RBP, RDI, reg20, reg21, reg22, reg23, reg231, reg229, reg19]
+          reg231 -> [RSP, RDI, reg20, reg21, reg22, reg23, reg24, RBP]
+          RDI -> [RSP, RBP, RBX, R12, R13, R14, R15, reg249, reg246, reg244, reg20, reg21, reg22, reg23, reg24, reg231]
+          reg229 -> [RSP, reg20, reg21, reg22, reg23, reg24, RBP]
+          reg19 -> [RSP, reg20, reg21, reg22, reg23, reg24, RBP]
+          RAX -> [RSP, RBP, reg214, reg215, reg213]
+          reg214 -> [RSP, RAX, reg215]
+          reg215 -> [RSP, reg214, RAX, reg213]
+          reg213 -> [reg215, RSP, RAX]
+        Copying:
+          RBP -> [reg249, reg232, reg214]
+          RSP -> [reg247]
+          reg247 -> [reg246]
+          reg246 -> [RBP]
+          RBX -> [reg242]
+          reg242 -> [reg20]
+          reg20 -> [reg227]
+          R12 -> [reg240]
+          reg240 -> [reg21]
+          reg21 -> [reg225]
+          R13 -> [reg238]
+          reg238 -> [reg22]
+          reg22 -> [reg223]
+          R14 -> [reg236]
+          reg236 -> [reg23]
+          reg23 -> [reg221]
+          R15 -> [reg234]
+          reg234 -> [reg24]
+          reg24 -> [reg219]
+          reg232 -> [reg231]
+          reg229 -> [reg19]
+          reg19 -> [reg217]
+          reg227 -> [RBX]
+          reg225 -> [R12]
+          reg223 -> [R13]
+          reg221 -> [R14]
+          reg219 -> [R15]
+          reg217 -> [RAX]
+          reg214 -> [reg213]
+Register allocation successful :D
+  let <program>: [] => Unit = [] -> Unit (<program>/0)
+Successful registers:
+  RCX -> rcx
+  RSI -> rsi
+  R8 -> r8
+  R9 -> r9
+  reg97 -> rdx
+  reg57 -> rdx
+  reg77 -> rdx
+  RDX -> rdx
+  R10 -> r10
+  R11 -> r11
+  reg127 -> rbp
+  reg124 -> rbp
+  RBP -> rbp
+  reg120 -> rbx
+  reg45 -> rbx
+  RBX -> rbx
+  reg1 -> rbx
+  reg118 -> r12
+  reg43 -> r12
+  R12 -> r12
+  reg2 -> r12
+  reg116 -> r13
+  reg41 -> r13
+  R13 -> r13
+  reg3 -> r13
+  reg114 -> r14
+  reg39 -> r14
+  R14 -> r14
+  reg4 -> r14
+  reg112 -> r15
+  reg37 -> r15
+  R15 -> r15
+  reg5 -> r15
+  reg110 -> rsp
+  reg67 -> rsp
+  reg87 -> rsp
+  reg107 -> rsp
+  RSP -> rsp
+  reg53 -> rdi
+  reg73 -> rdi
+  reg31 -> rdi
+  reg32 -> rdi
+  reg93 -> rdi
+  reg125 -> rdi
+  reg63 -> rdi
+  reg27 -> rdi
+  reg83 -> rdi
+  reg26 -> rdi
+  reg103 -> rdi
+  reg25 -> rdi
+  RDI -> rdi
+  reg35 -> rax
+  reg98 -> rax
+  reg100 -> rax
+  reg47 -> rax
+  reg0 -> rax
+  reg60 -> rax
+  reg58 -> rax
+  reg80 -> rax
+  reg78 -> rax
+  RAX -> rax
+  reg33 -> rbx
+  reg55 -> rcx
+  reg56 -> rcx
+  reg59 -> rsi
+  reg61 -> rdx
+  reg65 -> rax
+  reg75 -> rcx
+  reg76 -> rcx
+  reg79 -> rsi
+  reg81 -> rdx
+  reg85 -> rax
+  reg95 -> rcx
+  reg96 -> rcx
+  reg99 -> rsi
+  reg101 -> rdx
+  reg105 -> rax
+  reg109 -> rax
+  reg122 -> rax
+Spilled registers:
+  let __extern__write_int = [x: Int] -> Int (__extern__write_int/1)
+Successful registers:
+  reg152 -> rdi
+  reg6 -> rdi
+  RDI -> rdi
+  reg162 -> rbx
+  reg145 -> rbx
+  reg8 -> rbx
+  RBX -> rbx
+  reg160 -> r12
+  reg143 -> r12
+  reg9 -> r12
+  R12 -> r12
+  reg158 -> r13
+  reg141 -> r13
+  reg10 -> r13
+  R13 -> r13
+  reg156 -> r14
+  reg139 -> r14
+  reg11 -> r14
+  R14 -> r14
+  reg154 -> r15
+  reg137 -> r15
+  reg12 -> r15
+  R15 -> r15
+  reg150 -> rsp
+  reg167 -> rsp
+  RSP -> rsp
+  RSI -> rsi
+  reg135 -> rax
+  reg7 -> rax
+  reg147 -> rax
+  RAX -> rax
+  reg132 -> rbp
+  reg131 -> rbp
+  reg169 -> rbp
+  reg166 -> rbp
+  RBP -> rbp
+  reg133 -> rbx
+  reg149 -> rax
+  reg164 -> rax
+Spilled registers:
+  let __extern__read_int = [] -> Int (__extern__read_int/0)
+Successful registers:
+  reg202 -> rbx
+  reg187 -> rbx
+  reg14 -> rbx
+  RBX -> rbx
+  reg200 -> r12
+  reg185 -> r12
+  reg15 -> r12
+  R12 -> r12
+  reg198 -> r13
+  reg183 -> r13
+  reg16 -> r13
+  R13 -> r13
+  reg196 -> r14
+  reg181 -> r14
+  reg17 -> r14
+  R14 -> r14
+  reg194 -> r15
+  reg179 -> r15
+  reg18 -> r15
+  R15 -> r15
+  reg192 -> rsp
+  reg207 -> rsp
+  RSP -> rsp
+  RDI -> rdi
+  reg177 -> rax
+  reg13 -> rax
+  reg189 -> rax
+  RAX -> rax
+  reg174 -> rbp
+  reg173 -> rbp
+  reg209 -> rbp
+  reg206 -> rbp
+  RBP -> rbp
+  reg175 -> rbx
+  reg191 -> rax
+  reg204 -> rax
+Spilled registers:
+  let __extern__check_rsp = [] -> Int (__extern__check_rsp/0)
+Successful registers:
+  reg242 -> rbx
+  reg227 -> rbx
+  reg20 -> rbx
+  RBX -> rbx
+  reg240 -> r12
+  reg225 -> r12
+  reg21 -> r12
+  R12 -> r12
+  reg238 -> r13
+  reg223 -> r13
+  reg22 -> r13
+  R13 -> r13
+  reg236 -> r14
+  reg221 -> r14
+  reg23 -> r14
+  R14 -> r14
+  reg234 -> r15
+  reg219 -> r15
+  reg24 -> r15
+  R15 -> r15
+  reg232 -> rsp
+  reg247 -> rsp
+  RSP -> rsp
+  RDI -> rdi
+  reg217 -> rax
+  reg19 -> rax
+  reg229 -> rax
+  RAX -> rax
+  reg214 -> rbp
+  reg213 -> rbp
+  reg249 -> rbp
+  reg246 -> rbp
+  RBP -> rbp
+  reg215 -> rbx
+  reg231 -> rax
+  reg244 -> rax
+Spilled registers:
+let <program>: [] => Unit = [] -> Unit generates asm:
+main:
+global main
+.bb0_1503853118:
+; mov rbp, rbp
+push rbp
+.bb1_1503853118:
+mov rdi, rsp
+mov rbp, rdi
+sub rbp, 8
+; mov rbp, rbp
+.bb2_1503853118:
+mov rax, 8
+sub rsp, rax
+.bb3_1503853118:
+; mov rbx, rbx
+; mov rbx, rbx
+.bb4_1503853118:
+; mov r12, r12
+; mov r12, r12
+.bb5_1503853118:
+; mov r13, r13
+; mov r13, r13
+.bb6_1503853118:
+; mov r14, r14
+; mov r14, r14
+.bb7_1503853118:
+; mov r15, r15
+; mov r15, r15
+.bb8_1503853118:
+mov rsp, rbp
+mov rax, rsp
+sub rax, 0
+mov [rax], rdi
+.bb9_1503853118:
+; mov rsp, rsp
+mov rdi, rsp
+.bb10_1503853118:
+mov rax, rdi
+push rax
+.bb11_1503853118:
+; mov rdi, rdi
+push rdi
+.bb12_1503853118:
+mov rcx, rsp
+mov rax, rsp
+mov rdx, 0
+; mov rax, rax
+add rax, rdx
+mov rsi, 16
+; mov rax, rax
+cqo
+idiv rsi
+; mov rdx, rdx
+; mov rcx, rcx
+add rcx, rdx
+mov rsp, rcx
+.bb13_1503853118:
+mov rdi, rbp
+; mov rdi, rdi
+.bb14_1503853118:
+; register arguments filled
+.bb15_1503853118:
+; stack arguments computed
+.bb16_1503853118:
+call check_rsp
+.bb17_1503853118:
+pop rsp
+.bb18_1503853118:
+; mov rsp, rsp
+mov rdi, rsp
+.bb19_1503853118:
+mov rax, rdi
+push rax
+.bb20_1503853118:
+; mov rdi, rdi
+push rdi
+.bb21_1503853118:
+mov rcx, rsp
+mov rax, rsp
+mov rdx, 0
+; mov rax, rax
+add rax, rdx
+mov rsi, 16
+; mov rax, rax
+cqo
+idiv rsi
+; mov rdx, rdx
+; mov rcx, rcx
+add rcx, rdx
+mov rsp, rcx
+.bb22_1503853118:
+mov rdi, rbp
+; mov rdi, rdi
+.bb23_1503853118:
+; register arguments filled
+.bb24_1503853118:
+; stack arguments computed
+.bb25_1503853118:
+call check_rsp
+.bb26_1503853118:
+pop rsp
+.bb27_1503853118:
+; mov rsp, rsp
+mov rdi, rsp
+.bb28_1503853118:
+mov rax, rdi
+push rax
+.bb29_1503853118:
+; mov rdi, rdi
+push rdi
+.bb30_1503853118:
+mov rcx, rsp
+mov rax, rsp
+mov rdx, 0
+; mov rax, rax
+add rax, rdx
+mov rsi, 16
+; mov rax, rax
+cqo
+idiv rsi
+; mov rdx, rdx
+; mov rcx, rcx
+add rcx, rdx
+mov rsp, rcx
+.bb31_1503853118:
+mov rdi, rbp
+; mov rdi, rdi
+.bb32_1503853118:
+; register arguments filled
+.bb33_1503853118:
+; stack arguments computed
+.bb34_1503853118:
+call check_rsp
+.bb35_1503853118:
+pop rsp
+.bb36_1503853118:
+mov rax, 2
+; mov rax, rax
+.bb37_1503853118:
+; mov rbx, rbx
+; mov rbx, rbx
+.bb38_1503853118:
+; mov r12, r12
+; mov r12, r12
+.bb39_1503853118:
+; mov r13, r13
+; mov r13, r13
+.bb40_1503853118:
+; mov r14, r14
+; mov r14, r14
+.bb41_1503853118:
+; mov r15, r15
+; mov r15, r15
+.bb42_1503853118:
+; mov rax, rax
+; mov rax, rax
+.bb43_1503853118:
+mov rdi, rbp
+mov rbx, 8
+; mov rdi, rdi
+add rdi, rbx
+mov rsp, rdi
+.bb44_1503853118:
+pop rbp
+.bb45_1503853118:
+ret
+let __extern__write_int = [x: Int] -> Int generates asm:
+__extern__write_int_1_1053631449:
+.bb0_501385466:
+; mov rbp, rbp
+push rbp
+.bb1_501385466:
+; mov rsp, rsp
+mov rbp, rsp
+sub rbp, 8
+; mov rbp, rbp
+.bb2_501385466:
+mov rax, 8
+sub rsp, rax
+.bb3_501385466:
+; mov rbx, rbx
+; mov rbx, rbx
+.bb4_501385466:
+; mov r12, r12
+; mov r12, r12
+.bb5_501385466:
+; mov r13, r13
+; mov r13, r13
+.bb6_501385466:
+; mov r14, r14
+; mov r14, r14
+.bb7_501385466:
+; mov r15, r15
+; mov r15, r15
+.bb8_501385466:
+; mov rdi, rdi
+; mov rdi, rdi
+.bb9_501385466:
+mov rsp, rbp
+mov rax, rsp
+sub rax, 0
+mov [rax], rsi
+.bb10_501385466:
+mov rax, 0
+; mov rax, rax
+.bb11_501385466:
+; mov rbx, rbx
+; mov rbx, rbx
+.bb12_501385466:
+; mov r12, r12
+; mov r12, r12
+.bb13_501385466:
+; mov r13, r13
+; mov r13, r13
+.bb14_501385466:
+; mov r14, r14
+; mov r14, r14
+.bb15_501385466:
+; mov r15, r15
+; mov r15, r15
+.bb16_501385466:
+; mov rax, rax
+; mov rax, rax
+.bb17_501385466:
+; mov rbp, rbp
+mov rbx, 8
+; mov rbp, rbp
+add rbp, rbx
+mov rsp, rbp
+.bb18_501385466:
+pop rbp
+.bb19_501385466:
+ret
+let __extern__read_int = [] -> Int generates asm:
+__extern__read_int_0_1453128758:
+.bb0_504310870:
+; mov rbp, rbp
+push rbp
+.bb1_504310870:
+; mov rsp, rsp
+mov rbp, rsp
+sub rbp, 8
+; mov rbp, rbp
+.bb2_504310870:
+mov rax, 8
+sub rsp, rax
+.bb3_504310870:
+; mov rbx, rbx
+; mov rbx, rbx
+.bb4_504310870:
+; mov r12, r12
+; mov r12, r12
+.bb5_504310870:
+; mov r13, r13
+; mov r13, r13
+.bb6_504310870:
+; mov r14, r14
+; mov r14, r14
+.bb7_504310870:
+; mov r15, r15
+; mov r15, r15
+.bb8_504310870:
+mov rsp, rbp
+mov rax, rsp
+sub rax, 0
+mov [rax], rdi
+.bb9_504310870:
+mov rax, 0
+; mov rax, rax
+.bb10_504310870:
+; mov rbx, rbx
+; mov rbx, rbx
+.bb11_504310870:
+; mov r12, r12
+; mov r12, r12
+.bb12_504310870:
+; mov r13, r13
+; mov r13, r13
+.bb13_504310870:
+; mov r14, r14
+; mov r14, r14
+.bb14_504310870:
+; mov r15, r15
+; mov r15, r15
+.bb15_504310870:
+; mov rax, rax
+; mov rax, rax
+.bb16_504310870:
+; mov rbp, rbp
+mov rbx, 8
+; mov rbp, rbp
+add rbp, rbx
+mov rsp, rbp
+.bb17_504310870:
+pop rbp
+.bb18_504310870:
+ret
+let __extern__check_rsp = [] -> Int generates asm:
+__extern__check_rsp_0_1226622409:
+.bb0_838566610:
+; mov rbp, rbp
+push rbp
+.bb1_838566610:
+; mov rsp, rsp
+mov rbp, rsp
+sub rbp, 8
+; mov rbp, rbp
+.bb2_838566610:
+mov rax, 8
+sub rsp, rax
+.bb3_838566610:
+; mov rbx, rbx
+; mov rbx, rbx
+.bb4_838566610:
+; mov r12, r12
+; mov r12, r12
+.bb5_838566610:
+; mov r13, r13
+; mov r13, r13
+.bb6_838566610:
+; mov r14, r14
+; mov r14, r14
+.bb7_838566610:
+; mov r15, r15
+; mov r15, r15
+.bb8_838566610:
+mov rsp, rbp
+mov rax, rsp
+sub rax, 0
+mov [rax], rdi
+.bb9_838566610:
+mov rax, 0
+; mov rax, rax
+.bb10_838566610:
+; mov rbx, rbx
+; mov rbx, rbx
+.bb11_838566610:
+; mov r12, r12
+; mov r12, r12
+.bb12_838566610:
+; mov r13, r13
+; mov r13, r13
+.bb13_838566610:
+; mov r14, r14
+; mov r14, r14
+.bb14_838566610:
+; mov r15, r15
+; mov r15, r15
+.bb15_838566610:
+; mov rax, rax
+; mov rax, rax
+.bb16_838566610:
+; mov rbp, rbp
+mov rbx, 8
+; mov rbp, rbp
+add rbp, rbx
+mov rsp, rbp
+.bb17_838566610:
+pop rbp
+.bb18_838566610:
+ret
+Successfully saved compiled object in test.cac.o
+Successfully saved linked executable in test.cac.bin
 
 BUILD SUCCESSFUL in 1s
-2 actionable tasks: 1 executed, 1 up-to-date
+2 actionable tasks: 2 executed
