@@ -97,6 +97,7 @@ internal class CFGGenerator(
      * @param mode Mode of conversion, see [EvalMode]
      */
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
+        // TODO: change to Layout
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
             is Definition.FunctionDefinition -> visitFunctionDeclaration(mode)
