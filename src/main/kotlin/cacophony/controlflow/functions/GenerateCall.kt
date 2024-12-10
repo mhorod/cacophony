@@ -3,15 +3,39 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.Definition
 
+/**
+ * Wrapper for generateCall that additionally fills staticLink to parent function.
+ */
+fun generateCallFrom(
+    callerFunction: FunctionHandler,
+    function: Definition.FunctionDeclaration,
+    functionHandler: FunctionHandler?,
+    arguments: List<CFGNode>,
+    result: Register?,
+    respectStackAlignment: Boolean,
+): List<CFGNode> =
+    when (function) {
+        is Definition.ForeignFunctionDeclaration -> {
+            if (function.type!!.argumentsType.size != arguments.size) {
+                throw IllegalArgumentException("Wrong argument count")
+            }
+            generateCall(function, arguments, result, true)
+        }
+        is Definition.FunctionDefinition -> {
+            if (function.arguments.size != arguments.size) {
+                throw IllegalArgumentException("Wrong argument count")
+            }
+            val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
+            generateCall(function, arguments + mutableListOf(staticLinkVar), result, respectStackAlignment)
+        }
+    }
+
 fun generateCall(
     function: Definition.FunctionDeclaration,
     arguments: List<CFGNode>,
     result: Register?,
     respectStackAlignment: Boolean = false,
 ): List<CFGNode> {
-    if (function.arguments.size + 1 != arguments.size) {
-        throw IllegalArgumentException("Wrong argument count")
-    }
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
 

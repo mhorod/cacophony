@@ -1,20 +1,10 @@
 package cacophony.semantic.syntaxtree
 
-import cacophony.addeq
-import cacophony.block
-import cacophony.call
+import cacophony.*
+import cacophony.diagnostics.ASTDiagnostics
 import cacophony.diagnostics.CacophonyDiagnostics
-import cacophony.lvalueFieldRef
 import cacophony.pipeline.CacophonyPipeline
-import cacophony.rvalueFieldRef
-import cacophony.structDeclaration
-import cacophony.structField
-import cacophony.structType
-import cacophony.typedArg
-import cacophony.typedFunctionDeclaration
 import cacophony.utils.*
-import cacophony.variableDeclaration
-import cacophony.variableUse
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -60,7 +50,7 @@ class ASTGenerationTests {
 
     private fun mockWrapInFunction(originalAST: AST): AST {
         val program =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 anyLocation(),
                 "<program>",
                 BaseType.Functional(
@@ -233,7 +223,7 @@ class ASTGenerationTests {
     fun `recursive function`() {
         val actual = computeAST("let f = [x: Int] -> Int => f[f[x]]")
         val expected =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 anyLocation(),
                 "f",
                 null,
@@ -617,7 +607,7 @@ class ASTGenerationTests {
     fun `nested structs`() {
         val actual = computeAST("let f = [x: {a: {b: Int}, c: Int}] -> {x: {c: Int, a: {b: Int}}} => {x = x}")
         val expected =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 null,
                 listOf(
@@ -661,7 +651,7 @@ class ASTGenerationTests {
     fun `return statement`() {
         val actual = computeAST("let f = [x: Int] -> Int => return x")
         val expected =
-            Definition.FunctionDeclaration(
+            Definition.FunctionDefinition(
                 anyLocation(),
                 "f",
                 null,
@@ -680,6 +670,25 @@ class ASTGenerationTests {
                         "x",
                     ),
                 ),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `foreign with non-functional type throws`() {
+        val diagnostics = computeFailDiagnostics("foreign f: Int")
+        assertThat(diagnostics).anyMatch { it.contains(ASTDiagnostics.NonFunctionalForeign.getMessage()) }
+    }
+
+    @Test
+    fun `foreign statement`() {
+        val actual = computeAST("foreign f: [Int] -> Int")
+        val expected =
+            Definition.ForeignFunctionDeclaration(
+                anyLocation(),
+                "f",
+                BaseType.Functional(anyLocation(), listOf(basicType("Int")), basicType("Int")),
+                basicType("Int"),
             )
         assertEquivalentAST(mockWrapInFunction(expected), actual)
     }

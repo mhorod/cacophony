@@ -42,6 +42,7 @@ object RegexStrings {
             TokenCategorySpecific.KEYWORD_DO to """do""",
             TokenCategorySpecific.KEYWORD_BREAK to """break""",
             TokenCategorySpecific.KEYWORD_RETURN to """return""",
+            TokenCategorySpecific.KEYWORD_FOREIGN to """foreign""",
             // operators
             TokenCategorySpecific.OPERATOR_EQUALS to """==""",
             TokenCategorySpecific.OPERATOR_NOT_EQUALS to """!=""",

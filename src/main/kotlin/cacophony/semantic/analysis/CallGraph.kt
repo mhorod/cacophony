@@ -17,7 +17,7 @@ import cacophony.semantic.syntaxtree.Struct
 import cacophony.semantic.syntaxtree.VariableUse
 import kotlin.collections.mutableMapOf
 
-typealias CallGraph = Map<Definition.FunctionDeclaration, Set<Definition.FunctionDeclaration>>
+typealias CallGraph = Map<Definition.FunctionDefinition, Set<Definition.FunctionDefinition>>
 
 fun generateCallGraph(ast: AST, diagnostics: Diagnostics, resolvedVariables: ResolvedVariables): CallGraph =
     CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null)
@@ -26,9 +26,9 @@ private class CallGraphProvider(
     private val diagnostics: Diagnostics,
     private val resolvedVariables: ResolvedVariables,
 ) {
-    fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDeclaration?): CallGraph =
+    fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDefinition?): CallGraph =
         when (node) {
-            is Definition.FunctionDeclaration -> generateDirectCallGraph(node.body, node)
+            is Definition.FunctionDefinition -> generateDirectCallGraph(node.body, node)
             is FunctionCall ->
                 merge(
                     handleDirectFunctionCall(node.function, currentFn),
@@ -73,12 +73,14 @@ private class CallGraphProvider(
             null -> mutableMapOf()
         }
 
-    private fun handleDirectFunctionCall(fn: Expression, currentFn: Definition.FunctionDeclaration?) =
+    private fun handleDirectFunctionCall(fn: Expression, currentFn: Definition.FunctionDefinition?) =
         when (fn) {
             is VariableUse -> {
                 when (val decl = resolvedVariables[fn]) {
-                    is Definition.FunctionDeclaration ->
+                    is Definition.FunctionDefinition ->
                         currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
+
+                    is Definition.ForeignFunctionDeclaration -> emptyMap()
 
                     is Definition -> {
                         diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)

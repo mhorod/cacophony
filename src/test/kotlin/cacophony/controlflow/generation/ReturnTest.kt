@@ -14,7 +14,7 @@ class ReturnTest {
     fun `return exits while(true) loop`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -70,7 +70,7 @@ class ReturnTest {
     fun `return exits loop with condition`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -127,7 +127,7 @@ class ReturnTest {
     fun `block instructions after return are not computed`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     returnStatement(lit(1)),
@@ -153,7 +153,7 @@ class ReturnTest {
     fun `block instructions are not computed when both branches of if return`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(2)),

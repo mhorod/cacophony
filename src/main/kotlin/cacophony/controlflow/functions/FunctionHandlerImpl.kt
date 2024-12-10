@@ -5,11 +5,11 @@ import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
+import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import kotlin.math.max
 
 class FunctionHandlerImpl(
-    val function: FunctionDeclaration,
+    private val function: FunctionDefinition,
     private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
@@ -63,26 +63,7 @@ class FunctionHandlerImpl(
         }
     }
 
-    override fun getFunctionDeclaration(): FunctionDeclaration = function
-
-    // Wrapper for generateCall that additionally fills staticLink to parent function.
-    // Since staticLink is not property of node itself, but rather of its children,
-    // if caller is immediate parent, we have to fetch RBP instead.
-    override fun generateCallFrom(
-        callerFunction: FunctionHandler,
-        arguments: List<CFGNode>,
-        result: Register?,
-        respectStackAlignment: Boolean,
-    ): List<CFGNode> {
-        val staticLinkVar =
-            if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
-                RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
-            } else {
-                callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
-            }
-
-        return generateCall(function, arguments + mutableListOf(staticLinkVar), result, respectStackAlignment)
-    }
+    override fun getFunctionDeclaration(): FunctionDefinition = function
 
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {
@@ -91,13 +72,22 @@ class FunctionHandlerImpl(
             MemoryAccess(traverseStaticLink(depth - 1))
         }
 
-    override fun generateAccessToFramePointer(other: FunctionDeclaration): CFGNode =
+    override fun generateAccessToFramePointer(other: FunctionDefinition): CFGNode =
         if (other == function) {
             traverseStaticLink(0)
         } else {
             traverseStaticLink(
                 ancestorFunctionHandlers.indexOfFirst { it.getFunctionDeclaration() == other } + 1,
             )
+        }
+
+    override fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode =
+        // Since staticLink is not property of node itself, but rather of its children,
+        // if caller is immediate parent, we have to fetch RBP instead.
+        if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
+            RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
+        } else {
+            callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
         }
 
     override fun generateVariableAccess(variable: Variable): CFGNode.LValue {

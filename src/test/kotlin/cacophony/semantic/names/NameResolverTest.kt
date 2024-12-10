@@ -176,7 +176,7 @@ class NameResolverTest {
                 val yUse = variableUse("y")
                 val ast =
                     block(
-                        unitFunctionDeclaration(
+                        unitFunctionDefinition(
                             "f",
                             listOf(xDef, yDef),
                             block(
@@ -206,13 +206,13 @@ class NameResolverTest {
 
                 // given
                 val fDef =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(false),
                     )
                 val gDef =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "g",
                         listOf(),
                         lit(0),
@@ -241,7 +241,7 @@ class NameResolverTest {
                 // given
                 val fUse = variableUse("f")
                 val fDef =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(true),
@@ -269,7 +269,7 @@ class NameResolverTest {
                 // given
                 val fUse = variableUse("f")
                 val fDef =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         call(
@@ -284,6 +284,90 @@ class NameResolverTest {
                 // then
                 assertThatResolvedNames(resolvedNames)
                     .hasOverloadSet(fUse to mapOf(0 to fDef))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `foreign function in single block`() {
+                // foreign f = [] -> Bool;
+                // f
+
+                // given
+                val fDef =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(),
+                        BaseType.Basic(mockRange(), "Bool"),
+                    )
+                val fUse = variableUse("f")
+                val ast =
+                    block(fDef, fUse)
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(0 to fDef))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `foreign function is visible when calling it`() {
+                // foreign f = [] -> Bool;
+                // f[]
+
+                // given
+                val fDef =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(),
+                        BaseType.Basic(mockRange(), "Bool"),
+                    )
+                val fUse = variableUse("f")
+                val ast =
+                    block(
+                        fDef,
+                        call(fUse),
+                    )
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(0 to fDef))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `foreign function is visible when calling it with arguments`() {
+                // foreign f = [Int] -> Bool;
+                // f[5]
+
+                // given
+                val fDef =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(BaseType.Basic(mockRange(), "Int")),
+                        BaseType.Basic(mockRange(), "Bool"),
+                    )
+                val fUse = variableUse("f")
+                val ast =
+                    block(
+                        fDef,
+                        call(fUse, arg("5")),
+                    )
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(1 to fDef))
                     .andNothingElse()
                 verify { diagnostics wasNot Called }
             }
@@ -354,13 +438,13 @@ class NameResolverTest {
                 // given
                 val fUse = variableUse("f")
                 val fDef1 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(false),
                     )
                 val fDef2 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(true),
@@ -378,6 +462,70 @@ class NameResolverTest {
             }
 
             @Test
+            fun `foreign functions shadow functions in single scope`() {
+                // let f = [] -> Bool => false;
+                // foreign f = [] -> Bool;
+                // f
+
+                // given
+                val fUse = variableUse("f")
+                val fDef1 =
+                    functionDefinition(
+                        "f",
+                        listOf(),
+                        lit(false),
+                    )
+                val fDef2 =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(),
+                        BaseType.Basic(mockRange(), "Bool"),
+                    )
+                val ast = block(fDef1, fDef2, fUse)
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(0 to fDef2))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `functions shadow foreign functions in single scope`() {
+                // foreign f = [] -> Bool;
+                // let f = [] -> Bool => false;
+                // f
+
+                // given
+                val fUse = variableUse("f")
+                val fDef1 =
+                    functionDefinition(
+                        "f",
+                        listOf(),
+                        lit(false),
+                    )
+                val fDef2 =
+                    foreignFunctionDeclaration(
+                        "f",
+                        listOf(),
+                        BaseType.Basic(mockRange(), "Bool"),
+                    )
+                val ast = block(fDef2, fDef1, fUse)
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasOverloadSet(fUse to mapOf(0 to fDef1))
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
             fun `functions shadow functions in nested blocks`() {
                 // let f = [] -> Bool => false;
                 // (
@@ -390,13 +538,13 @@ class NameResolverTest {
                 val fUse1 = variableUse("f")
                 val fUse2 = variableUse("f")
                 val fDef1 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(false),
                     )
                 val fDef2 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(0),
@@ -431,13 +579,13 @@ class NameResolverTest {
                 val fUse1 = variableUse("f")
                 val fUse2 = variableUse("f")
                 val fDef2 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(0),
                     )
                 val fDef1 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         block(fDef2, fUse1),
@@ -469,13 +617,13 @@ class NameResolverTest {
                 val xDef1 = arg("x")
                 val xDef2 = arg("x")
                 val gDef =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "g",
                         listOf(xDef2),
                         xUse1,
                     )
                 val fDef =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(xDef1),
                         block(gDef, xUse2),
@@ -510,7 +658,7 @@ class NameResolverTest {
                 val xDef1 = arg("x")
                 val xDef2 = variableDeclaration("x")
                 val fDef =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(xDef1),
                         block(
@@ -546,7 +694,7 @@ class NameResolverTest {
                 val xDef1 = variableDeclaration("x")
                 val xDef2 = arg("x")
                 val fDef =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(xDef2),
                         xUse1,
@@ -578,7 +726,7 @@ class NameResolverTest {
                 val fUse1 = variableUse("f")
                 val fUse2 = variableUse("f")
                 val fDef1 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(true),
@@ -615,7 +763,7 @@ class NameResolverTest {
                 val fUse2 = variableUse("f")
                 val fDef2 = variableDeclaration("f")
                 val fDef1 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         block(fDef2, fUse1),
@@ -648,7 +796,7 @@ class NameResolverTest {
                 val aUse2 = variableUse("a")
                 val aDef1 = variableDeclaration("a")
                 val aDef2 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "a",
                         listOf(),
                         lit(true),
@@ -681,7 +829,7 @@ class NameResolverTest {
                 val fUse1 = variableUse("f")
                 val fUse2 = variableUse("f")
                 val fDef1 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(),
                         lit(true),
@@ -690,7 +838,7 @@ class NameResolverTest {
                 val ast =
                     block(
                         fDef1,
-                        unitFunctionDeclaration(
+                        unitFunctionDefinition(
                             "g",
                             listOf(fDef2),
                             fUse1,
@@ -719,7 +867,7 @@ class NameResolverTest {
                 val fUse2 = variableUse("f")
                 val fDef2 = arg("f")
                 val fDef1 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(fDef2),
                         fUse1,
@@ -753,14 +901,14 @@ class NameResolverTest {
                 val xUse2 = variableUse("x")
                 val xDef1 = arg("x")
                 val xDef2 =
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "x",
                         listOf(),
                         lit(true),
                     )
                 val ast =
                     block(
-                        unitFunctionDeclaration(
+                        unitFunctionDefinition(
                             "f",
                             listOf(xDef1),
                             block(
@@ -794,13 +942,45 @@ class NameResolverTest {
             // given
             val fUse = variableUse("f")
             val fDef1 =
-                unitFunctionDeclaration(
+                unitFunctionDefinition(
                     "f",
                     listOf(),
                     lit(true),
                 )
             val fDef2 =
-                unitFunctionDeclaration(
+                unitFunctionDefinition(
+                    "f",
+                    listOf(arg("x")),
+                    lit(false),
+                )
+            val ast = block(fDef1, fDef2, fUse)
+
+            // when
+            val resolvedNames = resolveNames(ast, diagnostics)
+
+            // then
+            assertThatResolvedNames(resolvedNames)
+                .hasOverloadSet(fUse to mapOf(0 to fDef1, 1 to fDef2))
+                .andNothingElse()
+            verify { diagnostics wasNot Called }
+        }
+
+        @Test
+        fun `foreign function overloads other functions with the same name and different arity`() {
+            // foreign f = [] -> Bool => true;
+            // let f = [x: Bool] -> Bool => false;
+            // f
+
+            // given
+            val fUse = variableUse("f")
+            val fDef1 =
+                foreignFunctionDeclaration(
+                    "f",
+                    listOf(),
+                    BaseType.Basic(mockRange(), "Bool"),
+                )
+            val fDef2 =
+                functionDefinition(
                     "f",
                     listOf(arg("x")),
                     lit(false),
@@ -831,19 +1011,19 @@ class NameResolverTest {
             val fUse1 = variableUse("f")
             val fUse2 = variableUse("f")
             val fDef1 =
-                unitFunctionDeclaration(
+                unitFunctionDefinition(
                     "f",
                     listOf(),
                     lit(true),
                 )
             val fDef2 =
-                unitFunctionDeclaration(
+                unitFunctionDefinition(
                     "f",
                     listOf(arg("x")),
                     lit(false),
                 )
             val fDef3 =
-                unitFunctionDeclaration(
+                unitFunctionDefinition(
                     "f",
                     listOf(),
                     lit(1),
@@ -953,7 +1133,7 @@ class NameResolverTest {
             val invalidUseRange2 = Location(6) to Location(13)
             val ast =
                 block(
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(
                             arg("x"),
@@ -1223,7 +1403,7 @@ class NameResolverTest {
             val functionalArgumentRange = Location(9) to Location(20)
             val ast =
                 block(
-                    unitFunctionDeclaration(
+                    unitFunctionDefinition(
                         "f",
                         listOf(
                             FunctionArgument(
@@ -1251,7 +1431,7 @@ class NameResolverTest {
             val secondArgumentRange = Location(2) to Location(2)
             val ast =
                 block(
-                    intFunctionDeclaration(
+                    intFunctionDefinition(
                         "f",
                         listOf(
                             FunctionArgument(

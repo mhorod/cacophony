@@ -3,8 +3,10 @@ package cacophony.semantic.names
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.syntaxtree.Definition.ForeignFunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
+import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 import cacophony.utils.CompileException
 
@@ -89,7 +91,12 @@ private fun emptySymbolsTable(): SymbolsTable {
                     }
 
                     is FunctionDeclaration -> {
-                        val arity = definition.arguments.size
+                        val arity =
+                            when (definition) {
+                                is FunctionDefinition -> definition.arguments.size
+                                is ForeignFunctionDeclaration ->
+                                    (definition.type ?: error("foreign function without a type")).argumentsType.size
+                            }
 
                         when (blocks.last()[id]) {
                             is ResolvedName.Function -> {
@@ -154,7 +161,7 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                 traverseAst(node.value, true)
             }
 
-            is FunctionDeclaration -> {
+            is FunctionDefinition -> {
                 symbolsTable.define(node.identifier, node)
 
                 node.arguments
@@ -173,6 +180,10 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                 node.arguments.forEach { traverseAst(it, false) }
                 traverseAst(node.body, true)
                 symbolsTable.close()
+            }
+
+            is ForeignFunctionDeclaration -> {
+                symbolsTable.define(node.identifier, node)
             }
 
             is FunctionArgument -> {

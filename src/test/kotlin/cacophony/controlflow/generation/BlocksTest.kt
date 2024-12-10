@@ -8,7 +8,7 @@ class BlocksTest {
     @Test
     fun `block with no expressions generates noop`() {
         // given
-        val fDef = unitFunctionDeclaration("f", block())
+        val fDef = unitFunctionDefinition("f", block())
 
         // when
         val actualCFG = testPipeline().generateControlFlowGraph(fDef)
@@ -30,7 +30,7 @@ class BlocksTest {
     @Test
     fun `block with single non-extracted expression does not generate separate node`() {
         // given
-        val fDef = unitFunctionDeclaration("f", variableDeclaration("x", block(lit(1))))
+        val fDef = unitFunctionDefinition("f", variableDeclaration("x", block(lit(1))))
 
         // when
         val actualCFG = testPipeline().generateControlFlowGraph(fDef)
@@ -53,7 +53,7 @@ class BlocksTest {
     fun `block with two expressions generates node for the first one`() {
         // given
         val fDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(1)),

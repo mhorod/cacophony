@@ -6,7 +6,7 @@ import cacophony.semantic.analysis.CallGraph
 import cacophony.semantic.analysis.StaticFunctionRelations
 import cacophony.semantic.syntaxtree.*
 
-fun program(ast: Block) = ast.expressions[0] as Definition.FunctionDeclaration
+fun program(ast: Block) = ast.expressions[0] as Definition.FunctionDefinition
 
 fun programCall(ast: Block) = (ast.expressions[1] as FunctionCall).function as VariableUse
 
@@ -24,10 +24,10 @@ fun programFunctionAnalysis(ast: Block) =
             to analyzedFunction(program(ast), 0, emptySet())
     )
 
-fun callGraph(vararg calls: Pair<Definition.FunctionDeclaration, Definition.FunctionDeclaration>): CallGraph =
+fun callGraph(vararg calls: Pair<Definition.FunctionDefinition, Definition.FunctionDefinition>): CallGraph =
     calls.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
 
-fun analyzedFunction(function: Definition.FunctionDeclaration, staticDepth: Int, variables: Set<AnalyzedVariable>) =
+fun analyzedFunction(function: Definition.FunctionDefinition, staticDepth: Int, variables: Set<AnalyzedVariable>) =
     AnalyzedFunction(
         function,
         null,

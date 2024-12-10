@@ -52,17 +52,17 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
 
     fun logFailedFunctionAnalysis()
 
-    fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDeclaration, RegisterAllocation>)
+    fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>)
 
-    fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDeclaration, CFGFragment>)
+    fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>)
 
-    fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>)
+    fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>)
 
-    fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDeclaration, Liveness>)
+    fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDefinition, Liveness>)
 
     fun logSpillHandlingAttempt(spareRegisters: Set<Register.FixedRegister>)
 
-    fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDeclaration, List<BasicBlock>>)
+    fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>)
 
     fun logSuccessfulAssembling(dest: Path)
 

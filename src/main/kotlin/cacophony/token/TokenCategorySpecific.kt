@@ -24,6 +24,7 @@ enum class TokenCategorySpecific {
     KEYWORD_DO,
     KEYWORD_BREAK,
     KEYWORD_RETURN,
+    KEYWORD_FOREIGN,
 
     // operators
     OPERATOR_EQUALS,

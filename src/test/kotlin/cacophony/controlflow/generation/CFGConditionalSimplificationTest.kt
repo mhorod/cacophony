@@ -14,7 +14,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with true condition reduces to true branch`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(lit(true), lit(11), lit(22)),
             )
@@ -36,7 +36,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with false condition reduces to false branch`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(lit(false), lit(11), lit(22)),
             )
@@ -58,7 +58,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with logical and with false lhs skips computing rhs`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if
@@ -100,7 +100,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with logical or with true lhs skips computing rhs`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if
@@ -142,7 +142,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with logical or with false lhs computes rhs`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if
@@ -201,7 +201,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with logical and with true lhs computes rhs`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if
@@ -260,7 +260,7 @@ class CFGConditionalSimplificationTest {
     fun `if statement with nested ifs and ors`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if
@@ -312,7 +312,7 @@ class CFGConditionalSimplificationTest {
     fun `while loop with true condition never exits`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     whileLoop(lit(true), variableDeclaration("x", lit(10))),
@@ -342,7 +342,7 @@ class CFGConditionalSimplificationTest {
     fun `while loop with false condition never enters`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     whileLoop(lit(false), variableDeclaration("x", lit(10))),
@@ -375,7 +375,7 @@ class CFGConditionalSimplificationTest {
     fun `deep condition made of true, false, and, or simplifies to single branch`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     (
@@ -422,7 +422,7 @@ class CFGConditionalSimplificationTest {
     fun `condition with nested ifs simplifies to single branch`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     ifThenElse(
@@ -454,7 +454,7 @@ class CFGConditionalSimplificationTest {
     fun `condition if ifs nested in branches simplifies to single branch`() {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     lit(true),

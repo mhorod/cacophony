@@ -25,7 +25,7 @@ import cacophony.parser.CacophonyParser
 import cacophony.semantic.analysis.*
 import cacophony.semantic.names.*
 import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
+import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.generateAST
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.semantic.types.checkTypes
@@ -41,7 +41,7 @@ data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
     val types: TypeCheckingResult,
     val analyzedExpressions: UseTypeAnalysisResult,
-    val functionHandlers: Map<FunctionDeclaration, FunctionHandler>,
+    val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
 )
 
 class CacophonyPipeline(
@@ -205,31 +205,31 @@ class CacophonyPipeline(
         return cfg
     }
 
-    private fun coverWithInstructions(ast: AST): Map<FunctionDeclaration, LoweredCFGFragment> =
+    private fun coverWithInstructions(ast: AST): Map<FunctionDefinition, LoweredCFGFragment> =
         generateControlFlowGraph(ast).mapValues { (_, cfg) -> linearize(cfg, instructionCovering) }
 
-    private fun coverWithInstructions(cfg: ProgramCFG): Map<FunctionDeclaration, LoweredCFGFragment> {
+    private fun coverWithInstructions(cfg: ProgramCFG): Map<FunctionDefinition, LoweredCFGFragment> {
         val covering = cfg.mapValues { (_, cfg) -> linearize(cfg, instructionCovering) }
         logger?.logSuccessfulInstructionCovering(covering)
         return covering
     }
 
-    fun analyzeLiveness(ast: AST): Map<FunctionDeclaration, Liveness> =
+    fun analyzeLiveness(ast: AST): Map<FunctionDefinition, Liveness> =
         coverWithInstructions(ast).mapValues { (_, loweredCFG) -> cacophony.codegen.registers.analyzeLiveness(loweredCFG) }
 
-    private fun analyzeLiveness(covering: Map<FunctionDeclaration, LoweredCFGFragment>): Map<FunctionDeclaration, Liveness> {
+    private fun analyzeLiveness(covering: Map<FunctionDefinition, LoweredCFGFragment>): Map<FunctionDefinition, Liveness> {
         val liveness = covering.mapValues { (_, loweredCFG) -> cacophony.codegen.registers.analyzeLiveness(loweredCFG) }
         logger?.logSuccessfulLivenessGeneration(liveness)
         return liveness
     }
 
-    fun allocateRegisters(ast: AST, allowedRegisters: Set<HardwareRegister> = allGPRs): Map<FunctionDeclaration, RegisterAllocation> =
+    fun allocateRegisters(ast: AST, allowedRegisters: Set<HardwareRegister> = allGPRs): Map<FunctionDefinition, RegisterAllocation> =
         analyzeLiveness(ast).mapValues { (_, liveness) -> cacophony.codegen.registers.allocateRegisters(liveness, allowedRegisters) }
 
     fun allocateRegisters(
-        liveness: Map<FunctionDeclaration, Liveness>,
+        liveness: Map<FunctionDefinition, Liveness>,
         allowedRegisters: Set<HardwareRegister> = allGPRs,
-    ): Map<FunctionDeclaration, RegisterAllocation> {
+    ): Map<FunctionDefinition, RegisterAllocation> {
         val allocatedRegisters =
             liveness.mapValues { (_, liveness) ->
                 cacophony.codegen.registers.allocateRegisters(liveness, allowedRegisters)
@@ -239,13 +239,13 @@ class CacophonyPipeline(
     }
 
     private fun handleSpills(
-        functionHandlers: Map<FunctionDeclaration, FunctionHandler>,
-        covering: Map<FunctionDeclaration, LoweredCFGFragment>,
-        liveness: Map<FunctionDeclaration, Liveness>,
-        registerAllocation: Map<FunctionDeclaration, RegisterAllocation>,
+        functionHandlers: Map<FunctionDefinition, FunctionHandler>,
+        covering: Map<FunctionDefinition, LoweredCFGFragment>,
+        liveness: Map<FunctionDefinition, Liveness>,
+        registerAllocation: Map<FunctionDefinition, RegisterAllocation>,
     ): Pair<
-        Map<FunctionDeclaration, LoweredCFGFragment>,
-        Map<FunctionDeclaration, RegisterAllocation>,
+        Map<FunctionDefinition, LoweredCFGFragment>,
+        Map<FunctionDefinition, RegisterAllocation>,
         > {
         if (registerAllocation.values.all { it.spills.isEmpty() }) {
             return covering to registerAllocation
@@ -290,7 +290,7 @@ class CacophonyPipeline(
         return newCovering to newRegisterAllocation
     }
 
-    private fun generateAsm(ast: AST): Map<FunctionDeclaration, String> {
+    private fun generateAsm(ast: AST): Map<FunctionDefinition, String> {
         val analyzedAst = analyzeAst(ast)
         val cfg = generateControlFlowGraph(analyzedAst)
         val covering = coverWithInstructions(cfg)
@@ -313,7 +313,7 @@ class CacophonyPipeline(
         }
     }
 
-    fun generateAsm(input: Input): Map<FunctionDeclaration, String> {
+    fun generateAsm(input: Input): Map<FunctionDefinition, String> {
         val asm = generateAsm(generateAST(input))
         asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return asm

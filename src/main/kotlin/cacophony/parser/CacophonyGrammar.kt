@@ -65,7 +65,17 @@ class CacophonyGrammar {
                                                 or
                                                 atomic(DECLARATION_UNTYPED)
                                         )
+                                ) or
+                                (
+                                    atomic(KEYWORD_FOREIGN) concat
+                                        atomic(VARIABLE_IDENTIFIER) concat
+                                        atomic(FOREIGN_DECLARATION)
                                 )
+                        ),
+                    FOREIGN_DECLARATION produces
+                        (
+                            atomic(COLON) concat
+                                atomic(TYPE)
                         ),
                     DECLARATION_TYPED produces
                         (

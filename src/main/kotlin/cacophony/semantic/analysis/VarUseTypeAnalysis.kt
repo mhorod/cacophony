@@ -69,7 +69,7 @@ private class VarUseVisitor(
         when (expr) {
             is Block -> visitBlock(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
-            is Definition.FunctionDeclaration -> visitFunctionDeclaration(expr)
+            is Definition.FunctionDefinition -> visitFunctionDeclaration(expr)
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
@@ -217,18 +217,18 @@ private class VarUseVisitor(
 
         // variables used in called function:
         val calledFunction = resolvedVariables[expr.function]
-        if (calledFunction is Definition.FunctionDeclaration) {
+        if (calledFunction is Definition.FunctionDefinition) {
             val map =
                 functionAnalysis[calledFunction]!!.outerVariables().associate {
                     it.declaration to it.useType
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
-        } else {
+        } else if (calledFunction !is Definition.ForeignFunctionDeclaration) {
             error("Left side of function call is not a function declaration")
         }
     }
 
-    private fun visitFunctionDeclaration(expr: Definition.FunctionDeclaration) {
+    private fun visitFunctionDeclaration(expr: Definition.FunctionDefinition) {
         // we don't want to merge with declaration body, as it need to be called to use the variables
         visitExpression(expr.body)
         useTypeAnalysis[expr] = UseTypesForExpression.empty()

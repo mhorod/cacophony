@@ -2,6 +2,7 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.generateCallFrom
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.Block
@@ -21,8 +22,8 @@ import cacophony.semantic.syntaxtree.VariableUse
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
-    private val function: Definition.FunctionDeclaration,
-    private val functionHandlers: Map<Definition.FunctionDeclaration, FunctionHandler>,
+    private val function: Definition.FunctionDefinition,
+    private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
 ) {
     private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
@@ -98,7 +99,7 @@ internal class CFGGenerator(
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
-            is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
+            is Definition.FunctionDefinition -> visitFunctionDeclaration(mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
             is FunctionCall -> visitFunctionCall(expression, mode, context)
@@ -147,7 +148,11 @@ internal class CFGGenerator(
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
         val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
-        val functionHandler = getFunctionHandler(function)
+        val functionHandler =
+            when (function) {
+                is Definition.FunctionDefinition -> getFunctionHandler(function)
+                is Definition.ForeignFunctionDeclaration -> null
+            }
 
         val (resultRegister, resultAccess) =
             if (mode is EvalMode.SideEffect) {
@@ -160,13 +165,14 @@ internal class CFGGenerator(
             }
 
         val callSequence =
-            functionHandler
-                .generateCallFrom(
-                    getCurrentFunctionHandler(),
-                    argumentVertices.map { it.access },
-                    resultRegister,
-                    true,
-                ).map { ensureExtracted(it) }
+            generateCallFrom(
+                getCurrentFunctionHandler(),
+                function,
+                functionHandler,
+                argumentVertices.map { it.access },
+                resultRegister,
+                true,
+            ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
         val entry =
@@ -366,6 +372,6 @@ internal class CFGGenerator(
 
     internal fun resolveVariable(variable: VariableUse) = resolvedVariables[variable] ?: error("Unresolved variable $variable")
 
-    private fun getFunctionHandler(function: Definition.FunctionDeclaration): FunctionHandler =
+    private fun getFunctionHandler(function: Definition.FunctionDefinition): FunctionHandler =
         functionHandlers[function] ?: error("Function $function has no handler")
 }

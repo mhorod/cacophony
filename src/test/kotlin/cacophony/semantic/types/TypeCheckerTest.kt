@@ -128,7 +128,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - empty function declaration without type - () to Unit`() {
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testUnit(), empty())
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testUnit(), empty())
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -139,7 +139,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - empty function declaration with type - () to Unit`() {
         val funDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 functionalType(emptyList(), testUnit()),
                 emptyList(),
@@ -156,7 +156,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - empty function declaration without type - (Int) to Unit`() {
         val funDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 null,
                 listOf(typedArg("x", testInt())),
@@ -173,7 +173,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - empty function declaration with type - (Int) to Unit`() {
         val funDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 functionalType(listOf(testInt()), testUnit()),
                 listOf(typedArg("x", testInt())),
@@ -189,7 +189,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - nonempty function declaration - () to Int`() {
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testInt(), intLiteral)
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testInt(), intLiteral)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -200,7 +200,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - nonempty function declaration - (Int) to Int`() {
         val funArg = typedArg("x", testInt())
-        val funDef = typedFunctionDeclaration("f", null, listOf(funArg), testInt(), intLiteral)
+        val funDef = typedFunctionDefinition("f", null, listOf(funArg), testInt(), intLiteral)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -213,7 +213,7 @@ class TypeCheckerTest {
     fun `ok - nonempty function declaration - (Int) to Int with VariableUse`() {
         val funArg = typedArg("x", testInt())
         val varUse = variableUse("x")
-        val funDef = typedFunctionDeclaration("f", null, listOf(funArg), testInt(), varUse)
+        val funDef = typedFunctionDefinition("f", null, listOf(funArg), testInt(), varUse)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, mapOf(varUse to funArg))
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -226,7 +226,7 @@ class TypeCheckerTest {
     fun `ok - function declaration - () to Int with outer scope `() {
         val varDec = typedVariableDeclaration("x", null, intLiteral)
         val varUse = variableUse("x")
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testInt(), varUse)
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testInt(), varUse)
         val ast = block(varDec, funDef)
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDec))
         assertTypeEquals(BuiltinType.UnitType, result[funDef])
@@ -239,7 +239,7 @@ class TypeCheckerTest {
     fun `ok - function declaration - (Int, Boolean) to Int no type`() {
         val arg1 = typedArg("x", testInt())
         val arg2 = typedArg("y", testBoolean())
-        val funDef = typedFunctionDeclaration("f", null, listOf(arg1, arg2), testInt(), intLiteral)
+        val funDef = typedFunctionDefinition("f", null, listOf(arg1, arg2), testInt(), intLiteral)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.IntegerType, result[arg1])
@@ -254,7 +254,7 @@ class TypeCheckerTest {
         val arg1 = typedArg("x", testInt())
         val arg2 = typedArg("y", testBoolean())
         val funDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 functionalType(listOf(testInt(), testBoolean()), testInt()),
                 listOf(arg1, arg2),
@@ -273,7 +273,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - function declaration - () to Unit with type`() {
         val funDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 functionalType(emptyList(), basicType("Unit")),
                 emptyList(),
@@ -289,7 +289,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - function call () to Int`() {
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testInt(), intLiteral)
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testInt(), intLiteral)
         val varUse = variableUse("f")
         val funCall = call(varUse)
         val ast = block(funDef, funCall)
@@ -304,7 +304,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - function call (Unit) to Int`() {
         val funArg = typedArg("x", testUnit())
-        val funDef = typedFunctionDeclaration("f", null, listOf(funArg), testInt(), intLiteral)
+        val funDef = typedFunctionDefinition("f", null, listOf(funArg), testInt(), intLiteral)
         val varUse = variableUse("f")
         val funCall = call(varUse, empty())
         val ast = block(funDef, funCall)
@@ -321,12 +321,36 @@ class TypeCheckerTest {
         val varDef = typedVariableDeclaration("a", null, intLiteral)
         val varUse = variableUse("a")
         val funArg = typedArg("x", testInt())
-        val funDef = typedFunctionDeclaration("f", null, listOf(funArg), testInt(), intLiteral)
+        val funDef = typedFunctionDefinition("f", null, listOf(funArg), testInt(), intLiteral)
         val funUse = variableUse("f")
         val funCall = call(funUse, varUse)
         val ast = block(varDef, funDef, funCall)
         val result = checkTypes(ast, diagnostics, mapOf(funUse to funDef, varUse to varDef))
         assertTypeEquals(FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType), result[funUse])
+        assertTypeEquals(BuiltinType.IntegerType, result[funCall])
+        assertTypeEquals(BuiltinType.IntegerType, result[ast])
+        verify { diagnostics wasNot called }
+    }
+
+    @Test
+    fun `ok - foreign function declaration - (Int) to Int`() {
+        val funDec = foreignFunctionDeclaration("f", listOf(testInt()), testInt())
+        val ast = block(funDec)
+        val result = checkTypes(ast, diagnostics, emptyMap())
+        assertTypeEquals(BuiltinType.UnitType, result[funDec])
+        assertTypeEquals(BuiltinType.UnitType, result[ast])
+        verify { diagnostics wasNot called }
+    }
+
+    @Test
+    fun `ok - foreign function call () to Int`() {
+        val funDec = foreignFunctionDeclaration("f", emptyList(), testInt())
+        val varUse = variableUse("f")
+        val funCall = call(varUse)
+        val ast = block(funDec, funCall)
+        val result = checkTypes(ast, diagnostics, mapOf(varUse to funDec))
+        assertTypeEquals(BuiltinType.UnitType, result[funDec])
+        assertTypeEquals(FunctionType(emptyList(), BuiltinType.IntegerType), result[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result[funCall])
         assertTypeEquals(BuiltinType.IntegerType, result[ast])
         verify { diagnostics wasNot called }
@@ -496,7 +520,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - return with Unit`() {
         val body = returnStatement(empty())
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testUnit(), body)
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testUnit(), body)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(TypeExpr.VoidType, result[body])
@@ -507,7 +531,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - Void propagates`() {
         val body = block(returnStatement(empty()), empty())
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testUnit(), body)
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testUnit(), body)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(TypeExpr.VoidType, result[body])
@@ -518,7 +542,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - return with Int literal`() {
         val body = returnStatement(intLiteral)
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testInt(), body)
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testInt(), body)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(TypeExpr.VoidType, result[body])
@@ -531,7 +555,7 @@ class TypeCheckerTest {
         val argDef = typedArg("x", testInt())
         val argUse = variableUse("x")
         val body = returnStatement(argUse)
-        val funDef = typedFunctionDeclaration("f", null, listOf(argDef), testInt(), body)
+        val funDef = typedFunctionDefinition("f", null, listOf(argDef), testInt(), body)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, mapOf(argUse to argDef))
         assertTypeEquals(BuiltinType.IntegerType, result[argUse])
@@ -548,7 +572,7 @@ class TypeCheckerTest {
                 returnStatement(lit(2)),
                 lit(3),
             )
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testInt(), body)
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testInt(), body)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(BuiltinType.IntegerType, result[body])
@@ -564,7 +588,7 @@ class TypeCheckerTest {
                 returnStatement(lit(2)),
                 returnStatement(lit(3)),
             )
-        val funDef = typedFunctionDeclaration("f", null, emptyList(), testInt(), body)
+        val funDef = typedFunctionDefinition("f", null, emptyList(), testInt(), body)
         val ast = block(funDef)
         val result = checkTypes(ast, diagnostics, emptyMap())
         assertTypeEquals(TypeExpr.VoidType, result[body])
@@ -575,7 +599,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - return in nested function`() {
         val innerFunDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 null,
                 emptyList(),
@@ -583,7 +607,7 @@ class TypeCheckerTest {
                 returnStatement(intLiteral),
             )
         val outerFunDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "g",
                 null,
                 emptyList(),
@@ -995,7 +1019,7 @@ class TypeCheckerTest {
         val res = returnStatement(empty())
         val body = variableWrite(varUse, res)
         val funDef =
-            typedFunctionDeclaration("f", null, emptyList(), testUnit(), block(body, empty()))
+            typedFunctionDefinition("f", null, emptyList(), testUnit(), block(body, empty()))
         val ast = block(varDef, funDef)
         val result = checkTypes(ast, diagnostics, mapOf(varUse to varDef))
         assertTypeEquals(TypeExpr.VoidType, result[res])
@@ -1017,7 +1041,7 @@ class TypeCheckerTest {
     @Test
     fun `error - unknown type at argument declaration`() {
         val funDec =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 null,
                 listOf(typedArg("a", basicType("Type"))),
@@ -1035,7 +1059,7 @@ class TypeCheckerTest {
         val arg1 = typedArg("x", testInt())
         val arg2 = typedArg("y", testBoolean())
         val funDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 functionalType(listOf(testBoolean(), testInt()), testInt()),
                 listOf(arg1, arg2),
@@ -1059,7 +1083,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - function declaration type mismatch - number of args`() {
         val funDef =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 functionalType(listOf(testInt()), basicType("Unit")),
                 emptyList(),
@@ -1096,7 +1120,7 @@ class TypeCheckerTest {
 
     @Test
     fun `error - mismatch body vs return type`() {
-        val funDec = typedFunctionDeclaration("f", null, emptyList(), testInt(), booleanLiteral)
+        val funDec = typedFunctionDefinition("f", null, emptyList(), testInt(), booleanLiteral)
         val ast = block(funDec)
         checkTypes(ast, diagnostics, emptyMap())
         verify(exactly = 1) {
@@ -1124,13 +1148,29 @@ class TypeCheckerTest {
     @Test
     fun `error - wrong argument type`() {
         val funDec =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 null,
                 listOf(typedArg("a", testInt())),
                 testUnit(),
                 empty(),
             )
+        val funUse = variableUse("f")
+        val body = call(funUse, booleanLiteral)
+        val ast = block(funDec, body)
+        checkTypes(ast, diagnostics, mapOf(funUse to funDec))
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "Bool"),
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
+
+    @Test
+    fun `error - wrong argument type in foreign function call`() {
+        val funDec = foreignFunctionDeclaration("f", listOf(testInt()), testInt())
         val funUse = variableUse("f")
         val body = call(funUse, booleanLiteral)
         val ast = block(funDec, body)
@@ -1303,7 +1343,7 @@ class TypeCheckerTest {
     @Test
     fun `error - return with wrong type`() {
         val funDec =
-            typedFunctionDeclaration(
+            typedFunctionDefinition(
                 "f",
                 null,
                 emptyList(),

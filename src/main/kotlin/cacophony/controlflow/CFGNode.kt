@@ -287,7 +287,7 @@ sealed interface CFGNode {
     data class FunctionSlot(
         override val label: FunctionLabel,
     ) : Slot, FunctionRef {
-        override val function: Definition.FunctionDeclaration?
+        override val function: Definition.FunctionDefinition?
             get() = null
     }
 }

@@ -29,10 +29,10 @@ class CallGraphTest {
     @Test
     fun `finds basic call`() {
         // let f = [] -> B => (); let g = [] -> C => f[]
-        val fDef = unitFunctionDeclaration("f", empty())
+        val fDef = unitFunctionDefinition("f", empty())
         val fUse = variableUse("f")
         val gDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "g",
                 call(fUse),
             )
@@ -50,10 +50,10 @@ class CallGraphTest {
     @Test
     fun `finds deeply nested call`() {
         // let f = [] -> B => (); let g = [] -> C => (((((f[])))))
-        val fDef = unitFunctionDeclaration("f", empty())
+        val fDef = unitFunctionDefinition("f", empty())
         val fUse = variableUse("f")
         val gDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "g",
                 block(
                     block(
@@ -84,7 +84,7 @@ class CallGraphTest {
         // let f = [] -> B => f[]
         val fUse = variableUse("f")
         val fDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 call(fUse),
             )
@@ -111,12 +111,12 @@ class CallGraphTest {
         val gUse = variableUse("g")
 
         val gDef =
-            typedFunctionDeclaration("g", null, listOf(), basicType("C"), call(fUseInG))
+            typedFunctionDefinition("g", null, listOf(), basicType("C"), call(fUseInG))
         val fDef =
-            typedFunctionDeclaration("f", null, listOf(), basicType("B"), block(gDef, FunctionCall(loc(7, 8), gUse, listOf())))
+            typedFunctionDefinition("f", null, listOf(), basicType("B"), block(gDef, FunctionCall(loc(7, 8), gUse, listOf())))
 
         val hDef =
-            typedFunctionDeclaration("h", null, listOf(), basicType("B"), call(fUseInH))
+            typedFunctionDefinition("h", null, listOf(), basicType("B"), call(fUseInH))
 
         val ast = block(fDef, hDef)
         val resolvedVariables = mapOf(fUseInG to fDef, fUseInH to fDef, gUse to gDef)
@@ -145,7 +145,7 @@ class CallGraphTest {
                 call(fUse),
             )
         val fDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 block(gDef, gUse),
             )
@@ -167,8 +167,8 @@ class CallGraphTest {
         val fUse = variableUse("f")
         val gUse = variableUse("g")
 
-        val gDef = unitFunctionDeclaration("g", structDeclaration(structField("res") to call(fUse)))
-        val fDef = unitFunctionDeclaration("f", block(gDef, call(gUse)))
+        val gDef = unitFunctionDefinition("g", structDeclaration(structField("res") to call(fUse)))
+        val fDef = unitFunctionDefinition("f", block(gDef, call(gUse)))
 
         val ast = block(fDef)
         val resolvedVariables = mapOf(fUse to fDef, gUse to gDef)
