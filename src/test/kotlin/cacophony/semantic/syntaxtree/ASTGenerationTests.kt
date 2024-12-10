@@ -1,8 +1,20 @@
 package cacophony.semantic.syntaxtree
 
+import cacophony.addeq
+import cacophony.block
+import cacophony.call
 import cacophony.diagnostics.CacophonyDiagnostics
+import cacophony.lvalueFieldRef
 import cacophony.pipeline.CacophonyPipeline
+import cacophony.rvalueFieldRef
+import cacophony.structDeclaration
+import cacophony.structField
+import cacophony.structType
+import cacophony.typedArg
+import cacophony.typedFunctionDeclaration
 import cacophony.utils.*
+import cacophony.variableDeclaration
+import cacophony.variableUse
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -51,13 +63,13 @@ class ASTGenerationTests {
             Definition.FunctionDeclaration(
                 anyLocation(),
                 "<program>",
-                Type.Functional(
+                BaseType.Functional(
                     anyLocation(),
                     emptyList(),
-                    Type.Basic(anyLocation(), "Int"),
+                    BaseType.Basic(anyLocation(), "Int"),
                 ),
                 emptyList(),
-                Type.Basic(anyLocation(), "Int"),
+                BaseType.Basic(anyLocation(), "Int"),
                 Block(
                     anyLocation(),
                     listOf(
@@ -95,7 +107,7 @@ class ASTGenerationTests {
         return diagnostics
     }
 
-    private fun basicType(value: String) = Type.Basic(anyLocation(), value)
+    private fun basicType(value: String) = BaseType.Basic(anyLocation(), value)
 
     private fun literal(value: Int) = Literal.IntLiteral(anyLocation(), value)
 
@@ -590,6 +602,57 @@ class ASTGenerationTests {
                     literal(1),
                     literal(2),
                 ),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `simple struct`() {
+        val actual = computeAST("{x = x}")
+        val expected = structDeclaration(structField("x") to variableUse("x"))
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `nested structs`() {
+        val actual = computeAST("let f = [x: {a: {b: Int}, c: Int}] -> {x: {c: Int, a: {b: Int}}} => {x = x}")
+        val expected =
+            typedFunctionDeclaration(
+                "f",
+                null,
+                listOf(
+                    typedArg("x", structType("a" to structType("b" to basicType("Int")), "c" to basicType("Int"))),
+                ),
+                structType("x" to structType("a" to structType("b" to basicType("Int")), "c" to basicType("Int"))),
+                structDeclaration(structField("x") to variableUse("x")),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `lvalue field access`() {
+        val actual = computeAST("x . a . b . c += 2")
+        val expected = lvalueFieldRef(lvalueFieldRef(lvalueFieldRef(variableUse("x"), "a"), "b"), "c") addeq literal(2)
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `rvalue field access`() {
+        val actual = computeAST("{x = 2}.x.y")
+        val expected = rvalueFieldRef(rvalueFieldRef(structDeclaration(structField("x") to literal(2)), "x"), "y")
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `complex expression field access`() {
+        val actual = computeAST("(let c = f[a, b]; c).x.y")
+        val expected =
+            rvalueFieldRef(
+                rvalueFieldRef(
+                    block(variableDeclaration("c", call(variableUse("f"), variableUse("a"), variableUse("b"))), variableUse("c")),
+                    "x",
+                ),
+                "y",
             )
         assertEquivalentAST(mockWrapInFunction(expected), actual)
     }
