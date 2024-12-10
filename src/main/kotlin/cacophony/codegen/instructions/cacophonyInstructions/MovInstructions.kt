@@ -1,5 +1,6 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
+import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.MemoryAddress
@@ -21,7 +22,7 @@ data class MovRegReg(
         return "mov $lhsHardwareReg, $rhsHardwareReg"
     }
 
-    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping) = hardwareRegisterMapping[lhs] == hardwareRegisterMapping[rhs]
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>) = hardwareRegisterMapping[lhs] == hardwareRegisterMapping[rhs]
 
     override fun substituteRegisters(map: Map<Register, Register>): MovRegReg = MovRegReg(lhs.substitute(map), rhs.substitute(map))
 }

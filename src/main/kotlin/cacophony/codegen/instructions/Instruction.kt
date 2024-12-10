@@ -1,5 +1,6 @@
 package cacophony.codegen.instructions
 
+import cacophony.codegen.BlockLabel
 import cacophony.controlflow.*
 
 data class RegisterByte(val register: Register) {
@@ -28,7 +29,7 @@ interface Instruction {
 
     fun substituteRegisters(map: Map<Register, Register>): Instruction
 
-    fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping): Boolean = false
+    fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean = false
 }
 
 interface CopyInstruction : Instruction

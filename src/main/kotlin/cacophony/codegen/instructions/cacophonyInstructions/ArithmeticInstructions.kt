@@ -1,5 +1,6 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
+import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.RegisterByte
 import cacophony.controlflow.CFGNode
@@ -24,7 +25,7 @@ data class AddRegImm(
         imm,
         "add",
     ) {
-    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping): Boolean = imm.value == 0
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean = imm.value == 0
 }
 
 data class SubRegReg(
@@ -44,7 +45,7 @@ data class SubRegImm(
         imm,
         "sub",
     ) {
-    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping): Boolean = imm.value == 0
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean = imm.value == 0
 }
 
 data class XorRegReg(
