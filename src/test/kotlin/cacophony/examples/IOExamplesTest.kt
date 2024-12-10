@@ -19,7 +19,6 @@ import kotlin.io.path.readText
 class IOExamplesTest {
     @ParameterizedTest
     @MethodSource("ioExamples")
-    @Disabled
     fun `io tests print expected output on given input`(path: Path) {
         val inputPath = path.resolve("input.txt")
         val expectedOutputPath = path.resolve("output.txt")
