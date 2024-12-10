@@ -12,21 +12,20 @@ fun generateCallFrom(
     functionHandler: FunctionHandler?,
     arguments: List<CFGNode>,
     result: Register?,
-    respectStackAlignment: Boolean,
 ): List<CFGNode> =
     when (function) {
         is Definition.ForeignFunctionDeclaration -> {
             if (function.type!!.argumentsType.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
-            generateCall(function, arguments, result, true)
+            generateCall(function, arguments, result, callerFunction.getStackSpace())
         }
         is Definition.FunctionDefinition -> {
             if (function.arguments.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
-            generateCall(function, arguments + mutableListOf(staticLinkVar), result, respectStackAlignment)
+            generateCall(function, arguments + listOf(staticLinkVar), result, callerFunction.getStackSpace())
         }
     }
 
@@ -34,41 +33,24 @@ fun generateCall(
     function: Definition.FunctionDeclaration,
     arguments: List<CFGNode>,
     result: Register?,
-    respectStackAlignment: Boolean = false,
+    callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
 
     val nodes: MutableList<CFGNode> = mutableListOf()
 
-    if (respectStackAlignment) {
-        // we push two copies of RSP to the stack and either leave them both there,
-        // or remove one of them via RSP assignment
-        val oldRSP = Register.VirtualRegister()
-        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(oldRSP), CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))))
+    // At the moment of calling the `function`, the RSP is divisible by 16,
+    // The return value make it congruent to 8, and then oldRSP push makes it divisible by 16 again. (look at prologue generation)
+    //
+    // Then `callerFunctionStackSize.value` bytes on the stack are allocated by the `function`.
+    // Finally, here we are going to increase the stack size to store all the stack arguments
+    // Therefore we have to shift the stack by (callerFunctionStackSize.value + 8 * stackArguments.size) % 16 manually
 
-        nodes.add(CFGNode.Push(CFGNode.RegisterUse(oldRSP)))
-        nodes.add(CFGNode.Push(CFGNode.RegisterUse(oldRSP)))
+    val alignmentShift = CFGNode.ConstantLazy { (callerFunctionStackSize.value + 8 * stackArguments.size) % 16 }
 
-        // in an ideal world we would do something like "and rsp, ~15" or similar; for now this will do
-        // at the very least split the computation of (RSP + stackArguments.size % 2 * 8) % 16
-        // into two cases depending on the parity of stackArguments.size
-        nodes.add(
-            CFGNode.Assignment(
-                CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                CFGNode.Addition(
-                    CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                    CFGNode.Modulo(
-                        CFGNode.Addition(
-                            CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                            CFGNode.ConstantKnown(stackArguments.size % 2 * REGISTER_SIZE),
-                        ),
-                        CFGNode.ConstantKnown(16),
-                    ),
-                ),
-            ),
-        )
-    }
+    val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))
+    nodes.add(CFGNode.SubtractionAssignment(rsp, alignmentShift))
 
     // in what order should we evaluate arguments? gcc uses reversed order
     for ((argument, register) in registerArguments) {
@@ -84,29 +66,10 @@ fun generateCall(
     }
 
     nodes.add(CFGNode.Call(function))
+    nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value + 8 * stackArguments.size }))
 
-    if (stackArguments.isNotEmpty()) {
-        nodes.add(
-            CFGNode.Assignment(
-                CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                CFGNode.Addition(
-                    CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP)),
-                    CFGNode.ConstantKnown(REGISTER_SIZE * stackArguments.size),
-                ),
-            ),
-        )
-    }
-
-    if (respectStackAlignment) {
-        // we could remove the operations from previous `if (stackArguments.isNotEmpty())` block
-        // via MemoryAccess, but for now the semantics are a bit unclear + it would introduce
-        // a few ifs, which we do not need at this point
-        nodes.add(CFGNode.Pop(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))))
-    }
-
-    if (result != null) {
+    if (result != null)
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(result), CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX))))
-    }
 
     return nodes
 }

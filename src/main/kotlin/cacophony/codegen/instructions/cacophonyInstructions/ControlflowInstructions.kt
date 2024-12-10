@@ -99,6 +99,17 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
+// Utility class to make asm a bit more readable.
+data class Comment(private val comment: String) : InstructionTemplates.FixedRegistersInstruction() {
+    override val registersRead: Set<Register> = emptySet()
+    override val registersWritten: Set<Register> = emptySet()
+
+    // This class is not marked as noop, as we do not want to remove it.
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        return "; $comment"
+    }
+}
+
 class Ret : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(SystemVAMD64CallConvention.returnRegister()))

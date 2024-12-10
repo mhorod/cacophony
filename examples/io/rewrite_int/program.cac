@@ -1,0 +1,5 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Int;
+
+let x = read_int[];
+write_int[x];

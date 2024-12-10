@@ -1,9 +1,6 @@
 package cacophony.codegen.instructions
 
-import cacophony.controlflow.HardwareRegisterByte
-import cacophony.controlflow.HardwareRegisterMapping
-import cacophony.controlflow.Register
-import cacophony.controlflow.ValueSlotMapping
+import cacophony.controlflow.*
 
 data class RegisterByte(val register: Register) {
     fun map(hardwareRegisterMapping: HardwareRegisterMapping): HardwareRegisterByte {
@@ -19,7 +16,7 @@ enum class RegisterSize {
     QWORD,
 }
 
-data class MemoryAddress(val base: Register, val index: Register?, val scale: Int?, val displacement: Int?) {
+data class MemoryAddress(val base: Register, val index: Register?, val scale: CFGNode.Constant?, val displacement: CFGNode.Constant?) {
     fun registers() = setOf(base, index).filterNotNull().toSet()
 }
 

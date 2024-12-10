@@ -112,6 +112,12 @@ private class FragmentEquivalenceVisitor {
                 assertThat(actual.functionRef).isEqualTo(expected.functionRef)
             }
 
+            is CFGNode.Comment -> {
+                assertThat(actual).isInstanceOf(CFGNode.Comment::class.java)
+                check(actual is CFGNode.Comment)
+                assertThat(actual.comment).isEqualTo(expected.comment)
+            }
+
             is CFGNode.Constant -> {
                 assertThat(actual).isInstanceOf(CFGNode.Constant::class.java)
                 check(actual is CFGNode.Constant)
@@ -151,6 +157,9 @@ private class FragmentEquivalenceVisitor {
             is CFGNode.FunctionSlot -> {
                 assertThat(actual).isInstanceOf(CFGNode.FunctionSlot::class.java)
                 check(actual is CFGNode.FunctionSlot)
+            }
+
+            is CFGNode.NodeSlot<*> -> {
             }
 
             is CFGNode.Addition -> {

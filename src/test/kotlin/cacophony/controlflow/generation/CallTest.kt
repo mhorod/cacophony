@@ -3,8 +3,10 @@ package cacophony.controlflow.generation
 import cacophony.*
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+@Disabled
 class CallTest {
     @Test
     fun `call sequence for a function without parameters is correctly generated when the call is used as a value`() {

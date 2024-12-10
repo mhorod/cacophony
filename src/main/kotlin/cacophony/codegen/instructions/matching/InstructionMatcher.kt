@@ -30,6 +30,7 @@ class InstructionMatcherImpl(
                         metadata.registerFill,
                         metadata.constantFill,
                         metadata.functionFill,
+                        metadata.nodeFill,
                     ),
                     destinationRegister,
                 )
@@ -49,6 +50,7 @@ class InstructionMatcherImpl(
                         metadata.registerFill,
                         metadata.constantFill,
                         metadata.functionFill,
+                        metadata.nodeFill,
                     ),
                 )
             }
@@ -67,6 +69,7 @@ class InstructionMatcherImpl(
                         metadata.registerFill,
                         metadata.constantFill,
                         metadata.functionFill,
+                        metadata.nodeFill,
                     ),
                     destinationLabel,
                     jumpIf,
@@ -80,6 +83,7 @@ class InstructionMatcherImpl(
         val constantFill: MutableMap<ConstantLabel, CFGNode.Constant> = mutableMapOf(),
         val toFill: MutableMap<ValueLabel, CFGNode> = mutableMapOf(),
         val functionFill: MutableMap<FunctionLabel, CFGNode.Function> = mutableMapOf(),
+        val nodeFill: MutableMap<NodeLabel, CFGNode> = mutableMapOf(),
         var size: Int = 0,
     )
 
@@ -99,6 +103,7 @@ class InstructionMatcherImpl(
                         createInstructionMaker(metadata, pattern),
                         metadata.toFill,
                         metadata.size,
+                        pattern,
                     ),
                 )
             }
@@ -127,6 +132,10 @@ class InstructionMatcherImpl(
                 is CFGNode.FunctionSlot -> {
                     if (node !is CFGNode.Function) return false
                     matchMetadata.functionFill[pattern.label] = node
+                }
+                is CFGNode.NodeSlot<*> -> {
+                    if (!pattern.clazz.isInstance(node)) return false
+                    matchMetadata.nodeFill[pattern.label] = node
                 }
             }
         } else {

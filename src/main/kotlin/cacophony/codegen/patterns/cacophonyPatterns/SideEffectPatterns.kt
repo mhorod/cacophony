@@ -8,6 +8,7 @@ import cacophony.controlflow.*
 val sideEffectPatterns =
     listOf(
         NoOpPattern,
+        CommentPattern,
         // +=
         AdditionAssignmentMemoryPattern,
         ConstantAdditionAssignmentRegisterPattern,
@@ -42,6 +43,15 @@ object NoOpPattern : SideEffectPattern {
     override fun makeInstance(fill: SlotFill) = emptyList<Instruction>()
 }
 
+object CommentPattern : SideEffectPattern {
+    override val tree = CFGNode.NodeSlot(NodeLabel(), CFGNode.Comment::class)
+
+    override fun makeInstance(fill: SlotFill): List<Instruction> =
+        instructions(fill) {
+            comment(fill.getNodeForNodeSlot(tree).comment)
+        }
+}
+
 object AdditionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
     override val tree = lhsSlot addeq rhsSlot
 
@@ -67,13 +77,15 @@ object ConstantAdditionAssignmentRegisterPattern : SideEffectPattern {
     private val lhsLabel = RegisterLabel()
     private val rhsLabel = ConstantLabel()
     private val lhsSlot = CFGNode.RegisterSlot(lhsLabel)
-    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel, { true })
+    private val rhsSlot = CFGNode.ConstantSlot(rhsLabel) { true }
     override val tree = lhsSlot addeq rhsSlot
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
             add(reg(lhsLabel), const(rhsLabel))
         }
+
+    override fun priority(): Int = 10
 }
 
 object SubtractionAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
@@ -108,6 +120,8 @@ object ConstantSubtractionAssignmentRegisterPattern : SideEffectPattern {
         instructions(fill) {
             sub(reg(lhsLabel), const(rhsLabel))
         }
+
+    override fun priority(): Int = 10
 }
 
 object MultiplicationAssignmentRegisterPattern : SideEffectPattern, RegisterAssignmentTemplate() {
@@ -219,6 +233,8 @@ object PushRegPattern : SideEffectPattern {
         instructions(fill) {
             push(reg(childLabel))
         }
+
+    override fun priority(): Int = 10
 }
 
 object PopPattern : SideEffectPattern {
@@ -308,13 +324,13 @@ object RegisterToMemoryWithSubtractedDisplacementAssignmentPattern : SideEffectP
         memoryAccess(
             CFGNode.ValueSlot(lhsLabel)
                 sub
-                CFGNode.ConstantSlot(displacementLabel, { it in listOf(1, 2, 4, 8) }),
+                CFGNode.ConstantSlot(displacementLabel) { it in listOf(1, 2, 4, 8) },
         )
     private val rhsSlot = CFGNode.RegisterSlot(rhsLabel)
     override val tree = lhsSlot assign rhsSlot
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            mov(memWithDisplacement(reg(lhsLabel), -const(displacementLabel)), reg(rhsLabel))
+            mov(memWithDisplacement(reg(lhsLabel), CFGNode.ConstantLazy { -const(displacementLabel).value }), reg(rhsLabel))
         }
 }
