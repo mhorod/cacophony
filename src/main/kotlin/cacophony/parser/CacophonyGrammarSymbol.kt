@@ -31,6 +31,7 @@ enum class CacophonyGrammarSymbol(
     KEYWORD_DO(null),
     KEYWORD_BREAK(Statement.BreakStatement::class),
     KEYWORD_RETURN(null),
+    KEYWORD_FOREIGN(null),
 
     // operators
     OPERATOR_EQUALS(OperatorBinary.Equals::class),
@@ -72,7 +73,8 @@ enum class CacophonyGrammarSymbol(
     DECLARATION_TYPED(Definition::class),
     DECLARATION_UNTYPED(Definition::class),
     VARIABLE_DECLARATION(Definition.VariableDeclaration::class),
-    FUNCTION_DECLARATION(Definition.FunctionDeclaration::class),
+    FUNCTION_DECLARATION(Definition.FunctionDefinition::class),
+    FOREIGN_DECLARATION(Definition.ForeignFunctionDeclaration::class),
     FUNCTION_ARGUMENT(Definition.FunctionArgument::class),
     TYPE(Type::class),
     FUNCTION_TYPE(BaseType.Functional::class),

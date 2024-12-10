@@ -30,7 +30,7 @@ class OverloadResolverTest {
         val ast = block(funcCall)
 
         val overloadSet = mockk<OverloadSet>()
-        val def = mockk<Definition.FunctionDeclaration>()
+        val def = mockk<Definition.FunctionDefinition>()
         every { overloadSet[0] } returns def
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
@@ -50,9 +50,9 @@ class OverloadResolverTest {
         val ast = block(funcCall)
 
         val overloadSet = mockk<OverloadSet>()
-        val def0 = mockk<Definition.FunctionDeclaration>()
-        val def1 = mockk<Definition.FunctionDeclaration>()
-        val def2 = mockk<Definition.FunctionDeclaration>()
+        val def0 = mockk<Definition.FunctionDefinition>()
+        val def1 = mockk<Definition.FunctionDefinition>()
+        val def2 = mockk<Definition.FunctionDefinition>()
         every { overloadSet[0] } returns def0
         every { overloadSet[1] } returns def1
         every { overloadSet[2] } returns def2
@@ -74,8 +74,8 @@ class OverloadResolverTest {
         val ast = block(funcCall)
 
         val overloadSet = mockk<OverloadSet>()
-        val def0 = mockk<Definition.FunctionDeclaration>()
-        val def2 = mockk<Definition.FunctionDeclaration>()
+        val def0 = mockk<Definition.FunctionDefinition>()
+        val def2 = mockk<Definition.FunctionDefinition>()
         every { overloadSet[0] } returns def0
         every { overloadSet[1] } returns null
         every { overloadSet[2] } returns def2
@@ -129,7 +129,7 @@ class OverloadResolverTest {
         val ast = block(funcCall)
 
         val overloadSet = mockk<OverloadSet>()
-        val def = mockk<Definition.FunctionDeclaration>()
+        val def = mockk<Definition.FunctionDefinition>()
         every { overloadSet[1] } returns def
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 

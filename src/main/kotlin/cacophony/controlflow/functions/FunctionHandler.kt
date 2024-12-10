@@ -7,14 +7,7 @@ import cacophony.controlflow.VariableAllocation
 import cacophony.semantic.syntaxtree.Definition
 
 interface FunctionHandler {
-    fun getFunctionDeclaration(): Definition.FunctionDeclaration
-
-    fun generateCallFrom(
-        callerFunction: FunctionHandler,
-        arguments: List<CFGNode>,
-        result: Register?,
-        respectStackAlignment: Boolean = true,
-    ): List<CFGNode>
+    fun getFunctionDeclaration(): Definition.FunctionDefinition
 
     fun generateVariableAccess(variable: Variable): CFGNode.LValue
 
@@ -27,7 +20,9 @@ interface FunctionHandler {
 
     fun getVariableFromDefinition(varDef: Definition): Variable
 
-    fun generateAccessToFramePointer(other: Definition.FunctionDeclaration): CFGNode
+    fun generateAccessToFramePointer(other: Definition.FunctionDefinition): CFGNode
+
+    fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode
 
     fun allocateFrameVariable(variable: Variable): CFGNode.LValue
 

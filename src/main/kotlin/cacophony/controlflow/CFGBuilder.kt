@@ -64,11 +64,11 @@ class CFGFragmentBuilder {
 }
 
 class CFGBuilder {
-    private val programCFG = mutableMapOf<Definition.FunctionDeclaration, CFGFragment>()
+    private val programCFG = mutableMapOf<Definition.FunctionDefinition, CFGFragment>()
     private val registers: MutableMap<String, Register> = mutableMapOf()
 
     fun fragment(
-        function: Definition.FunctionDeclaration,
+        function: Definition.FunctionDefinition,
         args: List<VariableAllocation>,
         stackSpace: Int,
         init: CFGFragmentBuilder.() -> Unit,

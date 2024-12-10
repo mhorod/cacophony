@@ -12,7 +12,7 @@ class AccessTest {
         /*
          * let f = [x: Int] -> Int => x;
          */
-        val fDef = unitFunctionDeclaration("f", listOf(arg("x")), variableUse("x"))
+        val fDef = unitFunctionDefinition("f", listOf(arg("x")), variableUse("x"))
 
         // when
         val actualCFG = testPipeline().generateControlFlowGraph(fDef)
@@ -39,8 +39,8 @@ class AccessTest {
          *     inner[]
          * );
          */
-        val innerDef = unitFunctionDeclaration("inner", variableUse("x"))
-        val outerDef = unitFunctionDeclaration("outer", listOf(arg("x")), block(innerDef, call("inner")))
+        val innerDef = unitFunctionDefinition("inner", variableUse("x"))
+        val outerDef = unitFunctionDefinition("outer", listOf(arg("x")), block(innerDef, call("inner")))
 
         // when
         val actualFragment = testPipeline().generateControlFlowGraph(outerDef)[innerDef]!!
@@ -73,9 +73,9 @@ class AccessTest {
          *     inner[]
          * );
          */
-        val innerDef = intFunctionDeclaration("inner", variableUse("x"))
+        val innerDef = intFunctionDefinition("inner", variableUse("x"))
         val outerDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "outer",
                 block(
                     variableDeclaration("x", lit(1)),

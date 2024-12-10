@@ -5,7 +5,7 @@ import cacophony.controlflow.cfg
 import cacophony.controlflow.integer
 import cacophony.controlflow.writeRegister
 import cacophony.ifThenElse
-import cacophony.intFunctionDeclaration
+import cacophony.intFunctionDefinition
 import cacophony.lit
 import cacophony.testPipeline
 import cacophony.variableDeclaration
@@ -20,7 +20,7 @@ class ConditionalOperatorsTest {
     fun `logical operators in conditional mode with non-extracted operands`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if
@@ -65,7 +65,7 @@ class ConditionalOperatorsTest {
     fun `logical operators in conditional mode with extracted lhs`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if
@@ -117,7 +117,7 @@ class ConditionalOperatorsTest {
     fun `logical operators in conditional mode with extracted rhs`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if
@@ -169,7 +169,7 @@ class ConditionalOperatorsTest {
     fun `logical operators in conditional mode with extracted operands`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
         val fDef =
-            intFunctionDeclaration(
+            intFunctionDefinition(
                 "f",
                 ifThenElse(
                     // if

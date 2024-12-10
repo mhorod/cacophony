@@ -54,7 +54,7 @@ private class Typer(
                     argType
                 }
 
-                is Definition.FunctionDeclaration -> {
+                is Definition.FunctionDefinition -> {
                     // does not type anything inside if argument or result types are incorrect
                     val argsType = parseArgs(expression.arguments) ?: return null
                     val returnType = translator.translateType(expression.returnType) ?: return null
@@ -68,6 +68,15 @@ private class Typer(
                         error.typeMismatchError(returnType, bodyType, expression.body.range)
                         return null
                     }
+                    BuiltinType.UnitType
+                }
+
+                is Definition.ForeignFunctionDeclaration -> {
+                    val functionType =
+                        translator.translateType(
+                            expression.type ?: error("foreign function without a type"),
+                        ) ?: return null
+                    typedVariables[expression] = functionType
                     BuiltinType.UnitType
                 }
 

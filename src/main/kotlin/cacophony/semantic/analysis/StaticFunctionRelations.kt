@@ -16,10 +16,10 @@ fun findStaticFunctionRelations(ast: AST): StaticFunctionRelationsMap {
     return visitor.getRelations()
 }
 
-typealias StaticFunctionRelationsMap = Map<Definition.FunctionDeclaration, StaticFunctionRelations>
+typealias StaticFunctionRelationsMap = Map<Definition.FunctionDefinition, StaticFunctionRelations>
 
 data class StaticFunctionRelations(
-    val parent: Definition.FunctionDeclaration?,
+    val parent: Definition.FunctionDefinition?,
     val staticDepth: Int,
     val declaredVariables: Set<Definition.VariableDeclaration>,
     val usedVariables: Set<UsedVariable>,
@@ -44,7 +44,7 @@ enum class VariableUseType {
 }
 
 private data class MutableStaticFunctionRelations(
-    val parent: Definition.FunctionDeclaration?,
+    val parent: Definition.FunctionDefinition?,
     val staticDepth: Int,
     val declaredVariables: MutableSet<Definition.VariableDeclaration>,
     val usedVariables: MutableSet<UsedVariable>,
@@ -58,7 +58,7 @@ private data class MutableStaticFunctionRelations(
         )
 
     companion object {
-        fun empty(parent: Definition.FunctionDeclaration?, staticDepth: Int) =
+        fun empty(parent: Definition.FunctionDefinition?, staticDepth: Int) =
             MutableStaticFunctionRelations(
                 parent,
                 staticDepth,
@@ -69,19 +69,19 @@ private data class MutableStaticFunctionRelations(
 }
 
 private class StaticFunctionsRelationsVisitor {
-    private val relations = mutableMapOf<Definition.FunctionDeclaration, MutableStaticFunctionRelations>()
-    private val functionStack = ArrayDeque<Definition.FunctionDeclaration>()
+    private val relations = mutableMapOf<Definition.FunctionDefinition, MutableStaticFunctionRelations>()
+    private val functionStack = ArrayDeque<Definition.FunctionDefinition>()
 
     fun visit(ast: AST) = visitExpression(ast)
 
-    fun getRelations(): Map<Definition.FunctionDeclaration, StaticFunctionRelations> =
+    fun getRelations(): Map<Definition.FunctionDefinition, StaticFunctionRelations> =
         relations.mapValues { it.value.toStaticFunctionRelations() }
 
     private fun visitExpression(expr: Expression) {
         when (expr) {
             is Block -> visitBlock(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
-            is Definition.FunctionDeclaration -> visitFunctionDeclaration(expr)
+            is Definition.FunctionDefinition -> visitFunctionDeclaration(expr)
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
@@ -166,7 +166,7 @@ private class StaticFunctionsRelationsVisitor {
         expr.arguments.forEach { visitExpression(it) }
     }
 
-    private fun visitFunctionDeclaration(expr: Definition.FunctionDeclaration) {
+    private fun visitFunctionDeclaration(expr: Definition.FunctionDefinition) {
         val parent = functionStack.lastOrNull()
         val depth = parent?.let { relations[it]?.staticDepth?.let { d -> d + 1 } } ?: 0
 

@@ -25,8 +25,8 @@ fun empty() = Empty(mockRange())
 /**
  * Declares a function of type [*args] -> returnType
  */
-fun functionDeclaration(identifier: String, args: List<Definition.FunctionArgument>, body: Expression, returnType: Type) =
-    Definition.FunctionDeclaration(
+fun functionDefinition(identifier: String, args: List<Definition.FunctionArgument>, body: Expression, returnType: Type) =
+    Definition.FunctionDefinition(
         mockRange(),
         identifier,
         null,
@@ -35,17 +35,17 @@ fun functionDeclaration(identifier: String, args: List<Definition.FunctionArgume
         body,
     )
 
-fun unitFunctionDeclaration(identifier: String, body: Expression) = functionDeclaration(identifier, emptyList(), body, unitType())
+fun unitFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, unitType())
 
-fun unitFunctionDeclaration(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
-    functionDeclaration(identifier, arguments, body, unitType())
+fun unitFunctionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
+    functionDefinition(identifier, arguments, body, unitType())
 
-fun intFunctionDeclaration(identifier: String, body: Expression) = functionDeclaration(identifier, emptyList(), body, intType())
+fun intFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, intType())
 
-fun intFunctionDeclaration(identifier: String, args: List<Definition.FunctionArgument>, body: Expression) =
-    functionDeclaration(identifier, args, body, intType())
+fun intFunctionDefinition(identifier: String, args: List<Definition.FunctionArgument>, body: Expression) =
+    functionDefinition(identifier, args, body, intType())
 
-fun boolFunctionDeclaration(identifier: String, body: Expression) = functionDeclaration(identifier, emptyList(), body, boolType())
+fun boolFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, boolType())
 
 fun typedArg(identifier: String, type: Type) = Definition.FunctionArgument(mockRange(), identifier, type)
 
@@ -53,13 +53,13 @@ fun arg(identifier: String) = typedArg(identifier, unitType())
 
 fun intArg(identifier: String) = typedArg(identifier, intType())
 
-fun typedFunctionDeclaration(
+fun typedFunctionDefinition(
     identifier: String,
     argsType: BaseType.Functional?,
     arguments: List<Definition.FunctionArgument>,
     outType: Type,
     body: Expression,
-) = Definition.FunctionDeclaration(
+) = Definition.FunctionDefinition(
     mockRange(),
     identifier,
     argsType,
@@ -68,13 +68,29 @@ fun typedFunctionDeclaration(
     body,
 )
 
-fun functionDeclaration(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
-    typedFunctionDeclaration(
+fun functionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
+    typedFunctionDefinition(
         identifier,
         null,
         arguments,
         unitType(),
         body,
+    )
+
+fun foreignFunctionDeclaration(identifier: String, argumentsType: List<Type>, returnType: Type) =
+    Definition.ForeignFunctionDeclaration(
+        mockRange(),
+        identifier,
+        BaseType.Functional(mockRange(), argumentsType, returnType),
+        returnType,
+    )
+
+fun typedVariableDeclaration(identifier: String, type: BaseType.Basic?, value: Expression) =
+    Definition.VariableDeclaration(
+        mockRange(),
+        identifier,
+        type,
+        value,
     )
 
 fun typedStructField(name: String, type: Type) = StructField(mockRange(), name, type)
@@ -123,7 +139,7 @@ fun astOf(vararg expressions: Expression) =
     Block(
         mockRange(),
         listOf(
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 MAIN_FUNCTION_IDENTIFIER,
                 Block(mockRange(), expressions.toList()),
             ),

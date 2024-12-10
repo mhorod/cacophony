@@ -10,7 +10,7 @@ class BreakTest {
     fun `break exits while(true) loop`() {
         // given
         val fDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -62,7 +62,7 @@ class BreakTest {
     fun `break exits loop with condition`() {
         // given
         val fDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -118,7 +118,7 @@ class BreakTest {
     fun `block instructions after break are not computed`() {
         // given
         val fDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 whileLoop(
                     lit(true),
@@ -149,7 +149,7 @@ class BreakTest {
     fun `block instructions are not computed when both branches of if break`() {
         // given
         val fDef =
-            unitFunctionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 whileLoop(
                     lit(true),

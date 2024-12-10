@@ -7,11 +7,11 @@ import cacophony.utils.CompileException
 fun generateFunctionHandlers(
     analyzedFunctions: FunctionAnalysisResult,
     callConvention: CallConvention,
-): Map<Definition.FunctionDeclaration, FunctionHandler> {
-    val handlers = mutableMapOf<Definition.FunctionDeclaration, FunctionHandler>()
+): Map<Definition.FunctionDefinition, FunctionHandler> {
+    val handlers = mutableMapOf<Definition.FunctionDefinition, FunctionHandler>()
     val order = analyzedFunctions.entries.sortedBy { it.value.staticDepth }
 
-    val ancestorHandlers = mutableMapOf<Definition.FunctionDeclaration, List<FunctionHandler>>()
+    val ancestorHandlers = mutableMapOf<Definition.FunctionDefinition, List<FunctionHandler>>()
 
     for ((function, analyzedFunction) in order) {
         if (analyzedFunction.parentLink == null) {

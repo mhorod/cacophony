@@ -126,21 +126,49 @@ sealed class Definition(
                 areEquivalentTypes(type, other.type)
     }
 
-    class FunctionDeclaration(
+    sealed class FunctionDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
         val type: BaseType.Functional?,
-        val arguments: List<FunctionArgument>,
         val returnType: Type,
-        val body: Expression,
     ) : Definition(range, identifier) {
+        override fun isEquivalent(other: SyntaxTree?): Boolean =
+            super.isEquivalent(other) &&
+                other is FunctionDeclaration &&
+                areEquivalentTypes(type, other.type) &&
+                areEquivalentTypes(returnType, other.returnType)
+    }
+
+    class ForeignFunctionDeclaration(
+        range: Pair<Location, Location>,
+        identifier: String,
+        type: BaseType.Functional,
+        returnType: Type,
+    ) : FunctionDeclaration(range, identifier, type, returnType), LeafExpression {
+        override fun toString() = "foreign $identifier: $type "
+
+        override fun isEquivalent(other: SyntaxTree?) =
+            super<FunctionDeclaration>.isEquivalent(other) &&
+                other is ForeignFunctionDeclaration &&
+                areEquivalentTypes(type, other.type) &&
+                areEquivalentTypes(returnType, other.returnType)
+    }
+
+    class FunctionDefinition(
+        range: Pair<Location, Location>,
+        identifier: String,
+        type: BaseType.Functional?,
+        val arguments: List<FunctionArgument>,
+        returnType: Type,
+        val body: Expression,
+    ) : FunctionDeclaration(range, identifier, type, returnType) {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} = [${arguments.joinToString(", ")}] -> $returnType"
 
         override fun children() = listOf(body)
 
         override fun isEquivalent(other: SyntaxTree?): Boolean =
             super.isEquivalent(other) &&
-                other is FunctionDeclaration &&
+                other is FunctionDefinition &&
                 areEquivalentTypes(type, other.type) &&
                 areEquivalentExpressions(arguments, other.arguments) &&
                 areEquivalentTypes(returnType, other.returnType) &&
