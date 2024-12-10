@@ -159,7 +159,7 @@ private fun allocateFrameMemoryForSpills(
 ): Map<VirtualRegister, CFGNode.LValue> {
     val colorToFrameMemory =
         spillsColoring.values.toSet().associateWith {
-            functionHandler.allocateFrameVariable(Variable.AuxVariable.SpillVariable())
+            functionHandler.allocateFrameVariable(Variable.PrimitiveVariable())
         }
     return spillsColoring.map { (r, c) -> r to colorToFrameMemory[c]!! }.toMap()
 }

@@ -15,8 +15,8 @@ class FunctionHandlerImpl(
     private val ancestorFunctionHandlers: List<FunctionHandler>,
     callConvention: CallConvention,
 ) : FunctionHandler {
-    private val staticLink: Variable.AuxVariable.StaticLinkVariable = Variable.AuxVariable.StaticLinkVariable()
-    private val definitionToVariable =
+    private val staticLink = Variable.AuxVariable.StaticLinkVariable() // TODO: change to primitive variable
+    private val definitionToVariable = // TODO: remove
         (analyzedFunction.variables.map { it.declaration } union function.arguments).associateWith { Variable.SourceVariable(it) }
     private val stackSpace = CFGNode.ConstantLazy(0)
     private val variableAllocation: MutableMap<Variable, VariableAllocation> = mutableMapOf()
@@ -92,8 +92,9 @@ class FunctionHandlerImpl(
 
     override fun generateVariableAccess(variable: Variable): CFGNode.LValue {
         val definedInDeclaration =
-            when (variable) {
+            when (variable) { // TODO: remove when on variable type
                 is Variable.SourceVariable -> {
+                    // TODO: adjust to new analyzedFunction semantics
                     analyzedFunction.variables.find { it.declaration == variable.definition }?.definedIn
                 }
                 is Variable.AuxVariable.StaticLinkVariable -> {
@@ -141,7 +142,7 @@ class FunctionHandlerImpl(
             throw IllegalArgumentException("Variable $varDef have not been defined inside function $function")
         }
 
-    override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
+    override fun getStaticLink(): Variable = staticLink
 
     fun getStackSpace(): CFGNode.ConstantLazy = stackSpace
 

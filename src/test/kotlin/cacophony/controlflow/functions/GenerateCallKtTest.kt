@@ -55,7 +55,7 @@ class GenerateCallKtTest {
     private fun mockAnalyzedFunction(): AnalyzedFunction =
         run {
             val analyzedFunction = mockk<AnalyzedFunction>()
-            val auxVariables = mutableSetOf<Variable.AuxVariable>()
+            val auxVariables = mutableSetOf<Variable>()
             every { analyzedFunction.variables } returns emptySet()
             every { analyzedFunction.auxVariables } returns auxVariables
             every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
