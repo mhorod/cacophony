@@ -28,7 +28,7 @@ To achieve this effect, we propose the following interface for variables:
 ```kotlin
 sealed class VariableInfo
 class PrimitiveVariable : VariableInfo()
-class StructVariable(val fields: Map<String, Info>) : VariableInfo()
+class StructVariable(val fields: Map<String, VariableInfo>) : VariableInfo()
 
 sealed class Variable(open val info: VariableInfo)
 
