@@ -1,11 +1,11 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
+import cacophony.graphs.getProperTransitiveClosure
+import cacophony.graphs.reverseGraph
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.utils.getProperTransitiveClosure
-import cacophony.utils.reverseGraph
 
 typealias FunctionAnalysisResult = Map<Definition.FunctionDefinition, AnalyzedFunction>
 

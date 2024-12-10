@@ -7,23 +7,44 @@ fun mockRange() = Pair(Location(0), Location(0))
 
 fun unitType() = Type.Basic(mockRange(), "Unit")
 
+fun intType() = Type.Basic(mockRange(), "Int")
+
+fun boolType() = Type.Basic(mockRange(), "Bool")
+
 fun empty() = Empty(mockRange())
 
-fun functionDeclaration(identifier: String, body: Expression) =
+/**
+ * Declares a function of type [*args] -> returnType
+ */
+fun functionDefinition(identifier: String, args: List<Definition.FunctionArgument>, body: Expression, returnType: Type) =
     Definition.FunctionDefinition(
         mockRange(),
         identifier,
         null,
-        emptyList(),
-        unitType(),
+        args,
+        returnType,
         body,
     )
+
+fun unitFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, unitType())
+
+fun unitFunctionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
+    functionDefinition(identifier, arguments, body, unitType())
+
+fun intFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, intType())
+
+fun intFunctionDefinition(identifier: String, args: List<Definition.FunctionArgument>, body: Expression) =
+    functionDefinition(identifier, args, body, intType())
+
+fun boolFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, boolType())
 
 fun typedArg(identifier: String, type: Type) = Definition.FunctionArgument(mockRange(), identifier, type)
 
 fun arg(identifier: String) = typedArg(identifier, unitType())
 
-fun typedFunctionDeclaration(
+fun intArg(identifier: String) = typedArg(identifier, intType())
+
+fun typedFunctionDefinition(
     identifier: String,
     argsType: Type.Functional?,
     arguments: List<Definition.FunctionArgument>,
@@ -38,8 +59,8 @@ fun typedFunctionDeclaration(
     body,
 )
 
-fun functionDeclaration(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
-    typedFunctionDeclaration(
+fun functionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
+    typedFunctionDefinition(
         identifier,
         null,
         arguments,
@@ -91,7 +112,7 @@ fun astOf(vararg expressions: Expression) =
     Block(
         mockRange(),
         listOf(
-            functionDeclaration(
+            unitFunctionDefinition(
                 MAIN_FUNCTION_IDENTIFIER,
                 Block(mockRange(), expressions.toList()),
             ),

@@ -19,6 +19,8 @@ interface SideEffectPattern : Pattern {
     fun makeInstance(fill: SlotFill): List<Instruction>
 }
 
+interface NoTemporaryRegistersPattern : SideEffectPattern
+
 interface ValuePattern : Pattern {
     fun makeInstance(fill: SlotFill, destination: Register): List<Instruction>
 }

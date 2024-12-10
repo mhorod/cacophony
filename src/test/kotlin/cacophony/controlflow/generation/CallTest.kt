@@ -2,15 +2,14 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import org.junit.jupiter.api.Test
 
 class CallTest {
     @Test
     fun `call sequence for a function without parameters is correctly generated when the call is used as a value`() {
         // given
-        val calleeDef = functionDeclaration("callee", lit(1))
-        val callerDef = functionDeclaration("caller", call("callee"))
+        val calleeDef = intFunctionDefinition("callee", lit(1))
+        val callerDef = intFunctionDefinition("caller", call("callee"))
         /*
          * let callee = [] -> Int => 1;
          * let caller = [] -> Int => callee[];
@@ -18,7 +17,7 @@ class CallTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualCFG = testPipeline().generateControlFlowGraph(program)
         val actualFragment = actualCFG[callerDef]!!
 
         // then
@@ -50,9 +49,9 @@ class CallTest {
     @Test
     fun `call sequence for a function without parameters is correctly generated when the call is used for side effects`() {
         // given
-        val calleeDef = functionDeclaration("callee", variableDeclaration("x", lit(1)))
+        val calleeDef = unitFunctionDefinition("callee", variableDeclaration("x", lit(1)))
         val callerDef =
-            functionDeclaration(
+            intFunctionDefinition(
                 "caller",
                 block(
                     call("callee"),
@@ -60,13 +59,13 @@ class CallTest {
                 ),
             )
         /*
-         * let callee = [] -> Int => let x = 1;
+         * let callee = [] -> Unit => let x = 1;
          * let caller = [] -> Int => (callee[]; 2);
          */
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualCFG = testPipeline().generateControlFlowGraph(program)
         val actualFragment = actualCFG[callerDef]!!
 
         // then
@@ -106,7 +105,7 @@ class CallTest {
         // given
         val calleeDef = foreignFunctionDeclaration("callee", emptyList(), basicType("Int"))
         val callerDef =
-            functionDeclaration(
+            intFunctionDefinition(
                 "caller",
                 block(
                     call("callee"),
@@ -120,7 +119,7 @@ class CallTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualCFG = testPipeline().generateControlFlowGraph(program)
         val actualFragment = actualCFG[callerDef]!!
 
         // then
@@ -157,8 +156,8 @@ class CallTest {
     @Test
     fun `call sequence for a function with one parameter correctly forwards the provided constant as argument`() {
         // given
-        val calleeDef = functionDeclaration("callee", listOf(arg("x")), variableUse("x"))
-        val callerDef = functionDeclaration("caller", call("callee", lit(1)))
+        val calleeDef = intFunctionDefinition("callee", listOf(intArg("x")), variableUse("x"))
+        val callerDef = intFunctionDefinition("caller", call("callee", lit(1)))
         /*
          * let callee = [x: Int] -> Int => x;
          * let caller = [] -> Int => callee[1];
@@ -166,7 +165,7 @@ class CallTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualCFG = testPipeline().generateControlFlowGraph(program)
         val actualFragment = actualCFG[callerDef]!!
 
         // then
@@ -202,7 +201,7 @@ class CallTest {
     fun `call sequence for a foreign function with one parameter correctly forwards the provided constant as argument`() {
         // given
         val calleeDef = foreignFunctionDeclaration("callee", listOf(basicType("Int")), basicType("Int"))
-        val callerDef = functionDeclaration("caller", call("callee", lit(1)))
+        val callerDef = intFunctionDefinition("caller", call("callee", lit(1)))
         /*
          * foreign callee = [Int] -> Int;
          * let caller = [] -> Int => callee[1];
@@ -210,7 +209,7 @@ class CallTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualCFG = testPipeline().generateControlFlowGraph(program)
         val actualFragment = actualCFG[callerDef]!!
 
         // then
@@ -245,12 +244,12 @@ class CallTest {
     fun `call sequence for a function with seven parameters correctly forwards all provided constants as arguments`() {
         // given
         val calleeDef =
-            functionDeclaration(
+            intFunctionDefinition(
                 "callee",
-                listOf(arg("x1"), arg("x2"), arg("x3"), arg("x4"), arg("x5"), arg("x6"), arg("x7")),
+                listOf(intArg("x1"), intArg("x2"), intArg("x3"), intArg("x4"), intArg("x5"), intArg("x6"), intArg("x7")),
                 variableUse("x1"),
             )
-        val callerDef = functionDeclaration("caller", call("callee", lit(1), lit(2), lit(3), lit(4), lit(5), lit(6), lit(7)))
+        val callerDef = intFunctionDefinition("caller", call("callee", lit(1), lit(2), lit(3), lit(4), lit(5), lit(6), lit(7)))
         /*
          * let callee = [x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int, x7: Int] -> Int => x1;
          * let caller = [] -> Int => callee[1,2,3,4,5,6,7];
@@ -258,7 +257,7 @@ class CallTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualCFG = testPipeline().generateControlFlowGraph(program)
         val actualFragment = actualCFG[callerDef]!!
 
         // then
@@ -313,8 +312,8 @@ class CallTest {
     @Test
     fun `call sequence is correctly generated for one call being argument to another`() {
         // given
-        val calleeDef = functionDeclaration("callee", listOf(arg("x")), variableUse("x"))
-        val callerDef = functionDeclaration("caller", call("callee", call("callee", lit(1))))
+        val calleeDef = intFunctionDefinition("callee", listOf(intArg("x")), variableUse("x"))
+        val callerDef = intFunctionDefinition("caller", call("callee", call("callee", lit(1))))
         /*
          * let callee = [x: Int] -> Int => x;
          * let caller = [] -> Int => callee[callee[1]];
@@ -322,7 +321,7 @@ class CallTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(program)
+        val actualCFG = testPipeline().generateControlFlowGraph(program)
         val actualFragment = actualCFG[callerDef]!!
 
         // then
@@ -378,10 +377,10 @@ class CallTest {
         /*
          * let f = [] -> Int => 1 + f[];
          */
-        val fDef = functionDeclaration("f", lit(1) add call("f"))
+        val fDef = intFunctionDefinition("f", lit(1) add call("f"))
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =

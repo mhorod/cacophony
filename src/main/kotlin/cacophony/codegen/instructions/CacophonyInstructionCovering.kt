@@ -22,21 +22,32 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
 
     private fun coverWithInstructionsForValue(node: CFGNode, register: Register): List<Instruction> {
         val matches = instructionMatcher.findMatchesForValue(node, register)
-        val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
+        val bestMatch =
+            matches.maxByOrNull { match -> match.size } ?: error("No match for value found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 
     override fun coverWithInstructions(node: CFGNode): List<Instruction> {
         val matches =
-            instructionMatcher.findMatchesForSideEffects(node)
+            instructionMatcher
+                .findMatchesForSideEffects(node)
                 .union(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()))
         val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 
+    override fun coverWithInstructionsWithoutTemporaryRegisters(node: CFGNode): List<Instruction> {
+        val matches = instructionMatcher.findMatchesWithoutTemporaryRegisters(node)
+        val bestMatch =
+            matches.maxByOrNull { match -> match.size } ?: error("No match without temporary registers found for $node, ${node.javaClass}")
+        return coverGivenMatch(bestMatch)
+    }
+
     override fun coverWithInstructionsAndJump(node: CFGNode, label: BlockLabel, jumpIf: Boolean): List<Instruction> {
         val matches = instructionMatcher.findMatchesForCondition(node, label, jumpIf)
-        val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
+        val bestMatch =
+            matches.maxByOrNull { match -> match.size }
+                ?: error("No match for condition found for $node, ${node.javaClass}")
         return coverGivenMatch(bestMatch)
     }
 }

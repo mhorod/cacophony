@@ -4,11 +4,9 @@ import cacophony.*
 import cacophony.controlflow.addeq
 import cacophony.controlflow.cfg
 import cacophony.controlflow.eq
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.controlflow.integer
 import cacophony.controlflow.lt
 import cacophony.controlflow.mod
-import cacophony.controlflow.unit
 import org.junit.jupiter.api.Test
 
 class ReturnTest {
@@ -16,7 +14,7 @@ class ReturnTest {
     fun `return exits while(true) loop`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -35,11 +33,12 @@ class ReturnTest {
                             returnStatement(lit(0)),
                         ),
                     ),
+                    lit(0),
                 ),
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -71,7 +70,7 @@ class ReturnTest {
     fun `return exits loop with condition`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -89,11 +88,12 @@ class ReturnTest {
                             ),
                         ),
                     ),
+                    lit(0),
                 ),
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -115,7 +115,7 @@ class ReturnTest {
                         conditional("return from loop", "loop condition") {
                             (readRegister("x") mod integer(5)) eq integer(0)
                         }
-                    "exitWhile" does jump("exit") { cacophony.controlflow.writeRegister(getResultRegister(), unit) }
+                    "exitWhile" does jump("exit") { cacophony.controlflow.writeRegister(getResultRegister(), integer(0)) }
                     "return from loop" does jump("exit") { cacophony.controlflow.writeRegister(getResultRegister(), integer(0)) }
                 }
             }
@@ -127,7 +127,7 @@ class ReturnTest {
     fun `block instructions after return are not computed`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     returnStatement(lit(1)),
@@ -136,7 +136,7 @@ class ReturnTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -153,7 +153,7 @@ class ReturnTest {
     fun `block instructions are not computed when both branches of if return`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(2)),
@@ -171,7 +171,7 @@ class ReturnTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =

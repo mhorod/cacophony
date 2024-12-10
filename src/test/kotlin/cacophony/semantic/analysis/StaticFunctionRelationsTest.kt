@@ -12,7 +12,7 @@ class StaticFunctionRelationsTest {
         // given
         // f => let a
         val varA = variableDeclaration("a", Empty(mockRange()))
-        val funF = functionDeclaration("f", varA)
+        val funF = unitFunctionDefinition("f", varA)
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -41,7 +41,7 @@ class StaticFunctionRelationsTest {
         // f => let a
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varAUse = variableUse("a")
-        val funF = functionDeclaration("f", block(varA, varAUse))
+        val funF = unitFunctionDefinition("f", block(varA, varAUse))
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -71,7 +71,7 @@ class StaticFunctionRelationsTest {
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varAUse = variableUse("a")
         val varAWrite = variableWrite(varAUse)
-        val funF = functionDeclaration("f", block(varA, varAWrite))
+        val funF = unitFunctionDefinition("f", block(varA, varAWrite))
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -103,7 +103,7 @@ class StaticFunctionRelationsTest {
         val varAWrite = variableWrite(varAUse1)
 
         val varAUse2 = variableUse("a")
-        val funF = functionDeclaration("f", block(varA, varAWrite, varAUse2))
+        val funF = unitFunctionDefinition("f", block(varA, varAWrite, varAUse2))
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -136,7 +136,7 @@ class StaticFunctionRelationsTest {
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varB = variableDeclaration("b", Empty(mockRange()))
         val varC = variableDeclaration("c", Empty(mockRange()))
-        val funF = functionDeclaration("f", block(varA, varB, varC))
+        val funF = unitFunctionDefinition("f", block(varA, varB, varC))
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -163,8 +163,8 @@ class StaticFunctionRelationsTest {
     fun `should find nested function`() {
         // given
         // f => ( g => () )
-        val funG = functionDeclaration("g", Empty(mockRange()))
-        val funF = functionDeclaration("f", funG)
+        val funG = unitFunctionDefinition("g", Empty(mockRange()))
+        val funF = unitFunctionDefinition("f", funG)
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -198,9 +198,9 @@ class StaticFunctionRelationsTest {
     fun `should find multiple nested functions in block`() {
         // given
         // f => ( g => (); h => () )
-        val funG = functionDeclaration("g", Empty(mockRange()))
-        val funH = functionDeclaration("h", Empty(mockRange()))
-        val funF = functionDeclaration("f", block(funG, funH))
+        val funG = unitFunctionDefinition("g", Empty(mockRange()))
+        val funH = unitFunctionDefinition("h", Empty(mockRange()))
+        val funF = unitFunctionDefinition("f", block(funG, funH))
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -242,7 +242,7 @@ class StaticFunctionRelationsTest {
         // given
         // (let a; f => ())
         val varA = variableDeclaration("a", Empty(mockRange()))
-        val funF = functionDeclaration("f", Empty(mockRange()))
+        val funF = unitFunctionDefinition("f", Empty(mockRange()))
         val ast = astOf(varA, funF)
         val program = program(ast)
 
@@ -278,9 +278,9 @@ class StaticFunctionRelationsTest {
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varB = variableDeclaration("b", Empty(mockRange()))
         val varC = variableDeclaration("C", Empty(mockRange()))
-        val funH = functionDeclaration("h", block(varC))
-        val funG = functionDeclaration("g", block(varB, funH))
-        val funF = functionDeclaration("f", block(varA, funG))
+        val funH = unitFunctionDefinition("h", block(varC))
+        val funG = unitFunctionDefinition("g", block(varB, funH))
+        val funF = unitFunctionDefinition("f", block(varA, funG))
 
         val ast = astOf(funF)
         val program = program(ast)
@@ -323,14 +323,14 @@ class StaticFunctionRelationsTest {
         // (foo => (let a; g => h => a; i => (j => (); g())); main => foo())
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varAUse = variableUse("a")
-        val funH = functionDeclaration("h", varAUse)
-        val funG = functionDeclaration("g", funH)
-        val funJ = functionDeclaration("j", block())
+        val funH = unitFunctionDefinition("h", varAUse)
+        val funG = unitFunctionDefinition("g", funH)
+        val funJ = unitFunctionDefinition("j", block())
         val varGUse = variableUse("g")
-        val funI = functionDeclaration("i", block(funJ, call(varGUse)))
-        val funFoo = functionDeclaration("foo", block(varA, funG, funI))
+        val funI = unitFunctionDefinition("i", block(funJ, call(varGUse)))
+        val funFoo = unitFunctionDefinition("foo", block(varA, funG, funI))
         val varFooUse = variableUse("foo")
-        val funMain = functionDeclaration("main", call(varFooUse))
+        val funMain = unitFunctionDefinition("main", call(varFooUse))
 
         val ast = astOf(funFoo, funMain)
         val program = program(ast)

@@ -4,44 +4,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DeterminizationTest {
-    private fun makeNFA(
-        starting: Int,
-        productions: Map<Pair<Int, Char>, List<Int>>,
-        epsilonProductions: Map<Int, List<Int>>,
-        accepting: Int,
-    ): NFA<Int, Char> =
-        object : NFA<Int, Char> {
-            private val allStates =
-                (
-                    setOf(starting, accepting) union
-                        productions.keys
-                            .unzip()
-                            .first
-                            .toSet() union productions.values.flatten().toSet() union epsilonProductions.keys union
-                        epsilonProductions.values
-                            .flatten()
-                            .toSet()
-                ).toList()
-
-            override fun getStartingState() = starting
-
-            override fun getProductions() = productions
-
-            override fun getProductions(state: Int, symbol: Char) = productions[state to symbol] ?: emptyList()
-
-            override fun getEpsilonProductions() = epsilonProductions
-
-            override fun getAcceptingState() = accepting
-
-            override fun isAccepting(state: Int) = state == accepting
-
-            override fun getAllStates() = allStates
-        }
-
     @Test
     fun `empty language NFA maps to empty language DFA`() {
         val nfa =
-            makeNFA(
+            SimpleNFA(
                 1,
                 mapOf(
                     1 via 'a' to listOf(1, 3),
@@ -62,7 +28,7 @@ class DeterminizationTest {
     @Test
     fun `empty word singleton NFA maps to empty word singleton DFA`() {
         val nfa =
-            makeNFA(
+            SimpleNFA(
                 1,
                 mapOf(
                     1 via 'a' to listOf(3),
@@ -83,7 +49,7 @@ class DeterminizationTest {
     @Test
     fun `deterministic NFA maps to equivalent DFA`() {
         val nfa =
-            makeNFA(
+            SimpleNFA(
                 1,
                 mapOf(
                     1 via 'a' to listOf(1),
@@ -102,7 +68,7 @@ class DeterminizationTest {
     @Test
     fun `highly nondeterministic NFA maps to equivalent DFA`() {
         val nfa =
-            makeNFA(
+            SimpleNFA(
                 1,
                 mapOf(
                     1 via 'a' to listOf(1, 2, 3),
@@ -129,7 +95,7 @@ class DeterminizationTest {
     @Test
     fun `large NFA maps to equivalent DFA`() {
         val nfa =
-            makeNFA(
+            SimpleNFA(
                 1,
                 mapOf(
                     1 via 'a' to listOf(-4),

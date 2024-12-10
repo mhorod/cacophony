@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "DuplicatedFunctionArgument",
+      "identifier": "x"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 9
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 14
+      }
+    }
+  },
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "DuplicatedFunctionArgument",
+      "identifier": "x"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 17
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 23
+      }
+    }
+  }
+]

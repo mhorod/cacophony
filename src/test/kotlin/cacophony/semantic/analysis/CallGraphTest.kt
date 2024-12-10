@@ -32,10 +32,10 @@ class CallGraphTest {
     @Test
     fun `finds basic call`() {
         // let f = [] -> B => (); let g = [] -> C => f[]
-        val fDef = functionDeclaration("f", empty())
+        val fDef = unitFunctionDefinition("f", empty())
         val fUse = variableUse("f")
         val gDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "g",
                 call(fUse),
             )
@@ -53,10 +53,10 @@ class CallGraphTest {
     @Test
     fun `finds deeply nested call`() {
         // let f = [] -> B => (); let g = [] -> C => (((((f[])))))
-        val fDef = functionDeclaration("f", empty())
+        val fDef = unitFunctionDefinition("f", empty())
         val fUse = variableUse("f")
         val gDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "g",
                 block(
                     block(
@@ -87,7 +87,7 @@ class CallGraphTest {
         // let f = [] -> B => f[]
         val fUse = variableUse("f")
         val fDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 call(fUse),
             )
@@ -179,7 +179,7 @@ class CallGraphTest {
                 call(fUse),
             )
         val fDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 block(gDef, gUse),
             )

@@ -8,6 +8,7 @@ import cacophony.grammars.*
 import cacophony.token.Token
 import cacophony.utils.AlgebraicRegex
 import cacophony.utils.Location
+import cacophony.utils.TreePrinter
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -534,24 +535,14 @@ class LLOneParserTest {
             )
 
         val tree = parser.process(terminals, diagnostics)
-        assertThat(tree).isEqualTo(
-            ParseTree.Branch(
-                Location(0) to Location(1),
-                atob,
-                listOf(
-                    ParseTree.Branch(
-                        Location(0) to Location(1),
-                        btoc,
-                        listOf(
-                            ParseTree.Branch(
-                                Location(0) to Location(1),
-                                ctox,
-                                terminals,
-                            ),
-                        ),
-                    ),
-                ),
-            ),
+        assertThat(TreePrinter(StringBuilder()).printTree(tree)).isEqualTo(
+            """
+            └┬A (Location(value=0), Location(value=1))
+             └┬B (Location(value=0), Location(value=1))
+              └┬C (Location(value=0), Location(value=1))
+               └─X (Location(value=0), Location(value=1))
+            
+            """.trimIndent(),
         )
     }
 
@@ -672,104 +663,39 @@ class LLOneParserTest {
             )
 
         val tree = parser.process(terminals, diagnostics)
-        assertThat(tree).isEqualTo(
-            ParseTree.Branch(
-                Location(0) to Location(13),
-                atob,
-                listOf(
-                    ParseTree.Branch(
-                        Location(0) to Location(1),
-                        btoc,
-                        listOf(
-                            ParseTree.Branch(
-                                Location(0) to Location(1),
-                                ctox,
-                                listOf(terminals[0]),
-                            ),
-                        ),
-                    ),
-                    terminals[1],
-                    ParseTree.Branch(
-                        Location(2) to Location(13),
-                        btoprod,
-                        listOf(
-                            ParseTree.Branch(
-                                Location(2) to Location(3),
-                                ctox,
-                                listOf(terminals[2]),
-                            ),
-                            terminals[3],
-                            ParseTree.Branch(
-                                Location(4) to Location(13),
-                                btoprod,
-                                listOf(
-                                    ParseTree.Branch(
-                                        Location(4) to Location(9),
-                                        ctogroup,
-                                        listOf(
-                                            terminals[4],
-                                            ParseTree.Branch(
-                                                Location(5) to Location(10),
-                                                atob,
-                                                listOf(
-                                                    ParseTree.Branch(
-                                                        Location(5) to Location(6),
-                                                        btoc,
-                                                        listOf(
-                                                            ParseTree.Branch(
-                                                                Location(5) to Location(6),
-                                                                ctox,
-                                                                listOf(terminals[5]),
-                                                            ),
-                                                        ),
-                                                    ),
-                                                    terminals[6],
-                                                    ParseTree.Branch(
-                                                        Location(7) to Location(8),
-                                                        btoc,
-                                                        listOf(
-                                                            ParseTree.Branch(
-                                                                Location(7) to Location(8),
-                                                                ctox,
-                                                                listOf(terminals[7]),
-                                                            ),
-                                                        ),
-                                                    ),
-                                                    terminals[8],
-                                                    ParseTree.Branch(
-                                                        Location(9) to Location(10),
-                                                        btoc,
-                                                        listOf(
-                                                            ParseTree.Branch(
-                                                                Location(9) to Location(10),
-                                                                ctox,
-                                                                listOf(terminals[9]),
-                                                            ),
-                                                        ),
-                                                    ),
-                                                ),
-                                            ),
-                                            terminals[10],
-                                        ),
-                                    ),
-                                    terminals[11],
-                                    ParseTree.Branch(
-                                        Location(12) to Location(13),
-                                        btoc,
-                                        listOf(
-                                            ParseTree.Branch(
-                                                Location(12) to Location(13),
-                                                ctox,
-                                                listOf(terminals[12]),
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
+        assertThat(TreePrinter(StringBuilder()).printTree(tree)).isEqualTo(
+            """
+            └┬A (Location(value=0), Location(value=13))
+             ├┬B (Location(value=0), Location(value=1))
+             │└┬C (Location(value=0), Location(value=1))
+             │ └─X (Location(value=0), Location(value=1))
+             ├─SUM (Location(value=1), Location(value=2))
+             └┬B (Location(value=2), Location(value=13))
+              ├┬C (Location(value=2), Location(value=3))
+              │└─X (Location(value=2), Location(value=3))
+              ├─PROD (Location(value=3), Location(value=4))
+              └┬B (Location(value=4), Location(value=13))
+               ├┬C (Location(value=4), Location(value=11))
+               │├─LPAREN (Location(value=4), Location(value=5))
+               │├┬A (Location(value=5), Location(value=10))
+               ││├┬B (Location(value=5), Location(value=6))
+               │││└┬C (Location(value=5), Location(value=6))
+               │││ └─X (Location(value=5), Location(value=6))
+               ││├─SUM (Location(value=6), Location(value=7))
+               ││├┬B (Location(value=7), Location(value=8))
+               │││└┬C (Location(value=7), Location(value=8))
+               │││ └─X (Location(value=7), Location(value=8))
+               ││├─SUM (Location(value=8), Location(value=9))
+               ││└┬B (Location(value=9), Location(value=10))
+               ││ └┬C (Location(value=9), Location(value=10))
+               ││  └─X (Location(value=9), Location(value=10))
+               │└─RPAREN (Location(value=10), Location(value=11))
+               ├─PROD (Location(value=11), Location(value=12))
+               └┬B (Location(value=12), Location(value=13))
+                └┬C (Location(value=12), Location(value=13))
+                 └─X (Location(value=12), Location(value=13))
+            
+            """.trimIndent(),
         )
     }
 
@@ -886,52 +812,23 @@ class LLOneParserTest {
             )
 
         val tree = parser.process(terminals, diagnostics)
-        assertThat(tree).isEqualTo(
-            ParseTree.Branch(
-                Location(0) to Location(8),
-                atob,
-                listOf(
-                    ParseTree.Branch(
-                        Location(0) to Location(3),
-                        btoc,
-                        listOf(
-                            ParseTree.Branch(
-                                Location(0) to Location(3),
-                                ctogroup,
-                                listOf(
-                                    // Nothing in between parentheses because of errors
-                                    terminals[0],
-                                    terminals[3],
-                                ),
-                            ),
-                        ),
-                    ),
-                    terminals[4],
-                    ParseTree.Branch(
-                        Location(5) to Location(8),
-                        btoprod,
-                        listOf(
-                            ParseTree.Branch(
-                                Location(5) to Location(6),
-                                ctox,
-                                listOf(terminals[5]),
-                            ),
-                            terminals[6],
-                            ParseTree.Branch(
-                                Location(7) to Location(8),
-                                btoc,
-                                listOf(
-                                    ParseTree.Branch(
-                                        Location(7) to Location(8),
-                                        ctox,
-                                        listOf(terminals[7]),
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
+        assertThat(TreePrinter(StringBuilder()).printTree(tree)).isEqualTo(
+            """
+            └┬A (Location(value=0), Location(value=8))
+             ├┬B (Location(value=0), Location(value=4))
+             │└┬C (Location(value=0), Location(value=4))
+             │ ├─LPAREN (Location(value=0), Location(value=1))
+             │ └─RPAREN (Location(value=3), Location(value=4))
+             ├─SUM (Location(value=4), Location(value=5))
+             └┬B (Location(value=5), Location(value=8))
+              ├┬C (Location(value=5), Location(value=6))
+              │└─X (Location(value=5), Location(value=6))
+              ├─PROD (Location(value=6), Location(value=7))
+              └┬B (Location(value=7), Location(value=8))
+               └┬C (Location(value=7), Location(value=8))
+                └─X (Location(value=7), Location(value=8))
+            
+            """.trimIndent(),
         )
 
         verify(exactly = 1) {
@@ -1106,24 +1003,14 @@ class LLOneParserTest {
             )
 
         val tree = parser.process(terminals, diagnostics)
-        assertThat(tree).isEqualTo(
-            ParseTree.Branch(
-                Location(0) to Location(1),
-                atob,
-                listOf(
-                    ParseTree.Branch(
-                        Location(0) to Location(1),
-                        btoc,
-                        listOf(
-                            ParseTree.Branch(
-                                Location(0) to Location(1),
-                                ctox,
-                                listOf(terminals[0]),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
+        assertThat(TreePrinter(StringBuilder()).printTree(tree)).isEqualTo(
+            """
+            └┬A (Location(value=0), Location(value=1))
+             └┬B (Location(value=0), Location(value=1))
+              └┬C (Location(value=0), Location(value=1))
+               └─X (Location(value=0), Location(value=1))
+            
+            """.trimIndent(),
         )
 
         verify(exactly = 1) {
