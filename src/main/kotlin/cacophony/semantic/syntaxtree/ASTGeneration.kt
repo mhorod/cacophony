@@ -35,23 +35,39 @@ private fun pruneParseTree(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnos
     return parseTree
 }
 
-private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Type {
-    if (getGrammarSymbol(parseTree) == TYPE_IDENTIFIER) {
-        val tree = parseTree as ParseTree.Leaf
-        return Type
-            .Basic(tree.range, tree.token.context)
-    } else {
-        val tree = parseTree as ParseTree.Branch
-        val childNum = tree.children.size
-        val returnType = constructType(tree.children.last(), diagnostics)
-        val argumentsTypes = mutableListOf<Type>()
-        for (i in 0 until (childNum - 1)) {
-            argumentsTypes.add(constructType(tree.children[i], diagnostics))
+private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Type =
+    when (val symbol = getGrammarSymbol(parseTree)) {
+        TYPE_IDENTIFIER -> {
+            require(parseTree is ParseTree.Leaf) { "Unable to construct atomic type from non-leaf node $symbol" }
+            BaseType.Basic(parseTree.range, parseTree.token.context)
         }
-        return Type
-            .Functional(tree.range, argumentsTypes, returnType)
+        FUNCTION_TYPE -> {
+            require(parseTree is ParseTree.Branch) { "Unable to construct functional type from leaf node $symbol" }
+            val returnType = constructType(parseTree.children.last(), diagnostics)
+            val argumentsTypes = parseTree.children.slice(0..<parseTree.children.size - 1).map { constructType(it, diagnostics) }
+            BaseType.Functional(parseTree.range, argumentsTypes, returnType)
+        }
+        STRUCT_TYPE -> {
+            require(parseTree is ParseTree.Branch) { "Unable to construct structure type from leaf node $symbol" }
+            BaseType.Structural(
+                parseTree.range,
+                parseTree.children
+                    .windowed(2, 2) { (ident, type) ->
+                        require(ident is ParseTree.Leaf) { "Field identifier ${getGrammarSymbol(ident)} is not a leaf" }
+                        ident.token to constructType(type, diagnostics)
+                    }.also {
+                        it.fold(mutableSetOf<String>()) { acc, (ident) ->
+                            if (!acc.add(ident.context)) {
+                                diagnostics.report(ASTDiagnostics.DuplicateField(ident.context), Pair(ident.rangeFrom, ident.rangeTo))
+                                throw diagnostics.fatal()
+                            } else acc
+                        }
+                    }.map { (ident, type) -> ident.context to type }
+                    .toMap(),
+            )
+        }
+        else -> throw IllegalStateException("Can't construct type from node $symbol")
     }
-}
 
 private fun constructFunctionArgument(
     parseTree: ParseTree<CacophonyGrammarSymbol>,
@@ -85,6 +101,23 @@ fun <T : OperatorBinary> createInstanceBinary(
 fun <T : OperatorUnary> createInstanceUnary(kClass: KClass<T>, range: Pair<Location, Location>, subExpression: Expression): Expression {
     val constructor = kClass.primaryConstructor
     return constructor!!.call(range, subExpression)
+}
+
+private fun createStructField(node: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Pair<StructField, Expression> {
+    require(node is ParseTree.Branch) { "Struct field should not be a leaf node" }
+    require(node.children.size == 2) { "Struct field should have exactly 2 children" }
+    val (identifier, def) = node.children
+    require(identifier is ParseTree.Leaf) { "Field name should be a variable identifier, got ${getGrammarSymbol(node)}" }
+    require(def is ParseTree.Branch) { "Struct field body should not be a leaf node" }
+    return when (val cnt = def.children.size) {
+        2 -> Pair(StructField(node.range, identifier.token.context, null), generateASTInternal(def.children[1], diagnostics))
+        3 ->
+            Pair(
+                StructField(node.range, identifier.token.context, constructType(def.children[0], diagnostics)),
+                generateASTInternal(def.children[2], diagnostics),
+            )
+        else -> throw IllegalStateException("Struct field ${getGrammarSymbol(node)} has $cnt children, expected 2-3")
+    }
 }
 
 private fun operatorRegexToAST(children: List<ParseTree<CacophonyGrammarSymbol>>, diagnostics: Diagnostics): Expression {
@@ -131,10 +164,9 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
             else -> throw IllegalArgumentException("Unexpected leaf symbol: $symbol")
         }
     } else if (parseTree is ParseTree.Branch) {
-        val symbol: CacophonyGrammarSymbol = parseTree.production.lhs
         val range = parseTree.range
         val childNum = parseTree.children.size
-        return when (symbol) {
+        return when (val symbol = parseTree.production.lhs) {
             START, BLOCK -> {
                 val newChildren: MutableList<Expression> = mutableListOf()
                 var seekingExpression = true
@@ -206,7 +238,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                             return Definition.FunctionDefinition(
                                 range,
                                 identifier.token.context,
-                                type as Type.Functional?,
+                                type as BaseType.Functional?,
                                 arguments,
                                 constructType(returnType, diagnostics),
                                 generateASTInternal(body, diagnostics),
@@ -215,7 +247,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                             return Definition.VariableDeclaration(
                                 range,
                                 identifier.token.context,
-                                type as Type.Basic?,
+                                type as BaseType?,
                                 generateASTInternal(declaration.children.last(), diagnostics),
                             )
                         }
@@ -223,7 +255,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
 
                     FOREIGN_DECLARATION -> {
                         val type = constructType(declaration.children[0], diagnostics)
-                        if (type !is Type.Functional) {
+                        if (type !is BaseType.Functional) {
                             diagnostics.report(ASTDiagnostics.NonFunctionalForeign, range)
                             throw diagnostics.fatal()
                         }
@@ -263,17 +295,16 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
             ASSIGNMENT_LEVEL -> {
                 assert(childNum == 3)
                 val operatorKind = parseTree.children[1]
-                if (operatorKind is ParseTree.Leaf) {
-                    val assignmentSymbol = operatorKind.token.category
-                    return createInstanceBinary(
-                        assignmentSymbol.syntaxTreeClass!! as KClass<OperatorBinary>,
-                        range,
-                        generateASTInternal(parseTree.children[0], diagnostics),
-                        generateASTInternal(parseTree.children[2], diagnostics),
-                    )
-                } else {
-                    throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
+                require(operatorKind is ParseTree.Leaf) { "Expected the operator symbol, got: $operatorKind" }
+
+                val lhs = generateASTInternal(parseTree.children[0], diagnostics)
+                if (lhs !is Assignable) {
+                    diagnostics.report(ASTDiagnostics.ValueNotAssignable, range)
+                    throw diagnostics.fatal()
                 }
+
+                val rhs = generateASTInternal(parseTree.children[2], diagnostics)
+                createInstanceBinary(operatorKind.token.category.syntaxTreeClass!! as KClass<OperatorBinary>, range, lhs, rhs)
             }
 
             ADDITION_LEVEL, MULTIPLICATION_LEVEL, EQUALITY_LEVEL, COMPARATOR_LEVEL, LOGICAL_OPERATOR_LEVEL -> {
@@ -300,6 +331,38 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                 }
             }
 
+            ATOM_LEVEL -> {
+                require(childNum >= 2) { "Field access missing rhs: $parseTree" }
+                val lhs = parseTree.children[0]
+                parseTree.children.slice(1..<parseTree.children.size).fold(generateASTInternal(lhs, diagnostics)) { ast, field ->
+                    require(field is ParseTree.Leaf) { "Field access rhs should be a leaf: $field in $parseTree" }
+                    require(
+                        getGrammarSymbol(field) == VARIABLE_IDENTIFIER,
+                    ) { "Field access rhs should be an identifier: $field in $parseTree" }
+
+                    if (ast is Assignable) {
+                        FieldRef.LValue(field.range, ast, field.token.context)
+                    } else {
+                        FieldRef.RValue(field.range, ast, field.token.context)
+                    }
+                }
+            }
+
+            STRUCT ->
+                Struct(
+                    parseTree.range,
+                    parseTree.children
+                        .map { createStructField(it, diagnostics) }
+                        .also {
+                            it.fold(mutableSetOf<String>()) { acc, (field) ->
+                                if (!acc.add(field.name)) {
+                                    diagnostics.report(ASTDiagnostics.DuplicateField(field.name), field.range)
+                                    throw diagnostics.fatal()
+                                } else acc
+                            }
+                        }.toMap(),
+                )
+
             else -> throw IllegalArgumentException("Unexpected branch symbol: $symbol")
         }
     }
@@ -313,13 +376,13 @@ private fun wrapInFunction(originalAST: AST): AST {
         Definition.FunctionDefinition(
             Pair(beforeStart, behindEnd),
             MAIN_FUNCTION_IDENTIFIER,
-            Type.Functional(
+            BaseType.Functional(
                 Pair(beforeStart, beforeStart),
                 emptyList(),
-                Type.Basic(Pair(beforeStart, beforeStart), "Int"),
+                BaseType.Basic(Pair(beforeStart, beforeStart), "Int"),
             ),
             emptyList(),
-            Type.Basic(Pair(beforeStart, beforeStart), "Int"),
+            BaseType.Basic(Pair(beforeStart, beforeStart), "Int"),
             Block(
                 Pair(Location(0), behindEnd),
                 listOf(

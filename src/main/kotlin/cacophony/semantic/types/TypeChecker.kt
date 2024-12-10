@@ -1,29 +1,15 @@
 package cacophony.semantic.types
 
 import cacophony.diagnostics.Diagnostics
-import cacophony.diagnostics.TypeCheckerDiagnostics
 import cacophony.semantic.names.ResolvedVariables
-import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Empty
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.Literal
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.Statement
-import cacophony.semantic.syntaxtree.Type
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 
 typealias TypeCheckingResult = Map<Expression, TypeExpr>
 
-private val builtinTypes = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
-
 // Result contains every variable that could be properly typed
 fun checkTypes(ast: AST, diagnostics: Diagnostics, resolvedVariables: ResolvedVariables): TypeCheckingResult {
-    val typer = Typer(diagnostics, resolvedVariables, builtinTypes)
+    val typer = Typer(diagnostics, resolvedVariables)
     typer.typeExpression(ast)
     return typer.result
 }
@@ -31,12 +17,12 @@ fun checkTypes(ast: AST, diagnostics: Diagnostics, resolvedVariables: ResolvedVa
 private class Typer(
     diagnostics: Diagnostics,
     val resolvedVariables: ResolvedVariables,
-    val types: Map<String, TypeExpr>,
 ) {
     val result: MutableMap<Expression, TypeExpr> = mutableMapOf()
     val typedVariables: MutableMap<Definition, TypeExpr> = mutableMapOf()
     val functionContext = ArrayDeque<TypeExpr>()
     val error = ErrorHandler(diagnostics)
+    val translator = TypeTranslator(diagnostics)
     var whileDepth = 0
 
     fun typeExpression(expression: Expression): TypeExpr? {
@@ -63,7 +49,7 @@ private class Typer(
                 }
 
                 is Definition.FunctionArgument -> {
-                    val argType = translateType(expression.type) ?: return null
+                    val argType = translator.translateType(expression.type) ?: return null
                     typedVariables[expression] = argType
                     argType
                 }
@@ -71,7 +57,7 @@ private class Typer(
                 is Definition.FunctionDefinition -> {
                     // does not type anything inside if argument or result types are incorrect
                     val argsType = parseArgs(expression.arguments) ?: return null
-                    val returnType = translateType(expression.returnType) ?: return null
+                    val returnType = translator.translateType(expression.returnType) ?: return null
                     val deducedType = FunctionType(argsType, returnType)
                     val functionType = initializedType(expression.type, deducedType, expression.range) ?: return null
                     typedVariables[expression] = functionType
@@ -87,11 +73,40 @@ private class Typer(
 
                 is Definition.ForeignFunctionDeclaration -> {
                     val functionType =
-                        translateType(
+                        translator.translateType(
                             expression.type ?: error("foreign function without a type"),
                         ) ?: return null
                     typedVariables[expression] = functionType
                     BuiltinType.UnitType
+                }
+
+                is Struct -> {
+                    StructType(
+                        expression.fields.map { (field, fieldExpr) ->
+                            field.name to (
+                                initializedType(
+                                    field.type,
+                                    (typeExpression(fieldExpr) ?: return null),
+                                    fieldExpr.range,
+                                ) ?: return null
+                            )
+                        }.toMap(),
+                    )
+                }
+                is StructField -> {
+                    BuiltinType.UnitType
+                }
+                is FieldRef -> {
+                    val structType = typeExpression(expression.struct())
+                    if (structType !is StructType) {
+                        error.expectedStructure(expression.struct().range)
+                        return null
+                    }
+                    val type = structType.fields[expression.field]
+                    if (type == null) {
+                        error.noSuchField(expression.range, structType, expression.field)
+                    }
+                    type
                 }
 
                 is Empty -> BuiltinType.UnitType
@@ -135,7 +150,7 @@ private class Typer(
                 is OperatorBinary.ModuloAssignment -> typeOperatorAssignment(expression)
                 is OperatorBinary.Assignment -> {
                     val (lhsType, rhsType) = typeBinary(expression) ?: return null
-                    if (expression.lhs !is VariableUse) {
+                    if (expression.lhs !is Assignable) {
                         error.expectedLvalue(expression.lhs.range)
                         return null
                     }
@@ -263,7 +278,7 @@ private class Typer(
     // returns type of x in constructions `let x (: type) = expr`
     private fun initializedType(type: Type?, deducedType: TypeExpr, range: Pair<Location, Location>): TypeExpr? {
         return if (type != null) {
-            val declaredType = translateType(type) ?: return null
+            val declaredType = translator.translateType(type) ?: return null
             if (!isSubtype(deducedType, declaredType)) {
                 error.typeMismatchError(declaredType, deducedType, range)
                 return null
@@ -277,25 +292,6 @@ private class Typer(
     private fun parseArgs(arguments: List<Definition.FunctionArgument>): List<TypeExpr>? =
         arguments.map { typeExpression(it) }.map { it ?: return null }
 
-    private fun translateType(type: Type): TypeExpr? {
-        return when (type) {
-            is Type.Basic ->
-                types[type.identifier] ?: run {
-                    error.unknownType(type.range)
-                    null
-                }
-
-            is Type.Functional -> {
-                val args = type.argumentsType.map { translateType(it) }
-                val ret = translateType(type.returnType)
-                FunctionType(
-                    args.map { it ?: return null },
-                    ret ?: return null,
-                )
-            }
-        }
-    }
-
     private fun typeBinary(expression: OperatorBinary): Pair<TypeExpr, TypeExpr>? {
         val lhsType = typeExpression(expression.lhs)
         val rhsType = typeExpression(expression.rhs)
@@ -306,7 +302,7 @@ private class Typer(
     // Handles +=, -=, etc.
     private fun typeOperatorAssignment(expression: OperatorBinary): TypeExpr? {
         val (lhsType, rhsType) = typeBinary(expression) ?: return null
-        if (expression.lhs !is VariableUse) {
+        if (expression.lhs !is Assignable) {
             error.expectedLvalue(expression.lhs.range)
             return null
         }
@@ -334,76 +330,4 @@ private class Typer(
         }
         return result
     }
-}
-
-// class responsible for the interaction with Diagnostics
-private class ErrorHandler(
-    val diagnostics: Diagnostics,
-) {
-    fun typeMismatchError(expected: TypeExpr, found: TypeExpr, range: Pair<Location, Location>) {
-        diagnostics.report(TypeCheckerDiagnostics.TypeMismatch(expected.toString(), found.toString()), range)
-    }
-
-    fun unknownType(range: Pair<Location, Location>) {
-        diagnostics.report(TypeCheckerDiagnostics.UnknownType, range)
-    }
-
-    fun expectedFunction(range: Pair<Location, Location>) {
-        diagnostics.report(TypeCheckerDiagnostics.ExpectedFunction, range)
-    }
-
-    fun expectedLvalue(range: Pair<Location, Location>) {
-        diagnostics.report(TypeCheckerDiagnostics.ExpectedLValueReference, range)
-    }
-
-    fun operationNotSupportedOn(operation: String, type: TypeExpr, range: Pair<Location, Location>) {
-        diagnostics.report(TypeCheckerDiagnostics.UnsupportedOperation(type.toString(), operation), range)
-    }
-
-    fun noCommonType(type1: TypeExpr, type2: TypeExpr, range: Pair<Location, Location>) {
-        diagnostics.report(TypeCheckerDiagnostics.NoCommonType(type1.toString(), type2.toString()), range)
-    }
-
-    fun returnOutsideFunction(range: Pair<Location, Location>) {
-        diagnostics.report(TypeCheckerDiagnostics.MisplacedReturn, range)
-    }
-
-    fun breakOutsideWhile(range: Pair<Location, Location>) {
-        diagnostics.report(TypeCheckerDiagnostics.BreakOutsideWhile, range)
-    }
-}
-
-sealed class TypeExpr(
-    val name: String,
-) {
-    override fun toString(): String = name
-
-    override fun equals(other: Any?): Boolean {
-        if (other == null || other !is TypeExpr) return false
-        return name == other.name
-    }
-
-    override fun hashCode(): Int = name.hashCode()
-
-    object VoidType : TypeExpr("Void")
-}
-
-sealed class BuiltinType private constructor(
-    name: String,
-) : TypeExpr(name) {
-    object BooleanType : BuiltinType("Bool")
-
-    object IntegerType : BuiltinType("Int")
-
-    object UnitType : BuiltinType("Unit")
-}
-
-class FunctionType(
-    val args: List<TypeExpr>,
-    val result: TypeExpr,
-) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
-
-fun isSubtype(subtype: TypeExpr, type: TypeExpr): Boolean {
-    if (subtype == TypeExpr.VoidType) return true
-    return subtype.name == type.name
 }

@@ -2,6 +2,7 @@ package cacophony.semantic.analysis
 
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import kotlin.error
 
 // Type of variables usage for each expression
 typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseType>>
@@ -76,10 +77,30 @@ private class VarUseVisitor(
             is OperatorUnary -> visitUnaryOperator(expr)
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
+            is Struct -> visitStruct(expr)
+            is FieldRef -> visitFieldRef(expr)
             is LeafExpression -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
         }
+    }
+
+    private fun visitFieldRef(expr: FieldRef) {
+        expr.struct().let {
+            visitExpression(it)
+            useTypeAnalysis[expr] = useTypeAnalysis[it] ?: error("Variable use types missing for child $it of $expr")
+        }
+    }
+
+    private fun visitStruct(expr: Struct) {
+        useTypeAnalysis[expr] =
+            UseTypesForExpression.merge(
+                *expr.fields.values
+                    .map {
+                        visitExpression(it)
+                        useTypeAnalysis[it]
+                    }.toTypedArray(),
+            )
     }
 
     private fun visitVariableUse(expr: VariableUse) {

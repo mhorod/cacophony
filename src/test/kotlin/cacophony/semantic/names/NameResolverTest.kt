@@ -1,6 +1,7 @@
 package cacophony.semantic.names
 
 import cacophony.*
+import cacophony.basicType
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.names.ResolvedName.Argument
@@ -133,6 +134,30 @@ class NameResolverTest {
                 // then
                 assertThatResolvedNames(resolvedNames)
                     .hasVariable(aUse to aDef)
+                    .andNothingElse()
+                verify { diagnostics wasNot Called }
+            }
+
+            @Test
+            fun `variables in struct`() {
+                // let c = 1;
+                // let a = {x = (let b = 2; b), y = c};
+
+                // given
+                val cDef = variableDeclaration("c", lit(1))
+                val cUse = variableUse("c")
+                val bUse = variableUse("b")
+                val bDef = variableDeclaration("b", lit(2))
+                val aDef = variableDeclaration("a", structDeclaration(structField("x") to block(bDef, bUse), structField("y") to cUse))
+                val ast = block(cDef, aDef)
+
+                // when
+                val resolvedNames = resolveNames(ast, diagnostics)
+
+                // then
+                assertThatResolvedNames(resolvedNames)
+                    .hasVariable(bUse to bDef)
+                    .hasVariable(cUse to cDef)
                     .andNothingElse()
                 verify { diagnostics wasNot Called }
             }
@@ -273,7 +298,7 @@ class NameResolverTest {
                     foreignFunctionDeclaration(
                         "f",
                         listOf(),
-                        Type.Basic(mockRange(), "Bool"),
+                        BaseType.Basic(mockRange(), "Bool"),
                     )
                 val fUse = variableUse("f")
                 val ast =
@@ -299,7 +324,7 @@ class NameResolverTest {
                     foreignFunctionDeclaration(
                         "f",
                         listOf(),
-                        Type.Basic(mockRange(), "Bool"),
+                        BaseType.Basic(mockRange(), "Bool"),
                     )
                 val fUse = variableUse("f")
                 val ast =
@@ -327,8 +352,8 @@ class NameResolverTest {
                 val fDef =
                     foreignFunctionDeclaration(
                         "f",
-                        listOf(Type.Basic(mockRange(), "Int")),
-                        Type.Basic(mockRange(), "Bool"),
+                        listOf(BaseType.Basic(mockRange(), "Int")),
+                        BaseType.Basic(mockRange(), "Bool"),
                     )
                 val fUse = variableUse("f")
                 val ast =
@@ -454,7 +479,7 @@ class NameResolverTest {
                     foreignFunctionDeclaration(
                         "f",
                         listOf(),
-                        Type.Basic(mockRange(), "Bool"),
+                        BaseType.Basic(mockRange(), "Bool"),
                     )
                 val ast = block(fDef1, fDef2, fUse)
 
@@ -486,7 +511,7 @@ class NameResolverTest {
                     foreignFunctionDeclaration(
                         "f",
                         listOf(),
-                        Type.Basic(mockRange(), "Bool"),
+                        BaseType.Basic(mockRange(), "Bool"),
                     )
                 val ast = block(fDef2, fDef1, fUse)
 
@@ -952,7 +977,7 @@ class NameResolverTest {
                 foreignFunctionDeclaration(
                     "f",
                     listOf(),
-                    Type.Basic(mockRange(), "Bool"),
+                    BaseType.Basic(mockRange(), "Bool"),
                 )
             val fDef2 =
                 functionDefinition(
@@ -1384,7 +1409,7 @@ class NameResolverTest {
                             FunctionArgument(
                                 functionalArgumentRange,
                                 "x",
-                                Type.Functional(mockRange(), listOf(), Type.Basic(mockRange(), "Int")),
+                                BaseType.Functional(mockRange(), listOf(), basicType("Int")),
                             ),
                         ),
                         lit(0),
@@ -1412,12 +1437,12 @@ class NameResolverTest {
                             FunctionArgument(
                                 firstArgumentRange,
                                 "x",
-                                Type.Basic(mockRange(), "Int"),
+                                basicType("Int"),
                             ),
                             FunctionArgument(
                                 secondArgumentRange,
                                 "x",
-                                Type.Basic(mockRange(), "Int"),
+                                basicType("Int"),
                             ),
                         ),
                         lit(0),
