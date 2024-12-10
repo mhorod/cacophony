@@ -11,15 +11,13 @@ sealed class Variable {
         class StaticLinkVariable : AuxVariable()
     }
 
-    class PrimitiveVariable : Variable() {
-        override fun equals(other: Any?): Boolean {
-            return this === other
-        }
-
-        override fun hashCode(): Int {
-            return System.identityHashCode(this)
-        }
-    }
+    class PrimitiveVariable : Variable()
 
     class StructVariable(val fields: Map<String, Variable>) : Variable()
 }
+
+// TODO: Next week it should be
+//  sealed class Variable {
+//     class PrimitiveVariable : Variable()
+//     class StructVariable(val fields: Map<String, Variable>) : Variable()
+//  }
