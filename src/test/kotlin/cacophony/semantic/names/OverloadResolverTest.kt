@@ -184,4 +184,21 @@ class OverloadResolverTest {
             mapOf(variable to def),
         )
     }
+
+    @Test
+    fun `recurses into struct`() {
+        // {x = a}
+        val variable = variableUse("a")
+        val struct = structDeclaration(structField("x") to variable)
+        val ast = block(struct)
+
+        val def = mockk<Definition.VariableDeclaration>()
+        val nr: NameResolutionResult = mapOf(variable to ResolvedName.Variable(def))
+
+        val resolvedVariables = resolveOverloads(ast, diagnostics, nr)
+
+        assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
+            mapOf(variable to def),
+        )
+    }
 }

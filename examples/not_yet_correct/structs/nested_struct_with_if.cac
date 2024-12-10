@@ -1,0 +1,12 @@
+let x = {};
+let y = {
+  x: {a: Bool, b: Int} = {
+    b = 14,
+    a: Bool = true
+  },
+  a: {} = if true then x else {}
+};
+
+let f = [a: {x: {b: Int, a: Bool}, a: {}}] -> Bool => false;
+
+f[y]

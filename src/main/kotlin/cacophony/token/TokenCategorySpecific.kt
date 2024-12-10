@@ -6,11 +6,14 @@ enum class TokenCategorySpecific {
     RIGHT_PARENTHESIS,
     LEFT_BRACKET,
     RIGHT_BRACKET,
+    LEFT_CURLY_BRACE,
+    RIGHT_CURLY_BRACE,
     ARROW,
     DOUBLE_ARROW,
     COLON,
     SEMICOLON,
     COMMA,
+    PERIOD,
 
     // keywords
     KEYWORD_LET,
