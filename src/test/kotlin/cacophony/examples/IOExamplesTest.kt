@@ -12,8 +12,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.createTempFile
+import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
 
 class IOExamplesTest {
