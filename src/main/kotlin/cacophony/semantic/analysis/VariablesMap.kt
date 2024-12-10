@@ -9,7 +9,7 @@ import cacophony.semantic.types.TypeCheckingResult
 
 data class VariablesMap(
     val lvalues: Map<Assignable, Variable>,
-    val definitions: Map<Definition.VariableDeclaration, Variable>,
+    val definitions: Map<Definition, Variable>,
 )
 
 fun createVariablesMap(ast: AST, resolvedVariables: ResolvedVariables, types: TypeCheckingResult): VariablesMap {
