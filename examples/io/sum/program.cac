@@ -1,0 +1,7 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Int;
+
+let n = read_int[];
+let sum = 0;
+while n > 0 do (sum += read_int[]; n -= 1; );
+write_int[sum];

@@ -1,10 +1,9 @@
+foreign read_int: [] -> Int;
 foreign write_int: [Int] -> Int;
-foreign read_int: [Int] -> Int;
-let read_int = [] -> Int => 0;
+
 let x = read_int[];
 write_int[x];
 let y = read_int[];
 let z = read_int[];
 write_int[z];
 write_int[y];
-return 2;

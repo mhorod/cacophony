@@ -1,6 +1,0 @@
-foreign write_int: [Int] -> Int;
-foreign write_char: [Int] -> Int;
-write_int[200];
-write_char[32];
-write_int[100];
-return 1;
