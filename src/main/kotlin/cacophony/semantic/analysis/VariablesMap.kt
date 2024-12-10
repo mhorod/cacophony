@@ -12,6 +12,6 @@ data class VariablesMap(
     val definitions: Map<Definition.VariableDeclaration, Variable>,
 )
 
-fun createVariables(ast: AST, resolvedVariables: ResolvedVariables, types: TypeCheckingResult): VariablesMap {
+fun createVariablesMap(ast: AST, resolvedVariables: ResolvedVariables, types: TypeCheckingResult): VariablesMap {
     TODO()
 }
