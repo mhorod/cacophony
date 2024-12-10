@@ -26,22 +26,12 @@ In theory, we do not need to keep the whole `s` in memory. We could place `s.x` 
 To achieve this effect, we propose the following interface for variables:
 
 ```kotlin
-sealed class VariableInfo
-class PrimitiveVariable : VariableInfo()
-class StructVariable(val fields: Map<String, VariableInfo>) : VariableInfo()
-
-sealed class Variable(open val info: VariableInfo)
-
-class SourceVariable(val definition: Definition, override val info : VariableInfo) : Variable(info)
-
-sealed class AuxVariable(info: VariableInfo) : Variable(info)
-class SpillVariable(override val info: PrimitiveVariable) : AuxVariable(info)
-class StaticLinkVariable(override val info: PrimitiveVariable) : AuxVariable(info)
-
-class ReturnVariable(override val info: VariableInfo) : Variable(info)
+sealed class Variable
+class PrimitiveVariable : Variable()
+class StructVariable(val fields: Map<String, Variable>) : Variable()
 ```
 
-The previous snippet should introduce the following `VariableInfo`:
+The previous snippet should introduce the following `Variable` instances:
 
     sx = PrimitiveVariable()
     sya = PrimitiveVariable()
@@ -61,13 +51,13 @@ TypeChecker should check if every subfield access is valid.
 
 ### Variable Analysis / Name Resolution
 
-New logic to determine all source variables and their usage is needed. FunctionHandler should receive analyzed `SourceVariable` corresponding to every subfield, and not the `Definition` like now.
+New logic to determine all source variables and their usage is needed. FunctionHandler should receive analyzed `Variable` corresponding to every subfield, and not the `Definition` like now.
 
-In particular, the previous example should introduce 5 instances of `SourceVariable` and (after analysis) pipe them to the FunctionHandler.
+In particular, the previous example should introduce 5 instances of `Variable` and (after analysis) pipe them to the FunctionHandler.
 
 ### Function Handler
 
-The constructor of Function Handler should receive instances of `SourceVariable` and allocate them (on the stack or in the virtual registers) based on information received from Analysis.
+The constructor of Function Handler should receive instances of `Variable` and allocate them (on the stack or in the virtual registers) based on information received from Analysis.
 
 The declaration of `generateVariableAccess()` is changed to
 
@@ -77,7 +67,7 @@ fun generateVariableAccess(variable: PrimitiveVariable): CFGNode
 
 Its implementation should remain similar.
 
-Additionally, as the value returned from a function can now be of the structural type, the `getReturnRegister() : VirtualRegister` method should change its declaration to something like `getResultVariable() : ResultVariable` and the corresponding ReturnVariable (and allocation of its primitive fields) could be created in the constructor.
+Additionally, as the value returned from a function can now be of the structural type, the `getReturnRegister() : VirtualRegister` method should change its declaration to something like `getResultVariable() : Variable` and the corresponding `Variable` (and allocation of its primitive fields) could be created in the constructor.
 
 ### CFG Generation
 
