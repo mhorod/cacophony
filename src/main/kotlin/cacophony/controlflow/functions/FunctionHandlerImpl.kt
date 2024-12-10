@@ -142,7 +142,7 @@ class FunctionHandlerImpl(
             throw IllegalArgumentException("Variable $varDef have not been defined inside function $function")
         }
 
-    override fun getStaticLink(): Variable = staticLink
+    override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
     fun getStackSpace(): CFGNode.ConstantLazy = stackSpace
 
