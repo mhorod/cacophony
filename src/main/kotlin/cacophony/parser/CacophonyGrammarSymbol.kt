@@ -6,18 +6,21 @@ import cacophony.token.TokenCategorySpecific
 import kotlin.reflect.KClass
 
 enum class CacophonyGrammarSymbol(
-    val syntaxTreeClass: KClass<out Any>?,
+    val syntaxTreeClass: KClass<out SyntaxTree>?,
 ) {
     // special characters
     LEFT_PARENTHESIS(null),
     RIGHT_PARENTHESIS(null),
     LEFT_BRACKET(null),
     RIGHT_BRACKET(null),
+    LEFT_CURLY_BRACE(null),
+    RIGHT_CURLY_BRACE(null),
     ARROW(null),
     DOUBLE_ARROW(null),
     COLON(null),
     SEMICOLON(null),
     COMMA(null),
+    PERIOD(null),
 
     // keywords
     KEYWORD_LET(null),
@@ -54,12 +57,16 @@ enum class CacophonyGrammarSymbol(
     // literals
     INT_LITERAL(Literal.IntLiteral::class),
     BOOL_LITERAL(Literal.BoolLiteral::class),
-    TYPE_IDENTIFIER(Type.Basic::class),
+    TYPE_IDENTIFIER(BaseType.Basic::class),
     VARIABLE_IDENTIFIER(VariableUse::class),
 
     // others
     START(Block::class),
     FUNCTION_CALL(FunctionCall::class),
+    STRUCT(Struct::class),
+    STRUCT_FIELD(StructField::class),
+    STRUCT_FIELD_VALUE_TYPED(StructField::class),
+    STRUCT_FIELD_VALUE_UNTYPED(StructField::class),
     WHILE_CLAUSE(Statement.WhileStatement::class),
     IF_CLAUSE(Statement.IfElseStatement::class),
     DECLARATION_TYPED(Definition::class),
@@ -68,6 +75,8 @@ enum class CacophonyGrammarSymbol(
     FUNCTION_DECLARATION(Definition.FunctionDeclaration::class),
     FUNCTION_ARGUMENT(Definition.FunctionArgument::class),
     TYPE(Type::class),
+    FUNCTION_TYPE(BaseType.Functional::class),
+    STRUCT_TYPE(BaseType.Structural::class),
     ASSIGNMENT(OperatorBinary::class),
     UNARY(OperatorUnary::class),
 
@@ -89,6 +98,7 @@ enum class CacophonyGrammarSymbol(
     MULTIPLICATION_LEVEL(null),
     UNARY_LEVEL(null),
     CALL_LEVEL(null),
+    LITERAL_LEVEL(null),
     ATOM_LEVEL(null),
     ;
 
