@@ -1,0 +1,199 @@
+{
+  "__class__": "Block",
+  "expressions": [
+    {
+      "__class__": "FunctionDefinition",
+      "arguments": [],
+      "body": {
+        "__class__": "Block",
+        "expressions": [
+          {
+            "__class__": "RValue",
+            "obj": {
+              "__class__": "Struct",
+              "fields": {
+                "__class__": "SingletonMap",
+                "field x": {
+                  "__class__": "IntLiteral",
+                  "value": 2,
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 5
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 5
+                    }
+                  }
+                }
+              },
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 0
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 6
+                }
+              }
+            },
+            "field": "y",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 8
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 8
+              }
+            }
+          },
+          {
+            "__class__": "ReturnStatement",
+            "value": {
+              "__class__": "IntLiteral",
+              "value": 0,
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 9
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 9
+                }
+              }
+            },
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": 9
+              },
+              "second": {
+                "__class__": "Location",
+                "value": 9
+              }
+            }
+          }
+        ],
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 0
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 9
+          }
+        }
+      },
+      "type": {
+        "__class__": "Functional",
+        "argumentsType": [],
+        "returnType": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": -1
+            },
+            "second": {
+              "__class__": "Location",
+              "value": -1
+            }
+          }
+        },
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": -1
+          },
+          "second": {
+            "__class__": "Location",
+            "value": -1
+          }
+        }
+      },
+      "returnType": {
+        "__class__": "Basic",
+        "identifier": "Int",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": -1
+          },
+          "second": {
+            "__class__": "Location",
+            "value": -1
+          }
+        }
+      },
+      "identifier": "\u003cprogram\u003e",
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": -1
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 9
+        }
+      }
+    },
+    {
+      "__class__": "FunctionCall",
+      "function": {
+        "__class__": "VariableUse",
+        "identifier": "\u003cprogram\u003e",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 9
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 9
+          }
+        }
+      },
+      "arguments": [],
+      "range": {
+        "__class__": "Pair",
+        "first": {
+          "__class__": "Location",
+          "value": 9
+        },
+        "second": {
+          "__class__": "Location",
+          "value": 9
+        }
+      }
+    }
+  ],
+  "range": {
+    "__class__": "Pair",
+    "first": {
+      "__class__": "Location",
+      "value": -1
+    },
+    "second": {
+      "__class__": "Location",
+      "value": 9
+    }
+  }
+}

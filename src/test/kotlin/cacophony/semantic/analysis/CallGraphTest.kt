@@ -2,8 +2,6 @@ package cacophony.semantic.analysis
 
 import cacophony.*
 import cacophony.diagnostics.Diagnostics
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.FunctionCall
 import cacophony.utils.Location
 import io.mockk.MockKAnnotations
@@ -15,7 +13,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.collections.setOf
-import cacophony.semantic.syntaxtree.Type as ASTType
 
 class CallGraphTest {
     @MockK
@@ -32,10 +29,10 @@ class CallGraphTest {
     @Test
     fun `finds basic call`() {
         // let f = [] -> B => (); let g = [] -> C => f[]
-        val fDef = functionDeclaration("f", empty())
+        val fDef = unitFunctionDefinition("f", empty())
         val fUse = variableUse("f")
         val gDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "g",
                 call(fUse),
             )
@@ -53,10 +50,10 @@ class CallGraphTest {
     @Test
     fun `finds deeply nested call`() {
         // let f = [] -> B => (); let g = [] -> C => (((((f[])))))
-        val fDef = functionDeclaration("f", empty())
+        val fDef = unitFunctionDefinition("f", empty())
         val fUse = variableUse("f")
         val gDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "g",
                 block(
                     block(
@@ -87,7 +84,7 @@ class CallGraphTest {
         // let f = [] -> B => f[]
         val fUse = variableUse("f")
         val fDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 call(fUse),
             )
@@ -114,45 +111,14 @@ class CallGraphTest {
         val gUse = variableUse("g")
 
         val gDef =
-            Definition.FunctionDefinition(
-                loc(4, 8),
-                "g",
-                null,
-                listOf(),
-                ASTType.Basic(loc(7, 8), "C"),
-                FunctionCall(loc(8, 9), fUseInG, listOf()),
-            )
+            typedFunctionDefinition("g", null, listOf(), basicType("C"), call(fUseInG))
         val fDef =
-            Definition.FunctionDefinition(
-                loc(0, 4),
-                "f",
-                null,
-                listOf(),
-                ASTType.Basic(loc(3, 4), "B"),
-                Block(
-                    loc(0, 2),
-                    listOf(
-                        gDef,
-                        FunctionCall(loc(7, 8), gUse, listOf()),
-                    ),
-                ),
-            )
+            typedFunctionDefinition("f", null, listOf(), basicType("B"), block(gDef, FunctionCall(loc(7, 8), gUse, listOf())))
 
         val hDef =
-            Definition.FunctionDefinition(
-                loc(10, 20),
-                "h",
-                null,
-                listOf(),
-                ASTType.Basic(loc(10, 13), "B"),
-                FunctionCall(loc(14, 20), fUseInH, listOf()),
-            )
+            typedFunctionDefinition("h", null, listOf(), basicType("B"), call(fUseInH))
 
-        val ast =
-            Block(
-                loc(0, 9),
-                listOf(fDef, hDef),
-            )
+        val ast = block(fDef, hDef)
         val resolvedVariables = mapOf(fUseInG to fDef, fUseInH to fDef, gUse to gDef)
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
@@ -179,7 +145,7 @@ class CallGraphTest {
                 call(fUse),
             )
         val fDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 block(gDef, gUse),
             )
@@ -189,6 +155,26 @@ class CallGraphTest {
 
         assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
             mapOf(fDef to setOf(fDef)),
+        )
+    }
+
+    @Test
+    fun `finds calls in struct`() {
+        // let f = [] -> B => (
+        //    let g = [] => {res = f[]};
+        //    g[]
+        // )
+        val fUse = variableUse("f")
+        val gUse = variableUse("g")
+
+        val gDef = unitFunctionDefinition("g", structDeclaration(structField("res") to call(fUse)))
+        val fDef = unitFunctionDefinition("f", block(gDef, call(gUse)))
+
+        val ast = block(fDef)
+        val resolvedVariables = mapOf(fUse to fDef, gUse to gDef)
+
+        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+            mapOf(gDef to setOf(fDef), fDef to setOf(gDef)),
         )
     }
 }

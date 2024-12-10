@@ -7,7 +7,7 @@ import cacophony.controlflow.CFGNode
  * @property access Pure access to the value produced by the graph
  */
 internal sealed interface SubCFG {
-    val access: CFGNode
+    val access: CFGNode // TODO: change to Layout
 
     /**
      * Indicates that no control flow vertex was created during expression translation

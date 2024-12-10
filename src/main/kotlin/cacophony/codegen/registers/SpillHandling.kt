@@ -11,6 +11,7 @@ import cacophony.controlflow.Register.FixedRegister
 import cacophony.controlflow.Register.VirtualRegister
 import cacophony.controlflow.Variable
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.graphs.GraphColoring
 
 class SpillHandlingException(reason: String) : Exception(reason)
 
@@ -19,14 +20,17 @@ class SpillHandlingException(reason: String) : Exception(reason)
  * - One of spare registers is used in register allocation (in the map image)
  * - A fixed register has spilled in register allocation
  * - Not enough spare registers provided
+ * - Failed to color spills for optimization
  * @return List of BasicBlocks with adjusted and new instructions.
  */
 fun adjustLoweredCFGToHandleSpills(
     instructionCovering: InstructionCovering,
     functionHandler: FunctionHandler,
     loweredCfg: LoweredCFGFragment,
+    liveness: Liveness,
     registerAllocation: RegisterAllocation,
     spareRegisters: Set<FixedRegister>,
+    graphColoring: GraphColoring<VirtualRegister, Int>,
 ): LoweredCFGFragment {
     if (registerAllocation.successful
             .filter { it.key is VirtualRegister }
@@ -34,7 +38,7 @@ fun adjustLoweredCFGToHandleSpills(
             .intersect(spareRegisters.map { it.hardwareRegister }.toSet())
             .isNotEmpty()
     ) {
-        throw SpillHandlingException("Spare register is used in register allocation.")
+        throw SpillHandlingException("Spare register is used in virtual register allocation.")
     }
 
     if (registerAllocation.spills.isEmpty()) {
@@ -50,13 +54,11 @@ fun adjustLoweredCFGToHandleSpills(
                 }
             }.toSet()
 
-    val spillsFrameAllocation: Map<VirtualRegister, CFGNode.LValue> =
-        spills.associateWith {
-            functionHandler.allocateFrameVariable(Variable.AuxVariable.SpillVariable())
-        }
+    val spillsColoring = colorSpills(spills, liveness, graphColoring)
+    val spillsFrameAllocation = allocateFrameMemoryForSpills(functionHandler, spillsColoring)
 
     fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
-        instructionCovering.coverWithInstructions(
+        instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
                 CFGNode.RegisterUse(reg),
                 spillsFrameAllocation[spill]!!,
@@ -64,7 +66,7 @@ fun adjustLoweredCFGToHandleSpills(
         )
 
     fun saveRegIntoSpill(reg: Register, spill: VirtualRegister): List<Instruction> =
-        instructionCovering.coverWithInstructions(
+        instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
                 spillsFrameAllocation[spill]!!,
                 CFGNode.RegisterUse(reg),
@@ -78,7 +80,7 @@ fun adjustLoweredCFGToHandleSpills(
                     instruction.registersRead.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
                 val writtenSpills =
                     instruction.registersWritten.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
-                val usedSpills = readSpills + writtenSpills
+                val usedSpills = (readSpills + writtenSpills).toSet()
 
                 if (usedSpills.isEmpty()) {
                     listOf(instruction)
@@ -87,7 +89,7 @@ fun adjustLoweredCFGToHandleSpills(
 
                     if (usedSpills.size > availableSpareRegisters.size) {
                         throw SpillHandlingException(
-                            "Not enough spare registers: Detected instruction with ${usedSpills.size} registers," +
+                            "Not enough spare registers: Detected instruction $instruction using ${usedSpills.size} spilled registers, " +
                                 "but only have ${availableSpareRegisters.size} available spare registers to use",
                         )
                     }
@@ -112,4 +114,52 @@ fun adjustLoweredCFGToHandleSpills(
             override fun predecessors(): Set<BasicBlock> = block.predecessors()
         }
     }
+}
+
+private fun colorSpills(
+    spills: Set<VirtualRegister>,
+    liveness: Liveness,
+    graphColoring: GraphColoring<VirtualRegister, Int>,
+): Map<VirtualRegister, Int> {
+    val spillsInterference =
+        spills.associateWith { v ->
+            liveness.interference
+                .getOrDefault(v, setOf())
+                .filterIsInstance<VirtualRegister>()
+                .filter { u -> spills.contains(u) }
+                .toSet()
+        }
+    val spillsCopying =
+        spills.associateWith { v ->
+            liveness.copying
+                .getOrDefault(v, setOf())
+                .filterIsInstance<VirtualRegister>()
+                .filter { u -> spills.contains(u) }
+                .toSet()
+        }
+
+    val spillsColoring =
+        graphColoring.doColor(
+            spillsInterference,
+            spillsCopying,
+            mapOf(),
+            spills.indices.toSet(),
+        )
+
+    if (!spillsColoring.keys.containsAll(spills)) {
+        throw SpillHandlingException("Coloring spills for memory optimization failed.")
+    }
+
+    return spillsColoring
+}
+
+private fun allocateFrameMemoryForSpills(
+    functionHandler: FunctionHandler,
+    spillsColoring: Map<VirtualRegister, Int>,
+): Map<VirtualRegister, CFGNode.LValue> {
+    val colorToFrameMemory =
+        spillsColoring.values.toSet().associateWith {
+            functionHandler.allocateFrameVariable(Variable.PrimitiveVariable())
+        }
+    return spillsColoring.map { (r, c) -> r to colorToFrameMemory[c]!! }.toMap()
 }

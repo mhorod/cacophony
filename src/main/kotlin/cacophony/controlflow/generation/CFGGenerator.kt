@@ -21,7 +21,7 @@ import cacophony.semantic.syntaxtree.VariableUse
  */
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
-    analyzedUseTypes: UseTypeAnalysisResult,
+    analyzedUseTypes: UseTypeAnalysisResult, // TODO: adjust to new specification of analyzedUseTypes
     private val function: Definition.FunctionDefinition,
     private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
 ) {
@@ -97,6 +97,7 @@ internal class CFGGenerator(
      * @param mode Mode of conversion, see [EvalMode]
      */
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
+        // TODO: change to Layout
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
             is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
@@ -111,7 +112,7 @@ internal class CFGGenerator(
             is Statement.ReturnStatement -> visitReturnStatement(expression, mode, context)
             is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
             is VariableUse -> visitVariableUse(expression, mode)
-            else -> error("Unexpected expression for CFG generation: $expression ${expression::class}")
+            else -> error("Unexpected expression for CFG generation: $expression")
         }
 
     private fun visitBlock(expression: Block, mode: EvalMode, context: Context): SubCFG {
@@ -158,7 +159,7 @@ internal class CFGGenerator(
             if (mode is EvalMode.SideEffect) {
                 Pair(null, CFGNode.NoOp)
             } else {
-                val register = Register.VirtualRegister("retval ${functionHandler?.getFunctionDeclaration()?.identifier}")
+                val register = Register.VirtualRegister()
                 val rawAccess = CFGNode.RegisterUse(register)
                 val access = if (mode is EvalMode.Conditional) CFGNode.NotEquals(rawAccess, CFGNode.ConstantKnown(0)) else rawAccess
                 Pair(register, access)
@@ -170,7 +171,7 @@ internal class CFGGenerator(
                 function,
                 functionHandler,
                 argumentVertices.map { it.access },
-                resultRegister,
+                resultRegister
             ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 

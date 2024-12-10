@@ -1,0 +1,21 @@
+[
+  {
+    "__class__": "ReportedError",
+    "message": {
+      "__class__": "NoSuchField",
+      "type": "{x: Int}",
+      "identifier": "y"
+    },
+    "range": {
+      "__class__": "Pair",
+      "first": {
+        "__class__": "Location",
+        "value": 8
+      },
+      "second": {
+        "__class__": "Location",
+        "value": 8
+      }
+    }
+  }
+]

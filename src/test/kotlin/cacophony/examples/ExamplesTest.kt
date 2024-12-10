@@ -9,7 +9,6 @@ import cacophony.semantic.types.TypeCheckingResult
 import cacophony.utils.*
 import com.karumi.kotlinsnapshot.matchWithSnapshot
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
@@ -72,10 +71,8 @@ class ExamplesTest {
         assertThat(diagnostics.getErrors()).isEmpty()
     }
 
-    // TODO: Fix duplicated function params
     @ParameterizedTest
     @MethodSource("incorrectExamples")
-    @Disabled
     fun `incorrect examples give a compile error`(path: Path) {
         val input = FileInput(path.toString())
         val diagnostics = CacophonyDiagnostics(input)

@@ -38,9 +38,17 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
 
     override fun coverWithInstructions(node: CFGNode): List<Instruction> {
         val matches =
-            instructionMatcher.findMatchesForSideEffects(node)
+            instructionMatcher
+                .findMatchesForSideEffects(node)
                 .union(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()))
         return coverGivenMatches(node, matches)
+    }
+
+    override fun coverWithInstructionsWithoutTemporaryRegisters(node: CFGNode): List<Instruction> {
+        val matches = instructionMatcher.findMatchesWithoutTemporaryRegisters(node)
+        val bestMatch =
+            matches.maxByOrNull { match -> match.size } ?: error("No match without temporary registers found for $node, ${node.javaClass}")
+        return coverGivenMatch(bestMatch)
     }
 
     override fun coverWithInstructionsAndJump(node: CFGNode, label: BlockLabel, jumpIf: Boolean): List<Instruction> {

@@ -7,6 +7,7 @@ import cacophony.codegen.instructions.RegisterByte
 import cacophony.codegen.instructions.cacophonyInstructions.*
 import cacophony.codegen.patterns.SlotFill
 import cacophony.controlflow.*
+import kotlin.reflect.cast
 
 class InstructionBuilder(val slotFill: SlotFill) {
     private val instructions = mutableListOf<Instruction>()
@@ -171,6 +172,8 @@ class InstructionBuilder(val slotFill: SlotFill) {
     fun reg(register: ValueLabel) = slotFill.valueFill.getValue(register)
 
     fun const(constant: ConstantLabel) = slotFill.constantFill.getValue(constant)
+
+    fun <T : CFGNode> node(slot: CFGNode.NodeSlot<T>): T = slot.clazz.cast(slotFill.nodeFill[slot.label]!!)
 }
 
 fun instructions(slotFill: SlotFill, init: InstructionBuilder.() -> Unit): List<Instruction> {

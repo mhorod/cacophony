@@ -104,13 +104,19 @@ sealed interface CFGNode {
         abstract val value: Int
 
         override fun toString(): String = value.toString()
+
+        abstract operator fun unaryMinus(): Constant
     }
 
-    data class ConstantKnown(override val value: Int) : Constant()
+    data class ConstantKnown(override val value: Int) : Constant() {
+        override operator fun unaryMinus(): ConstantKnown = ConstantKnown(-value)
+    }
 
     class ConstantLazy(private val lambda: () -> Int) : Constant() {
         override val value: Int
             get() = lambda()
+
+        override operator fun unaryMinus(): ConstantLazy = ConstantLazy { -value }
     }
 
     sealed interface ArithmeticOperator : Value

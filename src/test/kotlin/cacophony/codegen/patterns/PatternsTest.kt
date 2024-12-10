@@ -7,6 +7,7 @@ import cacophony.codegen.instructions.cacophonyInstructions.SubRegImm
 import cacophony.codegen.instructions.matching.InstructionMatcherImpl
 import cacophony.codegen.linearization.linearize
 import cacophony.codegen.patterns.cacophonyPatterns.conditionPatterns
+import cacophony.codegen.patterns.cacophonyPatterns.noTemporaryRegistersPatterns
 import cacophony.codegen.patterns.cacophonyPatterns.sideEffectPatterns
 import cacophony.codegen.patterns.cacophonyPatterns.valuePatterns
 import cacophony.controlflow.*
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test
 
 class PatternsTest {
     private val instructionCovering =
-        CacophonyInstructionCovering(InstructionMatcherImpl(valuePatterns, sideEffectPatterns, conditionPatterns))
+        CacophonyInstructionCovering(InstructionMatcherImpl(valuePatterns, sideEffectPatterns, conditionPatterns, noTemporaryRegistersPatterns))
 
     @Test
     fun `push rsp generates a single instruction`() {

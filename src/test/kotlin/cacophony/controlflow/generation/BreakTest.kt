@@ -2,7 +2,6 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.controlflow.mod
 import org.junit.jupiter.api.Test
 
@@ -11,7 +10,7 @@ class BreakTest {
     fun `break exits while(true) loop`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -34,7 +33,7 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -63,7 +62,7 @@ class BreakTest {
     fun `break exits loop with condition`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -86,7 +85,7 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -119,7 +118,7 @@ class BreakTest {
     fun `block instructions after break are not computed`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 whileLoop(
                     lit(true),
@@ -132,7 +131,7 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -150,7 +149,7 @@ class BreakTest {
     fun `block instructions are not computed when both branches of if break`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDefinition(
                 "f",
                 whileLoop(
                     lit(true),
@@ -164,14 +163,14 @@ class BreakTest {
                             // else
                             breakStatement(),
                         ),
-                        variableDeclaration("y", lit(5)),
+                        variableDeclaration("y", empty()),
                         returnStatement(variableUse("y")),
                     ),
                 ),
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =

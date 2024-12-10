@@ -4,23 +4,17 @@ import cacophony.*
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.add
 import cacophony.controlflow.cfg
-import cacophony.controlflow.div
-import cacophony.controlflow.eq
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.geq
-import cacophony.controlflow.gt
 import cacophony.controlflow.integer
-import cacophony.controlflow.leq
-import cacophony.controlflow.lt
 import cacophony.controlflow.minus
 import cacophony.controlflow.mod
 import cacophony.controlflow.mul
-import cacophony.controlflow.neq
 import cacophony.controlflow.not
 import cacophony.controlflow.sub
-import cacophony.controlflow.trueValue
+import cacophony.controlflow.unit
 import cacophony.controlflow.writeRegister
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
 /**
  * Tests if arithmetic/logical expressions are correctly converted to a single CFG node
@@ -31,84 +25,45 @@ class SingleCFGNodeGenerationTest {
         val expectedCFG =
             cfg {
                 fragment(function, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), expectedNode) }
+                    "bodyEntry" does jump("return unit") { writeRegister("y", expectedNode) }
+                    "return unit" does jump("exit") { writeRegister(getResultRegister(), unit) }
                 }
             }
         assertEquivalent(programCFG, expectedCFG)
     }
 
-    @Test
-    fun `addition generates single addition node`() {
+    @ParameterizedTest
+    @MethodSource("binaryExpressions")
+    fun `binary operator generates single cfg node`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
-        val fDef = functionDeclaration("f", lit(1) add lit(2))
+        val fDef =
+            unitFunctionDefinition(
+                "f",
+                block(variableDeclaration("x", makeExpr(lit(1), lit(2))), empty()),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
-        val expectedNode = integer(1) add integer(2)
+        val expectedNode = makeNode(integer(1), integer(2))
         assertGeneratedSingleNode(actualCFG, expectedNode)
     }
 
     @Test
-    fun `subtraction generates single subtraction node`() {
+    fun `minus operator generates single cfg node`() {
         // given
-        val fDef = functionDeclaration("f", lit(1) sub lit(2))
+        val fDef =
+            unitFunctionDefinition(
+                "f",
+                block(
+                    variableDeclaration("x", minus(lit(1))),
+                    empty(),
+                ),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) sub integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `multiplication generates single multiplication node`() {
-        // given
-        val fDef = functionDeclaration("f", lit(1) mul lit(2))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) mul integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `division generates single division node`() {
-        // given
-        val fDef = functionDeclaration("f", lit(1) div lit(2))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) div integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `modulo generates single modulo node`() {
-        // given
-        val fDef = functionDeclaration("f", lit(1) mod lit(2))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) mod integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `unary minus generates single minus node`() {
-        // given
-        val fDef = functionDeclaration("f", minus(lit(1)))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedNode = minus(integer(1))
@@ -116,93 +71,22 @@ class SingleCFGNodeGenerationTest {
     }
 
     @Test
-    fun `equals generates single equals node`() {
+    fun `not operator generates single cfg node`() {
         // given
-        val fDef = functionDeclaration("f", lit(1) eq lit(2))
+        val fDef =
+            unitFunctionDefinition(
+                "f",
+                block(
+                    variableDeclaration("x", lnot(lit(false))),
+                    empty(),
+                ),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
-        val expectedNode = integer(1) eq integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `not equals generates single equals node`() {
-        // given
-        val fDef = functionDeclaration("f", lit(1) neq lit(2))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) neq integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `less than generates single less than node`() {
-        // given
-        val fDef = functionDeclaration("f", lit(1) lt lit(2))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) lt integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `less or equal generates single less or equal node`() {
-        // given
-        val fDef = functionDeclaration("f", lit(1) leq lit(2))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) leq integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `greater than generates single greater node`() {
-        // given
-        val fDef = functionDeclaration("f", lit(1) gt lit(2))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) gt integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `greater or equal generates single greater or equal node`() {
-        // given
-        val fDef = functionDeclaration("f", lit(1) geq lit(2))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = integer(1) geq integer(2)
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `negation generates single negation node`() {
-        // given
-        val fDef = functionDeclaration("f", lnot(lit(true)))
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = not(trueValue)
+        val expectedNode = not(integer(0))
         assertGeneratedSingleNode(actualCFG, expectedNode)
     }
 
@@ -210,92 +94,43 @@ class SingleCFGNodeGenerationTest {
     fun `complex arithmetic expression generates single cfg node`() {
         // given
         val fDef =
-            functionDeclaration("f", expr)
+            unitFunctionDefinition(
+                "f",
+                block(variableDeclaration("x", expr), empty()),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedNode = exprNode
         assertGeneratedSingleNode(actualCFG, expectedNode)
     }
 
-    @Test
-    fun `equals with complex operands generates single cfg node`() {
+    @ParameterizedTest
+    @MethodSource("binaryExpressions")
+    fun `binary operator with complex operands generates single cfg node`(makeExpr: MakeBinaryExpression, makeNode: MakeBinaryNode) {
         // given
-        val fDef = functionDeclaration("f", expr eq expr)
+        val fDef =
+            unitFunctionDefinition(
+                "f",
+                block(variableDeclaration("y", makeExpr(expr, expr)), empty()),
+            )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
-        val expectedNode = exprNode eq exprNode
+        val expectedNode = makeNode(exprNode, exprNode)
         assertGeneratedSingleNode(actualCFG, expectedNode)
     }
 
-    @Test
-    fun `not equals with complex operands generates single cfg node`() {
-        // given
-        val fDef = functionDeclaration("f", expr neq expr)
+    companion object {
+        @JvmStatic
+        fun binaryExpressions() = TestOperators.binaryExpressions()
 
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = exprNode neq exprNode
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `less than with complex operands generates single cfg node`() {
-        // given
-        val fDef = functionDeclaration("f", expr lt expr)
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = exprNode lt exprNode
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `less or equal with complex operands generates single cfg node`() {
-        // given
-        val fDef = functionDeclaration("f", expr leq expr)
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = exprNode leq exprNode
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `greater than with complex operands generates single cfg node`() {
-        // given
-        val fDef = functionDeclaration("f", expr gt expr)
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = exprNode gt exprNode
-        assertGeneratedSingleNode(actualCFG, expectedNode)
-    }
-
-    @Test
-    fun `greater or equal with complex operands generates single cfg node`() {
-        // given
-        val fDef = functionDeclaration("f", expr geq expr)
-
-        // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
-
-        // then
-        val expectedNode = exprNode geq exprNode
-        assertGeneratedSingleNode(actualCFG, expectedNode)
+        @JvmStatic
+        fun unaryExpressions() = TestOperators.unaryExpressions()
     }
 
     private val expr = (lit(1) add lit(2)) mul minus(lit(10) sub lit(5)) mod lit(6)

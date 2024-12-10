@@ -1,11 +1,11 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
+import cacophony.graphs.getProperTransitiveClosure
+import cacophony.graphs.reverseGraph
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.utils.getProperTransitiveClosure
-import cacophony.utils.reverseGraph
 
 typealias FunctionAnalysisResult = Map<Definition.FunctionDefinition, AnalyzedFunction>
 
@@ -28,9 +28,9 @@ data class AnalyzedFunction(
     val function: Definition.FunctionDefinition,
     val parentLink: ParentLink?,
     val variables: Set<AnalyzedVariable>,
-    val auxVariables: MutableSet<Variable.AuxVariable>,
+    val auxVariables: MutableSet<Variable>,
     val staticDepth: Int,
-    val variablesUsedInNestedFunctions: Set<Definition>,
+    val variablesUsedInNestedFunctions: Set<Definition>, // TODO: change to Variable
 ) {
     fun declaredVariables() = variables.filter { it.definedIn == function }
 
@@ -38,7 +38,7 @@ data class AnalyzedFunction(
 }
 
 data class AnalyzedVariable(
-    val declaration: Definition,
+    val declaration: Definition, // TODO: change to Variable
     val definedIn: Definition.FunctionDefinition,
     val useType: VariableUseType,
 )

@@ -1,5 +1,6 @@
 package cacophony.controlflow.functions
 
+import cacophony.*
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
@@ -10,18 +11,13 @@ import cacophony.semantic.analysis.AnalyzedVariable
 import cacophony.semantic.analysis.ParentLink
 import cacophony.semantic.analysis.VariableUseType
 import cacophony.semantic.syntaxtree.*
-import cacophony.utils.Location
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-@Disabled
 class FunctionHandlerTest {
-    val mockRange = Location(0) to Location(0)
-
     private fun makeDefaultHandler(
         function: Definition.FunctionDefinition,
         analyzedFunction: AnalyzedFunction,
@@ -36,7 +32,7 @@ class FunctionHandlerTest {
     fun `initialization registers static link`() {
         val funDef = mockk<Definition.FunctionDefinition>()
         val analyzedFunction = mockk<AnalyzedFunction>()
-        val auxVariables = mutableSetOf<Variable.AuxVariable>()
+        val auxVariables = mutableSetOf<Variable>()
         every { funDef.arguments } returns emptyList()
         every { analyzedFunction.auxVariables } returns auxVariables
         every { analyzedFunction.variables } returns emptySet()
@@ -53,7 +49,7 @@ class FunctionHandlerTest {
     }
 
     @Test
-    fun `variable from definition just works`() {
+    fun `variable from definition just works`() { // TODO: adjust or remove this test
         // setup
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
@@ -161,13 +157,10 @@ class FunctionHandlerTest {
     fun `returns correct function declaration`() {
         // given
         val fDef =
-            Definition.FunctionDefinition(
-                mockRange,
+            unitFunctionDefinition(
                 "f",
-                null,
                 emptyList(),
-                Type.Basic(mockRange, "Int"),
-                Empty(mockRange),
+                empty(),
             )
         val fAnalyzed =
             AnalyzedFunction(
@@ -208,7 +201,7 @@ class FunctionHandlerTest {
         val unaryFunDef = mockk<Definition.FunctionDefinition>()
         every { unaryFunDef.arguments } returns listOf(argumentDef)
 
-        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+        val staticLinkVariable = mockk<Variable.PrimitiveVariable>()
 
         val noArgAnalyzedFunction = mockk<AnalyzedFunction>()
         every { noArgAnalyzedFunction.variables } returns emptySet()
@@ -235,7 +228,7 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
 
-        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+        val staticLinkVariable = mockk<Variable>()
 
         val analyzedFunction = mockk<AnalyzedFunction>()
         every { analyzedFunction.variables } returns emptySet()
@@ -246,13 +239,13 @@ class FunctionHandlerTest {
         val handler = makeDefaultHandler(funDef, analyzedFunction)
         assertEquals(8, handler.getStackSpace().value)
 
-        handler.allocateFrameVariable(mockk<Variable.AuxVariable>())
+        handler.allocateFrameVariable(mockk<Variable>())
         assertEquals(16, handler.getStackSpace().value)
 
-        handler.registerVariableAllocation(mockk<Variable.SourceVariable>(), VariableAllocation.OnStack(32))
+        handler.registerVariableAllocation(mockk<Variable>(), VariableAllocation.OnStack(32))
         assertEquals(40, handler.getStackSpace().value)
 
-        handler.allocateFrameVariable(mockk<Variable.AuxVariable>())
+        handler.allocateFrameVariable(mockk<Variable>())
         assertEquals(48, handler.getStackSpace().value)
     }
 
@@ -261,7 +254,7 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
 
-        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+        val staticLinkVariable = mockk<Variable>()
 
         val analyzedFunction = mockk<AnalyzedFunction>()
         every { analyzedFunction.variables } returns emptySet()
@@ -272,14 +265,14 @@ class FunctionHandlerTest {
         val handler = makeDefaultHandler(funDef, analyzedFunction)
         assertEquals(8, handler.getStackSpace().value)
 
-        var auxVariable = mockk<Variable.AuxVariable>()
+        var auxVariable = mockk<Variable>()
         handler.allocateFrameVariable(auxVariable)
 
         var allocation = handler.getVariableAllocation(auxVariable)
         require(allocation is VariableAllocation.OnStack)
         assertEquals(8, allocation.offset)
 
-        auxVariable = mockk<Variable.AuxVariable>()
+        auxVariable = mockk<Variable>()
         handler.allocateFrameVariable(auxVariable)
 
         allocation = handler.getVariableAllocation(auxVariable)
@@ -297,20 +290,14 @@ class FunctionHandlerTest {
             // )
 
             // given
-            val xDef = Definition.VariableDeclaration(mockRange, "x", null, Literal.IntLiteral(mockRange, 10))
+            val xDef = variableDeclaration("x", lit(10))
             val fDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "f",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Block(
-                        mockRange,
-                        listOf(
-                            xDef,
-                            VariableUse(mockRange, "x"),
-                        ),
+                    block(
+                        xDef,
+                        variableUse("x"),
                     ),
                 )
             val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
@@ -347,20 +334,14 @@ class FunctionHandlerTest {
             // )
 
             // given
-            val xDef = Definition.VariableDeclaration(mockRange, "x", null, Literal.IntLiteral(mockRange, 10))
+            val xDef = variableDeclaration("x", lit(10))
             val fDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "f",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Block(
-                        mockRange,
-                        listOf(
-                            xDef,
-                            VariableUse(mockRange, "x"),
-                        ),
+                    block(
+                        xDef,
+                        variableUse("x"),
                     ),
                 )
             val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
@@ -408,33 +389,24 @@ class FunctionHandlerTest {
             // )
 
             // given
-            val xDef = Definition.VariableDeclaration(mockRange, "x", null, Literal.IntLiteral(mockRange, 10))
+            val xDef = variableDeclaration("x", lit(10))
             val fDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "f",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    VariableUse(mockRange, "x"),
+                    variableUse("x"),
                 )
             val gDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "g",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
                     fDef,
                 )
             val hDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "h",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Block(mockRange, listOf(xDef, gDef)),
+                    block(xDef, gDef),
                 )
 
             val xAnalyzed = AnalyzedVariable(xDef, hDef, VariableUseType.READ_WRITE)
@@ -501,13 +473,10 @@ class FunctionHandlerTest {
 
             // given
             val fDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "f",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Literal.IntLiteral(mockRange, 42),
+                    lit(42),
                 )
             val fAnalyzed =
                 AnalyzedFunction(
@@ -545,21 +514,15 @@ class FunctionHandlerTest {
 
             // given
             val fDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "f",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Literal.IntLiteral(mockRange, 42),
+                    lit(42),
                 )
             val gDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "g",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
                     fDef,
                 )
             val fAnalyzed =
@@ -610,31 +573,22 @@ class FunctionHandlerTest {
 
             // given
             val hDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "h",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Literal.IntLiteral(mockRange, 42),
+                    lit(42),
                 )
             val fDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "f",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    FunctionCall(mockRange, VariableUse(mockRange, "h"), emptyList()),
+                    call(variableUse("h")),
                 )
             val gDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "g",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Block(mockRange, listOf(hDef, fDef)),
+                    block(hDef, fDef),
                 )
             val hAnalyzed =
                 AnalyzedFunction(
@@ -676,7 +630,7 @@ class FunctionHandlerTest {
                     any(),
                     listOf(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
                     any(),
-                    any(),
+                    any()
                 )
             }
             unmockkStatic(::generateCall)
@@ -686,13 +640,10 @@ class FunctionHandlerTest {
         fun `throws if requested access to variable that is not accessible`() {
             // given
             val fDef =
-                Definition.FunctionDefinition(
-                    mockRange,
+                unitFunctionDefinition(
                     "f",
-                    null,
                     emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Literal.IntLiteral(mockRange, 42),
+                    lit(42),
                 )
             val fAnalyzed =
                 AnalyzedFunction(
@@ -710,7 +661,7 @@ class FunctionHandlerTest {
             org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {
                 fHandler.generateVariableAccess(
                     Variable.SourceVariable(
-                        Definition.VariableDeclaration(mockRange, "x", null, Literal.IntLiteral(mockRange, 10)),
+                        variableDeclaration("x", lit(10)),
                     ),
                 )
             }
@@ -719,15 +670,7 @@ class FunctionHandlerTest {
         @Test
         fun `throws if requested generation access of variable other than source variable or static link`() {
             // given
-            val fDef =
-                Definition.FunctionDefinition(
-                    mockRange,
-                    "f",
-                    null,
-                    emptyList(),
-                    Type.Basic(mockRange, "Int"),
-                    Literal.IntLiteral(mockRange, 42),
-                )
+            val fDef = unitFunctionDefinition("f", emptyList(), lit(42))
             val fAnalyzed =
                 AnalyzedFunction(
                     fDef,
@@ -741,7 +684,7 @@ class FunctionHandlerTest {
 
             // when & then
             org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {
-                fHandler.generateVariableAccess(Variable.AuxVariable.SpillVariable())
+                fHandler.generateVariableAccess(Variable.PrimitiveVariable())
             }
         }
     }

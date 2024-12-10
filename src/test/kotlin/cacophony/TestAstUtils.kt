@@ -2,30 +2,60 @@ package cacophony
 
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
+import io.mockk.every
+import io.mockk.mockk
 
-fun mockRange() = Pair(Location(0), Location(0))
+fun mockRange(): Pair<Location, Location> {
+    val mock = mockk<Pair<Location, Location>>()
+    every { mock.toString() } returns "(any)"
+    every { mock == any() } returns true
+    every { mock.first } returns Location(-1)
+    every { mock.second } returns Location(-1)
+    return mock
+}
 
-fun unitType() = Type.Basic(mockRange(), "Unit")
+fun unitType() = BaseType.Basic(mockRange(), "Unit")
+
+fun intType() = BaseType.Basic(mockRange(), "Int")
+
+fun boolType() = BaseType.Basic(mockRange(), "Bool")
 
 fun empty() = Empty(mockRange())
 
-fun functionDeclaration(identifier: String, body: Expression) =
+/**
+ * Declares a function of type [*args] -> returnType
+ */
+fun functionDefinition(identifier: String, args: List<Definition.FunctionArgument>, body: Expression, returnType: Type) =
     Definition.FunctionDefinition(
         mockRange(),
         identifier,
         null,
-        emptyList(),
-        unitType(),
+        args,
+        returnType,
         body,
     )
+
+fun unitFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, unitType())
+
+fun unitFunctionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
+    functionDefinition(identifier, arguments, body, unitType())
+
+fun intFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, intType())
+
+fun intFunctionDefinition(identifier: String, args: List<Definition.FunctionArgument>, body: Expression) =
+    functionDefinition(identifier, args, body, intType())
+
+fun boolFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, boolType())
 
 fun typedArg(identifier: String, type: Type) = Definition.FunctionArgument(mockRange(), identifier, type)
 
 fun arg(identifier: String) = typedArg(identifier, unitType())
 
-fun typedFunctionDeclaration(
+fun intArg(identifier: String) = typedArg(identifier, intType())
+
+fun typedFunctionDefinition(
     identifier: String,
-    argsType: Type.Functional?,
+    argsType: BaseType.Functional?,
     arguments: List<Definition.FunctionArgument>,
     outType: Type,
     body: Expression,
@@ -38,8 +68,8 @@ fun typedFunctionDeclaration(
     body,
 )
 
-fun functionDeclaration(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
-    typedFunctionDeclaration(
+fun functionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
+    typedFunctionDefinition(
         identifier,
         null,
         arguments,
@@ -51,11 +81,29 @@ fun foreignFunctionDeclaration(identifier: String, argumentsType: List<Type>, re
     Definition.ForeignFunctionDeclaration(
         mockRange(),
         identifier,
-        Type.Functional(mockRange(), argumentsType, returnType),
+        BaseType.Functional(mockRange(), argumentsType, returnType),
         returnType,
     )
 
-fun typedVariableDeclaration(identifier: String, type: Type.Basic?, value: Expression) =
+fun typedVariableDeclaration(identifier: String, type: BaseType.Basic?, value: Expression) =
+    Definition.VariableDeclaration(
+        mockRange(),
+        identifier,
+        type,
+        value,
+    )
+
+fun typedStructField(name: String, type: Type) = StructField(mockRange(), name, type)
+
+fun structField(name: String) = StructField(mockRange(), name, null)
+
+fun structDeclaration(vararg fields: Pair<StructField, Expression>) = Struct(mockRange(), fields.toMap())
+
+fun lvalueFieldRef(lhs: Assignable, field: String) = FieldRef.LValue(mockRange(), lhs, field)
+
+fun rvalueFieldRef(lhs: Expression, field: String) = FieldRef.RValue(mockRange(), lhs, field)
+
+fun typedVariableDeclaration(identifier: String, type: NonFunctionalType?, value: Expression) =
     Definition.VariableDeclaration(
         mockRange(),
         identifier,
@@ -91,7 +139,7 @@ fun astOf(vararg expressions: Expression) =
     Block(
         mockRange(),
         listOf(
-            functionDeclaration(
+            unitFunctionDefinition(
                 MAIN_FUNCTION_IDENTIFIER,
                 Block(mockRange(), expressions.toList()),
             ),
@@ -125,15 +173,17 @@ infix fun Expression.geq(rhs: Expression) = OperatorBinary.GreaterEqual(mockRang
 
 infix fun Expression.gt(rhs: Expression) = OperatorBinary.Greater(mockRange(), this, rhs)
 
-infix fun Expression.addeq(rhs: Expression) = OperatorBinary.AdditionAssignment(mockRange(), this, rhs)
+infix fun Assignable.assign(rhs: Expression) = OperatorBinary.Assignment(mockRange(), this, rhs)
 
-infix fun Expression.subeq(rhs: Expression) = OperatorBinary.SubtractionAssignment(mockRange(), this, rhs)
+infix fun Assignable.addeq(rhs: Expression) = OperatorBinary.AdditionAssignment(mockRange(), this, rhs)
 
-infix fun Expression.muleq(rhs: Expression) = OperatorBinary.MultiplicationAssignment(mockRange(), this, rhs)
+infix fun Assignable.subeq(rhs: Expression) = OperatorBinary.SubtractionAssignment(mockRange(), this, rhs)
 
-infix fun Expression.diveq(rhs: Expression) = OperatorBinary.DivisionAssignment(mockRange(), this, rhs)
+infix fun Assignable.muleq(rhs: Expression) = OperatorBinary.MultiplicationAssignment(mockRange(), this, rhs)
 
-infix fun Expression.modeq(rhs: Expression) = OperatorBinary.ModuloAssignment(mockRange(), this, rhs)
+infix fun Assignable.diveq(rhs: Expression) = OperatorBinary.DivisionAssignment(mockRange(), this, rhs)
+
+infix fun Assignable.modeq(rhs: Expression) = OperatorBinary.ModuloAssignment(mockRange(), this, rhs)
 
 fun minus(expression: Expression) = OperatorUnary.Minus(mockRange(), expression)
 
@@ -154,6 +204,8 @@ fun breakStatement() = Statement.BreakStatement(mockRange())
 
 fun returnStatement(value: Expression) = Statement.ReturnStatement(mockRange(), value)
 
-fun basicType(identifier: String) = Type.Basic(mockRange(), identifier)
+fun basicType(identifier: String) = BaseType.Basic(mockRange(), identifier)
 
-fun functionalType(argTypes: List<Type>, resType: Type) = Type.Functional(mockRange(), argTypes.toList(), resType)
+fun functionalType(argTypes: List<Type>, resType: Type) = BaseType.Functional(mockRange(), argTypes.toList(), resType)
+
+fun structType(vararg fields: Pair<String, Type>) = BaseType.Structural(mockRange(), fields.toMap())

@@ -10,73 +10,77 @@ interface InstructionMatcher {
 
     fun findMatchesForSideEffects(node: CFGNode): Set<Match>
 
+    fun findMatchesWithoutTemporaryRegisters(node: CFGNode): Set<Match>
+
     fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean = true): Set<Match>
+}
+
+fun slotFillFromMetadata(valueMapping: ValueSlotMapping, metadata: InstructionMatcherImpl.MatchMetadata): SlotFill {
+    return SlotFill(
+        valueMapping,
+        metadata.registerFill,
+        metadata.constantFill,
+        metadata.functionFill,
+        metadata.nodeFill
+    )
 }
 
 class InstructionMatcherImpl(
     private val valuePatterns: List<ValuePattern>,
     private val sideEffectPatterns: List<SideEffectPattern>,
     private val conditionPatterns: List<ConditionPattern>,
+    private val noTemporaryRegistersPatterns: List<NoTemporaryRegistersPattern>,
 ) : InstructionMatcher {
-    override fun findMatchesForValue(node: CFGNode, destinationRegister: Register): Set<Match> {
-        return findMatchesWithInstructionMaker(
+    override fun findMatchesForValue(node: CFGNode, destinationRegister: Register): Set<Match> =
+        findMatchesWithInstructionMaker(
             node,
             valuePatterns,
         ) { metadata: MatchMetadata, pattern: ValuePattern ->
             { mapping: ValueSlotMapping ->
                 pattern.makeInstance(
-                    SlotFill(
-                        mapping,
-                        metadata.registerFill,
-                        metadata.constantFill,
-                        metadata.functionFill,
-                        metadata.nodeFill,
-                    ),
+                    slotFillFromMetadata(mapping, metadata),
                     destinationRegister,
                 )
             }
         }
-    }
 
-    override fun findMatchesForSideEffects(node: CFGNode): Set<Match> {
-        return findMatchesWithInstructionMaker(
+    override fun findMatchesForSideEffects(node: CFGNode): Set<Match> =
+        findMatchesWithInstructionMaker(
             node,
             sideEffectPatterns,
         ) { metadata: MatchMetadata, pattern: SideEffectPattern ->
             { mapping: ValueSlotMapping ->
                 pattern.makeInstance(
-                    SlotFill(
-                        mapping,
-                        metadata.registerFill,
-                        metadata.constantFill,
-                        metadata.functionFill,
-                        metadata.nodeFill,
-                    ),
+                    slotFillFromMetadata(mapping, metadata),
                 )
             }
         }
-    }
 
-    override fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean): Set<Match> {
-        return findMatchesWithInstructionMaker(
+    override fun findMatchesWithoutTemporaryRegisters(node: CFGNode): Set<Match> =
+        findMatchesWithInstructionMaker(
+            node,
+            noTemporaryRegistersPatterns,
+        ) { metadata: MatchMetadata, pattern: SideEffectPattern ->
+            { mapping: ValueSlotMapping ->
+                pattern.makeInstance(
+                    slotFillFromMetadata(mapping, metadata),
+                )
+            }
+        }
+
+    override fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean): Set<Match> =
+        findMatchesWithInstructionMaker(
             node,
             conditionPatterns,
         ) { metadata: MatchMetadata, pattern: ConditionPattern ->
             { mapping: ValueSlotMapping ->
                 pattern.makeInstance(
-                    SlotFill(
-                        mapping,
-                        metadata.registerFill,
-                        metadata.constantFill,
-                        metadata.functionFill,
-                        metadata.nodeFill,
-                    ),
+                    slotFillFromMetadata(mapping, metadata),
                     destinationLabel,
                     jumpIf,
                 )
             }
         }
-    }
 
     data class MatchMetadata(
         val registerFill: MutableMap<RegisterLabel, Register> = mutableMapOf(),

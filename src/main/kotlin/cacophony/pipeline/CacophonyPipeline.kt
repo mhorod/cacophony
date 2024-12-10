@@ -18,6 +18,7 @@ import cacophony.controlflow.generation.ProgramCFG
 import cacophony.controlflow.generation.generateCFG
 import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
+import cacophony.graphs.FirstFitGraphColoring
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyParser
@@ -39,6 +40,7 @@ import kotlin.io.path.writeText
 
 data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
+    val types: TypeCheckingResult,
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
@@ -169,6 +171,7 @@ class CacophonyPipeline(
 
     private fun analyzeFunctions(ast: AST): FunctionAnalysisResult {
         val resolvedFunctions = resolveOverloads(ast)
+        checkTypes(ast, resolvedFunctions)
         return analyzeFunctions(ast, resolvedFunctions)
     }
 
@@ -192,12 +195,13 @@ class CacophonyPipeline(
     private fun analyzeAst(ast: AST): AstAnalysisResult {
         val resolvedNames = resolveNames(ast)
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
+        val types = checkTypes(ast, resolvedVariables)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention)
         val foreignFunctions = findForeignFunctions(resolvedNames)
-        return AstAnalysisResult(resolvedVariables, analyzedExpressions, functionHandlers, foreignFunctions)
+        return AstAnalysisResult(resolvedVariables, types, analyzedExpressions, functionHandlers, foreignFunctions)
     }
 
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
@@ -256,11 +260,22 @@ class CacophonyPipeline(
             return covering to registerAllocation
         }
 
-        val spareRegisters = setOf(Register.FixedRegister(HardwareRegister.R8), Register.FixedRegister(HardwareRegister.R9))
+        val spareRegisters =
+            setOf(
+                Register.FixedRegister(HardwareRegister.R8),
+                Register.FixedRegister(HardwareRegister.R9),
+            )
 
         logger?.logSpillHandlingAttempt(spareRegisters)
 
-        val newRegisterAllocation = allocateRegisters(liveness, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
+        val newRegisterAllocation =
+            allocateRegisters(liveness, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
+                .mapValues { (_, value) ->
+                    RegisterAllocation(
+                        value.successful.plus(spareRegisters.associateWith { it.hardwareRegister }),
+                        value.spills,
+                    )
+                }
 
         if (newRegisterAllocation.values.all { it.spills.isEmpty() }) {
             return covering to newRegisterAllocation
@@ -274,8 +289,10 @@ class CacophonyPipeline(
                             instructionCovering,
                             functionHandlers[functionDeclaration]!!,
                             loweredCfg,
+                            liveness[functionDeclaration]!!,
                             newRegisterAllocation[functionDeclaration]!!,
                             spareRegisters,
+                            FirstFitGraphColoring(),
                         )
                 }.toMap()
 
@@ -313,12 +330,11 @@ class CacophonyPipeline(
 
     private fun generateAsm(ast: AST): String {
         val (preamble, functions) = generateAsmImpl(ast)
+        functions.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return (listOf(preamble) + functions.values).joinToString("\n")
     }
 
-    fun generateAsm(input: Input): String {
-        return generateAsm(generateAST(input))
-    }
+    fun generateAsm(input: Input): String = generateAsm(generateAST(input))
 
     private fun compile(src: Path, dest: Path) {
         val options = listOf("nasm", "-f", "elf64", "-o", dest.toString(), src.toString())

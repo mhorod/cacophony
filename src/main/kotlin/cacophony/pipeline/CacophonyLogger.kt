@@ -13,6 +13,7 @@ import cacophony.semantic.analysis.CallGraph
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.analysis.VariableUseType
 import cacophony.semantic.names.NameResolutionResult
+import cacophony.semantic.names.ResolvedName
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
@@ -55,8 +56,15 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logSuccessfulNameResolution(result: NameResolutionResult) {
         println("Name resolution successful :D")
         println("Resolved names:")
-        result.forEach { println("  ${it.key.identifier} -> ${it.value}") }
+        result.forEach { println("  ${it.key.identifier} -> ${resolvedNameToString(it.value)}") }
     }
+
+    private fun resolvedNameToString(resolvedName: ResolvedName) =
+        when (resolvedName) {
+            is ResolvedName.Variable -> "Variable ${resolvedName.def}"
+            is ResolvedName.Argument -> "Argument ${resolvedName.def}"
+            is ResolvedName.Function -> "Function ${resolvedName.def.toMap()}"
+        }
 
     override fun logFailedNameResolution() = println("Name resolution failed :(")
 

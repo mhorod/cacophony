@@ -1,6 +1,5 @@
 package cacophony
 
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import cacophony.utils.StringInput
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -9,7 +8,7 @@ import org.junit.jupiter.api.Test
 class DebugRegressionTest {
     @Test
     fun `return with function call generates asm`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """
                 let f = [x: Int] -> Int => x;
@@ -18,7 +17,7 @@ class DebugRegressionTest {
             ),
         )
 
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """
                 let f = [a: Int] -> Int => if a == 0 then 0 else a + f[a - 1];
@@ -30,7 +29,7 @@ class DebugRegressionTest {
 
     @Test
     fun `function call used as while condition generates asm`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """                
                 let keep_going = [] -> Bool => true;
@@ -45,7 +44,7 @@ class DebugRegressionTest {
 
     @Test
     fun `function call used as while condition generates asm if while contains break`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """                
                 let f = [] -> Bool => false;
@@ -58,7 +57,7 @@ class DebugRegressionTest {
 
     @Test
     fun `function call used as if condition generates asm`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """                
                 let f = [] -> Bool => true;
@@ -70,7 +69,7 @@ class DebugRegressionTest {
 
     @Test
     fun `missing assign from memory pattern`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """
                 let g = [] -> Bool => (
@@ -83,7 +82,7 @@ class DebugRegressionTest {
 
     @Test
     fun `variable as condition`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """
                 let x: Bool = true;
@@ -95,7 +94,7 @@ class DebugRegressionTest {
 
     @Test
     fun `double assignment`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """
                 let x: Bool = true;
@@ -108,10 +107,10 @@ class DebugRegressionTest {
 
     @Test
     fun `return used in if condition generates asm`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """                
-                if return () then 2 else 3
+                if return 42 then 2 else 3
                 """.trimIndent(),
             ),
         )
@@ -119,10 +118,10 @@ class DebugRegressionTest {
 
     @Test
     fun `return used in while condition generates asm`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """                
-                while return () do ();
+                while return 42 do ();
                 """.trimIndent(),
             ),
         )
@@ -130,7 +129,7 @@ class DebugRegressionTest {
 
     @Test
     fun `break used in if condition generates asm`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """                
                 let c = 1;
@@ -144,7 +143,7 @@ class DebugRegressionTest {
 
     @Test
     fun `break used in while condition generates asm`() {
-        pipeline.generateAsm(
+        testPipeline().generateAsm(
             StringInput(
                 """                
                 let c = 1;
@@ -159,7 +158,7 @@ class DebugRegressionTest {
     @Test
     fun `simple function call does not cause spills`() {
         val ast =
-            pipeline.generateAST(
+            testPipeline().generateAST(
                 StringInput(
                     """                
                     let f = [] -> Bool => true;
@@ -168,11 +167,44 @@ class DebugRegressionTest {
                 ),
             )
 
-        val liveness = pipeline.analyzeLiveness(ast)
-        val allocation = pipeline.allocateRegisters(liveness)
+        val liveness = testPipeline().analyzeLiveness(ast)
+        val allocation = testPipeline().allocateRegisters(liveness)
 
         allocation.values.forEach {
             assertThat(it.spills).isEmpty()
         }
+    }
+
+    @Test
+    fun `simple function with spills`() {
+        testPipeline().generateAsm(
+            StringInput(
+                """
+                let f = [x: Int] -> Int => (
+                    let a = 1;
+                    let b = 2;
+                    let c = 3;
+                    let d = 4;
+                    let e = 5;
+                    let f = 6;
+                    let g = 7;
+                    let h = 8;
+                    let i = 9;
+                    let j = 10;
+                    let k = 11;
+                    let l = 12;
+                    let m = 13;
+                    let n = 14;
+                    let o = 15;
+                    let p = 16;
+                    let r = 17;
+                    let s = 18;
+                    let t = 19;
+                    return a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+r+s+t;
+                );
+                return f[1];
+                """.trimIndent(),
+            ),
+        )
     }
 }

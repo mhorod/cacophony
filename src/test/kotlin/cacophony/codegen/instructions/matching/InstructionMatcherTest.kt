@@ -29,7 +29,8 @@ class InstructionMatcherTest {
     @Test
     fun `matcher checks predicate`() {
         val standardAdditionPattern = AdditionPattern
-        val instructionMatcher = InstructionMatcherImpl(listOf(standardAdditionPattern, oddNumberAdditionPattern), emptyList(), emptyList())
+        val instructionMatcher =
+            InstructionMatcherImpl(listOf(standardAdditionPattern, oddNumberAdditionPattern), emptyList(), emptyList(), emptyList())
 
         var node = CFGNode.ConstantKnown(1) add CFGNode.ConstantKnown(2)
         assertThat(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()).size).isEqualTo(2)
@@ -50,7 +51,7 @@ class InstructionMatcherTest {
         every { customAdditionPattern.tree } returns patternTree
         every { customAdditionPattern.makeInstance(any(), any()) } returns emptyList()
 
-        val instructionMatcher = InstructionMatcherImpl(listOf(customAdditionPattern), emptyList(), emptyList())
+        val instructionMatcher = InstructionMatcherImpl(listOf(customAdditionPattern), emptyList(), emptyList(), emptyList())
 
         val register = Register.VirtualRegister()
 
@@ -86,7 +87,7 @@ class InstructionMatcherTest {
     @Test
     fun `consts and registers count as value`() {
         val standardAdditionPattern = AdditionPattern
-        val instructionMatcher = InstructionMatcherImpl(listOf(standardAdditionPattern), emptyList(), emptyList())
+        val instructionMatcher = InstructionMatcherImpl(listOf(standardAdditionPattern), emptyList(), emptyList(), emptyList())
 
         val constNode = CFGNode.ConstantKnown(1)
         val registerNode = CFGNode.RegisterUse(Register.VirtualRegister())
@@ -103,7 +104,7 @@ class InstructionMatcherTest {
         every { customCallPattern.tree } returns patternTree
         every { customCallPattern.makeInstance(any()) } returns emptyList()
 
-        val instructionMatcher = InstructionMatcherImpl(emptyList(), listOf(customCallPattern), emptyList())
+        val instructionMatcher = InstructionMatcherImpl(emptyList(), listOf(customCallPattern), emptyList(), emptyList())
         val function = Definition.FunctionDefinition(mockk(), "f", mockk(), listOf(), mockk(), mockk())
         val node = CFGNode.Call(function)
 
