@@ -37,7 +37,7 @@ class StringInput(private val text: String) : Input {
     override fun locationRangeToString(locBegin: Location, locEnd: Location): String {
         assert(locBegin.value <= locEnd.value)
 
-        val content = text.substring(locBegin.value, min(locEnd.value, text.length))
+        val content = text.substring(locBegin.value, min(locEnd.value + 1, text.length))
         return "positions from ${locBegin.value} to ${locEnd.value} with \"$content\""
     }
 }

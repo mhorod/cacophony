@@ -1,1 +1,1 @@
-return 42; # whole program should return unit, so this is type mismatch
+return (); # whole program should return int, so this is type mismatch

@@ -358,15 +358,15 @@ private fun wrapInFunction(originalAST: AST): AST {
             BaseType.Functional(
                 Pair(beforeStart, beforeStart),
                 emptyList(),
-                BaseType.Basic(Pair(beforeStart, beforeStart), "Unit"),
+                BaseType.Basic(Pair(beforeStart, beforeStart), "Int"),
             ),
             emptyList(),
-            BaseType.Basic(Pair(beforeStart, beforeStart), "Unit"),
+            BaseType.Basic(Pair(beforeStart, beforeStart), "Int"),
             Block(
                 Pair(Location(0), behindEnd),
                 listOf(
                     originalAST,
-                    Empty(Pair(behindEnd, behindEnd)),
+                    Statement.ReturnStatement(Pair(behindEnd, behindEnd), Literal.IntLiteral(Pair(behindEnd, behindEnd), 0)),
                 ),
             ),
         )

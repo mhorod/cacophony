@@ -2,17 +2,16 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
 import org.junit.jupiter.api.Test
 
 class BlocksTest {
     @Test
     fun `block with no expressions generates noop`() {
         // given
-        val fDef = functionDeclaration("f", block())
+        val fDef = unitFunctionDeclaration("f", block())
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -31,10 +30,10 @@ class BlocksTest {
     @Test
     fun `block with single non-extracted expression does not generate separate node`() {
         // given
-        val fDef = functionDeclaration("f", variableDeclaration("x", block(lit(1))))
+        val fDef = unitFunctionDeclaration("f", variableDeclaration("x", block(lit(1))))
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -54,7 +53,7 @@ class BlocksTest {
     fun `block with two expressions generates node for the first one`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(1)),
@@ -63,7 +62,7 @@ class BlocksTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =

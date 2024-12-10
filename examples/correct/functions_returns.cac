@@ -43,4 +43,4 @@ let f = [early: Bool] -> Int => (
 f[true]; # `42`, not `1`
 
 # whole program is also function, so top level return is valid
-return ()
+return 0;

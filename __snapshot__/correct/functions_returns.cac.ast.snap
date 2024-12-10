@@ -8,7 +8,7 @@
         "argumentsType": [],
         "returnType": {
           "__class__": "Basic",
-          "identifier": "Unit",
+          "identifier": "Int",
           "range": {
             "__class__": "Pair",
             "first": {
@@ -36,7 +36,7 @@
       "arguments": [],
       "returnType": {
         "__class__": "Basic",
-        "identifier": "Unit",
+        "identifier": "Int",
         "range": {
           "__class__": "Pair",
           "first": {
@@ -1465,23 +1465,8 @@
               {
                 "__class__": "ReturnStatement",
                 "value": {
-                  "__class__": "Block",
-                  "expressions": [
-                    {
-                      "__class__": "Empty",
-                      "range": {
-                        "__class__": "Pair",
-                        "first": {
-                          "__class__": "Location",
-                          "value": 1334
-                        },
-                        "second": {
-                          "__class__": "Location",
-                          "value": 1334
-                        }
-                      }
-                    }
-                  ],
+                  "__class__": "IntLiteral",
+                  "value": 0,
                   "range": {
                     "__class__": "Pair",
                     "first": {
@@ -1490,7 +1475,7 @@
                     },
                     "second": {
                       "__class__": "Location",
-                      "value": 1335
+                      "value": 1334
                     }
                   }
                 },
@@ -1502,7 +1487,21 @@
                   },
                   "second": {
                     "__class__": "Location",
-                    "value": 1335
+                    "value": 1334
+                  }
+                }
+              },
+              {
+                "__class__": "Empty",
+                "range": {
+                  "__class__": "Pair",
+                  "first": {
+                    "__class__": "Location",
+                    "value": 1334
+                  },
+                  "second": {
+                    "__class__": "Location",
+                    "value": 1334
                   }
                 }
               }
@@ -1520,7 +1519,22 @@
             }
           },
           {
-            "__class__": "Empty",
+            "__class__": "ReturnStatement",
+            "value": {
+              "__class__": "IntLiteral",
+              "value": 0,
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 1336
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 1336
+                }
+              }
+            },
             "range": {
               "__class__": "Pair",
               "first": {

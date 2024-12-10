@@ -18,6 +18,7 @@ import cacophony.controlflow.generation.ProgramCFG
 import cacophony.controlflow.generation.generateCFG
 import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
+import cacophony.graphs.FirstFitGraphColoring
 import cacophony.lexer.CacophonyLexer
 import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyParser
@@ -38,6 +39,7 @@ import kotlin.io.path.writeLines
 
 data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
+    val types: TypeCheckingResult,
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDeclaration, FunctionHandler>,
 )
@@ -162,6 +164,7 @@ class CacophonyPipeline(
 
     private fun analyzeFunctions(ast: AST): FunctionAnalysisResult {
         val resolvedFunctions = resolveOverloads(ast)
+        checkTypes(ast, resolvedFunctions)
         return analyzeFunctions(ast, resolvedFunctions)
     }
 
@@ -184,11 +187,12 @@ class CacophonyPipeline(
 
     private fun analyzeAst(ast: AST): AstAnalysisResult {
         val resolvedVariables = resolveOverloads(ast)
+        val types = checkTypes(ast, resolvedVariables)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention)
-        return AstAnalysisResult(resolvedVariables, analyzedExpressions, functionHandlers)
+        return AstAnalysisResult(resolvedVariables, types, analyzedExpressions, functionHandlers)
     }
 
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
@@ -247,11 +251,22 @@ class CacophonyPipeline(
             return covering to registerAllocation
         }
 
-        val spareRegisters = setOf(Register.FixedRegister(HardwareRegister.R8), Register.FixedRegister(HardwareRegister.R9))
+        val spareRegisters =
+            setOf(
+                Register.FixedRegister(HardwareRegister.R8),
+                Register.FixedRegister(HardwareRegister.R9),
+            )
 
         logger?.logSpillHandlingAttempt(spareRegisters)
 
-        val newRegisterAllocation = allocateRegisters(liveness, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
+        val newRegisterAllocation =
+            allocateRegisters(liveness, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
+                .mapValues { (_, value) ->
+                    RegisterAllocation(
+                        value.successful.plus(spareRegisters.associateWith { it.hardwareRegister }),
+                        value.spills,
+                    )
+                }
 
         if (newRegisterAllocation.values.all { it.spills.isEmpty() }) {
             return covering to newRegisterAllocation
@@ -265,8 +280,10 @@ class CacophonyPipeline(
                             instructionCovering,
                             functionHandlers[functionDeclaration]!!,
                             loweredCfg,
+                            liveness[functionDeclaration]!!,
                             newRegisterAllocation[functionDeclaration]!!,
                             spareRegisters,
+                            FirstFitGraphColoring(),
                         )
                 }.toMap()
 

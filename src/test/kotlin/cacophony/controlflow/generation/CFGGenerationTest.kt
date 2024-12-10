@@ -4,9 +4,6 @@ import cacophony.*
 import cacophony.controlflow.*
 import cacophony.controlflow.CFGNode.Companion.TRUE
 import cacophony.controlflow.CFGNode.Companion.UNIT
-import cacophony.diagnostics.CacophonyDiagnostics
-import cacophony.pipeline.CacophonyPipeline
-import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
 fun argStack(offset: Int) = VariableAllocation.OnStack(offset)
@@ -14,19 +11,14 @@ fun argStack(offset: Int) = VariableAllocation.OnStack(offset)
 fun argReg(reg: Register.VirtualRegister) = VariableAllocation.InRegister(reg)
 
 class CFGGenerationTest {
-    companion object {
-        private val diagnostics = CacophonyDiagnostics(mockk())
-        val pipeline = CacophonyPipeline(diagnostics)
-    }
-
     @Test
     fun `CFG of empty function`() {
         // given
         val emptyBlock = block()
-        val fDef = functionDeclaration("f", emptyBlock)
+        val fDef = unitFunctionDeclaration("f", emptyBlock)
 
         // when
-        val cfg = pipeline.generateControlFlowGraph(fDef)
+        val cfg = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -43,10 +35,10 @@ class CFGGenerationTest {
     @Test
     fun `CFG of function returning true`() {
         // given
-        val fDef = functionDeclaration("f", lit(true))
+        val fDef = boolFunctionDeclaration("f", lit(true))
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -63,7 +55,7 @@ class CFGGenerationTest {
     fun `CFG of if with variable condition`() {
         // given
         val fDef =
-            functionDeclaration(
+            intFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(true)),
@@ -79,7 +71,7 @@ class CFGGenerationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -103,7 +95,7 @@ class CFGGenerationTest {
     fun `CFG of while loop with variable condition`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(0)),
@@ -117,7 +109,7 @@ class CFGGenerationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -146,7 +138,7 @@ class CFGGenerationTest {
     fun `CFG of while with noop body`() {
         // given
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     whileLoop(
@@ -159,7 +151,7 @@ class CFGGenerationTest {
             )
 
         // when
-        val actualCFG = pipeline.generateControlFlowGraph(fDef)
+        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =

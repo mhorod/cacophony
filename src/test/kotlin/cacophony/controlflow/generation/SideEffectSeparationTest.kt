@@ -2,39 +2,18 @@ package cacophony.controlflow.generation
 
 import cacophony.block
 import cacophony.controlflow.cfg
-import cacophony.controlflow.generation.CFGGenerationTest.Companion.pipeline
-import cacophony.controlflow.generation.TestOperators.Companion.add
-import cacophony.controlflow.generation.TestOperators.Companion.addNode
-import cacophony.controlflow.generation.TestOperators.Companion.div
-import cacophony.controlflow.generation.TestOperators.Companion.divNode
-import cacophony.controlflow.generation.TestOperators.Companion.eq
-import cacophony.controlflow.generation.TestOperators.Companion.eqNode
-import cacophony.controlflow.generation.TestOperators.Companion.geq
-import cacophony.controlflow.generation.TestOperators.Companion.geqNode
-import cacophony.controlflow.generation.TestOperators.Companion.gt
-import cacophony.controlflow.generation.TestOperators.Companion.gtNode
-import cacophony.controlflow.generation.TestOperators.Companion.leq
-import cacophony.controlflow.generation.TestOperators.Companion.leqNode
-import cacophony.controlflow.generation.TestOperators.Companion.lt
-import cacophony.controlflow.generation.TestOperators.Companion.ltNode
-import cacophony.controlflow.generation.TestOperators.Companion.mod
-import cacophony.controlflow.generation.TestOperators.Companion.modNode
-import cacophony.controlflow.generation.TestOperators.Companion.mul
-import cacophony.controlflow.generation.TestOperators.Companion.mulNode
-import cacophony.controlflow.generation.TestOperators.Companion.neq
-import cacophony.controlflow.generation.TestOperators.Companion.neqNode
-import cacophony.controlflow.generation.TestOperators.Companion.sub
-import cacophony.controlflow.generation.TestOperators.Companion.subNode
 import cacophony.controlflow.integer
+import cacophony.controlflow.unit
 import cacophony.controlflow.writeRegister
-import cacophony.functionDeclaration
+import cacophony.empty
 import cacophony.lit
+import cacophony.testPipeline
+import cacophony.unitFunctionDeclaration
 import cacophony.variableDeclaration
 import cacophony.variableUse
 import cacophony.variableWrite
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.Arguments.argumentSet
 import org.junit.jupiter.params.provider.MethodSource
 
 /**
@@ -50,16 +29,17 @@ class SideEffectSeparationTest {
         val rhs = variableWrite(variableUse("x"), lit(20))
 
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    makeExpr(lhs, rhs),
+                    variableDeclaration("y", makeExpr(lhs, rhs)),
+                    empty(),
                 ),
             )
 
         // when
-        val cfg = pipeline.generateControlFlowGraph(fDef)
+        val cfg = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -74,14 +54,18 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", writeRegister("x", integer(10)))
                         }
                     "add" does
-                        jump("exit") {
+                        jump("empty") {
                             writeRegister(
-                                getResultRegister(),
+                                "y",
                                 makeNode(
                                     readRegister("lhs"),
                                     (writeRegister("x", integer(20))),
                                 ),
                             )
+                        }
+                    "empty" does
+                        jump("exit") {
+                            writeRegister(getResultRegister(), unit)
                         }
                 }
             }
@@ -96,16 +80,17 @@ class SideEffectSeparationTest {
         val rhs = variableWrite(variableUse("x"), lit(20))
 
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    makeExpr(lhs, rhs),
+                    variableDeclaration("y", makeExpr(lhs, rhs)),
+                    empty(),
                 ),
             )
 
         // when
-        val cfg = pipeline.generateControlFlowGraph(fDef)
+        val cfg = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -120,14 +105,18 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", readRegister("x"))
                         }
                     "add" does
-                        jump("exit") {
+                        jump("empty") {
                             writeRegister(
-                                getResultRegister(),
+                                "y",
                                 makeNode(
                                     readRegister("lhs"),
                                     (writeRegister("x", integer(20))),
                                 ),
                             )
+                        }
+                    "empty" does
+                        jump("exit") {
+                            writeRegister(getResultRegister(), unit)
                         }
                 }
             }
@@ -142,16 +131,17 @@ class SideEffectSeparationTest {
         val rhs = variableUse("x")
 
         val fDef =
-            functionDeclaration(
+            unitFunctionDeclaration(
                 "f",
                 block(
                     variableDeclaration("x", lit(5)),
-                    makeExpr(lhs, rhs),
+                    variableDeclaration("y", makeExpr(lhs, rhs)),
+                    empty(),
                 ),
             )
 
         // when
-        val cfg = pipeline.generateControlFlowGraph(fDef)
+        val cfg = testPipeline().generateControlFlowGraph(fDef)
 
         // then
         val expectedCFG =
@@ -166,14 +156,18 @@ class SideEffectSeparationTest {
                             writeRegister("lhs", writeRegister("x", integer(10)))
                         }
                     "add" does
-                        jump("exit") {
+                        jump("empty") {
                             writeRegister(
-                                getResultRegister(),
+                                "y",
                                 makeNode(
                                     readRegister("lhs"),
                                     readRegister("x"),
                                 ),
                             )
+                        }
+                    "empty" does
+                        jump("exit") {
+                            writeRegister(getResultRegister(), unit)
                         }
                 }
             }
@@ -182,19 +176,6 @@ class SideEffectSeparationTest {
 
     companion object {
         @JvmStatic
-        fun binaryExpressions(): List<Arguments> =
-            listOf(
-                argumentSet("add", add, addNode),
-                argumentSet("sub", sub, subNode),
-                argumentSet("mul", mul, mulNode),
-                argumentSet("div", div, divNode),
-                argumentSet("mod", mod, modNode),
-                argumentSet("eq", eq, eqNode),
-                argumentSet("neq", neq, neqNode),
-                argumentSet("lt", lt, ltNode),
-                argumentSet("leq", leq, leqNode),
-                argumentSet("gt", gt, gtNode),
-                argumentSet("geq", geq, geqNode),
-            )
+        fun binaryExpressions(): List<Arguments> = TestOperators.binaryExpressions()
     }
 }

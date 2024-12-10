@@ -11,7 +11,7 @@ class FunctionAnalysisTest {
     fun `should analyze empty function`() {
         // given
         // f => {}
-        val funF = functionDeclaration("f", block())
+        val funF = unitFunctionDeclaration("f", block())
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -41,7 +41,7 @@ class FunctionAnalysisTest {
         // given
         // f => let a
         val varA = variableDeclaration("a", Empty(mockRange()))
-        val funF = functionDeclaration("f", block(varA))
+        val funF = unitFunctionDeclaration("f", block(varA))
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -72,7 +72,7 @@ class FunctionAnalysisTest {
         // f => (let a; a)
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varAUse = variableUse("a")
-        val funF = functionDeclaration("f", block(varAUse))
+        val funF = unitFunctionDeclaration("f", block(varAUse))
         val ast = astOf(varA, funF)
         val program = program(ast)
 
@@ -112,7 +112,7 @@ class FunctionAnalysisTest {
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varAUse = variableUse("a")
         val varAWrite = variableWrite(varAUse)
-        val funF = functionDeclaration("f", block(varAWrite))
+        val funF = unitFunctionDeclaration("f", block(varAWrite))
         val ast = astOf(varA, funF)
         val program = program(ast)
 
@@ -153,7 +153,7 @@ class FunctionAnalysisTest {
         val varAUse1 = variableUse("a")
         val varAWrite = variableWrite(varAUse1)
         val varAUse2 = variableUse("a")
-        val funF = functionDeclaration("f", block(varAWrite, varAUse2))
+        val funF = unitFunctionDeclaration("f", block(varAWrite, varAUse2))
         val ast = astOf(varA, funF)
         val program = program(ast)
 
@@ -193,9 +193,9 @@ class FunctionAnalysisTest {
     fun `should analyze function with nested function`() {
         // given
         // f => (g => (); g())
-        val funG = functionDeclaration("g", block())
+        val funG = unitFunctionDeclaration("g", block())
         val varGUse = variableUse("g")
-        val funF = functionDeclaration("f", block(funG, call(varGUse)))
+        val funF = unitFunctionDeclaration("f", block(funG, call(varGUse)))
         val ast = astOf(funF)
         val program = program(ast)
         val callGraph = callGraph(funF to funG)
@@ -239,8 +239,8 @@ class FunctionAnalysisTest {
         // f => (let a; g => a)
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varAUse = variableUse("a")
-        val funG = functionDeclaration("g", varAUse)
-        val funF = functionDeclaration("f", block(varA, funG))
+        val funG = unitFunctionDeclaration("g", varAUse)
+        val funF = unitFunctionDeclaration("f", block(varA, funG))
         val ast = astOf(funF)
         val program = program(ast)
 
@@ -288,14 +288,14 @@ class FunctionAnalysisTest {
         // (foo => (let a; g => (h => a; h()); i => (j => (); g())); main => foo())
         val varA = variableDeclaration("a", Empty(mockRange()))
         val varAUse = variableUse("a")
-        val funH = functionDeclaration("h", varAUse)
+        val funH = unitFunctionDeclaration("h", varAUse)
         val funHUse = variableUse("h")
         val funHCall = call(funHUse)
-        val funG = functionDeclaration("g", block(funH, funHCall))
-        val funJ = functionDeclaration("j", block())
-        val funI = functionDeclaration("i", block(funJ, call(variableUse("g"))))
-        val funFoo = functionDeclaration("foo", block(varA, funG, funI))
-        val funMain = functionDeclaration("main", call(variableUse("foo")))
+        val funG = unitFunctionDeclaration("g", block(funH, funHCall))
+        val funJ = unitFunctionDeclaration("j", block())
+        val funI = unitFunctionDeclaration("i", block(funJ, call(variableUse("g"))))
+        val funFoo = unitFunctionDeclaration("foo", block(varA, funG, funI))
+        val funMain = unitFunctionDeclaration("main", call(variableUse("foo")))
 
         val ast = astOf(funFoo, funMain)
         val program = program(ast)
@@ -388,8 +388,8 @@ class FunctionAnalysisTest {
         val barVarA = variableDeclaration("a", Empty(mockRange()))
         val barVarAUse = variableUse("a")
 
-        val funBar = functionDeclaration("bar", block(barVarA, variableWrite(barVarAUse)))
-        val funFoo = functionDeclaration("foo", block(fooVarA, funBar, fooVarAUse))
+        val funBar = unitFunctionDeclaration("bar", block(barVarA, variableWrite(barVarAUse)))
+        val funFoo = unitFunctionDeclaration("foo", block(fooVarA, funBar, fooVarAUse))
         val ast = astOf(funFoo)
         val program = program(ast)
 
@@ -444,8 +444,8 @@ class FunctionAnalysisTest {
         val argB = arg("b")
         val varAUse = variableUse("a")
         val varBUse = variableUse("b")
-        val funG = functionDeclaration("g", block(varAUse, variableWrite(varBUse)))
-        val funF = functionDeclaration("f", listOf(argA, argB), funG)
+        val funG = unitFunctionDeclaration("g", block(varAUse, variableWrite(varBUse)))
+        val funF = unitFunctionDeclaration("f", listOf(argA, argB), funG)
 
         val ast = astOf(funF)
         val program = program(ast)

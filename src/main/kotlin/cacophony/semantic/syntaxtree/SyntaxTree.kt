@@ -18,6 +18,8 @@ sealed interface LeafExpression : Expression, TreeLeaf
 
 sealed interface Type : SyntaxTree
 
+sealed interface NonFunctionalType : Type
+
 typealias AST = Expression
 
 fun areEquivalentTypes(lhs: Type?, rhs: Type?): Boolean = lhs?.isEquivalent(rhs) ?: (rhs == null)
@@ -42,11 +44,11 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
     class Basic(
         range: Pair<Location, Location>,
         val identifier: String,
-    ) : BaseType(range) {
+    ) : BaseType(range), NonFunctionalType {
         override fun toString() = identifier
 
         override fun isEquivalent(other: SyntaxTree?): Boolean =
-            super.isEquivalent(other) &&
+            super<BaseType>.isEquivalent(other) &&
                 other is Basic &&
                 identifier == other.identifier
     }
@@ -65,11 +67,11 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
                 areEquivalentTypes(returnType, other.returnType)
     }
 
-    class Structural(range: Pair<Location, Location>, val fields: Map<String, Type>) : BaseType(range) {
+    class Structural(range: Pair<Location, Location>, val fields: Map<String, Type>) : BaseType(range), NonFunctionalType {
         override fun toString() = "{${fields.map { (k, v) -> "$k: $v" }.joinToString(", ")}}"
 
         override fun isEquivalent(other: SyntaxTree?) =
-            super.isEquivalent(other) &&
+            super<BaseType>.isEquivalent(other) &&
                 other is Structural &&
                 areEquivalentTypes(fields, other.fields)
     }
@@ -111,7 +113,7 @@ sealed class Definition(
     class VariableDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
-        val type: BaseType?,
+        val type: Type?,
         val value: Expression,
     ) : Definition(range, identifier) {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} "
