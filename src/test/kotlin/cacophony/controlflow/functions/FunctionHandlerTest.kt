@@ -32,7 +32,7 @@ class FunctionHandlerTest {
     fun `initialization registers static link`() {
         val funDef = mockk<Definition.FunctionDefinition>()
         val analyzedFunction = mockk<AnalyzedFunction>()
-        val auxVariables = mutableSetOf<Variable.AuxVariable>()
+        val auxVariables = mutableSetOf<Variable>()
         every { funDef.arguments } returns emptyList()
         every { analyzedFunction.auxVariables } returns auxVariables
         every { analyzedFunction.variables } returns emptySet()
@@ -49,7 +49,7 @@ class FunctionHandlerTest {
     }
 
     @Test
-    fun `variable from definition just works`() {
+    fun `variable from definition just works`() { // TODO: adjust or remove this test
         // setup
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
@@ -201,7 +201,7 @@ class FunctionHandlerTest {
         val unaryFunDef = mockk<Definition.FunctionDefinition>()
         every { unaryFunDef.arguments } returns listOf(argumentDef)
 
-        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+        val staticLinkVariable = mockk<Variable.PrimitiveVariable>()
 
         val noArgAnalyzedFunction = mockk<AnalyzedFunction>()
         every { noArgAnalyzedFunction.variables } returns emptySet()
@@ -228,7 +228,7 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
 
-        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+        val staticLinkVariable = mockk<Variable>()
 
         val analyzedFunction = mockk<AnalyzedFunction>()
         every { analyzedFunction.variables } returns emptySet()
@@ -239,13 +239,13 @@ class FunctionHandlerTest {
         val handler = makeDefaultHandler(funDef, analyzedFunction)
         assertEquals(8, handler.getStackSpace().value)
 
-        handler.allocateFrameVariable(mockk<Variable.AuxVariable>())
+        handler.allocateFrameVariable(mockk<Variable>())
         assertEquals(16, handler.getStackSpace().value)
 
-        handler.registerVariableAllocation(mockk<Variable.SourceVariable>(), VariableAllocation.OnStack(32))
+        handler.registerVariableAllocation(mockk<Variable>(), VariableAllocation.OnStack(32))
         assertEquals(40, handler.getStackSpace().value)
 
-        handler.allocateFrameVariable(mockk<Variable.AuxVariable>())
+        handler.allocateFrameVariable(mockk<Variable>())
         assertEquals(48, handler.getStackSpace().value)
     }
 
@@ -254,7 +254,7 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
 
-        val staticLinkVariable = mockk<Variable.AuxVariable.StaticLinkVariable>()
+        val staticLinkVariable = mockk<Variable>()
 
         val analyzedFunction = mockk<AnalyzedFunction>()
         every { analyzedFunction.variables } returns emptySet()
@@ -265,14 +265,14 @@ class FunctionHandlerTest {
         val handler = makeDefaultHandler(funDef, analyzedFunction)
         assertEquals(8, handler.getStackSpace().value)
 
-        var auxVariable = mockk<Variable.AuxVariable>()
+        var auxVariable = mockk<Variable>()
         handler.allocateFrameVariable(auxVariable)
 
         var allocation = handler.getVariableAllocation(auxVariable)
         require(allocation is VariableAllocation.OnStack)
         assertEquals(8, allocation.offset)
 
-        auxVariable = mockk<Variable.AuxVariable>()
+        auxVariable = mockk<Variable>()
         handler.allocateFrameVariable(auxVariable)
 
         allocation = handler.getVariableAllocation(auxVariable)
@@ -684,7 +684,7 @@ class FunctionHandlerTest {
 
             // when & then
             org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {
-                fHandler.generateVariableAccess(Variable.AuxVariable.SpillVariable())
+                fHandler.generateVariableAccess(Variable.PrimitiveVariable())
             }
         }
     }

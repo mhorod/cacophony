@@ -21,7 +21,7 @@ import cacophony.semantic.syntaxtree.VariableUse
  */
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
-    analyzedUseTypes: UseTypeAnalysisResult,
+    analyzedUseTypes: UseTypeAnalysisResult, // TODO: adjust to new specification of analyzedUseTypes
     private val function: Definition.FunctionDefinition,
     private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
 ) {

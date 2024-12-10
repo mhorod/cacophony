@@ -16,7 +16,7 @@ interface FunctionHandler {
     fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation)
 
     // Returns static link to parent
-    fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable
+    fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable // TODO: change it to primitive variable
 
     fun getVariableFromDefinition(varDef: Definition): Variable
 
