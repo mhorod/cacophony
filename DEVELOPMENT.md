@@ -21,18 +21,27 @@ Consider the following snippet:
     let s = {x = 5, y = {a = 3, b = true}};
     let f = [] -> Int => s.x + s.y.a;
 
-In theory, we do not need to keep the whole s in memory. We could place `s.x` and `s.y.a` on the stack for the static link to work inside `f`, but `x.y.b` could be placed in a virtual register.
+In theory, we do not need to keep the whole `s` in memory. We could place `s.x` and `s.y.a` on the stack for the static link to work inside `f`, but `x.y.b` could be placed in a virtual register.
 
-To achieve this effect, we propose the following interface for source variables:
+To achieve this effect, we propose the following interface for variables:
 
 ```kotlin
-sealed class SourceVariable(val definition: Definition) : Variable
+sealed class VariableInfo
+class PrimitiveVariable : VariableInfo()
+class StructVariable(val fields: Map<String, Info>) : VariableInfo()
 
-class PrimitiveVariable(definition: Definition) : SourceVariable(definition)
-class StructVariable(definition: Definition, val fields: Map<String, SourceVariable>) : SourceVariable(definition)
+sealed class Variable(open val info: VariableInfo)
+
+class SourceVariable(val definition: Definition, override val info : VariableInfo) : Variable(info)
+
+sealed class AuxVariable(info: VariableInfo) : Variable(info)
+class SpillVariable(override val info: PrimitiveVariable) : AuxVariable(info)
+class StaticLinkVariable(override val info: PrimitiveVariable) : AuxVariable(info)
+
+class ReturnVariable(override val info: VariableInfo) : Variable(info)
 ```
 
-The previous snippet should introduce the following SourceVariable:
+The previous snippet should introduce the following `VariableInfo`:
 
     sx = PrimitiveVariable()
     sya = PrimitiveVariable()
@@ -52,13 +61,28 @@ TypeChecker should check if every subfield access is valid.
 
 ### Variable Analysis / Name Resolution
 
-New logic to determine all source variables and their usage is needed. FunctionHandler should receive information about all subfields of a variable with structural type.
+New logic to determine all source variables and their usage is needed. FunctionHandler should receive analyzed `SourceVariable` corresponding to every subfield, and not the `Definition` like now.
 
-In particular, the previous example should introduce 5 instances of `Definition`.
+In particular, the previous example should introduce 5 instances of `SourceVariable` and (after analysis) pipe them to the FunctionHandler.
 
 ### Function Handler
 
-We introduce the following type for interfacing between the Function Handler and CFG Generation.
+The constructor of Function Handler should receive instances of `SourceVariable` and allocate them (on the stack or in the virtual registers) based on information received from Analysis.
+
+The declaration of `generateVariableAccess()` is changed to
+
+```kotlin
+fun generateVariableAccess(variable: PrimitiveVariable): CFGNode
+```
+
+Its implementation should remain similar.
+
+Additionally, as the value returned from a function can now be of the structural type, the `getReturnRegister() : VirtualRegister` method should change its declaration to something like `getResultVariable() : ResultVariable` and the corresponding ReturnVariable (and allocation of its primitive fields) could be created in the constructor.
+
+### CFG Generation
+
+We introduce the following type for describing how to access the primitive fields/subfields of the given struct.
+
 
 ```kotlin
 sealed class Layout
@@ -66,22 +90,6 @@ sealed class Layout
 class SimpleLayout(val access: CFGNode) : Layout()
 class StructLayout(val fields: Map<String, Layout>) : Layout()
 ```
-
-Its instance describes how to access the primitive fields/subfields of the given struct.
-
-The constructor of Function Handler should create instances of `SourceVariable` as above and allocate them (on the stack or in the virtual registers) based on information received from Analysis.
-
-The declaration of `generateVariableAccess()` is changed to
-
-```kotlin
-fun generateVariableAccess(variable: Variable): Layout
-```
-
-Its implementation should be extended with the recursive call if the `variable` is of the `StructVariable` type.
-
-Additionally, as the value returned from a function can now be of the structural type, the `getReturnRegister() : VirtualRegister` method should change its declaration to something like `getResultDestination() : Layout` (with `Layout` consisting of a number of virtual registers).
-
-### CFG Generation
 
 The type of the `access` field of the `SubCFG` class is changed to `Layout` instead of `CFGNode`.
 
@@ -93,7 +101,7 @@ fun visit(expr: Expression, ...) : Layout
 
 Most of the resulting changes should be quite automatic (for nodes that work only on the primitive types, changes are trivial).
 
-E.g., in AssignmentHandler, in the following fragment
+E.g., in AssignmentHandler, the following fragment
 
 ```kotlin
 val variableAccess = cfgGenerator.getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(variable))
@@ -101,7 +109,7 @@ val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)
 val variableWrite = CFGNode.Assignment(variableAccess, valueCFG.access)
 ```
 
-The `variableWrite` could be replaced with a series of assignments for every primitive subfield from layouts returned by `generateVariableAccess` and `visit` (by the way, `Variable.SourceVariable(variable)` should be replaced with `functionHandler.getVariableFromDefinition(variable)` as creating new instances of `SourceVariable` was hacky before, and now should be just impossible given that they hold more information).
+Could be replaced with a series of assignments between primitive subfields of `lhs` and `Layout` returned by `visit` (by the way, `Variable.SourceVariable(variable)` should be replaced with `functionHandler.getVariableFromDefinition(variable)` as creating new instances of `SourceVariable` was hacky before, and now should be just impossible given that they hold more information).
 
 ### Function Call and Return
 
@@ -119,7 +127,5 @@ For functions returning structural types, we propose the following call conventi
 The idea is that the epilogue will move the returned value's fields into corresponding memory cells prepared by `generateCall`. After ret and `rsp` adjustment, the fields should be immediately moved into their destination (usually the `Layout` of a temporary struct consisting of a bunch of virtual registers).
 
 For the primitive types, this part is just `mov vir, rax` after code generated by `generateCall`.
-
-For simplification of the implementation of CFG generation, `generateCall` could return the `Layout` of the returned value.
 
 It is worth noting that the `Layout` of the returned value on the stack is different before the call/after ret and inside the function; at atm we handle this by implementing similar (but not quite) logic in two places (`generateCall` and epilogue). We can keep this that way—there is definitely a question of if trying to unify both implementations is in fact cleaner/easier to adjust later.
