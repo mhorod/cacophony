@@ -362,8 +362,7 @@ sealed class OperatorBinary(
     sealed class LValueOperator(range: Pair<Location, Location>, lhs: Assignable, rhs: Expression) : OperatorBinary(range, lhs, rhs)
 
     sealed class ArithmeticAssignmentOperator(range: Pair<Location, Location>, lhs: Assignable, rhs: Expression) :
-        LValueOperator(range, lhs, rhs),
-        Assignable
+        LValueOperator(range, lhs, rhs)
 
     sealed class LogicalOperator(range: Pair<Location, Location>, lhs: Expression, rhs: Expression) : OperatorBinary(range, lhs, rhs)
 
@@ -485,7 +484,7 @@ sealed class OperatorBinary(
         range: Pair<Location, Location>,
         lhs: Assignable,
         rhs: Expression,
-    ) : LValueOperator(range, lhs, rhs), Assignable {
+    ) : LValueOperator(range, lhs, rhs) {
         override fun isEquivalent(other: SyntaxTree?): Boolean =
             super<OperatorBinary.LValueOperator>.isEquivalent(other) && other is Assignment
     }
