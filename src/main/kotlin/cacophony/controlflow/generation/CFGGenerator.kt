@@ -100,7 +100,7 @@ internal class CFGGenerator(
         // TODO: change to Layout
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
-            is Definition.FunctionDefinition -> visitFunctionDeclaration(mode)
+            is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
             is FunctionCall -> visitFunctionCall(expression, mode, context)
@@ -172,7 +172,6 @@ internal class CFGGenerator(
                 functionHandler,
                 argumentVertices.map { it.access },
                 resultRegister,
-                true,
             ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 

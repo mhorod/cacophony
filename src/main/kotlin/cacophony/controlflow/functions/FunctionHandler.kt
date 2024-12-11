@@ -19,6 +19,8 @@ interface FunctionHandler {
     // Returns static link to parent
     fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable // TODO: change it to primitive variable
 
+    fun getStackSpace(): CFGNode.ConstantLazy
+
     fun getVariableFromDefinition(varDef: Definition): Variable
 
     fun generateAccessToFramePointer(other: Definition.FunctionDefinition): CFGNode

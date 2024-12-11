@@ -20,11 +20,20 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
         return instructions
     }
 
+    // Pair<Int, Int> does not implement Comparable
+    private fun Pair<Int, Int>.toLong(): Long = first * (1L shl 32) + second
+
+    private fun coverGivenMatches(node: CFGNode, matches: Set<Match>): List<Instruction> {
+        val bestMatch =
+            matches.maxByOrNull { match ->
+                Pair(match.size, match.pattern.priority()).toLong()
+            } ?: error("No match found for $node, ${node.javaClass}")
+        return coverGivenMatch(bestMatch)
+    }
+
     private fun coverWithInstructionsForValue(node: CFGNode, register: Register): List<Instruction> {
         val matches = instructionMatcher.findMatchesForValue(node, register)
-        val bestMatch =
-            matches.maxByOrNull { match -> match.size } ?: error("No match for value found for $node, ${node.javaClass}")
-        return coverGivenMatch(bestMatch)
+        return coverGivenMatches(node, matches)
     }
 
     override fun coverWithInstructions(node: CFGNode): List<Instruction> {
@@ -32,8 +41,7 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
             instructionMatcher
                 .findMatchesForSideEffects(node)
                 .union(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()))
-        val bestMatch = matches.maxByOrNull { match -> match.size } ?: error("No match found for $node, ${node.javaClass}")
-        return coverGivenMatch(bestMatch)
+        return coverGivenMatches(node, matches)
     }
 
     override fun coverWithInstructionsWithoutTemporaryRegisters(node: CFGNode): List<Instruction> {
@@ -45,9 +53,6 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
 
     override fun coverWithInstructionsAndJump(node: CFGNode, label: BlockLabel, jumpIf: Boolean): List<Instruction> {
         val matches = instructionMatcher.findMatchesForCondition(node, label, jumpIf)
-        val bestMatch =
-            matches.maxByOrNull { match -> match.size }
-                ?: error("No match for condition found for $node, ${node.javaClass}")
-        return coverGivenMatch(bestMatch)
+        return coverGivenMatches(node, matches)
     }
 }

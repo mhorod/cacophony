@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class LivenessAnalysisTest {
     private fun mockInstruction(def: Set<Register>, use: Set<Register>): Instruction {
@@ -207,7 +208,7 @@ class LivenessAnalysisTest {
             )
 
         // when & then
-        org.junit.jupiter.api.assertThrows<LivenessAnalysisErrorException> {
+        assertThrows<LivenessAnalysisErrorException> {
             analyzeLiveness(lCfgFragment)
         }
     }

@@ -18,21 +18,21 @@ class FunctionHandlerImpl(
     private val staticLink = Variable.AuxVariable.StaticLinkVariable() // TODO: change to primitive variable
     private val definitionToVariable = // TODO: remove
         (analyzedFunction.variables.map { it.declaration } union function.arguments).associateWith { Variable.SourceVariable(it) }
-    private val stackSpace = CFGNode.ConstantLazy(0)
+    private var stackSpace = 0
     private val variableAllocation: MutableMap<Variable, VariableAllocation> = mutableMapOf()
 
     // This does not perform any checks and may override previous allocation.
     // Holes in the stack may be also created if stack variables are directly allocated with this method.
     override fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation) {
         if (allocation is VariableAllocation.OnStack) {
-            stackSpace.value = max(stackSpace.value, allocation.offset + REGISTER_SIZE)
+            stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
         }
         variableAllocation[variable] = allocation
     }
 
     override fun allocateFrameVariable(variable: Variable): CFGNode.LValue {
-        val currentStackSpace = stackSpace.value
-        registerVariableAllocation(variable, VariableAllocation.OnStack(stackSpace.value))
+        val currentStackSpace = stackSpace
+        registerVariableAllocation(variable, VariableAllocation.OnStack(stackSpace))
         return MemoryAccess(
             CFGNode.Subtraction(
                 RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
@@ -54,7 +54,10 @@ class FunctionHandlerImpl(
                 ).toSet()
                     .minus(usedVars)
             regVar.forEach { varDef ->
-                registerVariableAllocation(definitionToVariable[varDef]!!, VariableAllocation.InRegister(Register.VirtualRegister()))
+                registerVariableAllocation(
+                    definitionToVariable[varDef]!!,
+                    VariableAllocation.InRegister(Register.VirtualRegister(varDef.identifier)),
+                )
             }
 
             usedVars.forEach { varDef ->
@@ -144,7 +147,7 @@ class FunctionHandlerImpl(
 
     override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
 
-    fun getStackSpace(): CFGNode.ConstantLazy = stackSpace
+    override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
 
     private val resultRegister = Register.VirtualRegister()
 
@@ -154,7 +157,7 @@ class FunctionHandlerImpl(
         PrologueEpilogueHandler(
             this,
             callConvention,
-            stackSpace,
+            getStackSpace(),
             resultRegister,
         )
 

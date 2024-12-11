@@ -86,8 +86,7 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
 data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
-    override val registersRead =
-        setOf(Register.FixedRegister(HardwareRegister.RSP))
+    override val registersRead = setOf(Register.FixedRegister(HardwareRegister.RSP))
     override val registersWritten: Set<Register> =
         HardwareRegister
             .entries
@@ -97,6 +96,17 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
             .toSet()
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
+}
+
+// Utility class to make asm a bit more readable.
+data class Comment(private val comment: String) : InstructionTemplates.FixedRegistersInstruction() {
+    override val registersRead: Set<Register> = emptySet()
+    override val registersWritten: Set<Register> = emptySet()
+
+    // This class is not marked as noop, as we do not want to remove it.
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        return "; $comment"
+    }
 }
 
 class Ret : InstructionTemplates.FixedRegistersInstruction() {
@@ -110,6 +120,9 @@ class Ret : InstructionTemplates.FixedRegistersInstruction() {
 data class LocalLabel(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = setOf()
     override val registersWritten: Set<Register> = setOf()
+
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean =
+        label !in usedLocalLabels
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = ".${label.name}:"
 }
