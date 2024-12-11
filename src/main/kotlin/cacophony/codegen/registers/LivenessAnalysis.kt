@@ -87,7 +87,9 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
     val interference: RegisterRelations =
         allRegisters.associateWith { reg ->
             allInstructions
-                .filter { instruction -> instruction.ins !is CopyInstruction }
+                .filter {
+                    instruction -> instruction.ins !is CopyInstruction
+                    || !(instruction.registersRead + instruction.registersWritten).contains(reg) }
                 .flatMap { instruction ->
                     listOf(
                         if (liveIn[instruction]!!.contains(reg)) liveIn[instruction]!!.toList() else listOf(),
@@ -97,7 +99,14 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
                 .minus(reg)
         }
 
-    val copying: RegisterRelations =
+    allInstructions.forEach { instruction ->
+        println("\n\nInstruction ${instruction.ins}")
+        println("LiveIn: ${liveIn[instruction]!!}")
+        println("LiveOut: ${liveOut[instruction]!!}")
+        println("Successors: ${nextInstructions[instruction]!!.map { it.ins }}")
+    }
+
+    /*val copying: RegisterRelations =
         allRegisters.associateWith { reg ->
             allInstructions
                 .asSequence()
@@ -108,7 +117,8 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
                 .minus(reg)
                 .minus(interference[reg]!!)
                 .toSet()
-        }
+        }*/ // TODO: FIX, THIS IS NOT WORKING
+    val copying = allRegisters.associateWith { setOf<Register>() }
 
     return Liveness(allRegisters, interference, copying)
 }

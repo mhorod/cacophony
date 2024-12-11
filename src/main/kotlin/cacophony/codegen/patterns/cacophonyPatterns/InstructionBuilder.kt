@@ -158,7 +158,7 @@ class InstructionBuilder(val slotFill: SlotFill) {
     }
 
     fun ret() {
-        instructions.add(Ret())
+        instructions.add(Ret)
     }
 
     fun byte(register: Register) = RegisterByte(register)

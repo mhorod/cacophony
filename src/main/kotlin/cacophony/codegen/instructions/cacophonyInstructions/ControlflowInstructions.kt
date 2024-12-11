@@ -109,7 +109,7 @@ data class Comment(private val comment: String) : InstructionTemplates.FixedRegi
     }
 }
 
-class Ret : InstructionTemplates.FixedRegistersInstruction() {
+data object Ret : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(SystemVAMD64CallConvention.returnRegister()))
     override val registersWritten = setOf<Register>()
