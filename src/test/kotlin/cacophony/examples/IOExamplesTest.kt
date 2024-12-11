@@ -34,11 +34,14 @@ class IOExamplesTest {
 
         assertThatCode { pipeline.compile(input, asmFile, objFile, binFile) }.doesNotThrowAnyException()
 
-        ProcessBuilder(binFile.toString())
-            .redirectInput(inputPath.toFile())
-            .redirectOutput(actualOutputPath.toFile())
-            .start()
-            .waitFor(10, TimeUnit.SECONDS)
+        val process =
+            ProcessBuilder(binFile.toString())
+                .redirectInput(inputPath.toFile())
+                .redirectOutput(actualOutputPath.toFile())
+                .start()
+
+        process.waitFor(10, TimeUnit.SECONDS)
+        assertThat(process.exitValue()).isZero()
 
         assertThatPath(actualOutputPath).exists()
 
