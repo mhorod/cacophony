@@ -1,0 +1,20 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Unit;
+foreign alloc: [Int] -> Int;
+foreign get_mem: [Int] -> Int;
+foreign put_mem: [Int, Int] -> Unit;
+
+let n = read_int[];
+let ptr = alloc[8 * n];
+
+let i = 0;
+while (i < n) do (
+    put_mem[ptr + 8 * i, read_int[]];
+    i += 1;
+);
+
+i = n - 1;
+while (i >= 0) do (
+    write_int[get_mem[ptr + 8 * i]];
+    i -= 1;
+);

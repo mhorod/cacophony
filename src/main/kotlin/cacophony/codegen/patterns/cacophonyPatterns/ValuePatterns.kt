@@ -237,6 +237,7 @@ object DivisionAssignmentRegisterValuePattern : ValuePattern, RegisterAssignment
             mov(rax, reg(lhsRegisterLabel))
             cqo()
             idiv(reg(rhsLabel))
+            mov(reg(lhsRegisterLabel), rax)
             mov(destination, rax)
         }
 }

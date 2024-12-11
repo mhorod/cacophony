@@ -1,0 +1,65 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Unit;
+foreign alloc: [Int] -> Int;
+foreign get_mem: [Int] -> Int;
+foreign put_mem: [Int, Int] -> Unit;
+
+let sort = [ptr: Int, tmp: Int, l: Int, r: Int] -> Unit => (
+    if r - l <= 1 then
+        return ();
+
+    let ptr_get = [i: Int] -> Int => get_mem[ptr + i * 8];
+    let ptr_set = [i: Int, v: Int] -> Unit => put_mem[ptr + i * 8, v];
+    let tmp_get = [i: Int] -> Int => get_mem[tmp + i * 8];
+    let tmp_set = [i: Int, v: Int] -> Unit => put_mem[tmp + i * 8, v];
+
+    let i = l;
+    while i < r do (
+        tmp_set[i, ptr_get[i]];
+        i += 1;
+    );
+
+    let mid = (l + r) / 2;
+    sort[tmp, ptr, l, mid];
+    sort[tmp, ptr, mid, r];
+
+    let pi = l;
+    let pj = mid;
+    let out = l - 1;
+
+    while pi < mid && pj < r do (
+        if tmp_get[pi] < tmp_get[pj] then (
+            ptr_set[out += 1, tmp_get[pi]];
+            pi += 1;
+        )
+        else (
+            ptr_set[out += 1, tmp_get[pj]];
+            pj += 1;
+        )
+    );
+    while pi < mid do (
+        ptr_set[out += 1, tmp_get[pi]];
+        pi += 1;
+    );
+    while pj < r do (
+        ptr_set[out += 1, tmp_get[pj]];
+        pj += 1;
+    );
+);
+
+let n = read_int[];
+let ptr = alloc[8 * n];
+
+let i = 0;
+while i < n do (
+    put_mem[ptr + 8 * i, read_int[]];
+    i += 1;
+);
+
+sort[ptr, alloc[8 * n], 0, n];
+
+i = 0;
+while i < n do (
+    write_int[get_mem[ptr + 8 * i]];
+    i += 1;
+);

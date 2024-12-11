@@ -1,0 +1,63 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Unit;
+foreign alloc: [Int] -> Int;
+foreign get_mem: [Int] -> Int;
+foreign put_mem: [Int, Int] -> Unit;
+
+let tree_ptr = 0;
+let tree_ptr_get = [i: Int] -> Int => get_mem[tree_ptr + i * 8];
+let tree_ptr_set = [i: Int, v: Int] -> Unit => put_mem[tree_ptr + i * 8, v];
+
+let tree_init = [n: Int] -> Unit => (
+    let tree_n = 1;
+    while tree_n < n do tree_n *= 2;
+    tree_ptr = alloc[tree_n * 16];
+    let i = 0;
+    while i < tree_n * 2 do (
+        tree_ptr_set[i, if i > 0 then 0 else tree_n];
+        i += 1;
+    );
+);
+
+let tree_set = [i: Int, v: Int] -> Unit => (
+    tree_ptr_set[i += tree_ptr_get[0], v];
+    while (i /= 2) > 0 do tree_ptr_set[i, tree_ptr_get[2 * i] + tree_ptr_get[2 * i + 1]];
+);
+
+let tree_get = [l: Int, r: Int] -> Int => (
+    let rec = [l: Int, r: Int, node: Int, nl: Int, nr: Int] -> Int => (
+        #write_int[node];
+        if l > nr || r < nl then return 0;
+        write_int[node];
+        #write_int[tree_ptr_get[node]];
+        if l <= nl && nr <= r then return tree_ptr_get[node];
+        #write_int[node];
+        let mid = (nl + nr) / 2;
+        return rec[l, mid, node * 2, nl, mid] + rec[mid + 1, r, node * 2 + 1, mid + 1, nr];
+    );
+    rec[l, r - 1, 1, 0, tree_ptr_get[0] - 1]
+);
+
+let n = read_int[];
+let q = read_int[];
+tree_init[n];
+
+while q > 0 do (
+    let t = read_int[];
+    if t == 0 then (
+        let i = read_int[];
+        let v = read_int[];
+        tree_set[i, v];
+
+        write_int[tree_ptr_get[0]];
+        write_int[tree_ptr_get[1]];
+    )
+    else (
+        let l = read_int[];
+        let r = read_int[];
+        write_int[tree_get[l, r]];
+    );
+    q -= 1;
+    write_int[-1000];
+);
+
