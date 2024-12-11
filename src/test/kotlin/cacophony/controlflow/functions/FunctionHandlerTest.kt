@@ -54,6 +54,7 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
         val varDef = mockk<Definition>()
+        every { varDef.identifier } returns "x"
         val analyzedVariable = mockk<AnalyzedVariable>()
         every { analyzedVariable.declaration } returns varDef
         val analyzedFunction = mockk<AnalyzedFunction>()
@@ -76,6 +77,7 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
         val varDef = mockk<Definition>()
+        every { varDef.identifier } returns "x"
         val analyzedVariable = mockk<AnalyzedVariable>()
         every { analyzedVariable.declaration } returns varDef
         val analyzedFunction = mockk<AnalyzedFunction>()
@@ -122,8 +124,11 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
         val varDef1 = mockk<Definition>()
+        every { varDef1.identifier } returns "x1"
         val varDef2 = mockk<Definition>()
+        every { varDef2.identifier } returns "x2"
         val varDef3 = mockk<Definition>()
+        every { varDef3.identifier } returns "x3"
         val analyzedVariable1 = mockk<AnalyzedVariable>()
         every { analyzedVariable1.declaration } returns varDef1
         val analyzedVariable2 = mockk<AnalyzedVariable>()
@@ -185,14 +190,17 @@ class FunctionHandlerTest {
     fun `stack size is correctly calculated`() {
         // setup
         val argumentDef = mockk<Definition.FunctionArgument>()
+        every { argumentDef.identifier } returns "x"
         val analyzedArgumentVariable = mockk<AnalyzedVariable>()
         every { analyzedArgumentVariable.declaration } returns argumentDef
 
         val ownVariableDef = mockk<Definition>()
+        every { ownVariableDef.identifier } returns "y"
         val analyzedOwnVariable = mockk<AnalyzedVariable>()
         every { analyzedOwnVariable.declaration } returns ownVariableDef
 
         val nestedVarDef = mockk<Definition>()
+        every { ownVariableDef.identifier } returns "z"
         val analyzedNestedVariable = mockk<AnalyzedVariable>()
         every { analyzedNestedVariable.declaration } returns nestedVarDef
 

@@ -19,28 +19,38 @@ class LivenessAnalysisErrorException(
     reason: String,
 ) : CompileException(reason)
 
-private fun getFirstInstructions(blocks: Set<BasicBlock>): List<Instruction> = blocks.mapNotNull { it.instructions().firstOrNull() }
+private class InstructionRef(val ins: Instruction) {
+    val registersRead: Set<Register>
+        get() = ins.registersRead
+    val registersWritten: Set<Register>
+        get() = ins.registersWritten
+
+    override fun equals(other: Any?): Boolean = other is InstructionRef && ins === other.ins
+    override fun hashCode(): Int = System.identityHashCode(ins)
+}
+
+private fun getFirstInstructions(blocks: Set<BasicBlock>): List<InstructionRef> = blocks.mapNotNull { it.instructions().firstOrNull() }.map { InstructionRef(it) }
 
 fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
     if (cfgFragment.any { it.instructions().isEmpty() }) {
         throw LivenessAnalysisErrorException("Found empty basic block")
     }
 
-    val nextInstructions: Map<Instruction, Set<Instruction>> =
+    val nextInstructions: Map<InstructionRef, Set<InstructionRef>> =
         cfgFragment
             .flatMap { block ->
                 block
-                    .instructions()
+                    .instructions().map { InstructionRef(it) }
                     .zipWithNext { a, b -> a to listOf(b) } +
                     listOf(
-                        block.instructions().last() to getFirstInstructions(block.successors()),
+                        InstructionRef(block.instructions().last()) to getFirstInstructions(block.successors()),
                     )
             }.associate { it.first to it.second.toSet() }
 
     val allInstructions = nextInstructions.keys
 
-    val liveOut: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { it.registersWritten.toMutableSet() }
-    val liveIn: Map<Instruction, MutableSet<Register>> = allInstructions.associateWith { it.registersRead.toMutableSet() }
+    val liveOut: Map<InstructionRef, MutableSet<Register>> = allInstructions.associateWith { it.registersWritten.toMutableSet() }
+    val liveIn: Map<InstructionRef, MutableSet<Register>> = allInstructions.associateWith { it.registersRead.toMutableSet() }
 
     var fixedPointObtained = false
 
@@ -73,7 +83,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
     val interference: RegisterRelations =
         allRegisters.associateWith { reg ->
             allInstructions
-                .filter { instruction -> instruction !is CopyInstruction }
+                .filter { instruction -> instruction.ins !is CopyInstruction }
                 .flatMap { instruction ->
                     listOf(
                         if (liveIn[instruction]!!.contains(reg)) liveIn[instruction]!!.toList() else listOf(),
@@ -87,7 +97,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
         allRegisters.associateWith { reg ->
             allInstructions
                 .asSequence()
-                .filterIsInstance<CopyInstruction>()
+                .filter { it.ins is CopyInstruction }
                 .filter { it.registersRead.contains(reg) }
                 .flatMap { it.registersWritten }
                 .toSet()
