@@ -253,6 +253,67 @@ class CallTest {
     }
 
     @Test
+    fun `call sequence for a function with eight parameters correctly forwards all provided constants as arguments`() {
+        // given
+        val calleeDef =
+            intFunctionDefinition(
+                "callee",
+                listOf(intArg("x1"), intArg("x2"), intArg("x3"), intArg("x4"), intArg("x5"), intArg("x6"), intArg("x7"), intArg("x8")),
+                variableUse("x1"),
+            )
+        val callerDef = intFunctionDefinition("caller", call("callee", lit(1), lit(2), lit(3), lit(4), lit(5), lit(6), lit(7), lit(8)))
+        /*
+         * let callee = [x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int, x7: Int, x8: Int] -> Int => x1;
+         * let caller = [] -> Int => callee[1,2,3,4,5,6,7,8];
+         */
+        val program = block(calleeDef, callerDef)
+
+        // when
+        val actualCFG = testPipeline().generateControlFlowGraph(program)
+        val actualFragment = actualCFG[callerDef]!!
+
+        // then
+        val expectedFragment =
+            cfg {
+                fragment(callerDef, listOf(argStack(0)), 8) {
+                    // The arguments are prepared in a temporary registers...
+                    "bodyEntry" does jump("prepare arg2") { writeRegister("arg1", integer(1)) }
+                    "prepare arg2" does jump("prepare arg3") { writeRegister("arg2", integer(2)) }
+                    "prepare arg3" does jump("prepare arg4") { writeRegister("arg3", integer(3)) }
+                    "prepare arg4" does jump("prepare arg5") { writeRegister("arg4", integer(4)) }
+                    "prepare arg5" does jump("prepare arg6") { writeRegister("arg5", integer(5)) }
+                    "prepare arg6" does jump("prepare arg7") { writeRegister("arg6", integer(6)) }
+                    "prepare arg7" does jump("prepare arg8") { writeRegister("arg7", integer(7)) }
+                    "prepare arg8" does jump("prepare rsp") { writeRegister("arg8", integer(8)) }
+                    "prepare rsp" does jump("pass arg1") { registerUse(rsp) subeq integer(0) }
+                    // ...and then they are passed to their destination registers...
+                    "pass arg1" does jump("pass arg2") { writeRegister(rdi, registerUse(virtualRegister("arg1"))) }
+                    "pass arg2" does jump("pass arg3") { writeRegister(rsi, registerUse(virtualRegister("arg2"))) }
+                    "pass arg3" does jump("pass arg4") { writeRegister(rdx, registerUse(virtualRegister("arg3"))) }
+                    "pass arg4" does jump("pass arg5") { writeRegister(rcx, registerUse(virtualRegister("arg4"))) }
+                    "pass arg5" does jump("pass arg6") { writeRegister(r8, registerUse(virtualRegister("arg5"))) }
+                    "pass arg6" does jump("prepare arg7 for push") { writeRegister(r9, registerUse(virtualRegister("arg6"))) }
+                    // ...or via the stack
+                    "prepare arg7 for push" does
+                        jump("prepare arg8 for push") { writeRegister("temp arg7", registerUse(virtualRegister("arg7"))) }
+                    "prepare arg8 for push" does
+                        jump("prepare static link for push") { writeRegister("temp arg8", registerUse(virtualRegister("arg8"))) }
+                    "prepare static link for push" does jump("push static link") { writeRegister("temp static link", registerUse(rbp)) }
+                    "push static link" does jump("push arg8") { pushRegister("temp static link") }
+                    "push arg8" does jump("push arg7") { pushRegister("temp arg8") }
+                    "push arg7" does jump("call") { pushRegister("temp arg7") }
+                    "call" does jump("restore rsp") { call(calleeDef) }
+                    // The argument still on the stack must then be ignored
+                    "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(24) }
+                    "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
+                    "forward result" does jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                }
+            }[callerDef]!!
+
+        assertFragmentIsEquivalent(actualFragment, expectedFragment)
+    }
+
+    @Test
     fun `call sequence is correctly generated for one call being argument to another`() {
         // given
         val calleeDef = intFunctionDefinition("callee", listOf(intArg("x")), variableUse("x"))
