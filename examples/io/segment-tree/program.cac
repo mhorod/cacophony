@@ -26,12 +26,8 @@ let tree_set = [i: Int, v: Int] -> Unit => (
 
 let tree_get = [l: Int, r: Int] -> Int => (
     let rec = [l: Int, r: Int, node: Int, nl: Int, nr: Int] -> Int => (
-        #write_int[node];
         if l > nr || r < nl then return 0;
-        write_int[node];
-        #write_int[tree_ptr_get[node]];
         if l <= nl && nr <= r then return tree_ptr_get[node];
-        #write_int[node];
         let mid = (nl + nr) / 2;
         return rec[l, mid, node * 2, nl, mid] + rec[mid + 1, r, node * 2 + 1, mid + 1, nr];
     );
@@ -48,9 +44,6 @@ while q > 0 do (
         let i = read_int[];
         let v = read_int[];
         tree_set[i, v];
-
-        write_int[tree_ptr_get[0]];
-        write_int[tree_ptr_get[1]];
     )
     else (
         let l = read_int[];
@@ -58,6 +51,5 @@ while q > 0 do (
         write_int[tree_get[l, r]];
     );
     q -= 1;
-    write_int[-1000];
 );
 

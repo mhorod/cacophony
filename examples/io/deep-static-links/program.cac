@@ -1,0 +1,45 @@
+foreign write_int: [Int] -> Unit;
+
+let i = 0;
+
+let a = [j: Bool] -> Unit => (
+    i += 1;
+
+    let c = [k: Bool] -> Bool => (
+        let d = [] -> Unit => (
+            if j then a[false];
+            i += 1;
+            k && c[false];
+        );
+
+        d[];
+        d[];
+        return !k;
+    );
+
+    let b = [] -> Unit => (
+        i += 1;
+        c[true];
+
+        if j then a[false];
+    );
+    c[c[true]];
+    b[];
+);
+
+a[true];
+write_int[i];
+
+# a[false].c[false].d = 1
+# a[false].c[false] = 2 * a[false].c[false].d = 2
+# a[false].c[true].d = 1 + a[false].c[false] = 3
+# a[false].c[true] = 2 * a[false].c[true].d = 6
+# a[false].b = 1 = a[false].c[true] = 7
+# a[false] = 1 + a[false].b + a[false].c[true] + a[false].c[false] = 16
+
+# a[true].c[false].d = 1 + a[false] = 17
+# a[true].c[false] = 2 * a[true].c[false].d = 34
+# a[true].c[true].d = 1 + a[true].c[false] + a[false] = 51
+# a[true].c[true] = 2 * a[true].c[true].d = 102
+# a[true].b = 1 + a[true].c[true] + a[false] = 119
+# a[true] = 1 + a[true].b + a[true].c[true] + a[true].c[false] = 256

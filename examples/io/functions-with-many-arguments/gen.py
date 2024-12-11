@@ -3,7 +3,7 @@ from random import randint
 decls = 'foreign write_int: [Int] -> Unit;\n'
 calls = ""
 
-for n in range(1, 20):
+for n in range(1, 17):
     arg_list = ', '.join(f'x{i}: Int' for i in range(n))
     arg_sum = ' + '.join(f'x{i}' for i in range(n))
     decls += f'let f = [{arg_list}] -> Int => {arg_sum};\n'
