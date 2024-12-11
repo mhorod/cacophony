@@ -14,7 +14,10 @@ fun generateAsm(block: BasicBlock, registerAllocation: RegisterAllocation, usedL
         .joinToString("\n") { it.toAsm(registerAllocation.successful) }
 
 fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation: RegisterAllocation): String {
-    val usedLocalLabels = blocks.flatMap { it.instructions() }.filterIsInstance<InstructionTemplates.JccInstruction>().map { it.label }.toSet()
+    val usedLocalLabels =
+        blocks.flatMap {
+            it.instructions()
+        }.filterIsInstance<InstructionTemplates.JccInstruction>().map { it.label }.toSet()
 
     return Label(func).toAsm(registerAllocation.successful) + "\n" + (if (func.name == "main") "global main\n" else "") +
         blocks.map { generateAsm(it, registerAllocation, usedLocalLabels) }.filter { it.isNotBlank() }.joinToString("\n")

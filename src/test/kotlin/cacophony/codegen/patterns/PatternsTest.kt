@@ -16,7 +16,9 @@ import org.junit.jupiter.api.Test
 
 class PatternsTest {
     private val instructionCovering =
-        CacophonyInstructionCovering(InstructionMatcherImpl(valuePatterns, sideEffectPatterns, conditionPatterns, noTemporaryRegistersPatterns))
+        CacophonyInstructionCovering(
+            InstructionMatcherImpl(valuePatterns, sideEffectPatterns, conditionPatterns, noTemporaryRegistersPatterns),
+        )
 
     @Test
     fun `push rsp generates a single instruction`() {

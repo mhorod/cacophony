@@ -171,7 +171,7 @@ internal class CFGGenerator(
                 function,
                 functionHandler,
                 argumentVertices.map { it.access },
-                resultRegister
+                resultRegister,
             ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 

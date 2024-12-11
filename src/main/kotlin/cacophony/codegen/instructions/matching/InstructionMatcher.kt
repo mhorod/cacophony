@@ -21,7 +21,7 @@ fun slotFillFromMetadata(valueMapping: ValueSlotMapping, metadata: InstructionMa
         metadata.registerFill,
         metadata.constantFill,
         metadata.functionFill,
-        metadata.nodeFill
+        metadata.nodeFill,
     )
 }
 

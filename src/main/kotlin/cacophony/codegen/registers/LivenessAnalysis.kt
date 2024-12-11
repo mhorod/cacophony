@@ -26,10 +26,14 @@ private class InstructionRef(val ins: Instruction) {
         get() = ins.registersWritten
 
     override fun equals(other: Any?): Boolean = other is InstructionRef && ins === other.ins
+
     override fun hashCode(): Int = System.identityHashCode(ins)
 }
 
-private fun getFirstInstructions(blocks: Set<BasicBlock>): List<InstructionRef> = blocks.mapNotNull { it.instructions().firstOrNull() }.map { InstructionRef(it) }
+private fun getFirstInstructions(blocks: Set<BasicBlock>): List<InstructionRef> =
+    blocks.mapNotNull {
+        it.instructions().firstOrNull()
+    }.map { InstructionRef(it) }
 
 fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
     if (cfgFragment.any { it.instructions().isEmpty() }) {

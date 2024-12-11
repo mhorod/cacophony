@@ -3,7 +3,6 @@ package cacophony.codegen.patterns
 import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.controlflow.*
-import kotlin.reflect.cast
 
 data class SlotFill(
     val valueFill: Map<ValueLabel, Register>,

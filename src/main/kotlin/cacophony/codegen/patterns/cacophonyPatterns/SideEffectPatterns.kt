@@ -377,6 +377,6 @@ object RegisterToMemoryByRegisterWithSubtractionAssignment : NoTemporaryRegister
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            mov(memWithDisplacement(reg(lhsRegister), -const(displacementLabel) ), reg(rhsRegister))
+            mov(memWithDisplacement(reg(lhsRegister), -const(displacementLabel)), reg(rhsRegister))
         }
 }

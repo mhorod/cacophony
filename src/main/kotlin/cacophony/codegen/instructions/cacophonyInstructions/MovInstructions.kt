@@ -22,7 +22,8 @@ data class MovRegReg(
         return "mov $lhsHardwareReg, $rhsHardwareReg"
     }
 
-    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>) = hardwareRegisterMapping[lhs] == hardwareRegisterMapping[rhs]
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>) =
+        hardwareRegisterMapping[lhs] == hardwareRegisterMapping[rhs]
 
     override fun substituteRegisters(map: Map<Register, Register>): MovRegReg = MovRegReg(lhs.substitute(map), rhs.substitute(map))
 }

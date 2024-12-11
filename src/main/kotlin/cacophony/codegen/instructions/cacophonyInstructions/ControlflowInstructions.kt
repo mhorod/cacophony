@@ -121,7 +121,8 @@ data class LocalLabel(val label: BlockLabel) : InstructionTemplates.FixedRegiste
     override val registersRead: Set<Register> = setOf()
     override val registersWritten: Set<Register> = setOf()
 
-    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean = label !in usedLocalLabels
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean =
+        label !in usedLocalLabels
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = ".${label.name}:"
 }

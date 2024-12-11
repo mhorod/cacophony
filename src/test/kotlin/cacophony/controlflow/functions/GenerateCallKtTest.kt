@@ -54,7 +54,7 @@ class GenerateCallKtTest {
                     expectedStaticLink,
                 ),
                 any(),
-                match { matchStackSpaceToHandler(it, caller) }
+                match { matchStackSpaceToHandler(it, caller) },
             )
         }
 
@@ -105,7 +105,7 @@ class GenerateCallKtTest {
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
             (1..argumentCount + 1).map { mockk() },
             result,
-            CFGNode.ConstantKnown(0)
+            CFGNode.ConstantKnown(0),
         )
 
     private fun getArgumentRegisters(callNodes: List<CFGNode>): List<HardwareRegister> {
@@ -233,7 +233,7 @@ class GenerateCallKtTest {
                 function,
                 any(),
                 any(),
-                match { matchStackSpaceToHandler(it, caller) }
+                match { matchStackSpaceToHandler(it, caller) },
             )
         }
         unmockkStatic(::generateCall)
