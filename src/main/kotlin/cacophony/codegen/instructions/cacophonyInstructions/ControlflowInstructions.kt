@@ -85,8 +85,16 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
+private fun Definition.FunctionDeclaration.argumentRegisters(): Set<Register.FixedRegister> {
+    val argumentCount = when (this) {
+        is Definition.FunctionDefinition -> arguments.size + 1
+        is Definition.ForeignFunctionDeclaration -> type!!.argumentsType.size
+    }
+    return REGISTER_ARGUMENT_ORDER.take(argumentCount).map { Register.FixedRegister(it) }.toSet()
+}
+
 data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
-    override val registersRead = setOf(Register.FixedRegister(HardwareRegister.RSP))
+    override val registersRead = setOf(Register.FixedRegister(HardwareRegister.RSP)) union function.argumentRegisters()
     override val registersWritten: Set<Register> =
         HardwareRegister
             .entries
