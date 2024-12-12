@@ -125,7 +125,7 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
                 .minus(reg)
                 .minus(interference[reg]!!)
                 .toSet()
-        }*/ // TODO: FIX, THIS IS NOT WORKING
+        } TODO: FIX, THIS IS NOT WORKING */
     val copying = allRegisters.associateWith { setOf<Register>() }
 
     return Liveness(allRegisters, interference, copying)

@@ -300,7 +300,12 @@ class CacophonyPipeline(
     }
 
     private fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclaration>): String =
-        (listOf("SECTION .data") + foreignFunctions.map { "extern ${it.identifier}" } + listOf("SECTION .text")).joinToString("\n")
+        (
+            listOf("SECTION .data") +
+                foreignFunctions.map {
+                    "extern ${it.identifier}"
+                } + listOf("global main", "SECTION .text")
+        ).joinToString("\n")
 
     private fun generateAsmImpl(ast: AST): Pair<String, Map<FunctionDefinition, String>> {
         val analyzedAst = analyzeAst(ast)
