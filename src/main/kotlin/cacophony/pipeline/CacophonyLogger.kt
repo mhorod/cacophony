@@ -79,7 +79,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logSuccessfulTypeChecking(result: TypeCheckingResult) {
         println("Type checking successful :D")
         println("Types:")
-        result.forEach { println("  ${it.key} : ${it.value}") }
+        result.expressionTypes.forEach { println("  ${it.key} : ${it.value}") }
     }
 
     override fun logFailedTypeChecking() = println("Type checking failed :(")

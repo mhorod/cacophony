@@ -26,7 +26,7 @@ class ExamplesTest {
         fun checkSnapshots(path: String) {
             ast.matchWithSnapshot("$path.ast")
             (resolvedVariables?.map { (k, v) -> k.range to v.range }?.toMap()).matchWithSnapshot("$path.resolved")
-            (types?.mapKeys { (k, _) -> k.range }).matchWithSnapshot("$path.types")
+            (types?.expressionTypes?.mapKeys { (k, _) -> k.range }).matchWithSnapshot("$path.types")
             (analysisResult?.mapKeys { (k, _) -> k.range }).matchWithSnapshot("$path.analysis")
             errors.matchWithSnapshot("$path.errors")
         }
