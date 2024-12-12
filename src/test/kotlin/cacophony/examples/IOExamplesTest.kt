@@ -27,12 +27,13 @@ class IOExamplesTest {
         val asmFile = createTempFile().apply { toFile().deleteOnExit() }
         val objFile = createTempFile().apply { toFile().deleteOnExit() }
         val binFile = createTempFile().apply { toFile().deleteOnExit() }
+        val additionalObjects = path.listDirectoryEntries("*.c").toList()
 
         val input = FileInput(programPath.toString())
         val diagnostics = CacophonyDiagnostics(input)
         val pipeline = CacophonyPipeline(diagnostics, CacophonyLogger())
 
-        assertThatCode { pipeline.compile(input, asmFile, objFile, binFile) }.doesNotThrowAnyException()
+        assertThatCode { pipeline.compile(input, additionalObjects, asmFile, objFile, binFile) }.doesNotThrowAnyException()
 
         val process =
             ProcessBuilder(binFile.toString())

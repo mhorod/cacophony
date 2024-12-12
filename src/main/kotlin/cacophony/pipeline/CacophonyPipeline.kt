@@ -354,15 +354,22 @@ class CacophonyPipeline(
         } ?: logger?.logSuccessfulLinking(dest)
     }
 
-    fun compile(input: Input, asmFile: Path, objFile: Path, binFile: Path) {
+    fun compile(
+        input: Input,
+        additionalObjectFiles: List<Path>,
+        asmFile: Path,
+        objFile: Path,
+        binFile: Path,
+    ) {
         asmFile.writeText(generateAsm(input))
         compile(asmFile, objFile)
-        link(listOf(objFile, Paths.get("libcacophony.c")), binFile)
+        link(listOf(objFile, Paths.get("libcacophony.c")) + additionalObjectFiles, binFile)
     }
 
     fun compile(input: Input, src: Path) {
         compile(
             input,
+            emptyList(),
             Paths.get("${src.fileName}.asm"),
             Paths.get("${src.fileName}.o"),
             Paths.get("${src.fileName}.bin"),
