@@ -17,6 +17,9 @@ jobs:
         with:
           gradle-version: "8.10"
 
+      - name: Setup Nasm
+        uses: ilammy/setup-nasm@v1
+
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
