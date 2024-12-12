@@ -5,7 +5,6 @@ import cacophony.pipeline.CacophonyLogger
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatPath
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -33,7 +32,7 @@ class IOExamplesTest {
         val diagnostics = CacophonyDiagnostics(input)
         val pipeline = CacophonyPipeline(diagnostics, CacophonyLogger())
 
-        assertThatCode { pipeline.compile(input, additionalObjects, asmFile, objFile, binFile) }.doesNotThrowAnyException()
+        pipeline.compile(input, additionalObjects, asmFile, objFile, binFile)
 
         val process =
             ProcessBuilder(binFile.toString())
