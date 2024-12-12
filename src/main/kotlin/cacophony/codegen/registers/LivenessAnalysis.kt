@@ -4,6 +4,7 @@ import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.linearization.BasicBlock
 import cacophony.codegen.linearization.LoweredCFGFragment
+import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.utils.CompileException
 
@@ -53,8 +54,14 @@ fun analyzeLiveness(cfgFragment: LoweredCFGFragment): Liveness {
 
     val allInstructions = nextInstructions.keys
 
-    val liveOut: Map<InstructionRef, MutableSet<Register>> = allInstructions.associateWith { it.registersWritten.toMutableSet() }
-    val liveIn: Map<InstructionRef, MutableSet<Register>> = allInstructions.associateWith { it.registersRead.toMutableSet() }
+    fun MutableSet<Register>.hack(): MutableSet<Register> {
+        add(Register.FixedRegister(HardwareRegister.RSP))
+        add(Register.FixedRegister(HardwareRegister.RBP))
+        return this
+    }
+
+    val liveOut: Map<InstructionRef, MutableSet<Register>> = allInstructions.associateWith { it.registersWritten.toMutableSet().hack() }
+    val liveIn: Map<InstructionRef, MutableSet<Register>> = allInstructions.associateWith { it.registersRead.toMutableSet().hack() }
 
     var fixedPointObtained = false
 
