@@ -1,7 +1,7 @@
 from random import randint
 
-n = 50
-q = 50
+n = 40
+q = 500
 
 ops = []
 ans = []

@@ -29,7 +29,7 @@ let tree_get = [l: Int, r: Int] -> Int => (
         if l > nr || r < nl then return 0;
         if l <= nl && nr <= r then return tree_ptr_get[node];
         let mid = (nl + nr) / 2;
-        return rec[l, mid, node * 2, nl, mid] + rec[mid + 1, r, node * 2 + 1, mid + 1, nr];
+        return rec[l, r, node * 2, nl, mid] + rec[l, r, node * 2 + 1, mid + 1, nr];
     );
     rec[l, r - 1, 1, 0, tree_ptr_get[0] - 1]
 );
