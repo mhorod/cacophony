@@ -34,7 +34,7 @@ write_int[i];
 # a[false].c[false] = 2 * a[false].c[false].d = 2
 # a[false].c[true].d = 1 + a[false].c[false] = 3
 # a[false].c[true] = 2 * a[false].c[true].d = 6
-# a[false].b = 1 = a[false].c[true] = 7
+# a[false].b = 1 + a[false].c[true] = 7
 # a[false] = 1 + a[false].b + a[false].c[true] + a[false].c[false] = 16
 
 # a[true].c[false].d = 1 + a[false] = 17

@@ -3,6 +3,7 @@ package cacophony.pipeline
 import cacophony.codegen.functionBodyLabel
 import cacophony.codegen.instructions.CacophonyInstructionCovering
 import cacophony.codegen.instructions.generateAsm
+import cacophony.codegen.instructions.generateAsmPreamble
 import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.linearization.linearize
@@ -120,11 +121,6 @@ class CacophonyPipeline(
         logger?.logSuccessfulNameResolution(result)
         return result
     }
-
-    private fun findForeignFunctions(nr: NameResolutionResult): Set<Definition.ForeignFunctionDeclaration> =
-        nr.values.filterIsInstance<ResolvedName.Function>().flatMap {
-            it.def.toMap().values
-        }.filterIsInstance<Definition.ForeignFunctionDeclaration>().toSet()
 
     fun resolveOverloads(ast: AST): ResolvedVariables {
         val nr = resolveNames(ast)
@@ -298,14 +294,6 @@ class CacophonyPipeline(
 
         return newCovering to newRegisterAllocation
     }
-
-    private fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclaration>): String =
-        (
-            listOf("SECTION .data") +
-                foreignFunctions.map {
-                    "extern ${it.identifier}"
-                } + listOf("global main", "SECTION .text")
-        ).joinToString("\n")
 
     private fun generateAsmImpl(ast: AST): Pair<String, Map<FunctionDefinition, String>> {
         val analyzedAst = analyzeAst(ast)
