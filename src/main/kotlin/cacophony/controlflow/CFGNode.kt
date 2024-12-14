@@ -1,6 +1,7 @@
 package cacophony.controlflow
 
 import cacophony.semantic.syntaxtree.Definition
+import kotlin.reflect.KClass
 
 class CFGLabel {
     override fun toString(): String = super.toString().takeLast(9)
@@ -15,6 +16,8 @@ class ValueLabel : SlotLabel
 class ConstantLabel : SlotLabel
 
 class FunctionLabel : SlotLabel
+
+class NodeLabel : SlotLabel
 
 /**
  * Single computation tree that has no control-flow or data-flow dependencies
@@ -37,6 +40,8 @@ sealed interface CFGNode {
     data object NoOp : Leaf {
         override fun toString(): String = "nop"
     }
+
+    data class Comment(val comment: String) : Leaf
 
     // declaration is nullable to create pattern without specific function
     data class Function(override val function: Definition.FunctionDeclaration?) : FunctionRef
@@ -95,18 +100,24 @@ sealed interface CFGNode {
         override fun children(): List<CFGNode> = listOf(destination)
     }
 
-    sealed class Constant(
-        open val value: Int,
-    ) : Value,
-        Leaf {
+    sealed class Constant : Value, Leaf {
+        abstract val value: Int
+
         override fun toString(): String = value.toString()
+
+        abstract operator fun unaryMinus(): Constant
     }
 
-    data class ConstantKnown(override val value: Int) : Constant(value)
+    data class ConstantKnown(override val value: Int) : Constant() {
+        override operator fun unaryMinus(): ConstantKnown = ConstantKnown(-value)
+    }
 
-    data class ConstantLazy(
-        override var value: Int,
-    ) : Constant(value)
+    class ConstantLazy(private val lambda: () -> Int) : Constant() {
+        override val value: Int
+            get() = lambda()
+
+        override operator fun unaryMinus(): ConstantLazy = ConstantLazy { -value }
+    }
 
     sealed interface ArithmeticOperator : Value
 
@@ -290,4 +301,9 @@ sealed interface CFGNode {
         override val function: Definition.FunctionDefinition?
             get() = null
     }
+
+    data class NodeSlot<T : CFGNode>(
+        override val label: NodeLabel,
+        val clazz: KClass<T>,
+    ) : Slot
 }

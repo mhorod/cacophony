@@ -195,7 +195,7 @@ object LogicalNotValuePattern : ValuePattern, UnaryOpPattern() {
     override fun makeInstance(fill: SlotFill, destination: Register) =
         instructions(fill) {
             mov(destination, reg(childLabel))
-            xor(destination, 1)
+            xor(destination, CFGNode.ConstantKnown(1))
         }
 }
 
@@ -237,6 +237,7 @@ object DivisionAssignmentRegisterValuePattern : ValuePattern, RegisterAssignment
             mov(rax, reg(lhsRegisterLabel))
             cqo()
             idiv(reg(rhsLabel))
+            mov(reg(lhsRegisterLabel), rax)
             mov(destination, rax)
         }
 }

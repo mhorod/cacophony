@@ -7,6 +7,7 @@ import cacophony.codegen.instructions.RegisterByte
 import cacophony.codegen.instructions.cacophonyInstructions.*
 import cacophony.codegen.patterns.SlotFill
 import cacophony.controlflow.*
+import kotlin.reflect.cast
 
 class InstructionBuilder(val slotFill: SlotFill) {
     private val instructions = mutableListOf<Instruction>()
@@ -17,7 +18,7 @@ class InstructionBuilder(val slotFill: SlotFill) {
         instructions.add(MovRegReg(destination, source))
     }
 
-    fun mov(destination: Register, value: Int) {
+    fun mov(destination: Register, value: CFGNode.Constant) {
         instructions.add(MovRegImm(destination, value))
     }
 
@@ -35,7 +36,7 @@ class InstructionBuilder(val slotFill: SlotFill) {
         instructions.add(AddRegReg(destination, source))
     }
 
-    fun add(destination: Register, value: Int) {
+    fun add(destination: Register, value: CFGNode.Constant) {
         instructions.add(AddRegImm(destination, value))
     }
 
@@ -43,7 +44,7 @@ class InstructionBuilder(val slotFill: SlotFill) {
         instructions.add(SubRegReg(destination, source))
     }
 
-    fun sub(destination: Register, value: Int) {
+    fun sub(destination: Register, value: CFGNode.Constant) {
         instructions.add(SubRegImm(destination, value))
     }
 
@@ -63,7 +64,7 @@ class InstructionBuilder(val slotFill: SlotFill) {
         instructions.add(XorRegReg(destination, source))
     }
 
-    fun xor(destination: Register, value: Int) {
+    fun xor(destination: Register, value: CFGNode.Constant) {
         instructions.add(XorRegImm(destination, value))
     }
 
@@ -152,21 +153,27 @@ class InstructionBuilder(val slotFill: SlotFill) {
         )
     }
 
+    fun comment(comment: String) {
+        instructions.add(Comment(comment))
+    }
+
     fun ret() {
-        instructions.add(Ret())
+        instructions.add(Ret)
     }
 
     fun byte(register: Register) = RegisterByte(register)
 
     fun mem(base: Register) = MemoryAddress(base, null, null, null)
 
-    fun memWithDisplacement(base: Register, displacement: Int) = MemoryAddress(base, null, null, displacement)
+    fun memWithDisplacement(base: Register, displacement: CFGNode.Constant) = MemoryAddress(base, null, null, displacement)
 
     fun reg(register: RegisterLabel) = slotFill.registerFill.getValue(register)
 
     fun reg(register: ValueLabel) = slotFill.valueFill.getValue(register)
 
-    fun const(constant: ConstantLabel) = slotFill.constantFill.getValue(constant).value
+    fun const(constant: ConstantLabel) = slotFill.constantFill.getValue(constant)
+
+    fun <T : CFGNode> node(slot: CFGNode.NodeSlot<T>): T = slot.clazz.cast(slotFill.nodeFill[slot.label]!!)
 }
 
 fun instructions(slotFill: SlotFill, init: InstructionBuilder.() -> Unit): List<Instruction> {

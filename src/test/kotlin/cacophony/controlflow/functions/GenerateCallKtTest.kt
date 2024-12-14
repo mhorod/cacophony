@@ -27,6 +27,16 @@ class GenerateCallKtTest {
         return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention)
     }
 
+    // there is no easy way to check if constant computes exactly the stack space of a function handler
+    private fun matchStackSpaceToHandler(constant: CFGNode.Constant, handler: FunctionHandler): Boolean {
+        for (i in 1..3) {
+            handler.allocateFrameVariable(Variable.PrimitiveVariable())
+            if (handler.getStackSpace().value != constant.value)
+                return false
+        }
+        return true
+    }
+
     private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: CFGNode) {
         mockkStatic(::generateCall)
         generateCallFrom(
@@ -35,7 +45,6 @@ class GenerateCallKtTest {
             callee,
             emptyList(),
             null,
-            false,
         )
 
         verify {
@@ -45,7 +54,7 @@ class GenerateCallKtTest {
                     expectedStaticLink,
                 ),
                 any(),
-                false,
+                match { matchStackSpaceToHandler(it, caller) },
             )
         }
 
@@ -75,7 +84,7 @@ class GenerateCallKtTest {
                             mockk(),
                             "fun def",
                             mockk(),
-                            (1..argumentCount).map { mockk() },
+                            (1..argumentCount).map { mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" } },
                             mockk(),
                             mockk(),
                         ),
@@ -91,12 +100,12 @@ class GenerateCallKtTest {
     private fun mockFunDeclarationAndFunHandler(argumentCount: Int): FunctionHandlerImpl =
         mockFunDeclarationAndFunHandlerWithParents(argumentCount, 1)[0]
 
-    private fun getCallNodes(argumentCount: Int, result: Register?, alignStack: Boolean): List<CFGNode> =
+    private fun getCallNodes(argumentCount: Int, result: Register?): List<CFGNode> =
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
             (1..argumentCount + 1).map { mockk() },
             result,
-            alignStack,
+            CFGNode.ConstantKnown(0),
         )
 
     private fun getArgumentRegisters(callNodes: List<CFGNode>): List<HardwareRegister> {
@@ -132,74 +141,19 @@ class GenerateCallKtTest {
         return register
     }
 
-    private fun getStackAlignmentAdded(callNodes: List<CFGNode>): Int? {
-        var addedModulo: Int? = null
-        var hasPopToRSP = false
-
-        for (node in callNodes) {
-            if (node is CFGNode.Assignment &&
-                node.destination is CFGNode.RegisterUse &&
-                (node.destination as CFGNode.RegisterUse).register is Register.FixedRegister
-            ) {
-                val reg = (node.destination as CFGNode.RegisterUse).register as Register.FixedRegister
-                if (reg.hardwareRegister != HardwareRegister.RSP) {
-                    continue
-                }
-                if (node.value is CFGNode.Addition) {
-                    val lhs = (node.value as CFGNode.Addition).lhs
-                    val rhs = (node.value as CFGNode.Addition).rhs
-                    if (lhs !is CFGNode.RegisterUse ||
-                        lhs.register !is Register.FixedRegister ||
-                        (lhs.register as Register.FixedRegister).hardwareRegister != HardwareRegister.RSP
-                    ) {
-                        continue
-                    }
-                    // we could check whether rhs matches... but I do not think this is necessary
-                    if (rhs !is CFGNode.Modulo) {
-                        continue
-                    }
-                    val modulo = ((rhs.lhs as CFGNode.Addition).rhs as CFGNode.Constant).value
-                    assertThat(addedModulo).isNull()
-                    addedModulo = modulo
-                }
-            }
-            if (node is CFGNode.Pop) {
-                val registerUse = node.register as CFGNode.RegisterUse
-                if (registerUse.register is Register.FixedRegister) {
-                    if ((registerUse.register as Register.FixedRegister).hardwareRegister == HardwareRegister.RSP) {
-                        assertThat(hasPopToRSP).isFalse()
-                        hasPopToRSP = true
-                    }
-                }
-            }
-        }
-
-        assertThat(addedModulo == null).isEqualTo(!hasPopToRSP)
-        return addedModulo
-    }
-
     @Test
     fun `function call argument count mismatch throws error`() {
         val handler = mockFunDeclarationAndFunHandler(1)
         val caller = mockFunDeclarationAndFunHandler(0)
 
-        assertThatThrownBy { generateCallFrom(caller, handler.getFunctionDeclaration(), handler, emptyList(), null, false) }
+        assertThatThrownBy { generateCallFrom(caller, handler.getFunctionDeclaration(), handler, emptyList(), null) }
             .isInstanceOf(IllegalArgumentException::class.java)
     }
 
     @Test
-    fun `value is returned if requested and stack is aligned`() {
+    fun `value is returned if requested`() {
         val register = Register.VirtualRegister()
-        val nodes = getCallNodes(0, register, true)
-        val resultDestination = getResultDestination(nodes)
-        assertThat(resultDestination).isInstanceOf(CFGNode.RegisterUse::class.java)
-        assertThat((resultDestination as CFGNode.RegisterUse).register).isEqualTo(register)
-    }
-
-    @Test
-    fun `value is returned if requested and stack is not aligned`() {
-        val register = Register.VirtualRegister()
-        val nodes = getCallNodes(0, register, false)
+        val nodes = getCallNodes(0, register)
         val resultDestination = getResultDestination(nodes)
         assertThat(resultDestination).isInstanceOf(CFGNode.RegisterUse::class.java)
         assertThat((resultDestination as CFGNode.RegisterUse).register).isEqualTo(register)
@@ -207,35 +161,14 @@ class GenerateCallKtTest {
 
     @Test
     fun `value is not returned if not requested`() {
-        val nodes = getCallNodes(0, null, true)
+        val nodes = getCallNodes(0, null)
         assertThat(getResultDestination(nodes)).isNull()
-    }
-
-    @Test
-    fun `stack is aligned if requested`() {
-        assertThat(getStackAlignmentAdded(getCallNodes(0, null, true))).isEqualTo(0)
-        assertThat(getStackAlignmentAdded(getCallNodes(1, null, true))).isEqualTo(0)
-        assertThat(getStackAlignmentAdded(getCallNodes(2, null, true))).isEqualTo(0)
-        assertThat(getStackAlignmentAdded(getCallNodes(3, null, true))).isEqualTo(0)
-        assertThat(getStackAlignmentAdded(getCallNodes(4, null, true))).isEqualTo(0)
-        assertThat(getStackAlignmentAdded(getCallNodes(5, null, true))).isEqualTo(0)
-        assertThat(getStackAlignmentAdded(getCallNodes(6, null, true))).isEqualTo(8)
-        assertThat(getStackAlignmentAdded(getCallNodes(7, null, true))).isEqualTo(0)
-        assertThat(getStackAlignmentAdded(getCallNodes(8, null, true))).isEqualTo(8)
-        assertThat(getStackAlignmentAdded(getCallNodes(9, null, true))).isEqualTo(0)
-        assertThat(getStackAlignmentAdded(getCallNodes(10, null, true))).isEqualTo(8)
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = [0, 1, 2, 5, 6, 7, 8, 18])
-    fun `stack is not aligned if not requested`(args: Int) {
-        assertThat(getStackAlignmentAdded(getCallNodes(args, null, false))).isNull()
     }
 
     @ParameterizedTest
     @ValueSource(ints = [0, 1, 2, 5, 6, 7, 8, 18])
     fun `excess arguments area passed on stack`(args: Int) {
-        assertThat(getPushCount(getCallNodes(args, null, false))).isEqualTo(max(0, args + 1 - 6))
+        assertThat(getPushCount(getCallNodes(args, null))).isEqualTo(max(0, args + 1 - 6))
     }
 
     @ParameterizedTest
@@ -250,7 +183,7 @@ class GenerateCallKtTest {
                 HardwareRegister.R8,
                 HardwareRegister.R9,
             ).take(args + 1)
-        assertThat(getArgumentRegisters(getCallNodes(args, null, false))).isEqualTo(expected)
+        assertThat(getArgumentRegisters(getCallNodes(args, null))).isEqualTo(expected)
     }
 
     @Test
@@ -294,13 +227,13 @@ class GenerateCallKtTest {
         val function = foreignFunctionDeclaration("f", emptyList(), basicType("Int"))
 
         mockkStatic(::generateCall)
-        generateCallFrom(caller, function, null, emptyList(), null, false)
+        generateCallFrom(caller, function, null, emptyList(), null)
         verify {
             generateCall(
+                function,
                 any(),
                 any(),
-                any(),
-                true,
+                match { matchStackSpaceToHandler(it, caller) },
             )
         }
         unmockkStatic(::generateCall)

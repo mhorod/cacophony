@@ -1,7 +1,9 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
+import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.RegisterByte
+import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.HardwareRegisterMapping
 import cacophony.controlflow.Register
@@ -17,12 +19,14 @@ data class AddRegReg(
 
 data class AddRegImm(
     override val lhs: Register,
-    override val imm: Int,
+    override val imm: CFGNode.Constant,
 ) : InstructionTemplates.BinaryRegConstInstruction(
         lhs,
         imm,
         "add",
-    )
+    ) {
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean = imm.value == 0
+}
 
 data class SubRegReg(
     override val lhs: Register,
@@ -35,12 +39,14 @@ data class SubRegReg(
 
 data class SubRegImm(
     override val lhs: Register,
-    override val imm: Int,
+    override val imm: CFGNode.Constant,
 ) : InstructionTemplates.BinaryRegConstInstruction(
         lhs,
         imm,
         "sub",
-    )
+    ) {
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean = imm.value == 0
+}
 
 data class XorRegReg(
     override val lhs: Register,
@@ -53,7 +59,7 @@ data class XorRegReg(
 
 data class XorRegImm(
     override val lhs: Register,
-    override val imm: Int,
+    override val imm: CFGNode.Constant,
 ) : InstructionTemplates.BinaryRegConstInstruction(
         lhs,
         imm,

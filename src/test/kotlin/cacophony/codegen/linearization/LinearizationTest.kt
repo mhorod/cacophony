@@ -5,10 +5,8 @@ import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
 import cacophony.codegen.instructions.cacophonyInstructions.Jmp
 import cacophony.codegen.instructions.cacophonyInstructions.LocalLabel
-import cacophony.controlflow.CFGFragment
-import cacophony.controlflow.CFGLabel
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.CFGVertex
+import cacophony.codegen.patterns.cacophonyPatterns.*
+import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.*
 import io.mockk.*
 import io.mockk.impl.annotations.MockK

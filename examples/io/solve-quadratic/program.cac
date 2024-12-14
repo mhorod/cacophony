@@ -1,0 +1,41 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Int;
+
+let sqrt = [x: Int] -> Int => (
+    let l = -1;
+    let r = 1000 * 1000 * 1000;
+    while (r - l > 1) do (
+        let m = (l + r) / 2;
+        if (m * m <= x) then l = m
+        else r = m;
+    );
+    l
+);
+
+let solve = [] -> Int => (
+    let a = read_int[];
+    let b = read_int[];
+    let c = read_int[];
+
+    let sqrt_delta = sqrt[b * b - 4 * a * c];
+
+    let x1 = (-b-sqrt_delta) / (2*a);
+    let x2 = (-b+sqrt_delta) / (2*a);
+
+    if (x1 > x2) then (
+        let t = x1;
+        x1 = x2;
+        x2 = t;
+    );
+
+    write_int[x1];
+    write_int[x2];
+
+    0
+);
+
+let z = read_int[];
+while (z > 0) do (
+    z -= 1;
+    solve[];
+);

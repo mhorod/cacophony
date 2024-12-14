@@ -9,10 +9,14 @@ data class SlotFill(
     val registerFill: Map<RegisterLabel, Register>,
     val constantFill: Map<ConstantLabel, CFGNode.Constant>,
     val functionFill: Map<FunctionLabel, CFGNode.Function>,
+    val nodeFill: Map<NodeLabel, CFGNode>,
 )
 
 sealed interface Pattern {
     val tree: CFGNode
+
+    // Used to break ties in case two patterns cover the same amount of nodes.
+    fun priority(): Int = 0
 }
 
 interface SideEffectPattern : Pattern {
