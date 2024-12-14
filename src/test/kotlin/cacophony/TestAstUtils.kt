@@ -1,6 +1,8 @@
 package cacophony
 
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.StructType
+import cacophony.semantic.types.TypeExpr
 import cacophony.utils.Location
 import io.mockk.every
 import io.mockk.mockk
@@ -211,3 +213,5 @@ fun basicType(identifier: String) = BaseType.Basic(mockRange(), identifier)
 fun functionalType(argTypes: List<Type>, resType: Type) = BaseType.Functional(mockRange(), argTypes.toList(), resType)
 
 fun structType(vararg fields: Pair<String, Type>) = BaseType.Structural(mockRange(), fields.toMap())
+
+fun structTypeExpr(vararg fields: Pair<String, TypeExpr>) = StructType(fields.toMap())

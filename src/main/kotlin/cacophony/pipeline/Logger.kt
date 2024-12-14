@@ -71,4 +71,6 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
     fun logSuccessfulLinking(dest: Path)
 
     fun logFailedLinking(status: Int)
+
+    fun logSuccessfulVariableCreation(variableMap: VariablesMap)
 }

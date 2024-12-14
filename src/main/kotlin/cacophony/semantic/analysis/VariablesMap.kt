@@ -6,16 +6,14 @@ import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Assignable
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Empty
 import cacophony.semantic.syntaxtree.Expression
 import cacophony.semantic.syntaxtree.FieldRef
 import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.Literal
+import cacophony.semantic.syntaxtree.LeafExpression
 import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.Struct
-import cacophony.semantic.syntaxtree.StructField
 import cacophony.semantic.syntaxtree.VariableUse
 import cacophony.semantic.types.StructType
 import cacophony.semantic.types.TypeCheckingResult
@@ -47,28 +45,13 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
             is VariableUse -> visitVariableUse(expression)
 
             is Block -> expression.expressions.forEach { visit(it) }
-            is Definition.FunctionArgument -> {
-                /* do nothing */
-            }
-
-            is Definition.ForeignFunctionDeclaration -> {
-                /* do nothing */
-            }
 
             is Definition.FunctionDefinition -> visit(expression.body)
             is Definition.VariableDeclaration -> visit(expression.value)
-            is Empty -> {
-                /* do nothing */
-            }
 
-            is FieldRef.RValue -> {
-                /* do nothing */
-            }
+            is FieldRef.RValue -> visit(expression.obj)
 
             is FunctionCall -> expression.arguments.forEach { visit(it) }
-            is Literal -> {
-                /* do nothing */
-            }
 
             is OperatorBinary -> {
                 visit(expression.lhs)
@@ -76,9 +59,6 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
             }
 
             is OperatorUnary -> visit(expression.expression)
-            is Statement.BreakStatement -> {
-                /* do nothing */
-            }
 
             is Statement.IfElseStatement -> {
                 visit(expression.testExpression)
@@ -93,7 +73,7 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
             }
 
             is Struct -> expression.fields.values.forEach { visit(it) }
-            is StructField -> {
+            is LeafExpression -> {
                 /* do nothing */
             }
         }
@@ -126,30 +106,16 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
             is FieldRef.LValue -> visit(expression.obj)
             is FieldRef.RValue -> visit(expression.obj)
 
-            is VariableUse -> {
-                /* do nothing */
-            }
-
             is Block -> expression.expressions.forEach { visit(it) }
             is Definition.FunctionArgument -> visitFunctionArgument(expression)
-
-            is Definition.ForeignFunctionDeclaration -> {
-                /* do nothing */
-            }
 
             is Definition.FunctionDefinition -> {
                 expression.arguments.forEach { visit(it) }
                 visit(expression.body)
             }
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression)
-            is Empty -> {
-                /* do nothing */
-            }
 
             is FunctionCall -> expression.arguments.forEach { visit(it) }
-            is Literal -> {
-                /* do nothing */
-            }
 
             is OperatorBinary -> {
                 visit(expression.lhs)
@@ -157,9 +123,6 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
             }
 
             is OperatorUnary -> visit(expression.expression)
-            is Statement.BreakStatement -> {
-                /* do nothing */
-            }
 
             is Statement.IfElseStatement -> {
                 visit(expression.testExpression)
@@ -174,7 +137,8 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
             }
 
             is Struct -> expression.fields.values.forEach { visit(it) }
-            is StructField -> {
+
+            is LeafExpression -> {
                 /* do nothing */
             }
         }

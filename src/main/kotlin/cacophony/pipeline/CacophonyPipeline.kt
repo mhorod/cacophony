@@ -149,10 +149,10 @@ class CacophonyPipeline(
         return types
     }
 
-    fun createVariables(ast: AST): VariablesMap {
-        val resolvedVariables = resolveOverloads(ast)
-        val types = checkTypes(ast, resolvedVariables)
-        return createVariablesMap(ast, resolvedVariables, types)
+    private fun createVariables(ast: AST, resolvedVariables: ResolvedVariables, types: TypeCheckingResult): VariablesMap {
+        val variableMap = createVariablesMap(ast, resolvedVariables, types)
+        logger?.logSuccessfulVariableCreation(variableMap)
+        return variableMap
     }
 
     private fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables): CallGraph {
@@ -195,7 +195,7 @@ class CacophonyPipeline(
     private fun analyzeAst(ast: AST): AstAnalysisResult {
         val resolvedVariables = resolveOverloads(ast)
         val types = checkTypes(ast, resolvedVariables)
-        val variablesMap = createVariablesMap(ast, resolvedVariables, types)
+        val variablesMap = createVariables(ast, resolvedVariables, types)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
