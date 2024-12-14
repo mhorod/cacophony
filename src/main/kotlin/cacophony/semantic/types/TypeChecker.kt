@@ -5,13 +5,11 @@ import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 
-typealias TypeCheckingResult = Map<Expression, TypeExpr>
-
 // Result contains every variable that could be properly typed
 fun checkTypes(ast: AST, diagnostics: Diagnostics, resolvedVariables: ResolvedVariables): TypeCheckingResult {
     val typer = Typer(diagnostics, resolvedVariables)
     typer.typeExpression(ast)
-    return typer.result
+    return TypeCheckingResult(typer.result, typer.typedVariables)
 }
 
 private class Typer(

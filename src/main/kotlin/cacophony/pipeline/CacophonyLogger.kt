@@ -5,6 +5,7 @@ import cacophony.codegen.registers.Liveness
 import cacophony.codegen.registers.RegisterAllocation
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.Register
+import cacophony.controlflow.Variable
 import cacophony.controlflow.programCfgToGraphviz
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
@@ -12,6 +13,7 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.semantic.analysis.CallGraph
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.analysis.VariableUseType
+import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.NameResolutionResult
 import cacophony.semantic.names.ResolvedName
 import cacophony.semantic.names.ResolvedVariables
@@ -79,7 +81,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logSuccessfulTypeChecking(result: TypeCheckingResult) {
         println("Type checking successful :D")
         println("Types:")
-        result.forEach { println("  ${it.key} : ${it.value}") }
+        result.expressionTypes.forEach { println("  ${it.key} : ${it.value}") }
     }
 
     override fun logFailedTypeChecking() = println("Type checking failed :(")
@@ -204,6 +206,29 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logFailedLinking(status: Int) {
         println("gcc failed with exit code: $status")
     }
+
+    override fun logSuccessfulVariableCreation(variableMap: VariablesMap) {
+        println("Variable creation successful :D")
+        println("  Definition variables:")
+        variableMap.definitions.forEach { (definition, variable) ->
+            println("    $definition -> ${variableToString(variable)}")
+        }
+
+        println("  Assignables' variables:")
+        variableMap.lvalues.forEach { (assignable, variable) ->
+            println("    $assignable -> ${variableToString(variable)}")
+        }
+    }
+
+    private fun variableToString(variable: Variable): String =
+        when (variable) {
+            is Variable.PrimitiveVariable -> "$variable".split("$").last()
+            is Variable.AuxVariable -> "$variable".split("$").last()
+            is Variable.SourceVariable -> "$variable".split("$").last()
+            is Variable.StructVariable ->
+                "$variable".split("$").last() + " { " +
+                    variable.fields.entries.joinToString(", ") { (k, v) -> "$k -> ${variableToString(v)}" } + " }"
+        }
 
     private fun shortRegisterName(register: Register?) =
         when (register) {

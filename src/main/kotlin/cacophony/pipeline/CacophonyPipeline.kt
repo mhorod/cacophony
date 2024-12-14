@@ -42,6 +42,7 @@ import kotlin.io.path.writeText
 data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
     val types: TypeCheckingResult,
+    val variablesMap: VariablesMap,
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
@@ -151,6 +152,12 @@ class CacophonyPipeline(
         return types
     }
 
+    private fun createVariables(ast: AST, resolvedVariables: ResolvedVariables, types: TypeCheckingResult): VariablesMap {
+        val variableMap = createVariablesMap(ast, resolvedVariables, types)
+        logger?.logSuccessfulVariableCreation(variableMap)
+        return variableMap
+    }
+
     private fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables): CallGraph {
         val callGraph =
             try {
@@ -192,12 +199,13 @@ class CacophonyPipeline(
         val resolvedNames = resolveNames(ast)
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
         val types = checkTypes(ast, resolvedVariables)
+        val variablesMap = createVariables(ast, resolvedVariables, types)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention)
         val foreignFunctions = findForeignFunctions(resolvedNames)
-        return AstAnalysisResult(resolvedVariables, types, analyzedExpressions, functionHandlers, foreignFunctions)
+        return AstAnalysisResult(resolvedVariables, types, variablesMap, analyzedExpressions, functionHandlers, foreignFunctions)
     }
 
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
