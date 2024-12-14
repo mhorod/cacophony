@@ -1,6 +1,7 @@
 package cacophony.codegen.registers
 
 import cacophony.codegen.BlockLabel
+import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
 import cacophony.codegen.linearization.BasicBlock
@@ -73,9 +74,20 @@ fun adjustLoweredCFGToHandleSpills(
             ),
         )
 
+    fun isRedundantCopy(instruction: Instruction): Boolean =
+        instruction is CopyInstruction &&
+            spills.contains(instruction.copyInto()) &&
+            spills.contains(instruction.copyFrom()) &&
+            spillsColoring[instruction.copyInto()] === spillsColoring[instruction.copyFrom()]
+
     return loweredCfg.map { block ->
         val newInstructions =
             block.instructions().flatMap { instruction ->
+                // Get rid of redundant copies between spills allocated in the same place
+                if (isRedundantCopy(instruction)) {
+                    return listOf()
+                }
+
                 val readSpills =
                     instruction.registersRead.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
                 val writtenSpills =
