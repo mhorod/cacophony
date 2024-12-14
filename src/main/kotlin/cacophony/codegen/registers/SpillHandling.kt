@@ -85,7 +85,10 @@ fun adjustLoweredCFGToHandleSpills(
                 if (usedSpills.isEmpty()) {
                     listOf(instruction)
                 } else {
-                    val availableSpareRegisters = spareRegisters.minus(instruction.registersWritten + instruction.registersRead)
+                    val availableSpareRegisters =
+                        spareRegisters
+                            .minus(instruction.registersWritten)
+                            .minus(instruction.registersRead)
 
                     if (usedSpills.size > availableSpareRegisters.size) {
                         throw SpillHandlingException(
@@ -161,5 +164,5 @@ private fun allocateFrameMemoryForSpills(
         spillsColoring.values.toSet().associateWith {
             functionHandler.allocateFrameVariable(Variable.PrimitiveVariable())
         }
-    return spillsColoring.map { (r, c) -> r to colorToFrameMemory[c]!! }.toMap()
+    return spillsColoring.mapValues { (_, c) -> colorToFrameMemory[c]!! }.toMap()
 }

@@ -15,6 +15,9 @@ data class PushReg(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
+
+        require(hardwareReg != null) { "No hardware register mapping found for $reg" }
+
         return "push $hardwareReg"
     }
 
@@ -29,6 +32,9 @@ data class Pop(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
+
+        require(hardwareReg != null) { "No hardware register mapping found for $reg" }
+
         return "pop $hardwareReg"
     }
 
@@ -45,6 +51,10 @@ data class TestRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
+
+        require(lhsHardwareReg != null) { "No hardware register mapping found for $lhs" }
+        require(rhsHardwareReg != null) { "No hardware register mapping found for $rhs" }
+
         return "test $lhsHardwareReg, $rhsHardwareReg"
     }
 
@@ -61,6 +71,10 @@ data class CmpRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
+
+        require(lhsHardwareReg != null) { "No hardware register mapping found for $lhs" }
+        require(rhsHardwareReg != null) { "No hardware register mapping found for $rhs" }
+
         return "cmp $lhsHardwareReg, $rhsHardwareReg"
     }
 

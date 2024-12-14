@@ -118,11 +118,6 @@ private class RegistersInteractionAnalysis(
                 allInstructions.filter { it.registersWritten.contains(reg) }
             }
 
-        println("REGISTERS TO DEFINITIONS:")
-        allRegisters.forEach { reg ->
-            println("registersToDefinitions[$reg] = ${registersToDefinitions[reg]!!.map { it.ins to liveOut[it]!! }}")
-        }
-
         copying =
             allInstructions
                 .asSequence()

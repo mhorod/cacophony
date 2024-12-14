@@ -23,6 +23,10 @@ class InstructionTemplates {
         override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
             val lhsHardwareReg = hardwareRegisterMapping[lhs]
             val rhsHardwareReg = hardwareRegisterMapping[rhs]
+
+            require(lhsHardwareReg != null) { "No hardware register mapping found for $lhs" }
+            require(rhsHardwareReg != null) { "No hardware register mapping found for $rhs" }
+
             return "$op $lhsHardwareReg, $rhsHardwareReg"
         }
 
@@ -44,6 +48,9 @@ class InstructionTemplates {
 
         override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
             val lhsHardwareReg = hardwareRegisterMapping[lhs]
+
+            require(lhsHardwareReg != null) { "No hardware register mapping found for $lhs" }
+
             return "$op $lhsHardwareReg, ${imm.value}"
         }
 
@@ -72,7 +79,13 @@ class InstructionTemplates {
         override val registersRead: Set<Register> = setOf()
         override val registersWritten: Set<Register> by lazy { setOf(byte.register) }
 
-        override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "$op ${byte.map(hardwareRegisterMapping)}"
+        override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+            val hardwareRegister = hardwareRegisterMapping[byte.register]
+
+            require(hardwareRegister != null) { "No hardware register mapping found for ${byte.register}" }
+
+            return "$op ${RegisterByte(Register.FixedRegister(hardwareRegister))}"
+        }
 
         override fun substituteRegisters(map: Map<Register, Register>): SetccInstruction =
             SetccInstruction(
