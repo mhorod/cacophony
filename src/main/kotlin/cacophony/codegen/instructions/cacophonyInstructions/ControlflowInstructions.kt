@@ -95,7 +95,11 @@ private fun Definition.FunctionDeclaration.argumentRegisters(): Set<Register.Fix
 }
 
 data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
-    override val registersRead = setOf(Register.FixedRegister(HardwareRegister.RSP)) union function.argumentRegisters()
+    override val registersRead =
+        setOf(
+            Register.FixedRegister(HardwareRegister.RBP),
+            Register.FixedRegister(HardwareRegister.RSP),
+        ) union function.argumentRegisters()
     override val registersWritten: Set<Register> =
         HardwareRegister
             .entries
