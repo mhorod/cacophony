@@ -118,17 +118,24 @@ private class RegistersInteractionAnalysis(
                 allInstructions.filter { it.registersWritten.contains(reg) }
             }
 
+        println("REGISTERS TO DEFINITIONS:")
+        allRegisters.forEach { reg ->
+            println("registersToDefinitions[$reg] = ${registersToDefinitions[reg]!!.map { it.ins to liveOut[it]!! }}")
+        }
+
         copying =
             allInstructions
                 .asSequence()
+                .map { it.ins }
                 .filterIsInstance<CopyInstruction>()
                 .map { it.copyInto() to it.copyFrom() } // all pairs A = B
                 .filter { (a, _) -> registersToDefinitions[a]!!.size == 1 } // A is defined only once as copy of B
                 .filter { (a, b) ->
                     registersToDefinitions[b]!!.none {
                         // B is never defined in instruction
+                        //   after which A must live
                         liveOut[it]!!.contains(a)
-                    } //     after which A must live
+                    }
                 }.groupBy { it.second }
                 .mapValues { (_, v) -> v.map { it.first }.toSet() }
                 .toMutableMap()
