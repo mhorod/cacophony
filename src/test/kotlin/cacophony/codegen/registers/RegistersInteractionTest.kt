@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 @Disabled
-class LivenessAnalysisTest {
+class RegistersInteractionTest {
     private fun mockInstruction(def: Set<Register>, use: Set<Register>): Instruction {
         val instruction = mockk<Instruction>()
         every { instruction.registersRead } returns use
@@ -41,7 +41,7 @@ class LivenessAnalysisTest {
     //            \         --------------/
     //             3: [def D]
     @Test
-    fun `properly calculates liveness without copy instructions`() {
+    fun `properly calculates registersInteraction without copy instructions`() {
         // given
         val regA = Register.VirtualRegister()
         val regB = Register.VirtualRegister()
@@ -80,11 +80,11 @@ class LivenessAnalysisTest {
         every { block1.predecessors() } returns setOf()
 
         // when
-        val liveness = analyzeLiveness(listOf(block1, block2, block3, block4))
+        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3, block4))
 
         // then
-        assertThat(liveness.allRegisters).containsExactlyInAnyOrder(regA, regB, regC, regD)
-        assertThat(liveness.interference).containsExactlyInAnyOrderEntriesOf(
+        assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(regA, regB, regC, regD)
+        assertThat(registersInteraction.interference).containsExactlyInAnyOrderEntriesOf(
             mapOf(
                 regA to setOf(regB, regC, regD),
                 regB to setOf(regA),
@@ -92,7 +92,7 @@ class LivenessAnalysisTest {
                 regD to setOf(regA),
             ),
         )
-        assertThat(liveness.copying).containsExactlyInAnyOrderEntriesOf(
+        assertThat(registersInteraction.copying).containsExactlyInAnyOrderEntriesOf(
             mapOf(
                 regA to setOf(),
                 regB to setOf(),
@@ -131,17 +131,17 @@ class LivenessAnalysisTest {
         every { block1.predecessors() } returns setOf()
 
         // when
-        val liveness = analyzeLiveness(listOf(block1, block2, block3))
+        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3))
 
         // then
-        assertThat(liveness.allRegisters).containsExactlyInAnyOrder(regA, regB)
-        assertThat(liveness.interference).containsExactlyInAnyOrderEntriesOf(
+        assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(regA, regB)
+        assertThat(registersInteraction.interference).containsExactlyInAnyOrderEntriesOf(
             mapOf(
                 regA to setOf(),
                 regB to setOf(),
             ),
         )
-        assertThat(liveness.copying).containsExactlyInAnyOrderEntriesOf(
+        assertThat(registersInteraction.copying).containsExactlyInAnyOrderEntriesOf(
             mapOf(
                 regA to setOf(regB),
                 regB to setOf(),
@@ -183,17 +183,17 @@ class LivenessAnalysisTest {
         every { block1.predecessors() } returns setOf()
 
         // when
-        val liveness = analyzeLiveness(listOf(block1, block2, block3, block4))
+        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3, block4))
 
         // then
-        assertThat(liveness.allRegisters).containsExactlyInAnyOrder(regA, regB)
-        assertThat(liveness.interference).containsExactlyInAnyOrderEntriesOf(
+        assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(regA, regB)
+        assertThat(registersInteraction.interference).containsExactlyInAnyOrderEntriesOf(
             mapOf(
                 regA to setOf(regB),
                 regB to setOf(regA),
             ),
         )
-        assertThat(liveness.copying).containsExactlyInAnyOrderEntriesOf(
+        assertThat(registersInteraction.copying).containsExactlyInAnyOrderEntriesOf(
             mapOf(
                 regA to setOf(),
                 regB to setOf(),
@@ -210,8 +210,8 @@ class LivenessAnalysisTest {
             )
 
         // when & then
-        assertThrows<LivenessAnalysisErrorException> {
-            analyzeLiveness(lCfgFragment)
+        assertThrows<IllegalArgumentException> {
+            analyzeRegistersInteraction(lCfgFragment)
         }
     }
 }

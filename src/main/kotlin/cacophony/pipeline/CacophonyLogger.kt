@@ -1,8 +1,8 @@
 package cacophony.pipeline
 
 import cacophony.codegen.linearization.BasicBlock
-import cacophony.codegen.registers.Liveness
 import cacophony.codegen.registers.RegisterAllocation
+import cacophony.codegen.registers.RegistersInteraction
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.Register
 import cacophony.controlflow.programCfgToGraphviz
@@ -159,18 +159,20 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
         logCovering(covering)
     }
 
-    override fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDefinition, Liveness>) {
-        println("Liveness generation successfull :D")
-        liveness.forEach { (function, liveness) ->
-            println("  Function $function liveness: ")
+    override fun logSuccessfulRegistersInteractionGeneration(
+        registersInteractions: Map<Definition.FunctionDefinition, RegistersInteraction>,
+    ) {
+        println("Registers interaction generation successful :D")
+        registersInteractions.forEach { (function, registersInteraction) ->
+            println("  Function $function registers interaction: ")
             println("        Interference:")
-            liveness.interference.forEach { (k, v) ->
+            registersInteraction.interference.forEach { (k, v) ->
                 if (v.isNotEmpty())
                     println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
             }
 
             println("        Copying:")
-            liveness.copying.forEach { (k, v) ->
+            registersInteraction.copying.forEach { (k, v) ->
                 if (v.isNotEmpty())
                     println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
             }

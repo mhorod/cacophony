@@ -26,6 +26,10 @@ data class MovRegReg(
         hardwareRegisterMapping[lhs] == hardwareRegisterMapping[rhs]
 
     override fun substituteRegisters(map: Map<Register, Register>): MovRegReg = MovRegReg(lhs.substitute(map), rhs.substitute(map))
+
+    override fun copyInto(): Register = lhs
+
+    override fun copyFrom(): Register = rhs
 }
 
 data class MovRegImm(

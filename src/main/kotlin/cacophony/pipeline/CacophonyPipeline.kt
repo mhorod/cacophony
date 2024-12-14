@@ -6,9 +6,7 @@ import cacophony.codegen.instructions.generateAsm
 import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.linearization.linearize
-import cacophony.codegen.registers.Liveness
-import cacophony.codegen.registers.RegisterAllocation
-import cacophony.codegen.registers.adjustLoweredCFGToHandleSpills
+import cacophony.codegen.registers.*
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.functions.FunctionHandler
@@ -122,9 +120,12 @@ class CacophonyPipeline(
     }
 
     private fun findForeignFunctions(nr: NameResolutionResult): Set<Definition.ForeignFunctionDeclaration> =
-        nr.values.filterIsInstance<ResolvedName.Function>().flatMap {
-            it.def.toMap().values
-        }.filterIsInstance<Definition.ForeignFunctionDeclaration>().toSet()
+        nr.values
+            .filterIsInstance<ResolvedName.Function>()
+            .flatMap {
+                it.def.toMap().values
+            }.filterIsInstance<Definition.ForeignFunctionDeclaration>()
+            .toSet()
 
     fun resolveOverloads(ast: AST): ResolvedVariables {
         val nr = resolveNames(ast)
@@ -223,25 +224,29 @@ class CacophonyPipeline(
         return covering
     }
 
-    fun analyzeLiveness(ast: AST): Map<FunctionDefinition, Liveness> =
-        coverWithInstructions(ast).mapValues { (_, loweredCFG) -> cacophony.codegen.registers.analyzeLiveness(loweredCFG) }
+    fun analyzeRegistersInteraction(ast: AST): Map<FunctionDefinition, RegistersInteraction> =
+        coverWithInstructions(ast).mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG) }
 
-    private fun analyzeLiveness(covering: Map<FunctionDefinition, LoweredCFGFragment>): Map<FunctionDefinition, Liveness> {
-        val liveness = covering.mapValues { (_, loweredCFG) -> cacophony.codegen.registers.analyzeLiveness(loweredCFG) }
-        logger?.logSuccessfulLivenessGeneration(liveness)
-        return liveness
+    private fun analyzeRegistersInteraction(
+        covering: Map<FunctionDefinition, LoweredCFGFragment>,
+    ): Map<FunctionDefinition, RegistersInteraction> {
+        val registersInteraction = covering.mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG) }
+        logger?.logSuccessfulRegistersInteractionGeneration(registersInteraction)
+        return registersInteraction
     }
 
     fun allocateRegisters(ast: AST, allowedRegisters: Set<HardwareRegister> = allGPRs): Map<FunctionDefinition, RegisterAllocation> =
-        analyzeLiveness(ast).mapValues { (_, liveness) -> cacophony.codegen.registers.allocateRegisters(liveness, allowedRegisters) }
+        analyzeRegistersInteraction(ast).mapValues { (_, registersInteraction) ->
+            allocateRegisters(registersInteraction, allowedRegisters)
+        }
 
     fun allocateRegisters(
-        liveness: Map<FunctionDefinition, Liveness>,
+        registersInteractions: Map<FunctionDefinition, RegistersInteraction>,
         allowedRegisters: Set<HardwareRegister> = allGPRs,
     ): Map<FunctionDefinition, RegisterAllocation> {
         val allocatedRegisters =
-            liveness.mapValues { (_, liveness) ->
-                cacophony.codegen.registers.allocateRegisters(liveness, allowedRegisters)
+            registersInteractions.mapValues { (_, registersInteraction) ->
+                allocateRegisters(registersInteraction, allowedRegisters)
             }
         logger?.logSuccessfulRegisterAllocation(allocatedRegisters)
         return allocatedRegisters
@@ -250,7 +255,7 @@ class CacophonyPipeline(
     private fun handleSpills(
         functionHandlers: Map<FunctionDefinition, FunctionHandler>,
         covering: Map<FunctionDefinition, LoweredCFGFragment>,
-        liveness: Map<FunctionDefinition, Liveness>,
+        registersInteractions: Map<FunctionDefinition, RegistersInteraction>,
         registerAllocation: Map<FunctionDefinition, RegisterAllocation>,
     ): Pair<
         Map<FunctionDefinition, LoweredCFGFragment>,
@@ -269,7 +274,7 @@ class CacophonyPipeline(
         logger?.logSpillHandlingAttempt(spareRegisters)
 
         val newRegisterAllocation =
-            allocateRegisters(liveness, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
+            allocateRegisters(registersInteractions, allGPRs.minus(spareRegisters.map { it.hardwareRegister }.toSet()))
                 .mapValues { (_, value) ->
                     RegisterAllocation(
                         value.successful.plus(spareRegisters.associateWith { it.hardwareRegister }),
@@ -289,7 +294,7 @@ class CacophonyPipeline(
                             instructionCovering,
                             functionHandlers[functionDeclaration]!!,
                             loweredCfg,
-                            liveness[functionDeclaration]!!,
+                            registersInteractions[functionDeclaration]!!,
                             newRegisterAllocation[functionDeclaration]!!,
                             spareRegisters,
                             FirstFitGraphColoring(),
@@ -311,14 +316,14 @@ class CacophonyPipeline(
         val analyzedAst = analyzeAst(ast)
         val cfg = generateControlFlowGraph(analyzedAst)
         val covering = coverWithInstructions(cfg)
-        val liveness = analyzeLiveness(covering)
-        val registerAllocation = allocateRegisters(liveness)
+        val registersInteractions = analyzeRegistersInteraction(covering)
+        val registerAllocation = allocateRegisters(registersInteractions)
 
         val (coveringWithSpillsHandled, registerAllocationWithSpillsHandled) =
             handleSpills(
                 analyzedAst.functionHandlers,
                 covering,
-                liveness,
+                registersInteractions,
                 registerAllocation,
             )
 

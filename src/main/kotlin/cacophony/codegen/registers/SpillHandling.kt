@@ -27,7 +27,7 @@ fun adjustLoweredCFGToHandleSpills(
     instructionCovering: InstructionCovering,
     functionHandler: FunctionHandler,
     loweredCfg: LoweredCFGFragment,
-    liveness: Liveness,
+    registersInteraction: RegistersInteraction,
     registerAllocation: RegisterAllocation,
     spareRegisters: Set<FixedRegister>,
     graphColoring: GraphColoring<VirtualRegister, Int>,
@@ -54,7 +54,7 @@ fun adjustLoweredCFGToHandleSpills(
                 }
             }.toSet()
 
-    val spillsColoring = colorSpills(spills, liveness, graphColoring)
+    val spillsColoring = colorSpills(spills, registersInteraction, graphColoring)
     val spillsFrameAllocation = allocateFrameMemoryForSpills(functionHandler, spillsColoring)
 
     fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
@@ -118,12 +118,12 @@ fun adjustLoweredCFGToHandleSpills(
 
 private fun colorSpills(
     spills: Set<VirtualRegister>,
-    liveness: Liveness,
+    registersInteraction: RegistersInteraction,
     graphColoring: GraphColoring<VirtualRegister, Int>,
 ): Map<VirtualRegister, Int> {
     val spillsInterference =
         spills.associateWith { v ->
-            liveness.interference
+            registersInteraction.interference
                 .getOrDefault(v, setOf())
                 .filterIsInstance<VirtualRegister>()
                 .filter { u -> spills.contains(u) }
@@ -131,7 +131,7 @@ private fun colorSpills(
         }
     val spillsCopying =
         spills.associateWith { v ->
-            liveness.copying
+            registersInteraction.copying
                 .getOrDefault(v, setOf())
                 .filterIsInstance<VirtualRegister>()
                 .filter { u -> spills.contains(u) }

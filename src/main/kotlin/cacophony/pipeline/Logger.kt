@@ -1,8 +1,8 @@
 package cacophony.pipeline
 
 import cacophony.codegen.linearization.BasicBlock
-import cacophony.codegen.registers.Liveness
 import cacophony.codegen.registers.RegisterAllocation
+import cacophony.codegen.registers.RegistersInteraction
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.Register
 import cacophony.grammars.AnalyzedGrammar
@@ -58,7 +58,7 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
 
     fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>)
 
-    fun logSuccessfulLivenessGeneration(liveness: Map<Definition.FunctionDefinition, Liveness>)
+    fun logSuccessfulRegistersInteractionGeneration(registersInteractions: Map<Definition.FunctionDefinition, RegistersInteraction>)
 
     fun logSpillHandlingAttempt(spareRegisters: Set<Register.FixedRegister>)
 

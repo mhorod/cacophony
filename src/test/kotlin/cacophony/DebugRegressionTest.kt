@@ -167,8 +167,8 @@ class DebugRegressionTest {
                 ),
             )
 
-        val liveness = testPipeline().analyzeLiveness(ast)
-        val allocation = testPipeline().allocateRegisters(liveness)
+        val registersInteractions = testPipeline().analyzeRegistersInteraction(ast)
+        val allocation = testPipeline().allocateRegisters(registersInteractions)
 
         allocation.values.forEach {
             assertThat(it.spills).isEmpty()

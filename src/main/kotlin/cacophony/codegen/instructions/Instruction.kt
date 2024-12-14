@@ -32,6 +32,10 @@ interface Instruction {
     fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean = false
 }
 
-interface CopyInstruction : Instruction
+interface CopyInstruction : Instruction {
+    fun copyInto(): Register
+
+    fun copyFrom(): Register
+}
 
 typealias InstructionMaker = (ValueSlotMapping) -> List<Instruction>
