@@ -83,11 +83,6 @@ fun adjustLoweredCFGToHandleSpills(
     return loweredCfg.map { block ->
         val newInstructions =
             block.instructions().flatMap { instruction ->
-                // Get rid of redundant copies between spills allocated in the same place
-                if (isRedundantCopy(instruction)) {
-                    return listOf()
-                }
-
                 val readSpills =
                     instruction.registersRead.filterIsInstance<VirtualRegister>().filter { spills.contains(it) }
                 val writtenSpills =
@@ -96,6 +91,8 @@ fun adjustLoweredCFGToHandleSpills(
 
                 if (usedSpills.isEmpty()) {
                     listOf(instruction)
+                } else if (isRedundantCopy(instruction)) {
+                    listOf()
                 } else {
                     val availableSpareRegisters =
                         spareRegisters
