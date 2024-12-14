@@ -1,0 +1,22 @@
+foreign write_int: [Int] -> Unit;
+let f = [x0: Int] -> Int => 1 * x0;
+let f = [x0: Int, x1: Int] -> Int => 1 * x0 + 2 * x1;
+let f = [x0: Int, x1: Int, x2: Int] -> Int => 1 * x0 + 2 * x1 + 3 * x2;
+let f = [x0: Int, x1: Int, x2: Int, x3: Int] -> Int => 1 * x0 + 2 * x1 + 3 * x2 + 4 * x3;
+let f = [x0: Int, x1: Int, x2: Int, x3: Int, x4: Int] -> Int => 1 * x0 + 2 * x1 + 3 * x2 + 4 * x3 + 5 * x4;
+let f = [x0: Int, x1: Int, x2: Int, x3: Int, x4: Int, x5: Int] -> Int => 1 * x0 + 2 * x1 + 3 * x2 + 4 * x3 + 5 * x4 + 6 * x5;
+let f = [x0: Int, x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int] -> Int => 1 * x0 + 2 * x1 + 3 * x2 + 4 * x3 + 5 * x4 + 6 * x5 + 7 * x6;
+let f = [x0: Int, x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int, x7: Int] -> Int => 1 * x0 + 2 * x1 + 3 * x2 + 4 * x3 + 5 * x4 + 6 * x5 + 7 * x6 + 8 * x7;
+let f = [x0: Int, x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int, x7: Int, x8: Int] -> Int => 1 * x0 + 2 * x1 + 3 * x2 + 4 * x3 + 5 * x4 + 6 * x5 + 7 * x6 + 8 * x7 + 9 * x8;
+let f = [x0: Int, x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int, x7: Int, x8: Int, x9: Int] -> Int => 1 * x0 + 2 * x1 + 3 * x2 + 4 * x3 + 5 * x4 + 6 * x5 + 7 * x6 + 8 * x7 + 9 * x8 + 10 * x9;
+write_int[f[100]];
+write_int[f[10, 45]];
+write_int[f[-135, -7, 83]];
+write_int[f[-15, -47, 67, 2]];
+write_int[f[747, 99, -90, -95, -39]];
+write_int[f[642, 95, -80, 59, -82, -53]];
+write_int[f[-428, 7, 25, 99, -35, 90, -46]];
+write_int[f[978, -80, -70, -57, -52, -67, 58, -3]];
+write_int[f[1367, -59, -100, 8, 18, -89, -77, -93, 94]];
+write_int[f[-1103, -100, -50, 65, 58, 60, 61, -97, 88, 20]];
+

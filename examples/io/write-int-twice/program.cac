@@ -1,0 +1,5 @@
+foreign write_int: [Int] -> Int;
+
+let x = 10;
+write_int[x];
+write_int[x];

@@ -85,9 +85,17 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
+private fun Definition.FunctionDeclaration.argumentRegisters(): Set<Register.FixedRegister> {
+    val argumentCount =
+        when (this) {
+            is Definition.FunctionDefinition -> arguments.size + 1
+            is Definition.ForeignFunctionDeclaration -> type!!.argumentsType.size
+        }
+    return REGISTER_ARGUMENT_ORDER.take(argumentCount).map { Register.FixedRegister(it) }.toSet()
+}
+
 data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
-    override val registersRead =
-        setOf(Register.FixedRegister(HardwareRegister.RSP))
+    override val registersRead = setOf(Register.FixedRegister(HardwareRegister.RSP)) union function.argumentRegisters()
     override val registersWritten: Set<Register> =
         HardwareRegister
             .entries
@@ -99,7 +107,18 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
-class Ret : InstructionTemplates.FixedRegistersInstruction() {
+// Utility class to make asm a bit more readable.
+data class Comment(private val comment: String) : InstructionTemplates.FixedRegistersInstruction() {
+    override val registersRead: Set<Register> = emptySet()
+    override val registersWritten: Set<Register> = emptySet()
+
+    // This class is not marked as noop, as we do not want to remove it.
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        return "; $comment"
+    }
+}
+
+data object Ret : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(SystemVAMD64CallConvention.returnRegister()))
     override val registersWritten = setOf<Register>()
@@ -110,6 +129,9 @@ class Ret : InstructionTemplates.FixedRegistersInstruction() {
 data class LocalLabel(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = setOf()
     override val registersWritten: Set<Register> = setOf()
+
+    override fun isNoop(hardwareRegisterMapping: HardwareRegisterMapping, usedLocalLabels: Set<BlockLabel>): Boolean =
+        label !in usedLocalLabels
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = ".${label.name}:"
 }
