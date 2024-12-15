@@ -111,8 +111,8 @@ private fun Definition.FunctionDeclaration.argumentRegisters(): Set<Register.Fix
 data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(
-            Register.FixedRegister(HardwareRegister.RBP),
             Register.FixedRegister(HardwareRegister.RSP),
+            Register.FixedRegister(HardwareRegister.RBP),
         ) union function.argumentRegisters()
     override val registersWritten: Set<Register> =
         HardwareRegister
@@ -131,7 +131,9 @@ data class Comment(private val comment: String) : InstructionTemplates.FixedRegi
     override val registersWritten: Set<Register> = emptySet()
 
     // This class is not marked as noop, as we do not want to remove it.
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String = "; $comment"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        return "; $comment"
+    }
 }
 
 data object Ret : InstructionTemplates.FixedRegistersInstruction() {

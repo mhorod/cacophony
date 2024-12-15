@@ -5,6 +5,7 @@ import cacophony.codegen.instructions.cacophonyInstructions.InstructionTemplates
 import cacophony.codegen.instructions.cacophonyInstructions.Label
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.registers.RegisterAllocation
+import cacophony.semantic.syntaxtree.Definition
 
 fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation: RegisterAllocation): String {
     val usedLocalLabels =
@@ -17,3 +18,11 @@ fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation
     return instructions.filterNot { it.isNoop(registerAllocation.successful, usedLocalLabels) }
         .joinToString("\n") { it.toAsm(registerAllocation.successful) }
 }
+
+fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclaration>): String =
+    (
+        listOf("SECTION .data") +
+            foreignFunctions.map {
+                "extern ${it.identifier}"
+            } + listOf("global main", "SECTION .text")
+    ).joinToString("\n")
