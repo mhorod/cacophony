@@ -171,7 +171,7 @@ internal class CFGGenerator(
                 function,
                 functionHandler,
                 argumentVertices.map { it.access },
-                resultRegister,
+                resultRegister?.let { SimpleLayout(registerUse(it)) },
             ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
@@ -317,6 +317,7 @@ internal class CFGGenerator(
                     valueCFG.exit.connect(resultAssignmentVertex.label)
                     valueCFG.entry
                 }
+
                 is SubCFG.Immediate -> resultAssignmentVertex
             }
 

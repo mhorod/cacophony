@@ -1,6 +1,7 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
+import cacophony.controlflow.generation.Layout
 import cacophony.semantic.syntaxtree.Definition
 
 /**
@@ -11,7 +12,7 @@ fun generateCallFrom(
     function: Definition.FunctionDeclaration,
     functionHandler: FunctionHandler?,
     arguments: List<CFGNode>,
-    result: Register?,
+    result: Layout?,
 ): List<CFGNode> =
     when (function) {
         is Definition.ForeignFunctionDeclaration -> {
@@ -32,11 +33,14 @@ fun generateCallFrom(
 fun generateCall(
     function: Definition.FunctionDeclaration,
     arguments: List<CFGNode>,
-    result: Register?,
+    result: Layout?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
+    val results = result?.flatten() ?: listOf()
+    val registerResults = results.zip(RETURN_REGISTER_ORDER)
+    val stackResults = results.drop(registerResults.size)
 
     val nodes: MutableList<CFGNode> = mutableListOf()
 
@@ -45,9 +49,11 @@ fun generateCall(
     //
     // Then `callerFunctionStackSize.value` bytes on the stack are allocated by the `function`.
     // Finally, here we are going to increase the stack size to store all the stack arguments
-    // Therefore we have to shift the stack by (callerFunctionStackSize.value + 8 * stackArguments.size) % 16 manually
+    // Therefore we have to shift the stack by (callerFunctionStackSize.value + 8 * stackArguments.size + 8 * stackResults.size) % 16 manually
 
-    val alignmentShift = CFGNode.ConstantLazy { (callerFunctionStackSize.value + 8 * stackArguments.size) % 16 }
+    val stackShift = 8 * stackArguments.size + 8 * stackResults.size
+
+    val alignmentShift = CFGNode.ConstantLazy { (callerFunctionStackSize.value + stackShift) % 16 }
 
     val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))
     nodes.add(CFGNode.SubtractionAssignment(rsp, alignmentShift))
@@ -66,10 +72,15 @@ fun generateCall(
     }
 
     nodes.add(CFGNode.Call(function))
-    nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value + 8 * stackArguments.size }))
+    nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value + stackShift }))
 
-    if (result != null)
-        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(result), CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX))))
+    for ((access, register) in registerResults) {
+        nodes.add(CFGNode.Assignment(access as CFGNode.LValue, CFGNode.RegisterUse(Register.FixedRegister(register))))
+    }
+
+    for (access in stackResults.reversed()) {
+        nodes.add(CFGNode.Push(access))
+    }
 
     return nodes
 }

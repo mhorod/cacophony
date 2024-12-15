@@ -1,10 +1,8 @@
 package cacophony.controlflow.functions
 
 import cacophony.basicType
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.HardwareRegister
-import cacophony.controlflow.Register
-import cacophony.controlflow.Variable
+import cacophony.controlflow.*
+import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
@@ -104,7 +102,7 @@ class GenerateCallKtTest {
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
             (1..argumentCount + 1).map { mockk() },
-            result,
+            result?.let { SimpleLayout(registerUse(it)) },
             CFGNode.ConstantKnown(0),
         )
 

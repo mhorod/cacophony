@@ -52,7 +52,7 @@ class CFGFragmentBuilder {
         for ((destination, source) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
             single { registerUse(Register.FixedRegister(destination)) assign registerUse(source) }
         }
-        single { registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(getResultRegister()) }
+        single { registerUse(Register.FixedRegister(RETURN_REGISTER_ORDER[0])) assign registerUse(getResultRegister()) }
         single { registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)) }
         curLabel does jump("return") { popRegister(rbp) }
         "return" does CFGVertex.Final(returnNode)
