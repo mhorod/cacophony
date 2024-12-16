@@ -16,3 +16,12 @@ write_int[s1.a];
 write_int[s1.e];
 write_int[s2.b.c];
 write_int[s2.e];
+
+let h = [] -> {a: Int} => return {b = 8, a = 9};
+write_int[(h[]).a]; # h[].a should also be fine in the future
+
+let u = [k: Int] -> {b: Int, x: {c: Int}, y: {}} => {a = k, b = k * 3, x = {c = k / 2, d = k + 1}, y = {e = 6}};
+let s3 = u[10];
+
+write_int[s3.b];
+write_int[s3.x.c];

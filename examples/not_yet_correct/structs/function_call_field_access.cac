@@ -1,0 +1,7 @@
+let h = [] -> {a: Int} => return {b = 8, a = 9};
+
+# this works fine
+(h[]).a;
+
+# but this does not
+h[].a;
