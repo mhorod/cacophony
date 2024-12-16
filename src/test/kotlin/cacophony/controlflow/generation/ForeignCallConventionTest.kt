@@ -21,7 +21,7 @@ class ForeignCallConventionTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef) {
                 // The argument is prepared in a temporary register...
                 "bodyEntry" does jump("prepare rsp") { writeRegister("arg", integer(1)) }
                 "prepare rsp" does jump("pass arg") { registerUse(rsp) subeq integer(8) }
@@ -59,7 +59,7 @@ class ForeignCallConventionTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef) {
                 "bodyEntry" does jump("call") { registerUse(rsp) subeq integer(8) }
                 "call" does jump("restore rsp") { call(calleeDef) }
                 "restore rsp" does jump("write block result to rax") { registerUse(rsp) addeq integer(8) }

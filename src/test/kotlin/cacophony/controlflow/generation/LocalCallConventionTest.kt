@@ -21,7 +21,7 @@ class LocalCallConventionTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef) {
                 "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(8) }
                 "pass static link" does jump("call") { writeRegister(rdi, registerUse(rbp)) }
                 "call" does jump("restore rsp") { call(calleeDef) }
@@ -57,7 +57,7 @@ class LocalCallConventionTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef) {
                 "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(8) }
                 "pass static link" does jump("call") { writeRegister(rdi, registerUse(rbp)) }
                 "call" does jump("restore rsp") { call(calleeDef) }
@@ -92,7 +92,7 @@ class LocalCallConventionTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef) {
                 // The argument is prepared in a temporary register...
                 "bodyEntry" does jump("adjust rsp") { writeRegister("arg", integer(1)) }
                 "adjust rsp" does jump("pass arg") { registerUse(rsp) subeq integer(8) }
@@ -129,7 +129,7 @@ class LocalCallConventionTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef) {
                 // The arguments are prepared in a temporary registers...
                 "bodyEntry" does jump("prepare arg2") { writeRegister("arg1", integer(1)) }
                 "prepare arg2" does jump("prepare arg3") { writeRegister("arg2", integer(2)) }
@@ -183,7 +183,7 @@ class LocalCallConventionTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef) {
                 // The arguments are prepared in a temporary registers...
                 "bodyEntry" does jump("prepare arg2") { writeRegister("arg1", integer(1)) }
                 "prepare arg2" does jump("prepare arg3") { writeRegister("arg2", integer(2)) }
@@ -236,7 +236,7 @@ class LocalCallConventionTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef) {
                 // The argument is prepared in a temporary register...
                 "bodyEntry" does jump("prepare rsp in") { writeRegister("arg in", integer(1)) }
                 "prepare rsp in" does jump("pass arg in") { registerUse(rsp) subeq integer(8) }
@@ -276,7 +276,7 @@ class LocalCallConventionTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(8) }
                 "pass static link" does jump("call") { writeRegister(rdi, registerUse(rbp)) }
                 "call" does jump("restore rsp") { call(fDef) }

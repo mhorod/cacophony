@@ -41,7 +41,7 @@ class SideEffectSeparationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("compute lhs") {
                         writeRegister("x", integer(5))
@@ -90,7 +90,7 @@ class SideEffectSeparationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("compute lhs") {
                         writeRegister("x", integer(5))
@@ -139,7 +139,7 @@ class SideEffectSeparationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("compute lhs") {
                         writeRegister("x", integer(5))

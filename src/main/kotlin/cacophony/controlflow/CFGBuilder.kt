@@ -25,6 +25,8 @@ class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
 
     fun writeRegister(name: String, node: CFGNode) = writeRegister(virtualRegister(name), node)
 
+    fun writeRegister(register: Register, name: String) = writeRegister(register, registerUse(virtualRegister(name)))
+
     fun pushRegister(name: String) = pushRegister(virtualRegister(name))
 
     fun readRegister(name: String) = registerUse(virtualRegister(name))

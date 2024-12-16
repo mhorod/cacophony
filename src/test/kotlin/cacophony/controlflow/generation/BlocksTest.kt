@@ -15,7 +15,7 @@ class BlocksTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("bodyExit") {
                         writeRegister(getResultRegister(), unit)
@@ -35,7 +35,7 @@ class BlocksTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("bodyExit") {
                         writeRegister(getResultRegister(), writeRegister("x", integer(1)))
@@ -62,7 +62,7 @@ class BlocksTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("write result to rax") {
                         writeRegister("x", integer(1))

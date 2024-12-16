@@ -37,7 +37,7 @@ class BreakTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("condition") {
                         writeRegister(virtualRegister("x"), integer(0))
@@ -87,7 +87,7 @@ class BreakTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("loop condition") {
                         writeRegister(virtualRegister("x"), integer(0))
@@ -131,7 +131,7 @@ class BreakTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("write unit to rax") { writeRegister("x", integer(2)) }
                 "write unit to rax" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
@@ -168,7 +168,7 @@ class BreakTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("condition") {
                         writeRegister(virtualRegister("x"), integer(2))

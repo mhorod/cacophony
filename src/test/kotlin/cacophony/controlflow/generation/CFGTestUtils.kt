@@ -47,10 +47,16 @@ fun generateSimplifiedCFG(
     return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator)
 }
 
-fun simplifiedSingleFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
-    cfg { simplifiedCFGFragment(definition, body) }
+fun singleFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
+    cfg { fragment(definition, body) }
 
-fun CFGBuilder.simplifiedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit) =
+fun standaloneCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+    singleFragmentCFG(definition, body)[definition]!!
+
+fun singleWrappedFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
+    cfg { wrappedCFGFragment(definition, body) }
+
+fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit) =
     fragment(definition) {
         "entry" does jump("bodyEntry") { MockFunctionParts.prologue }
         body()
@@ -58,5 +64,5 @@ fun CFGBuilder.simplifiedCFGFragment(definition: Definition.FunctionDefinition, 
         "exit" does final { returnNode }
     }
 
-fun standaloneSimplifiedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
-    simplifiedSingleFragmentCFG(definition, body)[definition]!!
+fun standaloneWrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+    singleWrappedFragmentCFG(definition, body)[definition]!!

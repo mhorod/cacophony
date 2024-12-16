@@ -20,7 +20,7 @@ class AccessTest {
         // then
         val virReg = Register.VirtualRegister()
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virReg)) }
             }
 
@@ -45,7 +45,7 @@ class AccessTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(innerDef) {
+            standaloneWrappedCFGFragment(innerDef) {
                 "bodyEntry" does
                     jump("bodyExit") {
                         writeRegister(
@@ -85,7 +85,7 @@ class AccessTest {
 
         // then
         val expectedFragment =
-            standaloneSimplifiedCFGFragment(innerDef) {
+            standaloneWrappedCFGFragment(innerDef) {
                 "bodyEntry" does
                     jump("bodyExit") {
                         writeRegister(

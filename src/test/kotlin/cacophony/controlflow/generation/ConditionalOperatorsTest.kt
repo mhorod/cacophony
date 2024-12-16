@@ -35,7 +35,7 @@ class ConditionalOperatorsTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     conditional("true", "false") {
                         makeNode(integer(1), integer(2))
@@ -82,7 +82,7 @@ class ConditionalOperatorsTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("condition") {
                         writeRegister("x", integer(1))
@@ -133,7 +133,7 @@ class ConditionalOperatorsTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("condition") {
                         writeRegister("x", integer(1))
@@ -184,7 +184,7 @@ class ConditionalOperatorsTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("write y") {
                         writeRegister("x", integer(1))

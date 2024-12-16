@@ -24,7 +24,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), integer(11)) }
             }
 
@@ -45,7 +45,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), integer(22)) }
             }
 
@@ -79,7 +79,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
                 "write result to rax" does
                     jump("bodyExit") {
@@ -120,7 +120,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
                 "write result to rax" does
                     jump("bodyExit") {
@@ -160,7 +160,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
                 "condition on x" does
                     conditional("write 11 to result", "write 22 to result") {
@@ -218,7 +218,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
                 "condition on x" does
                     conditional("write 11 to result", "write 22 to result") {
@@ -287,7 +287,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
                 "write result to rax" does
                     jump("bodyExit") {
@@ -319,7 +319,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("bodyEntry") {
                         writeRegister(virtualRegister("x"), integer(10))
@@ -347,7 +347,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("write result to rax") {
                         writeRegister(virtualRegister("y"), integer(20))
@@ -398,7 +398,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(actualCFG.keys.first()) {
+            singleWrappedFragmentCFG(actualCFG.keys.first()) {
                 "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(12)) }
                 "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
             }
@@ -428,7 +428,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(20)) }
                 "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
             }
@@ -466,7 +466,7 @@ class CFGConditionalSimplificationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(11)) }
                 "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
             }

@@ -3,6 +3,7 @@ package cacophony.controlflow
 import cacophony.semantic.syntaxtree.Definition
 
 val rax = Register.FixedRegister(HardwareRegister.RAX)
+val rbx = Register.FixedRegister(HardwareRegister.RBX)
 val rsp = Register.FixedRegister(HardwareRegister.RSP)
 val rbp = Register.FixedRegister(HardwareRegister.RBP)
 val rdi = Register.FixedRegister(HardwareRegister.RDI)

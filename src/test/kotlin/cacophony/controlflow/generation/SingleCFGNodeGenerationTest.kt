@@ -22,7 +22,7 @@ class SingleCFGNodeGenerationTest {
     private fun assertGeneratedSingleNode(programCFG: ProgramCFG, expectedNode: CFGNode) {
         val function = programCFG.keys.first()
         val expectedCFG =
-            simplifiedSingleFragmentCFG(function) {
+            singleWrappedFragmentCFG(function) {
                 "bodyEntry" does jump("return unit") { writeRegister("y", expectedNode) }
                 "return unit" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }

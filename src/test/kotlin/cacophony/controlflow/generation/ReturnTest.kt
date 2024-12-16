@@ -37,7 +37,7 @@ class ReturnTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("condition") {
                         cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
@@ -90,7 +90,7 @@ class ReturnTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("loop condition") {
                         cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
@@ -131,7 +131,7 @@ class ReturnTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), integer(1)) }
             }
 
@@ -164,7 +164,7 @@ class ReturnTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("condition") {
                         writeRegister(virtualRegister("x"), integer(2))

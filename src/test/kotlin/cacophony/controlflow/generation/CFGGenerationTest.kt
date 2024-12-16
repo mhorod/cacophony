@@ -6,10 +6,6 @@ import cacophony.controlflow.CFGNode.Companion.TRUE
 import cacophony.controlflow.CFGNode.Companion.UNIT
 import org.junit.jupiter.api.Test
 
-fun argStack(offset: Int) = VariableAllocation.OnStack(offset)
-
-fun argReg(reg: Register.VirtualRegister) = VariableAllocation.InRegister(reg)
-
 class CFGGenerationTest {
     @Test
     fun `CFG of empty function`() {
@@ -22,7 +18,7 @@ class CFGGenerationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), UNIT) }
             }
 
@@ -39,7 +35,7 @@ class CFGGenerationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), TRUE) }
             }
 
@@ -70,7 +66,7 @@ class CFGGenerationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("condition") { writeRegister(virtualRegister("x"), integer(1)) }
                 "condition" does
                     conditional("true", "false") {
@@ -106,7 +102,7 @@ class CFGGenerationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("condition") {
                         writeRegister(virtualRegister("x"), integer(0))
@@ -146,7 +142,7 @@ class CFGGenerationTest {
 
         // then
         val expectedCFG =
-            simplifiedSingleFragmentCFG(fDef) {
+            singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("bodyEntry") { CFGNode.NoOp }
             }
 
