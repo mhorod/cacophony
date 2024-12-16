@@ -89,6 +89,9 @@ data class IDiv(val reg: Register) : Instruction {
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
+
+        require(hardwareReg != null) { "No hardware register mapping found for $reg" }
+
         return "idiv $hardwareReg"
     }
 

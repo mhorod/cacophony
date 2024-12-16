@@ -16,8 +16,8 @@ class RegisterAllocationTest {
         val reg2 = Register.VirtualRegister()
         val reg3 = Register.VirtualRegister()
         val reg4 = Register.FixedRegister(HardwareRegister.RBX)
-        val liveness =
-            Liveness(
+        val registersInteraction =
+            RegistersInteraction(
                 setOf(reg0, reg1, reg2, reg3, reg4),
                 mapOf(reg0 to setOf(reg1)),
                 mapOf(reg2 to setOf(reg1)),
@@ -28,7 +28,7 @@ class RegisterAllocationTest {
 
         val registerAllocator =
             RegisterAllocator(
-                liveness,
+                registersInteraction,
                 setOf(HardwareRegister.RAX),
                 graphColoring,
             )
@@ -52,8 +52,8 @@ class RegisterAllocationTest {
         // given
         val reg1 = Register.VirtualRegister()
         val reg2 = Register.VirtualRegister()
-        val liveness =
-            Liveness(
+        val registersInteraction =
+            RegistersInteraction(
                 setOf(reg1, reg2),
                 mapOf(reg1 to setOf(reg1, reg2), reg2 to setOf(reg1, reg2)),
                 emptyMap(),
@@ -62,7 +62,7 @@ class RegisterAllocationTest {
 
         // when & then
         assertThrows<IllegalArgumentException> {
-            RegisterAllocator(liveness, setOf(HardwareRegister.RAX), graphColoring)
+            RegisterAllocator(registersInteraction, setOf(HardwareRegister.RAX), graphColoring)
         }
     }
 
@@ -70,8 +70,8 @@ class RegisterAllocationTest {
     fun `throws if unknown register as interference key`() {
         // given
         val known = setOf(Register.VirtualRegister())
-        val liveness =
-            Liveness(
+        val registersInteraction =
+            RegistersInteraction(
                 known,
                 mapOf(Register.VirtualRegister() to emptySet()),
                 emptyMap(),
@@ -81,7 +81,7 @@ class RegisterAllocationTest {
         // when & then
         assertThrows<IllegalArgumentException> {
             RegisterAllocator(
-                liveness,
+                registersInteraction,
                 setOf(HardwareRegister.RAX),
                 graphColoring,
             )
@@ -92,8 +92,8 @@ class RegisterAllocationTest {
     fun `throws if unknown register in copying map`() {
         // given
         val known = setOf(Register.VirtualRegister())
-        val liveness =
-            Liveness(
+        val registersInteraction =
+            RegistersInteraction(
                 known,
                 emptyMap(),
                 mapOf(known.first() to setOf(Register.VirtualRegister())),
@@ -102,7 +102,7 @@ class RegisterAllocationTest {
 
         // when & then
         assertThrows<IllegalArgumentException> {
-            RegisterAllocator(liveness, setOf(HardwareRegister.RAX), graphColoring)
+            RegisterAllocator(registersInteraction, setOf(HardwareRegister.RAX), graphColoring)
         }
     }
 }

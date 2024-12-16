@@ -15,6 +15,9 @@ data class PushReg(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
+
+        require(hardwareReg != null) { "No hardware register mapping found for $reg" }
+
         return "push $hardwareReg"
     }
 
@@ -29,6 +32,9 @@ data class Pop(
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val hardwareReg = hardwareRegisterMapping[reg]
+
+        require(hardwareReg != null) { "No hardware register mapping found for $reg" }
+
         return "pop $hardwareReg"
     }
 
@@ -45,6 +51,10 @@ data class TestRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
+
+        require(lhsHardwareReg != null) { "No hardware register mapping found for $lhs" }
+        require(rhsHardwareReg != null) { "No hardware register mapping found for $rhs" }
+
         return "test $lhsHardwareReg, $rhsHardwareReg"
     }
 
@@ -61,6 +71,10 @@ data class CmpRegReg(
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
         val lhsHardwareReg = hardwareRegisterMapping[lhs]
         val rhsHardwareReg = hardwareRegisterMapping[rhs]
+
+        require(lhsHardwareReg != null) { "No hardware register mapping found for $lhs" }
+        require(rhsHardwareReg != null) { "No hardware register mapping found for $rhs" }
+
         return "cmp $lhsHardwareReg, $rhsHardwareReg"
     }
 
@@ -95,7 +109,11 @@ private fun Definition.FunctionDeclaration.argumentRegisters(): Set<Register.Fix
 }
 
 data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
-    override val registersRead = setOf(Register.FixedRegister(HardwareRegister.RSP)) union function.argumentRegisters()
+    override val registersRead =
+        setOf(
+            Register.FixedRegister(HardwareRegister.RSP),
+            Register.FixedRegister(HardwareRegister.RBP),
+        ) union function.argumentRegisters()
     override val registersWritten: Set<Register> =
         HardwareRegister
             .entries
@@ -113,12 +131,14 @@ data class Comment(private val comment: String) : InstructionTemplates.FixedRegi
     override val registersWritten: Set<Register> = emptySet()
 
     // This class is not marked as noop, as we do not want to remove it.
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String = "; $comment"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        return "; $comment"
+    }
 }
 
 data object Ret : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
-        setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(RETURN_REGISTER_ORDER[0]))
+        setOf(Register.FixedRegister(HardwareRegister.RSP), Register.FixedRegister(RETURN_REGISTER_ORDER[0])) union SystemVAMD64CallConvention.preservedRegisters().map(Register::FixedRegister)
     override val registersWritten = setOf<Register>()
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "ret"
