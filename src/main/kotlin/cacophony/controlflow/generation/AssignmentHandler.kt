@@ -19,7 +19,7 @@ internal class AssignmentHandler(private val cfg: CFG, private val cfgGenerator:
         // TODO: generalize assigning so it works not only for variables
         val variableAccess = cfgGenerator.getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(variable))
         val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)
-        val variableWrite = CFGNode.Assignment(variableAccess, valueCFG.access)
+        val variableWrite = CFGNode.Assignment(variableAccess, valueCFG.getAccess())
         return when (valueCFG) {
             is SubCFG.Immediate -> SubCFG.Immediate(variableWrite)
             is SubCFG.Extracted -> {

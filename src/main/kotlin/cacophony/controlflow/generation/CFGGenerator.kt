@@ -34,13 +34,15 @@ internal class CFGGenerator(
 
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
-        val returnValueRegister = registerUse(getCurrentFunctionHandler().getResultRegister())
+        val returnValueRegister = getCurrentFunctionHandler().getResultLayout()
+        require(returnValueRegister is SimpleLayout)
+        require(returnValueRegister.access is CFGNode.LValue)
 
         val extended =
             when (bodyCFG) {
-                is SubCFG.Extracted -> extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
+                is SubCFG.Extracted -> extendWithAssignment(bodyCFG, returnValueRegister.access, EvalMode.Value)
                 is SubCFG.Immediate -> {
-                    val node = CFGNode.Assignment(returnValueRegister, bodyCFG.access)
+                    val node = CFGNode.Assignment(returnValueRegister.access, bodyCFG.getAccess())
                     val vertex = cfg.addUnconditionalVertex(node)
                     SubCFG.Extracted(vertex, vertex, returnValueRegister)
                 }
@@ -69,14 +71,14 @@ internal class CFGGenerator(
                 when (mode) {
                     is EvalMode.Value -> {
                         val register = Register.VirtualRegister()
-                        val tmpWrite = CFGNode.Assignment(CFGNode.RegisterUse(register), subCFG.access)
+                        val tmpWrite = CFGNode.Assignment(CFGNode.RegisterUse(register), subCFG.getAccess())
                         val tmpRead = CFGNode.RegisterUse(register)
                         val vertex = cfg.addUnconditionalVertex(tmpWrite)
                         SubCFG.Extracted(vertex, vertex, tmpRead)
                     }
 
                     else -> {
-                        val vertex = cfg.addUnconditionalVertex(subCFG.access)
+                        val vertex = cfg.addUnconditionalVertex(subCFG.getAccess())
                         SubCFG.Extracted(vertex, vertex, CFGNode.NoOp)
                     }
                 }
@@ -170,7 +172,7 @@ internal class CFGGenerator(
                 getCurrentFunctionHandler(),
                 function,
                 functionHandler,
-                argumentVertices.map { it.access },
+                argumentVertices.map { it.getAccess() },
                 resultRegister,
             ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
@@ -273,7 +275,7 @@ internal class CFGGenerator(
     internal fun extendWithAssignment(subCFG: SubCFG, destination: CFGNode.LValue, mode: EvalMode): SubCFG.Extracted =
         when (mode) {
             is EvalMode.Value -> {
-                val writeResultNode = CFGNode.Assignment(destination, subCFG.access)
+                val writeResultNode = CFGNode.Assignment(destination, subCFG.getAccess())
                 val writeResultVertex = cfg.addUnconditionalVertex(writeResultNode)
                 val entry =
                     if (subCFG is SubCFG.Extracted) {
@@ -303,7 +305,7 @@ internal class CFGGenerator(
     private fun visitReturnStatement(expression: Statement.ReturnStatement, mode: EvalMode, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
-            CFGNode.Assignment(CFGNode.RegisterUse(getCurrentFunctionHandler().getResultRegister()), valueCFG.access)
+            CFGNode.Assignment(CFGNode.RegisterUse(getCurrentFunctionHandler().getResultRegister()), valueCFG.getAccess())
 
         val resultAssignmentVertex = cfg.addUnconditionalVertex(resultAssignment)
         resultAssignmentVertex.connect(epilogue.entry.label)

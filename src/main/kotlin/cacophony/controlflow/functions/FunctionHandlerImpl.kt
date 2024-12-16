@@ -3,6 +3,8 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
+import cacophony.controlflow.generation.Layout
+import cacophony.controlflow.generation.SimpleLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
@@ -152,6 +154,8 @@ class FunctionHandlerImpl(
     private val resultRegister = Register.VirtualRegister()
 
     override fun getResultRegister(): Register.VirtualRegister = resultRegister
+
+    override fun getResultLayout(): Layout = SimpleLayout(registerUse(getResultRegister()))
 
     private val prologueEpilogueHandler =
         PrologueEpilogueHandler(

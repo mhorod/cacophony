@@ -34,7 +34,7 @@ internal class OperatorHandler(
             when (mode) {
                 is EvalMode.Conditional -> error("Arithmetic operator $expression cannot be used as conditional")
                 is EvalMode.SideEffect -> CFGNode.NoOp
-                is EvalMode.Value -> makeOperatorNode(expression, safeLhs.access, rhsCFG.access)
+                is EvalMode.Value -> makeOperatorNode(expression, safeLhs.getAccess(), rhsCFG.getAccess())
             }
         return join(safeLhs, rhsCFG, access)
     }
@@ -102,7 +102,7 @@ internal class OperatorHandler(
         val definition = cfgGenerator.resolveVariable(variableUse)
         val variableAccess = cfgGenerator.getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
         val rhs = cfgGenerator.visit(expression.rhs, EvalMode.Value, context)
-        val operatorNode = makeAssignOperatorNode(expression, variableAccess, rhs.access)
+        val operatorNode = makeAssignOperatorNode(expression, variableAccess, rhs.getAccess())
         return when (rhs) {
             is SubCFG.Immediate -> SubCFG.Immediate(operatorNode)
             is SubCFG.Extracted -> {
@@ -113,13 +113,12 @@ internal class OperatorHandler(
         }
     }
 
-    internal fun visitLogicalOperator(expression: OperatorBinary.LogicalOperator, mode: EvalMode, context: Context): SubCFG {
-        return when (expression) {
+    internal fun visitLogicalOperator(expression: OperatorBinary.LogicalOperator, mode: EvalMode, context: Context): SubCFG =
+        when (expression) {
             is OperatorBinary.LogicalAnd -> visitLogicalAndOperator(expression, mode, context)
             is OperatorBinary.LogicalOr -> visitLogicalOrOperator(expression, mode, context)
             else -> visitNormalLogicalOperator(expression, mode, context)
         }
-    }
 
     private fun visitNormalLogicalOperator(expression: OperatorBinary.LogicalOperator, mode: EvalMode, context: Context): SubCFG {
         // If we are computing logical operator in Conditional mode then we want to compute both sides
@@ -128,7 +127,7 @@ internal class OperatorHandler(
         val valueCFG = visitBinaryOperator(expression, innerMode, context)
         return when (mode) {
             is EvalMode.Conditional -> {
-                val conditionVertex = cfg.addConditionalVertex(valueCFG.access)
+                val conditionVertex = cfg.addConditionalVertex(valueCFG.getAccess())
                 val entry =
                     if (valueCFG is SubCFG.Extracted) {
                         valueCFG.exit.connect(conditionVertex.label)
@@ -239,12 +238,12 @@ internal class OperatorHandler(
             is EvalMode.SideEffect -> cfgGenerator.visit(expression.expression, EvalMode.SideEffect, context)
             is EvalMode.Value -> {
                 when (val expressionCFG = cfgGenerator.visit(expression.expression, EvalMode.Value, context)) {
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionCFG.access))
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionCFG.getAccess()))
                     is SubCFG.Extracted ->
                         SubCFG.Extracted(
                             expressionCFG.entry,
                             expressionCFG.exit,
-                            CFGNode.Minus(expressionCFG.access),
+                            CFGNode.Minus(expressionCFG.getAccess()),
                         )
                 }
             }
@@ -262,12 +261,12 @@ internal class OperatorHandler(
             is EvalMode.SideEffect -> cfgGenerator.visit(expression.expression, EvalMode.SideEffect, context)
             is EvalMode.Value -> {
                 when (val expressionCFG = cfgGenerator.visit(expression.expression, EvalMode.Value, context)) {
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.LogicalNot(expressionCFG.access))
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.LogicalNot(expressionCFG.getAccess()))
                     is SubCFG.Extracted ->
                         SubCFG.Extracted(
                             expressionCFG.entry,
                             expressionCFG.exit,
-                            CFGNode.LogicalNot(expressionCFG.access),
+                            CFGNode.LogicalNot(expressionCFG.getAccess()),
                         )
                 }
             }
