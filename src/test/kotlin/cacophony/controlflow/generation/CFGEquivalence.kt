@@ -75,6 +75,8 @@ private class FragmentEquivalenceVisitor {
     }
 
     private fun visit(actual: CFGNode, expected: CFGNode) {
+        if (actual === expected)
+            return
         when (expected) {
             is CFGNode.Assignment -> {
                 assertThat(actual).isInstanceOf(CFGNode.Assignment::class.java)

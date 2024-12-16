@@ -11,17 +11,15 @@ class BlocksTest {
         val fDef = unitFunctionDefinition("f", block())
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("exit") {
-                            writeRegister(getResultRegister(), unit)
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("bodyExit") {
+                        writeRegister(getResultRegister(), unit)
+                    }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -33,17 +31,15 @@ class BlocksTest {
         val fDef = unitFunctionDefinition("f", variableDeclaration("x", block(lit(1))))
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("exit") {
-                            writeRegister(getResultRegister(), writeRegister("x", integer(1)))
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("bodyExit") {
+                        writeRegister(getResultRegister(), writeRegister("x", integer(1)))
+                    }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -62,21 +58,19 @@ class BlocksTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("write result to rax") {
-                            writeRegister("x", integer(1))
-                        }
-                    "write result to rax" does
-                        jump("exit") {
-                            writeRegister(getResultRegister(), writeRegister("y", integer(2)))
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("write result to rax") {
+                        writeRegister("x", integer(1))
+                    }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(getResultRegister(), writeRegister("y", integer(2)))
+                    }
             }
 
         assertEquivalent(actualCFG, expectedCFG)

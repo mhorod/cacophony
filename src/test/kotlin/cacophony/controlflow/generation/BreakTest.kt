@@ -33,26 +33,24 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("condition") {
-                            writeRegister(virtualRegister("x"), integer(0))
-                        }
-                    "condition" does
-                        conditional("true branch", "exitWhile") {
-                            readRegister("x") lt integer(10)
-                        }
-                    "true branch" does
-                        jump("condition") {
-                            readRegister("x") addeq integer(1)
-                        }
-                    "exitWhile" does jump("exit") { writeRegister(getResultRegister(), unit) }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("condition") {
+                        writeRegister(virtualRegister("x"), integer(0))
+                    }
+                "condition" does
+                    conditional("true branch", "exitWhile") {
+                        readRegister("x") lt integer(10)
+                    }
+                "true branch" does
+                    jump("condition") {
+                        readRegister("x") addeq integer(1)
+                    }
+                "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -85,30 +83,28 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("loop condition") {
-                            writeRegister(virtualRegister("x"), integer(0))
-                        }
-                    "loop condition" does
-                        conditional("increment x", "exitWhile") {
-                            readRegister("x") lt integer(10)
-                        }
-                    "increment x" does
-                        jump("check x mod 5") {
-                            readRegister("x") addeq integer(1)
-                        }
-                    "check x mod 5" does
-                        conditional("exitWhile", "loop condition") {
-                            (readRegister("x") mod integer(5)) eq integer(0)
-                        }
-                    "exitWhile" does jump("exit") { writeRegister(getResultRegister(), unit) }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("loop condition") {
+                        writeRegister(virtualRegister("x"), integer(0))
+                    }
+                "loop condition" does
+                    conditional("increment x", "exitWhile") {
+                        readRegister("x") lt integer(10)
+                    }
+                "increment x" does
+                    jump("check x mod 5") {
+                        readRegister("x") addeq integer(1)
+                    }
+                "check x mod 5" does
+                    conditional("exitWhile", "loop condition") {
+                        (readRegister("x") mod integer(5)) eq integer(0)
+                    }
+                "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -131,15 +127,13 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("write unit to rax") { writeRegister("x", integer(2)) }
-                    "write unit to rax" does jump("exit") { writeRegister(getResultRegister(), unit) }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("write unit to rax") { writeRegister("x", integer(2)) }
+                "write unit to rax" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -170,22 +164,20 @@ class BreakTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("condition") {
-                            writeRegister(virtualRegister("x"), integer(2))
-                        }
-                    "condition" does
-                        conditional("exitWhile", "exitWhile") {
-                            readRegister("x") eq integer(2)
-                        }
-                    "exitWhile" does jump("exit") { writeRegister(getResultRegister(), unit) }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("condition") {
+                        writeRegister(virtualRegister("x"), integer(2))
+                    }
+                "condition" does
+                    conditional("exitWhile", "exitWhile") {
+                        readRegister("x") eq integer(2)
+                    }
+                "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)

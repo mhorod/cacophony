@@ -20,15 +20,14 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), integer(11)) }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), integer(11)) }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -42,15 +41,14 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), integer(22)) }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), integer(22)) }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -77,22 +75,21 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
-                    "write result to rax" does
-                        jump("exit") {
-                            writeRegister(
-                                getResultRegister(),
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -119,22 +116,21 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
-                    "write result to rax" does
-                        jump("exit") {
-                            writeRegister(
-                                getResultRegister(),
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(11)) }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -160,40 +156,39 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
-                    "condition on x" does
-                        conditional("write 11 to result", "write 22 to result") {
-                            registerUse(virtualRegister("x")) neq integer(0)
-                        }
-                    "write 11 to result" does
-                        jump("write result to rax") {
-                            writeRegister(
-                                virtualRegister("result"),
-                                integer(11),
-                            )
-                        }
-                    "write 22 to result" does
-                        jump("write result to rax") {
-                            writeRegister(
-                                virtualRegister("result"),
-                                integer(22),
-                            )
-                        }
-                    "write result to rax" does
-                        jump("exit") {
-                            writeRegister(
-                                getResultRegister(),
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
+                "condition on x" does
+                    conditional("write 11 to result", "write 22 to result") {
+                        registerUse(virtualRegister("x")) neq integer(0)
+                    }
+                "write 11 to result" does
+                    jump("write result to rax") {
+                        writeRegister(
+                            virtualRegister("result"),
+                            integer(11),
+                        )
+                    }
+                "write 22 to result" does
+                    jump("write result to rax") {
+                        writeRegister(
+                            virtualRegister("result"),
+                            integer(22),
+                        )
+                    }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -219,40 +214,39 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
-                    "condition on x" does
-                        conditional("write 11 to result", "write 22 to result") {
-                            registerUse(virtualRegister("x")) neq integer(0)
-                        }
-                    "write 11 to result" does
-                        jump("write result to rax") {
-                            writeRegister(
-                                virtualRegister("result"),
-                                integer(11),
-                            )
-                        }
-                    "write 22 to result" does
-                        jump("write result to rax") {
-                            writeRegister(
-                                virtualRegister("result"),
-                                integer(22),
-                            )
-                        }
-                    "write result to rax" does
-                        jump("exit") {
-                            writeRegister(
-                                getResultRegister(),
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("condition on x") { writeRegister(virtualRegister("x"), trueValue) }
+                "condition on x" does
+                    conditional("write 11 to result", "write 22 to result") {
+                        registerUse(virtualRegister("x")) neq integer(0)
+                    }
+                "write 11 to result" does
+                    jump("write result to rax") {
+                        writeRegister(
+                            virtualRegister("result"),
+                            integer(11),
+                        )
+                    }
+                "write 22 to result" does
+                    jump("write result to rax") {
+                        writeRegister(
+                            virtualRegister("result"),
+                            integer(22),
+                        )
+                    }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -289,22 +283,21 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
-                    "write result to rax" does
-                        jump("exit") {
-                            writeRegister(
-                                getResultRegister(),
-                                registerUse(virtualRegister("result")),
-                            )
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("write result to rax") { writeRegister(virtualRegister("result"), integer(22)) }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -322,17 +315,15 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("bodyEntry") {
-                            writeRegister(virtualRegister("x"), integer(10))
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("bodyEntry") {
+                        writeRegister(virtualRegister("x"), integer(10))
+                    }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -352,22 +343,21 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("write result to rax") {
-                            writeRegister(virtualRegister("y"), integer(20))
-                        }
-                    "write result to rax" does
-                        jump("exit") {
-                            writeRegister(getResultRegister(), registerUse(virtualRegister("y")))
-                        }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("write result to rax") {
+                        writeRegister(virtualRegister("y"), integer(20))
+                    }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(getResultRegister(), registerUse(virtualRegister("y")))
+                    }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -404,15 +394,13 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(actualCFG.keys.first(), listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(12)) }
-                    "write result to rax" does jump("exit") { writeRegister(getResultRegister(), readRegister("result")) }
-                }
+            simplifiedSingleFragmentCFG(actualCFG.keys.first()) {
+                "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(12)) }
+                "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -436,15 +424,13 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(20)) }
-                    "write result to rax" does jump("exit") { writeRegister(getResultRegister(), readRegister("result")) }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(20)) }
+                "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -476,15 +462,13 @@ class CFGConditionalSimplificationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(11)) }
-                    "write result to rax" does jump("exit") { writeRegister(getResultRegister(), readRegister("result")) }
-                }
+            simplifiedSingleFragmentCFG(fDef) {
+                "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(11)) }
+                "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
