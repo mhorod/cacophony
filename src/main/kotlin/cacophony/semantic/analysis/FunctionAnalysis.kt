@@ -49,7 +49,7 @@ fun analyzeFunctions(
     callGraph: CallGraph,
     variablesMap: VariablesMap,
 ): FunctionAnalysisResult {
-    val relations = findStaticFunctionRelations(ast)
+    val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
     val variableFunctions = getVariableFunctions(relations, variablesMap)
     val parentGraph =
         relations.mapValues { (_, staticRelations) ->
@@ -69,9 +69,7 @@ fun analyzeFunctions(
     val analyzedVariables =
         analyzedVariables(
             childrenGraphClosedRelations,
-            resolvedVariables,
             variableFunctions,
-            variablesMap,
         )
     val variablesUsedInNestedFunctions = variablesUsedInNestedFunctions(analyzedVariables)
 
@@ -119,24 +117,12 @@ fun makeAnalyzedFunction(
     )
 }
 
-fun makeAnalyzedVariable(
-    usedVariable: UsedVariable,
-    resolvedVariables: ResolvedVariables,
-    variableFunctions: Map<Variable, Definition.FunctionDefinition>,
-    variablesMap: VariablesMap,
-): AnalyzedVariable {
-    val definition =
-        resolvedVariables[usedVariable.variable] ?: throw IllegalStateException("Variable not resolved")
-
-    val definedIn =
-        when (definition) {
-            is Definition.VariableDeclaration -> variableFunctions[variablesMap.definitions[definition]]
-            is Definition.FunctionArgument -> variableFunctions[variablesMap.definitions[definition]]
-            else -> error("Variable declaration not found in any function")
-        } ?: throw IllegalStateException("Variable $definition not defined in any function")
+fun makeAnalyzedVariable(usedVariable: UsedVariable, variableFunctions: Map<Variable, Definition.FunctionDefinition>): AnalyzedVariable {
+    val variable = usedVariable.variable
+    val definedIn = variableFunctions[variable] ?: throw IllegalStateException("Variable $variable not defined in any function")
 
     return AnalyzedVariable(
-        variablesMap.definitions[definition]!!,
+        usedVariable.variable,
         definedIn,
         usedVariable.type,
     )
@@ -154,44 +140,33 @@ private fun getVariableFunctions(
         }.toMap() +
         relations
             .flatMap { (function, staticRelations) ->
-                staticRelations.declaredVariables.map { variableDefinition ->
-                    variablesMap.definitions[variableDefinition]!! to function
+                staticRelations.declaredVariables.map { variable ->
+                    variable to function
                 }
             }.toMap()
 
-private fun analyzedVariables(
-    relations: StaticFunctionRelationsMap,
-    resolvedVariables: ResolvedVariables,
-    variableFunctions: Map<Variable, Definition.FunctionDefinition>,
-    variablesMap: VariablesMap,
-) = relations.mapValues { (function, _) ->
-    getAnalyzedVariables(
-        function,
-        relations,
-        resolvedVariables,
-        variableFunctions,
-        variablesMap,
-    )
-}
+private fun analyzedVariables(relations: StaticFunctionRelationsMap, variableFunctions: Map<Variable, Definition.FunctionDefinition>) =
+    relations.mapValues { (function, _) ->
+        getAnalyzedVariables(
+            function,
+            relations,
+            variableFunctions,
+        )
+    }
 
 private fun getAnalyzedVariables(
     function: Definition.FunctionDefinition,
     relations: StaticFunctionRelationsMap,
-    resolvedVariables: ResolvedVariables,
     variableFunctions: Map<Variable, Definition.FunctionDefinition>,
-    variablesMap: VariablesMap,
 ): Set<AnalyzedVariable> =
     relations[function]!!
         .usedVariables
         .asSequence()
-        .filter {
-            resolvedVariables[it.variable] is Definition.VariableDeclaration ||
-                resolvedVariables[it.variable] is Definition.FunctionArgument
-        }.map { makeAnalyzedVariable(it, resolvedVariables, variableFunctions, variablesMap) }
+        .map { makeAnalyzedVariable(it, variableFunctions) }
         .toSet()
         .union(
             relations[function]!!.declaredVariables.map {
-                AnalyzedVariable(variablesMap.definitions[it]!!, variableFunctions[variablesMap.definitions[it]]!!, VariableUseType.UNUSED)
+                AnalyzedVariable(it, variableFunctions[it]!!, VariableUseType.UNUSED)
             },
         ).filter {
             relations[it.definedIn]!!.staticDepth < relations[function]!!.staticDepth ||

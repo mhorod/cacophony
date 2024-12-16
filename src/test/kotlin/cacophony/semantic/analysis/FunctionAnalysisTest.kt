@@ -3,6 +3,7 @@ package cacophony.semantic.analysis
 import cacophony.*
 import cacophony.controlflow.Variable
 import cacophony.semantic.*
+import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -15,9 +16,11 @@ class FunctionAnalysisTest {
         val funF = unitFunctionDefinition("f", block())
         val ast = astOf(funF)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables = emptyMap()
+        val variablesMap: VariablesMap = createVariablesMap()
 
         // when
-        val results = analyzeFunctions(ast, emptyMap(), callGraph(), createVariablesMap(emptyMap()))
+        val results = analyzeFunctions(ast, resolvedVariables, callGraph(), variablesMap)
 
         // then
         assertThat(results)
@@ -46,9 +49,11 @@ class FunctionAnalysisTest {
         val funF = unitFunctionDefinition("f", block(aDeclaration))
         val ast = astOf(funF)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables = emptyMap()
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable))
 
         // when
-        val results = analyzeFunctions(ast, emptyMap(), emptyMap(), createVariablesMap(mapOf(aDeclaration to aVariable)))
+        val results = analyzeFunctions(ast, resolvedVariables, emptyMap(), variablesMap)
 
         // then
         assertThat(results)
@@ -78,16 +83,16 @@ class FunctionAnalysisTest {
         val funF = unitFunctionDefinition("f", block(varAUse))
         val ast = astOf(aDeclaration, funF)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable), mapOf(varAUse to aVariable))
 
         // when
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(varAUse to aDeclaration),
+                resolvedVariables,
                 callGraph(),
-                createVariablesMap(
-                    mapOf(aDeclaration to aVariable),
-                ),
+                variablesMap,
             )
 
         // then
@@ -127,16 +132,16 @@ class FunctionAnalysisTest {
         val funF = unitFunctionDefinition("f", block(varAWrite))
         val ast = astOf(aDeclaration, funF)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable), mapOf(varAUse to aVariable))
 
         // when
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(varAUse to aDeclaration),
+                resolvedVariables,
                 callGraph(),
-                createVariablesMap(
-                    mapOf(aDeclaration to aVariable),
-                ),
+                variablesMap,
             )
 
         // then
@@ -177,19 +182,24 @@ class FunctionAnalysisTest {
         val funF = unitFunctionDefinition("f", block(varAWrite, varAUse2))
         val ast = astOf(aDeclaration, funF)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables =
+            mapOf(
+                varAUse1 to aDeclaration,
+                varAUse2 to aDeclaration,
+            )
+        val variablesMap: VariablesMap =
+            createVariablesMap(
+                mapOf(aDeclaration to aVariable),
+                mapOf(varAUse1 to aVariable, varAUse2 to aVariable),
+            )
 
         // when
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(
-                    varAUse1 to aDeclaration,
-                    varAUse2 to aDeclaration,
-                ),
+                resolvedVariables,
                 callGraph(),
-                createVariablesMap(
-                    mapOf(aDeclaration to aVariable),
-                ),
+                variablesMap,
             )
 
         // then
@@ -231,9 +241,11 @@ class FunctionAnalysisTest {
         val ast = astOf(funF)
         val program = program(ast)
         val callGraph = callGraph(funF to funG)
+        val resolvedVariables: ResolvedVariables = mapOf(varGUse to funG)
+        val variablesMap: VariablesMap = createVariablesMap()
 
         // when
-        val result = analyzeFunctions(ast, emptyMap(), callGraph, createVariablesMap(emptyMap()))
+        val result = analyzeFunctions(ast, resolvedVariables, callGraph, variablesMap)
 
         // then
         assertThat(result)
@@ -276,16 +288,16 @@ class FunctionAnalysisTest {
         val funF = unitFunctionDefinition("f", block(aDeclaration, funG))
         val ast = astOf(funF)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable), mapOf(varAUse to aVariable))
 
         // when
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(varAUse to aDeclaration),
+                resolvedVariables,
                 callGraph(),
-                createVariablesMap(
-                    mapOf(aDeclaration to aVariable),
-                ),
+                variablesMap,
             )
 
         // then
@@ -334,21 +346,25 @@ class FunctionAnalysisTest {
         val funHUse = variableUse("h")
         val funHCall = call(funHUse)
         val funG = unitFunctionDefinition("g", block(funH, funHCall))
+        val funGUse = variableUse("g")
         val funJ = unitFunctionDefinition("j", block())
-        val funI = unitFunctionDefinition("i", block(funJ, call(variableUse("g"))))
+        val funI = unitFunctionDefinition("i", block(funJ, call(funGUse)))
         val funFoo = unitFunctionDefinition("foo", block(aDeclaration, funG, funI))
-        val funMain = unitFunctionDefinition("main", call(variableUse("foo")))
+        val funFooUse = variableUse("foo")
+        val funMain = unitFunctionDefinition("main", call(funFooUse))
 
         val ast = astOf(funFoo, funMain)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration, funHUse to funH, funGUse to funG, funFooUse to funFoo)
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable), mapOf(varAUse to aVariable))
 
         // when
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(varAUse to aDeclaration),
+                resolvedVariables,
                 callGraph(funI to funG, funMain to funFoo, funG to funH),
-                createVariablesMap(mapOf(aDeclaration to aVariable)),
+                variablesMap,
             )
 
         // then
@@ -437,22 +453,30 @@ class FunctionAnalysisTest {
         val funFoo = unitFunctionDefinition("foo", block(fooDeclarationA, funBar, fooVariableAUse))
         val ast = astOf(funFoo)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables =
+            mapOf(
+                fooVariableAUse to fooDeclarationA,
+                barVariableAUse to barDeclarationA,
+            )
+        val variablesMap: VariablesMap =
+                createVariablesMap(
+                mapOf(
+                    fooDeclarationA to fooVariableA,
+                    barDeclarationA to barVariableA,
+                ),
+                mapOf(
+                    fooVariableAUse to fooVariableA,
+                    barVariableAUse to barVariableA,
+                ),
+            )
 
         // when
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(
-                    fooVariableAUse to fooDeclarationA,
-                    barVariableAUse to barDeclarationA,
-                ),
+                resolvedVariables,
                 callGraph(),
-                createVariablesMap(
-                    mapOf(
-                        fooDeclarationA to fooVariableA,
-                        barDeclarationA to barVariableA,
-                    ),
-                ),
+                variablesMap,
             )
 
         // then
@@ -510,14 +534,26 @@ class FunctionAnalysisTest {
 
         val ast = astOf(funF)
         val program = program(ast)
+        val resolvedVariables: ResolvedVariables = mapOf(varAUse to argADeclaration, varBUse to argBDeclaration)
+        val variablesMap: VariablesMap =
+            createVariablesMap(
+                mapOf(
+                    argADeclaration to variableA,
+                    argBDeclaration to variableB,
+                ),
+                mapOf(
+                    varAUse to variableA,
+                    varBUse to variableB,
+                ),
+            )
 
         // when
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(varAUse to argADeclaration, varBUse to argBDeclaration),
+                resolvedVariables,
                 callGraph(),
-                createVariablesMap(mapOf(argADeclaration to variableA, argBDeclaration to variableB)),
+                variablesMap,
             )
 
         // then
