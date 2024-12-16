@@ -15,15 +15,13 @@ class AccessTest {
         val fDef = unitFunctionDefinition("f", listOf(arg("x")), variableUse("x"))
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val virReg = Register.VirtualRegister()
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argReg(virReg), argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), registerUse(virReg)) }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virReg)) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -43,21 +41,19 @@ class AccessTest {
         val outerDef = unitFunctionDefinition("outer", listOf(arg("x")), block(innerDef, call("inner")))
 
         // when
-        val actualFragment = testPipeline().generateControlFlowGraph(outerDef)[innerDef]!!
+        val actualFragment = generateSimplifiedCFG(outerDef)[innerDef]!!
 
         // then
         val expectedFragment =
-            cfg {
-                fragment(innerDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("exit") {
-                            writeRegister(
-                                getResultRegister(),
-                                memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)),
-                            )
-                        }
-                }
-            }[innerDef]!!
+            standaloneWrappedCFGFragment(innerDef) {
+                "bodyEntry" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)),
+                        )
+                    }
+            }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
@@ -85,21 +81,19 @@ class AccessTest {
             )
 
         // when
-        val actualFragment = testPipeline().generateControlFlowGraph(outerDef)[innerDef]!!
+        val actualFragment = generateSimplifiedCFG(outerDef)[innerDef]!!
 
         // then
         val expectedFragment =
-            cfg {
-                fragment(innerDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("exit") {
-                            writeRegister(
-                                getResultRegister(),
-                                memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)),
-                            )
-                        }
-                }
-            }[innerDef]!!
+            standaloneWrappedCFGFragment(innerDef) {
+                "bodyEntry" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)),
+                        )
+                    }
+            }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }

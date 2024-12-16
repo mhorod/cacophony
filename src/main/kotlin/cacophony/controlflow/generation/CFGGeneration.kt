@@ -1,6 +1,7 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGFragment
+import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.names.ResolvedVariables
@@ -12,10 +13,11 @@ fun generateCFG(
     resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
     functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
+    callGenerator: CallGenerator,
 ): ProgramCFG {
     val result =
         functionHandlers.mapValues { (function, _) ->
-            generateFunctionCFG(function, functionHandlers, resolvedVariables, analyzedUseTypes)
+            generateFunctionCFG(function, functionHandlers, resolvedVariables, analyzedUseTypes, callGenerator)
         }
     return result
 }
@@ -25,7 +27,8 @@ internal fun generateFunctionCFG(
     functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
     resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
+    callGenerator: CallGenerator,
 ): CFGFragment {
-    val generator = CFGGenerator(resolvedVariables, analyzedUseTypes, function, functionHandlers)
+    val generator = CFGGenerator(resolvedVariables, analyzedUseTypes, function, functionHandlers, callGenerator)
     return generator.generateFunctionCFG()
 }
