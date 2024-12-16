@@ -1,30 +1,36 @@
 package cacophony.semantic.analysis
 
+import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import kotlin.error
 
 // Type of variables usage for each expression
-typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseType>>
+typealias UseTypeAnalysisResult = Map<Expression, Map<Variable, VariableUseType>>
 
-fun analyzeVarUseTypes(ast: AST, resolvedVariables: ResolvedVariables, functionAnalysis: FunctionAnalysisResult): UseTypeAnalysisResult {
-    val visitor = VarUseVisitor(resolvedVariables, functionAnalysis)
+fun analyzeVarUseTypes(
+    ast: AST,
+    resolvedVariables: ResolvedVariables,
+    functionAnalysis: FunctionAnalysisResult,
+    variablesMap: VariablesMap,
+): UseTypeAnalysisResult {
+    val visitor = VarUseVisitor(resolvedVariables, functionAnalysis, variablesMap)
     visitor.visit(ast)
     return visitor.getAnalysisResult()
 }
 
 private class UseTypesForExpression(
-    private val map: MutableMap<Definition, VariableUseType>,
+    private val map: MutableMap<Variable, VariableUseType>,
 ) {
-    fun add(definition: Definition, type: VariableUseType) {
+    fun add(variable: Variable, type: VariableUseType) {
         val previousType =
             map.getOrElse(
-                definition,
+                variable,
             ) { VariableUseType.UNUSED }
-        map[definition] = previousType.union(type)
+        map[variable] = previousType.union(type)
     }
 
-    fun getMap(): Map<Definition, VariableUseType> = map
+    fun getMap(): Map<Variable, VariableUseType> = map
 
     fun mergeWith(other: UseTypesForExpression) {
         other.getMap().forEach {
@@ -32,7 +38,7 @@ private class UseTypesForExpression(
         }
     }
 
-    fun filter(collection: Collection<Definition>) {
+    fun filter(collection: Collection<Variable>) {
         map.keys.removeAll(collection.toSet())
     }
 
@@ -54,17 +60,18 @@ private class UseTypesForExpression(
 private class VarUseVisitor(
     val resolvedVariables: ResolvedVariables,
     val functionAnalysis: FunctionAnalysisResult,
+    val variablesMap: VariablesMap,
 ) {
     private val useTypeAnalysis = mutableMapOf<Expression, UseTypesForExpression>()
-    private val scopeStack = ArrayDeque<MutableSet<Definition>>()
+    private val scopeStack = ArrayDeque<MutableSet<Variable>>()
 
     fun visit(ast: AST) = visitExpression(ast)
 
     fun getAnalysisResult(): UseTypeAnalysisResult = useTypeAnalysis.mapValues { it.value.getMap() }
 
     private fun visitExpression(expr: Expression) {
-        if (expr is Definition) {
-            scopeStack.lastOrNull()?.add(expr)
+        if (expr is Definition.VariableDeclaration) {
+            scopeStack.lastOrNull()?.add(variablesMap.definitions[expr]!!)
         }
         when (expr) {
             is Block -> visitBlock(expr)
@@ -104,9 +111,12 @@ private class VarUseVisitor(
     }
 
     private fun visitVariableUse(expr: VariableUse) {
+        val definition = resolvedVariables[expr]
+        if (definition !is Definition.VariableDeclaration)
+            return
         useTypeAnalysis[expr] = UseTypesForExpression.empty()
         useTypeAnalysis[expr]!!.add(
-            resolvedVariables[expr]!!,
+            variablesMap.definitions[definition]!!,
             VariableUseType.READ,
         )
     }
@@ -139,7 +149,7 @@ private class VarUseVisitor(
             is VariableUse -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
                 useTypeAnalysis[expr]!!.add(
-                    resolvedVariables[expr.lhs]!!,
+                    variablesMap.definitions[resolvedVariables[expr.lhs]]!!,
                     VariableUseType.READ_WRITE,
                 )
                 useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.rhs]!!)
@@ -155,7 +165,7 @@ private class VarUseVisitor(
             is VariableUse -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
                 useTypeAnalysis[expr]!!.add(
-                    resolvedVariables[expr.lhs]!!,
+                    variablesMap.definitions[resolvedVariables[expr.lhs]]!!,
                     VariableUseType.WRITE,
                 )
                 useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.rhs]!!)
@@ -220,7 +230,7 @@ private class VarUseVisitor(
         if (calledFunction is Definition.FunctionDefinition) {
             val map =
                 functionAnalysis[calledFunction]!!.outerVariables().associate {
-                    it.declaration to it.useType
+                    it.origin to it.useType
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
         } else if (calledFunction !is Definition.ForeignFunctionDeclaration) {

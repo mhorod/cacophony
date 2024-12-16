@@ -10,6 +10,7 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.AnalyzedVariable
 import cacophony.semantic.analysis.ParentLink
 import cacophony.semantic.analysis.VariableUseType
+import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.*
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -21,11 +22,12 @@ class FunctionHandlerTest {
     private fun makeDefaultHandler(
         function: Definition.FunctionDefinition,
         analyzedFunction: AnalyzedFunction,
+        definitions: Map<Definition, Variable.PrimitiveVariable> = emptyMap(),
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
-        return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention)
+        return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention, createVariablesMap(definitions))
     }
 
     @Test
@@ -49,29 +51,6 @@ class FunctionHandlerTest {
     }
 
     @Test
-    fun `variable from definition just works`() { // TODO: adjust or remove this test
-        // setup
-        val funDef = mockk<Definition.FunctionDefinition>()
-        every { funDef.arguments } returns emptyList()
-        val varDef = mockk<Definition>()
-        every { varDef.identifier } returns "x"
-        val analyzedVariable = mockk<AnalyzedVariable>()
-        every { analyzedVariable.declaration } returns varDef
-        val analyzedFunction = mockk<AnalyzedFunction>()
-        every { analyzedFunction.variables } returns setOf(analyzedVariable)
-        every { analyzedFunction.auxVariables } returns mutableSetOf()
-        every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
-        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
-
-        // run
-        val handler = makeDefaultHandler(funDef, analyzedFunction)
-        val variable = handler.getVariableFromDefinition(varDef)
-        // check
-        assertNotNull(variable)
-        assert(variable is Variable.SourceVariable)
-    }
-
-    @Test
     fun `variable not used in nested function goes to virtual register`() {
         // setup
         val funDef = mockk<Definition.FunctionDefinition>()
@@ -79,7 +58,8 @@ class FunctionHandlerTest {
         val varDef = mockk<Definition>()
         every { varDef.identifier } returns "x"
         val analyzedVariable = mockk<AnalyzedVariable>()
-        every { analyzedVariable.declaration } returns varDef
+        val variable = Variable.PrimitiveVariable()
+        every { analyzedVariable.origin } returns variable
         val analyzedFunction = mockk<AnalyzedFunction>()
         every { analyzedFunction.variables } returns setOf(analyzedVariable)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
@@ -88,7 +68,6 @@ class FunctionHandlerTest {
 
         // run
         val handler = makeDefaultHandler(funDef, analyzedFunction)
-        val variable = handler.getVariableFromDefinition(varDef)
         val allocation = handler.getVariableAllocation(variable)
         // check
         require(allocation is VariableAllocation.InRegister)
@@ -101,17 +80,17 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
         val varDef = mockk<Definition>()
+        val variable = Variable.PrimitiveVariable()
         val analyzedVariable = mockk<AnalyzedVariable>()
-        every { analyzedVariable.declaration } returns varDef
+        every { analyzedVariable.origin } returns variable
         val analyzedFunction = mockk<AnalyzedFunction>()
         every { analyzedFunction.variables } returns setOf(analyzedVariable)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
-        every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(varDef)
+        every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(variable)
         every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable)
 
         // run
         val handler = makeDefaultHandler(funDef, analyzedFunction)
-        val variable = handler.getVariableFromDefinition(varDef)
         val allocation = handler.getVariableAllocation(variable)
         // check
         require(allocation is VariableAllocation.OnStack)
@@ -124,28 +103,28 @@ class FunctionHandlerTest {
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
         val varDef1 = mockk<Definition>()
+        val variable1 = Variable.PrimitiveVariable()
         every { varDef1.identifier } returns "x1"
         val varDef2 = mockk<Definition>()
+        val variable2 = Variable.PrimitiveVariable()
         every { varDef2.identifier } returns "x2"
         val varDef3 = mockk<Definition>()
+        val variable3 = Variable.PrimitiveVariable()
         every { varDef3.identifier } returns "x3"
         val analyzedVariable1 = mockk<AnalyzedVariable>()
-        every { analyzedVariable1.declaration } returns varDef1
+        every { analyzedVariable1.origin } returns variable1
         val analyzedVariable2 = mockk<AnalyzedVariable>()
-        every { analyzedVariable2.declaration } returns varDef2
+        every { analyzedVariable2.origin } returns variable2
         val analyzedVariable3 = mockk<AnalyzedVariable>()
-        every { analyzedVariable3.declaration } returns varDef3
+        every { analyzedVariable3.origin } returns variable3
         val analyzedFunction = mockk<AnalyzedFunction>()
         every { analyzedFunction.variables } returns setOf(analyzedVariable1, analyzedVariable2, analyzedVariable3)
         every { analyzedFunction.auxVariables } returns mutableSetOf()
-        every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(varDef1, varDef3)
+        every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(variable1, variable3)
         every { analyzedFunction.declaredVariables() } returns listOf(analyzedVariable1, analyzedVariable2, analyzedVariable3)
 
         // run
         val handler = makeDefaultHandler(funDef, analyzedFunction)
-        val variable1 = handler.getVariableFromDefinition(varDef1)
-        val variable2 = handler.getVariableFromDefinition(varDef2)
-        val variable3 = handler.getVariableFromDefinition(varDef3)
         val allocation1 = handler.getVariableAllocation(variable1)
         val allocation2 = handler.getVariableAllocation(variable2)
         val allocation3 = handler.getVariableAllocation(variable3)
@@ -190,19 +169,22 @@ class FunctionHandlerTest {
     fun `stack size is correctly calculated`() {
         // setup
         val argumentDef = mockk<Definition.FunctionArgument>()
+        val argVariable = Variable.PrimitiveVariable()
         every { argumentDef.identifier } returns "x"
         val analyzedArgumentVariable = mockk<AnalyzedVariable>()
-        every { analyzedArgumentVariable.declaration } returns argumentDef
+        every { analyzedArgumentVariable.origin } returns argVariable
 
         val ownVariableDef = mockk<Definition>()
+        val ownVariable = Variable.PrimitiveVariable()
         every { ownVariableDef.identifier } returns "y"
         val analyzedOwnVariable = mockk<AnalyzedVariable>()
-        every { analyzedOwnVariable.declaration } returns ownVariableDef
+        every { analyzedOwnVariable.origin } returns ownVariable
 
-        val nestedVarDef = mockk<Definition>()
-        every { ownVariableDef.identifier } returns "z"
+        val nestedVariableDef = mockk<Definition>()
+        val nestedVariable = Variable.PrimitiveVariable()
+        every { nestedVariableDef.identifier } returns "z"
         val analyzedNestedVariable = mockk<AnalyzedVariable>()
-        every { analyzedNestedVariable.declaration } returns nestedVarDef
+        every { analyzedNestedVariable.origin } returns nestedVariable
 
         val noArgFunDef = mockk<Definition.FunctionDefinition>()
         every { noArgFunDef.arguments } returns emptyList()
@@ -220,12 +202,29 @@ class FunctionHandlerTest {
         val unaryAnalyzedFunction = mockk<AnalyzedFunction>()
         every { unaryAnalyzedFunction.variables } returns setOf(analyzedArgumentVariable, analyzedOwnVariable, analyzedNestedVariable)
         every { unaryAnalyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
-        every { unaryAnalyzedFunction.variablesUsedInNestedFunctions } returns setOf(nestedVarDef)
+        every { unaryAnalyzedFunction.variablesUsedInNestedFunctions } returns setOf(nestedVariable)
         every { unaryAnalyzedFunction.declaredVariables() } returns listOf(analyzedOwnVariable)
 
         // run
-        val noArgFunctionHandler = makeDefaultHandler(noArgFunDef, noArgAnalyzedFunction)
-        val unaryFunctionHandler = makeDefaultHandler(unaryFunDef, unaryAnalyzedFunction)
+        val noArgFunctionHandler =
+            makeDefaultHandler(
+                noArgFunDef,
+                noArgAnalyzedFunction,
+                mapOf(
+                    argumentDef to argVariable,
+                    ownVariableDef to ownVariable,
+                ),
+            )
+        val unaryFunctionHandler =
+            makeDefaultHandler(
+                unaryFunDef,
+                unaryAnalyzedFunction,
+                mapOf(
+                    argumentDef to argVariable,
+                    ownVariableDef to ownVariable,
+                    nestedVariableDef to nestedVariable,
+                ),
+            )
         // check
         assertEquals(8, noArgFunctionHandler.getStackSpace().value)
         assertEquals(16, unaryFunctionHandler.getStackSpace().value)
@@ -299,6 +298,7 @@ class FunctionHandlerTest {
 
             // given
             val xDef = variableDeclaration("x", lit(10))
+            val xVariable = Variable.PrimitiveVariable()
             val fDef =
                 unitFunctionDefinition(
                     "f",
@@ -308,7 +308,7 @@ class FunctionHandlerTest {
                         variableUse("x"),
                     ),
                 )
-            val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
+            val xAnalyzed = AnalyzedVariable(xVariable, fDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
                     fDef,
@@ -320,15 +320,14 @@ class FunctionHandlerTest {
                 )
             val xAllocation = Register.VirtualRegister()
 
-            val fHandler = makeDefaultHandler(fDef, fAnalyzed)
-            val x = fHandler.getVariableFromDefinition(xDef)
+            val fHandler = makeDefaultHandler(fDef, fAnalyzed, mapOf(xDef to xVariable))
             fHandler.registerVariableAllocation(
-                x,
+                xVariable,
                 VariableAllocation.InRegister(xAllocation),
             )
 
             // when
-            val xAccess = fHandler.generateVariableAccess(x)
+            val xAccess = fHandler.generateVariableAccess(xVariable)
 
             // then
             assertThat(xAccess).isEqualTo(CFGNode.RegisterUse(xAllocation))
@@ -343,6 +342,7 @@ class FunctionHandlerTest {
 
             // given
             val xDef = variableDeclaration("x", lit(10))
+            val xVariable = Variable.PrimitiveVariable()
             val fDef =
                 unitFunctionDefinition(
                     "f",
@@ -352,7 +352,7 @@ class FunctionHandlerTest {
                         variableUse("x"),
                     ),
                 )
-            val xAnalyzed = AnalyzedVariable(xDef, fDef, VariableUseType.READ_WRITE)
+            val xAnalyzed = AnalyzedVariable(xVariable, fDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
                     fDef,
@@ -363,15 +363,14 @@ class FunctionHandlerTest {
                     emptySet(),
                 )
 
-            val fHandler = makeDefaultHandler(fDef, fAnalyzed)
-            val x = fHandler.getVariableFromDefinition(xDef)
+            val fHandler = makeDefaultHandler(fDef, fAnalyzed, mapOf(xDef to xVariable))
             fHandler.registerVariableAllocation(
-                x,
+                xVariable,
                 VariableAllocation.OnStack(24),
             )
 
             // when
-            val xAccess = fHandler.generateVariableAccess(x)
+            val xAccess = fHandler.generateVariableAccess(xVariable)
 
             // then
             assertThat(xAccess).isEqualTo(
@@ -398,6 +397,7 @@ class FunctionHandlerTest {
 
             // given
             val xDef = variableDeclaration("x", lit(10))
+            val xVariable = Variable.PrimitiveVariable()
             val fDef =
                 unitFunctionDefinition(
                     "f",
@@ -417,7 +417,7 @@ class FunctionHandlerTest {
                     block(xDef, gDef),
                 )
 
-            val xAnalyzed = AnalyzedVariable(xDef, hDef, VariableUseType.READ_WRITE)
+            val xAnalyzed = AnalyzedVariable(xVariable, hDef, VariableUseType.READ_WRITE)
             val fAnalyzed =
                 AnalyzedFunction(
                     fDef,
@@ -434,7 +434,7 @@ class FunctionHandlerTest {
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     1,
-                    setOf(xDef),
+                    setOf(xVariable),
                 )
             val hAnalyzed =
                 AnalyzedFunction(
@@ -443,21 +443,21 @@ class FunctionHandlerTest {
                     setOf(xAnalyzed),
                     mutableSetOf(),
                     0,
-                    setOf(xDef),
+                    setOf(xVariable),
                 )
 
-            val hHandler = makeDefaultHandler(hDef, hAnalyzed, emptyList())
-            val gHandler = makeDefaultHandler(gDef, gAnalyzed, listOf(hHandler))
-            val fHandler = makeDefaultHandler(fDef, fAnalyzed, listOf(gHandler, hHandler))
+            val definitionMap = mapOf<Definition, Variable.PrimitiveVariable>(xDef to xVariable)
+            val hHandler = makeDefaultHandler(hDef, hAnalyzed, definitionMap, emptyList())
+            val gHandler = makeDefaultHandler(gDef, gAnalyzed, definitionMap, listOf(hHandler))
+            val fHandler = makeDefaultHandler(fDef, fAnalyzed, definitionMap, listOf(gHandler, hHandler))
 
-            val x = hHandler.getVariableFromDefinition(xDef)
             hHandler.registerVariableAllocation(
-                x,
+                xVariable,
                 VariableAllocation.OnStack(24),
             )
 
             // when
-            val xAccess = fHandler.generateVariableAccess(x)
+            val xAccess = fHandler.generateVariableAccess(xVariable)
 
             // then
             assertThat(xAccess).isEqualTo(
@@ -552,8 +552,8 @@ class FunctionHandlerTest {
                     emptySet(),
                 )
 
-            val gHandler = makeDefaultHandler(gDef, gAnalyzed, emptyList())
-            val fHandler = makeDefaultHandler(fDef, fAnalyzed, listOf(gHandler))
+            val gHandler = makeDefaultHandler(gDef, gAnalyzed, emptyMap(), emptyList())
+            val fHandler = makeDefaultHandler(fDef, fAnalyzed, emptyMap(), listOf(gHandler))
 
             // when
             val staticLinkAccess = fHandler.generateVariableAccess(gHandler.getStaticLink())
@@ -626,9 +626,9 @@ class FunctionHandlerTest {
                     emptySet(),
                 )
 
-            val gHandler = makeDefaultHandler(gDef, gAnalyzed, emptyList())
-            val hHandler = makeDefaultHandler(hDef, hAnalyzed, listOf(gHandler))
-            val fHandler = makeDefaultHandler(fDef, fAnalyzed, listOf(gHandler))
+            val gHandler = makeDefaultHandler(gDef, gAnalyzed, emptyMap(), emptyList())
+            val hHandler = makeDefaultHandler(hDef, hAnalyzed, emptyMap(), listOf(gHandler))
+            val fHandler = makeDefaultHandler(fDef, fAnalyzed, emptyMap(), listOf(gHandler))
 
             mockkStatic(::generateCall)
             // when
@@ -663,7 +663,7 @@ class FunctionHandlerTest {
                     emptySet(),
                 )
 
-            val fHandler = makeDefaultHandler(fDef, fAnalyzed, emptyList())
+            val fHandler = makeDefaultHandler(fDef, fAnalyzed, emptyMap(), emptyList())
 
             // when & then
             org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {

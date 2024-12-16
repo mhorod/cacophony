@@ -17,7 +17,7 @@ data class ParentLink(
 /**
  * Analyzed function properties
  *
- * @property function Function declaration
+ * @property function Function definition
  * @property parentLink Link to wrapping function
  * @property variables All variables read, written, or declared in the function
  * @property auxVariables All auxiliary variables created in the function
@@ -30,7 +30,7 @@ data class AnalyzedFunction(
     val variables: Set<AnalyzedVariable>,
     val auxVariables: MutableSet<Variable>,
     val staticDepth: Int,
-    val variablesUsedInNestedFunctions: Set<Definition>, // TODO: change to Variable
+    val variablesUsedInNestedFunctions: Set<Variable>,
 ) {
     fun declaredVariables() = variables.filter { it.definedIn == function }
 
@@ -38,15 +38,19 @@ data class AnalyzedFunction(
 }
 
 data class AnalyzedVariable(
-    val declaration: Definition, // TODO: change to Variable
+    val origin: Variable,
     val definedIn: Definition.FunctionDefinition,
     val useType: VariableUseType,
 )
 
-fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, callGraph: CallGraph): FunctionAnalysisResult {
+fun analyzeFunctions(
+    ast: AST,
+    resolvedVariables: ResolvedVariables,
+    callGraph: CallGraph,
+    variablesMap: VariablesMap,
+): FunctionAnalysisResult {
     val relations = findStaticFunctionRelations(ast)
-    val variableDeclarationFunctions = getVariableDeclarationFunctions(relations)
-    val argumentFunctions = getArgumentFunctions(relations)
+    val variableFunctions = getVariableFunctions(relations, variablesMap)
     val parentGraph =
         relations.mapValues { (_, staticRelations) ->
             staticRelations.parent?.let { setOf(it) } ?: emptySet()
@@ -66,8 +70,8 @@ fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, callGraph: 
         analyzedVariables(
             childrenGraphClosedRelations,
             resolvedVariables,
-            variableDeclarationFunctions,
-            argumentFunctions,
+            variableFunctions,
+            variablesMap,
         )
     val variablesUsedInNestedFunctions = variablesUsedInNestedFunctions(analyzedVariables)
 
@@ -83,33 +87,23 @@ fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, callGraph: 
 
 fun variablesUsedInNestedFunctions(
     analyzedVariables: Map<Definition.FunctionDefinition, Set<AnalyzedVariable>>,
-): Map<Definition.FunctionDefinition, Set<Definition>> {
-    val result = mutableMapOf<Definition.FunctionDefinition, MutableSet<Definition>>()
+): Map<Definition.FunctionDefinition, Set<Variable>> {
+    val result = mutableMapOf<Definition.FunctionDefinition, MutableSet<Variable>>()
     analyzedVariables.forEach { (function, variables) ->
         variables.forEach { variable ->
             if (variable.definedIn != function) {
-                result.getOrPut(variable.definedIn) { mutableSetOf() }.add(variable.declaration)
+                result.getOrPut(variable.definedIn) { mutableSetOf() }.add(variable.origin)
             }
         }
     }
     return result
 }
 
-fun getArgumentFunctions(
-    relations: Map<Definition.FunctionDefinition, StaticFunctionRelations>,
-): Map<Definition.FunctionArgument, Definition.FunctionDefinition> =
-    relations
-        .flatMap { (function, _) ->
-            function.arguments.map { argument ->
-                argument to function
-            }
-        }.toMap()
-
 fun makeAnalyzedFunction(
     function: Definition.FunctionDefinition,
     staticRelations: StaticFunctionRelations,
     analyzedVariables: Map<Definition.FunctionDefinition, Set<AnalyzedVariable>>,
-    variablesUsedInNestedFunctions: Set<Definition>,
+    variablesUsedInNestedFunctions: Set<Variable>,
 ): AnalyzedFunction {
     val variables =
         analyzedVariables[function]
@@ -128,48 +122,55 @@ fun makeAnalyzedFunction(
 fun makeAnalyzedVariable(
     usedVariable: UsedVariable,
     resolvedVariables: ResolvedVariables,
-    variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDefinition>,
-    argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDefinition>,
+    variableFunctions: Map<Variable, Definition.FunctionDefinition>,
+    variablesMap: VariablesMap,
 ): AnalyzedVariable {
     val definition =
         resolvedVariables[usedVariable.variable] ?: throw IllegalStateException("Variable not resolved")
 
     val definedIn =
         when (definition) {
-            is Definition.VariableDeclaration -> variableDeclarationFunctions[definition]
-            is Definition.FunctionArgument -> argumentFunctions[definition]
+            is Definition.VariableDeclaration -> variableFunctions[variablesMap.definitions[definition]]
+            is Definition.FunctionArgument -> variableFunctions[variablesMap.definitions[definition]]
             else -> error("Variable declaration not found in any function")
         } ?: throw IllegalStateException("Variable $definition not defined in any function")
 
     return AnalyzedVariable(
-        definition,
+        variablesMap.definitions[definition]!!,
         definedIn,
         usedVariable.type,
     )
 }
 
-private fun getVariableDeclarationFunctions(
+private fun getVariableFunctions(
     relations: StaticFunctionRelationsMap,
-): Map<Definition.VariableDeclaration, Definition.FunctionDefinition> =
+    variablesMap: VariablesMap,
+): Map<Variable, Definition.FunctionDefinition> =
     relations
-        .flatMap { (function, staticRelations) ->
-            staticRelations.declaredVariables.map { variable ->
-                variable to function
+        .flatMap { (function, _) ->
+            function.arguments.map { argument ->
+                variablesMap.definitions[argument]!! to function
             }
-        }.toMap()
+        }.toMap() +
+        relations
+            .flatMap { (function, staticRelations) ->
+                staticRelations.declaredVariables.map { variableDefinition ->
+                    variablesMap.definitions[variableDefinition]!! to function
+                }
+            }.toMap()
 
 private fun analyzedVariables(
     relations: StaticFunctionRelationsMap,
     resolvedVariables: ResolvedVariables,
-    variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDefinition>,
-    argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDefinition>,
+    variableFunctions: Map<Variable, Definition.FunctionDefinition>,
+    variablesMap: VariablesMap,
 ) = relations.mapValues { (function, _) ->
     getAnalyzedVariables(
         function,
         relations,
         resolvedVariables,
-        variableDeclarationFunctions,
-        argumentFunctions,
+        variableFunctions,
+        variablesMap,
     )
 }
 
@@ -177,8 +178,8 @@ private fun getAnalyzedVariables(
     function: Definition.FunctionDefinition,
     relations: StaticFunctionRelationsMap,
     resolvedVariables: ResolvedVariables,
-    variableDeclarationFunctions: Map<Definition.VariableDeclaration, Definition.FunctionDefinition>,
-    argumentFunctions: Map<Definition.FunctionArgument, Definition.FunctionDefinition>,
+    variableFunctions: Map<Variable, Definition.FunctionDefinition>,
+    variablesMap: VariablesMap,
 ): Set<AnalyzedVariable> =
     relations[function]!!
         .usedVariables
@@ -186,16 +187,16 @@ private fun getAnalyzedVariables(
         .filter {
             resolvedVariables[it.variable] is Definition.VariableDeclaration ||
                 resolvedVariables[it.variable] is Definition.FunctionArgument
-        }.map { makeAnalyzedVariable(it, resolvedVariables, variableDeclarationFunctions, argumentFunctions) }
+        }.map { makeAnalyzedVariable(it, resolvedVariables, variableFunctions, variablesMap) }
         .toSet()
         .union(
             relations[function]!!.declaredVariables.map {
-                AnalyzedVariable(it, variableDeclarationFunctions[it]!!, VariableUseType.UNUSED)
+                AnalyzedVariable(variablesMap.definitions[it]!!, variableFunctions[variablesMap.definitions[it]]!!, VariableUseType.UNUSED)
             },
         ).filter {
             relations[it.definedIn]!!.staticDepth < relations[function]!!.staticDepth ||
                 it.definedIn == function
-        }.groupBy { it.declaration }
+        }.groupBy { it.origin }
         .map {
             val useType = variableUseType(it.value.map { variable -> variable.useType })
             AnalyzedVariable(it.key, it.value.first().definedIn, useType)

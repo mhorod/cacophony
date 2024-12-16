@@ -1,6 +1,7 @@
 package cacophony.semantic.analysis
 
 import cacophony.*
+import cacophony.controlflow.Variable
 import cacophony.semantic.*
 import cacophony.semantic.syntaxtree.*
 import org.assertj.core.api.Assertions.assertThat
@@ -16,7 +17,7 @@ class FunctionAnalysisTest {
         val program = program(ast)
 
         // when
-        val results = analyzeFunctions(ast, emptyMap(), callGraph())
+        val results = analyzeFunctions(ast, emptyMap(), callGraph(), createVariablesMap(emptyMap()))
 
         // then
         assertThat(results)
@@ -40,13 +41,14 @@ class FunctionAnalysisTest {
     fun `should analyze function with unused variable`() {
         // given
         // f => let a
-        val varA = variableDeclaration("a", Empty(mockRange()))
-        val funF = unitFunctionDefinition("f", block(varA))
+        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
+        val aVariable = Variable.PrimitiveVariable()
+        val funF = unitFunctionDefinition("f", block(aDeclaration))
         val ast = astOf(funF)
         val program = program(ast)
 
         // when
-        val results = analyzeFunctions(ast, emptyMap(), emptyMap())
+        val results = analyzeFunctions(ast, emptyMap(), emptyMap(), createVariablesMap(mapOf(aDeclaration to aVariable)))
 
         // then
         assertThat(results)
@@ -57,7 +59,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funF,
                             ParentLink(program, false),
-                            setOf(AnalyzedVariable(varA, funF, VariableUseType.UNUSED)),
+                            setOf(AnalyzedVariable(aVariable, funF, VariableUseType.UNUSED)),
                             mutableSetOf(),
                             1,
                             emptySet(),
@@ -70,14 +72,23 @@ class FunctionAnalysisTest {
     fun `should analyze function with read variable`() {
         // given
         // f => (let a; a)
-        val varA = variableDeclaration("a", Empty(mockRange()))
+        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
+        val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funF = unitFunctionDefinition("f", block(varAUse))
-        val ast = astOf(varA, funF)
+        val ast = astOf(aDeclaration, funF)
         val program = program(ast)
 
         // when
-        val result = analyzeFunctions(ast, mapOf(varAUse to varA), callGraph())
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(varAUse to aDeclaration),
+                callGraph(),
+                createVariablesMap(
+                    mapOf(aDeclaration to aVariable),
+                ),
+            )
 
         // then
         assertThat(result)
@@ -87,16 +98,16 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             program(ast),
                             null,
-                            setOf(AnalyzedVariable(varA, program(ast), VariableUseType.READ)),
+                            setOf(AnalyzedVariable(aVariable, program(ast), VariableUseType.READ)),
                             mutableSetOf(),
                             0,
-                            setOf(varA),
+                            setOf(aVariable),
                         ),
                     funF to
                         AnalyzedFunction(
                             funF,
                             ParentLink(program, true),
-                            setOf(AnalyzedVariable(varA, program, VariableUseType.READ)),
+                            setOf(AnalyzedVariable(aVariable, program, VariableUseType.READ)),
                             mutableSetOf(),
                             1,
                             emptySet(),
@@ -109,15 +120,24 @@ class FunctionAnalysisTest {
     fun `should analyze function with written variable`() {
         // given
         // f => (let a; a = ())
-        val varA = variableDeclaration("a", Empty(mockRange()))
+        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
+        val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val varAWrite = variableWrite(varAUse)
         val funF = unitFunctionDefinition("f", block(varAWrite))
-        val ast = astOf(varA, funF)
+        val ast = astOf(aDeclaration, funF)
         val program = program(ast)
 
         // when
-        val result = analyzeFunctions(ast, mapOf(varAUse to varA), callGraph())
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(varAUse to aDeclaration),
+                callGraph(),
+                createVariablesMap(
+                    mapOf(aDeclaration to aVariable),
+                ),
+            )
 
         // then
         assertThat(result)
@@ -127,16 +147,16 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             program,
                             null,
-                            setOf(AnalyzedVariable(varA, program, VariableUseType.WRITE)),
+                            setOf(AnalyzedVariable(aVariable, program, VariableUseType.WRITE)),
                             mutableSetOf(),
                             0,
-                            setOf(varA),
+                            setOf(aVariable),
                         ),
                     funF to
                         AnalyzedFunction(
                             funF,
                             ParentLink(program, true),
-                            setOf(AnalyzedVariable(varA, program, VariableUseType.WRITE)),
+                            setOf(AnalyzedVariable(aVariable, program, VariableUseType.WRITE)),
                             mutableSetOf(),
                             1,
                             emptySet(),
@@ -149,16 +169,28 @@ class FunctionAnalysisTest {
     fun `should analyze function with read and written variable`() {
         // given
         // f => (let a; a = (); a)
-        val varA = variableDeclaration("a", Empty(mockRange()))
+        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
+        val aVariable = Variable.PrimitiveVariable()
         val varAUse1 = variableUse("a")
         val varAWrite = variableWrite(varAUse1)
         val varAUse2 = variableUse("a")
         val funF = unitFunctionDefinition("f", block(varAWrite, varAUse2))
-        val ast = astOf(varA, funF)
+        val ast = astOf(aDeclaration, funF)
         val program = program(ast)
 
         // when
-        val result = analyzeFunctions(ast, mapOf(varAUse1 to varA, varAUse2 to varA), callGraph())
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(
+                    varAUse1 to aDeclaration,
+                    varAUse2 to aDeclaration,
+                ),
+                callGraph(),
+                createVariablesMap(
+                    mapOf(aDeclaration to aVariable),
+                ),
+            )
 
         // then
         assertThat(result)
@@ -168,10 +200,10 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             program,
                             null,
-                            setOf(AnalyzedVariable(varA, program, VariableUseType.READ_WRITE)),
+                            setOf(AnalyzedVariable(aVariable, program, VariableUseType.READ_WRITE)),
                             mutableSetOf(),
                             0,
-                            setOf(varA),
+                            setOf(aVariable),
                         ),
                     funF to
                         AnalyzedFunction(
@@ -180,7 +212,7 @@ class FunctionAnalysisTest {
                                 program,
                                 true,
                             ),
-                            setOf(AnalyzedVariable(varA, program, VariableUseType.READ_WRITE)),
+                            setOf(AnalyzedVariable(aVariable, program, VariableUseType.READ_WRITE)),
                             mutableSetOf(),
                             1,
                             emptySet(),
@@ -201,7 +233,7 @@ class FunctionAnalysisTest {
         val callGraph = callGraph(funF to funG)
 
         // when
-        val result = analyzeFunctions(ast, emptyMap(), callGraph)
+        val result = analyzeFunctions(ast, emptyMap(), callGraph, createVariablesMap(emptyMap()))
 
         // then
         assertThat(result)
@@ -237,15 +269,24 @@ class FunctionAnalysisTest {
     fun `should analyze function with nested function using parent variable`() {
         // given
         // f => (let a; g => a)
-        val varA = variableDeclaration("a", Empty(mockRange()))
+        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
+        val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funG = unitFunctionDefinition("g", varAUse)
-        val funF = unitFunctionDefinition("f", block(varA, funG))
+        val funF = unitFunctionDefinition("f", block(aDeclaration, funG))
         val ast = astOf(funF)
         val program = program(ast)
 
         // when
-        val result = analyzeFunctions(ast, mapOf(varAUse to varA), callGraph())
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(varAUse to aDeclaration),
+                callGraph(),
+                createVariablesMap(
+                    mapOf(aDeclaration to aVariable),
+                ),
+            )
 
         // then
         assertThat(result)
@@ -264,16 +305,16 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funF,
                             ParentLink(program, false),
-                            setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
+                            setOf(AnalyzedVariable(aVariable, funF, VariableUseType.READ)),
                             mutableSetOf(),
                             1,
-                            setOf(varA),
+                            setOf(aVariable),
                         ),
                     funG to
                         AnalyzedFunction(
                             funG,
                             ParentLink(funF, true),
-                            setOf(AnalyzedVariable(varA, funF, VariableUseType.READ)),
+                            setOf(AnalyzedVariable(aVariable, funF, VariableUseType.READ)),
                             mutableSetOf(),
                             2,
                             emptySet(),
@@ -286,7 +327,8 @@ class FunctionAnalysisTest {
     fun `should find transitive parent link usages`() {
         // given
         // (foo => (let a; g => (h => a; h()); i => (j => (); g())); main => foo())
-        val varA = variableDeclaration("a", Empty(mockRange()))
+        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
+        val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funH = unitFunctionDefinition("h", varAUse)
         val funHUse = variableUse("h")
@@ -294,7 +336,7 @@ class FunctionAnalysisTest {
         val funG = unitFunctionDefinition("g", block(funH, funHCall))
         val funJ = unitFunctionDefinition("j", block())
         val funI = unitFunctionDefinition("i", block(funJ, call(variableUse("g"))))
-        val funFoo = unitFunctionDefinition("foo", block(varA, funG, funI))
+        val funFoo = unitFunctionDefinition("foo", block(aDeclaration, funG, funI))
         val funMain = unitFunctionDefinition("main", call(variableUse("foo")))
 
         val ast = astOf(funFoo, funMain)
@@ -304,8 +346,9 @@ class FunctionAnalysisTest {
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(varAUse to varA),
+                mapOf(varAUse to aDeclaration),
                 callGraph(funI to funG, funMain to funFoo, funG to funH),
+                createVariablesMap(mapOf(aDeclaration to aVariable)),
             )
 
         // then
@@ -325,16 +368,16 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funFoo,
                             ParentLink(program, false),
-                            setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
+                            setOf(AnalyzedVariable(aVariable, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             1,
-                            setOf(varA),
+                            setOf(aVariable),
                         ),
                     funG to
                         AnalyzedFunction(
                             funG,
                             ParentLink(funFoo, true),
-                            setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
+                            setOf(AnalyzedVariable(aVariable, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             2,
                             emptySet(),
@@ -343,7 +386,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funH,
                             ParentLink(funG, true),
-                            setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
+                            setOf(AnalyzedVariable(aVariable, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             3,
                             emptySet(),
@@ -361,7 +404,7 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funI,
                             ParentLink(funFoo, true),
-                            setOf(AnalyzedVariable(varA, funFoo, VariableUseType.READ)),
+                            setOf(AnalyzedVariable(aVariable, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             2,
                             emptySet(),
@@ -383,18 +426,34 @@ class FunctionAnalysisTest {
     fun `should return separate results for distinct variables with equal names`() {
         // given
         // foo => (let a; bar => (let a; a = ()); a)
-        val fooVarA = variableDeclaration("a", Empty(mockRange()))
-        val fooVarAUse = variableUse("a")
-        val barVarA = variableDeclaration("a", Empty(mockRange()))
-        val barVarAUse = variableUse("a")
+        val fooDeclarationA = variableDeclaration("a", Empty(mockRange()))
+        val fooVariableA = Variable.PrimitiveVariable()
+        val fooVariableAUse = variableUse("a")
+        val barDeclarationA = variableDeclaration("a", Empty(mockRange()))
+        val barVariableA = Variable.PrimitiveVariable()
+        val barVariableAUse = variableUse("a")
 
-        val funBar = unitFunctionDefinition("bar", block(barVarA, variableWrite(barVarAUse)))
-        val funFoo = unitFunctionDefinition("foo", block(fooVarA, funBar, fooVarAUse))
+        val funBar = unitFunctionDefinition("bar", block(barDeclarationA, variableWrite(barVariableAUse)))
+        val funFoo = unitFunctionDefinition("foo", block(fooDeclarationA, funBar, fooVariableAUse))
         val ast = astOf(funFoo)
         val program = program(ast)
 
         // when
-        val result = analyzeFunctions(ast, mapOf(fooVarAUse to fooVarA, barVarAUse to barVarA), callGraph())
+        val result =
+            analyzeFunctions(
+                ast,
+                mapOf(
+                    fooVariableAUse to fooDeclarationA,
+                    barVariableAUse to barDeclarationA,
+                ),
+                callGraph(),
+                createVariablesMap(
+                    mapOf(
+                        fooDeclarationA to fooVariableA,
+                        barDeclarationA to barVariableA,
+                    ),
+                ),
+            )
 
         // then
         assertThat(result)
@@ -416,7 +475,7 @@ class FunctionAnalysisTest {
                                 program,
                                 false,
                             ),
-                            setOf(AnalyzedVariable(fooVarA, funFoo, VariableUseType.READ)),
+                            setOf(AnalyzedVariable(fooVariableA, funFoo, VariableUseType.READ)),
                             mutableSetOf(),
                             1,
                             emptySet(),
@@ -426,7 +485,7 @@ class FunctionAnalysisTest {
                             funBar,
                             ParentLink(funFoo, false),
                             setOf(
-                                AnalyzedVariable(barVarA, funBar, VariableUseType.WRITE),
+                                AnalyzedVariable(barVariableA, funBar, VariableUseType.WRITE),
                             ),
                             mutableSetOf(),
                             2,
@@ -440,12 +499,14 @@ class FunctionAnalysisTest {
     fun `should find uses of parent function argument`() {
         // given
         // f[a, b] => (g => (a; b = ()))
-        val argA = arg("a")
-        val argB = arg("b")
+        val argADeclaration = arg("a")
+        val argBDeclaration = arg("b")
+        val variableA = Variable.PrimitiveVariable()
+        var variableB = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val varBUse = variableUse("b")
         val funG = unitFunctionDefinition("g", block(varAUse, variableWrite(varBUse)))
-        val funF = unitFunctionDefinition("f", listOf(argA, argB), funG)
+        val funF = unitFunctionDefinition("f", listOf(argADeclaration, argBDeclaration), funG)
 
         val ast = astOf(funF)
         val program = program(ast)
@@ -454,8 +515,9 @@ class FunctionAnalysisTest {
         val result =
             analyzeFunctions(
                 ast,
-                mapOf(varAUse to argA, varBUse to argB),
+                mapOf(varAUse to argADeclaration, varBUse to argBDeclaration),
                 callGraph(),
+                createVariablesMap(mapOf(argADeclaration to variableA, argBDeclaration to variableB)),
             )
 
         // then
@@ -467,20 +529,20 @@ class FunctionAnalysisTest {
                         funF,
                         ParentLink(program, false),
                         setOf(
-                            AnalyzedVariable(argA, funF, VariableUseType.READ),
-                            AnalyzedVariable(argB, funF, VariableUseType.WRITE),
+                            AnalyzedVariable(variableA, funF, VariableUseType.READ),
+                            AnalyzedVariable(variableB, funF, VariableUseType.WRITE),
                         ),
                         mutableSetOf(),
                         1,
-                        setOf(argA, argB),
+                        setOf(variableA, variableB),
                     ),
                 funG to
                     AnalyzedFunction(
                         funG,
                         ParentLink(funF, true),
                         setOf(
-                            AnalyzedVariable(argA, funF, VariableUseType.READ),
-                            AnalyzedVariable(argB, funF, VariableUseType.WRITE),
+                            AnalyzedVariable(variableA, funF, VariableUseType.READ),
+                            AnalyzedVariable(variableB, funF, VariableUseType.WRITE),
                         ),
                         mutableSetOf(),
                         2,

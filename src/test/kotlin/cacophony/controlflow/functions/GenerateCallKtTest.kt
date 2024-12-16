@@ -7,6 +7,7 @@ import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
 import cacophony.foreignFunctionDeclaration
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.Definition
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -21,10 +22,11 @@ class GenerateCallKtTest {
         function: Definition.FunctionDefinition,
         analyzedFunction: AnalyzedFunction,
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
+        definitions: Map<Definition, Variable>,
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
-        return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention)
+        return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention, createVariablesMap(definitions))
     }
 
     // there is no easy way to check if constant computes exactly the stack space of a function handler
@@ -77,6 +79,10 @@ class GenerateCallKtTest {
         run {
             val functionHandlers = mutableListOf<FunctionHandlerImpl>()
             for (i in 1..chainLength) {
+                val argDeclarations =
+                    (1..argumentCount).map {
+                        mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }
+                    }
                 functionHandlers.add(
                     0,
                     makeDefaultHandler(
@@ -84,12 +90,13 @@ class GenerateCallKtTest {
                             mockk(),
                             "fun def",
                             mockk(),
-                            (1..argumentCount).map { mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" } },
+                            argDeclarations,
                             mockk(),
                             mockk(),
                         ),
                         mockAnalyzedFunction(),
                         functionHandlers.toList(),
+                        argDeclarations.associateWith { Variable.PrimitiveVariable() },
                     ),
                 )
             }
