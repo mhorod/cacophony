@@ -55,7 +55,7 @@ class CFGFragmentBuilder {
         single { registerUse(Register.FixedRegister(RETURN_REGISTER_ORDER[0])) assign registerUse(getResultRegister()) }
         single { registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)) }
         curLabel does jump("return") { popRegister(rbp) }
-        "return" does CFGVertex.Final(returnNode)
+        "return" does CFGVertex.Final(CFGNode.Return(CFGNode.ConstantKnown(1)))
     }
 
     infix fun String.does(vertex: CFGVertex) {

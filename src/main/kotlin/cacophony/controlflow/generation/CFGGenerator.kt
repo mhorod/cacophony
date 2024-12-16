@@ -5,16 +5,7 @@ import cacophony.controlflow.functions.FunctionHandler
 import cacophony.controlflow.functions.generateCallFrom
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.names.ResolvedVariables
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Empty
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.Literal
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.Statement
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.syntaxtree.*
 
 /**
  * Converts Expressions into CFG
@@ -46,7 +37,14 @@ internal class CFGGenerator(
                 }
             }
 
-        val returnVertex = cfg.addFinalVertex(CFGNode.Return)
+        val resultSize =
+            when (function.returnType) {
+                is BaseType.Basic -> 1
+                is BaseType.Structural -> function.returnType.fields.size
+                else -> throw IllegalArgumentException("Cannot return value of type " + function.returnType)
+            }
+
+        val returnVertex = cfg.addFinalVertex(CFGNode.Return(CFGNode.ConstantKnown(resultSize)))
 
         prologue.exit.connect(extended.entry.label)
         extended.exit.connect(epilogue.entry.label)

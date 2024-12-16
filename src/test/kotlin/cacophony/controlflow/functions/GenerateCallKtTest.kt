@@ -2,6 +2,7 @@ package cacophony.controlflow.functions
 
 import cacophony.basicType
 import cacophony.controlflow.*
+import cacophony.controlflow.generation.Layout
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
 import cacophony.semantic.analysis.AnalyzedFunction
@@ -98,11 +99,11 @@ class GenerateCallKtTest {
     private fun mockFunDeclarationAndFunHandler(argumentCount: Int): FunctionHandlerImpl =
         mockFunDeclarationAndFunHandlerWithParents(argumentCount, 1)[0]
 
-    private fun getCallNodes(argumentCount: Int, result: Register?): List<CFGNode> =
+    private fun getCallNodes(argumentCount: Int, result: Layout?): List<CFGNode> =
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
             (1..argumentCount + 1).map { mockk() },
-            result?.let { SimpleLayout(registerUse(it)) },
+            result,
             CFGNode.ConstantKnown(0),
         )
 
@@ -151,7 +152,7 @@ class GenerateCallKtTest {
     @Test
     fun `value is returned if requested`() {
         val register = Register.VirtualRegister()
-        val nodes = getCallNodes(0, register)
+        val nodes = getCallNodes(0, SimpleLayout(registerUse(register)))
         val resultDestination = getResultDestination(nodes)
         assertThat(resultDestination).isInstanceOf(CFGNode.RegisterUse::class.java)
         assertThat((resultDestination as CFGNode.RegisterUse).register).isEqualTo(register)

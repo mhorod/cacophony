@@ -58,6 +58,8 @@ fun generateCall(
     val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))
     nodes.add(CFGNode.SubtractionAssignment(rsp, alignmentShift))
 
+    if (stackResults.isNotEmpty()) nodes.add(CFGNode.SubtractionAssignment(rsp, CFGNode.ConstantKnown(8 * stackResults.size)))
+
     // in what order should we evaluate arguments? gcc uses reversed order
     for ((argument, register) in registerArguments) {
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(register)), argument))
@@ -72,14 +74,23 @@ fun generateCall(
     }
 
     nodes.add(CFGNode.Call(function))
-    nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value + stackShift }))
+    if (stackResults.isEmpty()) {
+        nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value + 8 * stackArguments.size }))
+    } else {
+        nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantKnown(8 * stackArguments.size)))
+    }
 
     for ((access, register) in registerResults) {
         nodes.add(CFGNode.Assignment(access as CFGNode.LValue, CFGNode.RegisterUse(Register.FixedRegister(register))))
     }
 
-    for (access in stackResults.reversed()) {
-        nodes.add(CFGNode.Push(access))
+    if (stackResults.isNotEmpty()) {
+        for (access in stackResults.reversed()) {
+            val tmpReg = Register.VirtualRegister()
+            nodes.add(CFGNode.Pop(registerUse(tmpReg)))
+            nodes.add(CFGNode.Assignment(access as CFGNode.LValue, registerUse(tmpReg)))
+        }
+        nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value }))
     }
 
     return nodes
