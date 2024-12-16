@@ -15,58 +15,65 @@ class RegisterAllocationException(reason: String) : Exception(reason)
 data class RegisterAllocation(val successful: HardwareRegisterMapping, val spills: Set<Register>)
 
 /**
- * @throws IllegalArgumentException if liveness object is invalid i.e:
+ * @throws IllegalArgumentException if registersInteraction object is invalid i.e:
  * - There is a register interfering with itself, or
- * - interference or copying mappings contain register outside of liveness.allRegisters
+ * - interference or copying mappings contain register outside registersInteraction.allRegisters
  */
-fun allocateRegisters(liveness: Liveness, allowedRegisters: Set<HardwareRegister>): RegisterAllocation {
-    val allocation = RegisterAllocator(liveness, allowedRegisters, FirstFitGraphColoring()).allocate()
-    allocation.validate(liveness, allowedRegisters)
+fun allocateRegisters(registersInteraction: RegistersInteraction, allowedRegisters: Set<HardwareRegister>): RegisterAllocation {
+    val allocation = RegisterAllocator(registersInteraction, allowedRegisters, FirstFitGraphColoring()).allocate()
+    allocation.validate(registersInteraction, allowedRegisters)
     return allocation
 }
 
 class RegisterAllocator(
-    private val liveness: Liveness,
+    private val registersInteraction: RegistersInteraction,
     private val allowedRegisters: Set<HardwareRegister>,
     private val graphColoring: GraphColoring<Register, HardwareRegister>,
 ) {
     init {
-        for (mapping in listOf(liveness.interference, liveness.copying)) {
-            require(liveness.allRegisters.containsAll(mapping.keys union mapping.values.flatten())) { "Unexpected register" }
+        for (mapping in listOf(registersInteraction.interference, registersInteraction.copying)) {
+            require(registersInteraction.allRegisters.containsAll(mapping.keys union mapping.values.flatten())) { "Unexpected register" }
         }
-        for ((register, interferences) in liveness.interference) {
+        for ((register, interferences) in registersInteraction.interference) {
             require(register !in interferences) { "Register cannot interfere with itself" }
         }
     }
 
     fun allocate(): RegisterAllocation {
-        val interferenceGraph = liveness.allRegisters.associateWith { liveness.interference.getOrDefault(it, emptySet()) }
+        val interferenceGraph =
+            registersInteraction.allRegisters
+                .associateWith { registersInteraction.interference.getOrDefault(it, emptySet()) }
 
         val registersColoring =
             graphColoring.doColor(
                 interferenceGraph,
-                liveness.copying,
-                liveness.allRegisters
+                registersInteraction.copying,
+                registersInteraction.allRegisters
                     .filterIsInstance<Register.FixedRegister>()
                     .associateWith { (it as Register.FixedRegister).hardwareRegister },
                 allowedRegisters,
             )
 
-        return RegisterAllocation(registersColoring, liveness.allRegisters.filter { !registersColoring.containsKey(it) }.toSet())
+        return RegisterAllocation(
+            registersColoring,
+            registersInteraction.allRegisters
+                .filter { !registersColoring.containsKey(it) }
+                .toSet(),
+        )
     }
 }
 
 /**
  * @throws RegisterAllocationException if:
- * - Spills and successful mappings do not cover whole liveness.allRegisters,
+ * - Spills and successful mappings do not cover whole registersInteraction.allRegisters,
  * - spills and successful mappings intersect,
  * - not allowed register was used for allocation of virtual register,
  * - hardware register was not allocated to itself,
  * - interfering registers received the same allocation, or
  * - fixed register was not allocated
  */
-fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<HardwareRegister>) {
-    if (spills union successful.keys != liveness.allRegisters) {
+fun RegisterAllocation.validate(registersInteraction: RegistersInteraction, allowedRegisters: Set<HardwareRegister>) {
+    if (spills union successful.keys != registersInteraction.allRegisters) {
         throw RegisterAllocationException("Spills and successful registers do not cover all registers")
     }
 
@@ -74,8 +81,12 @@ fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<Hardwa
         throw RegisterAllocationException("Spills and successful registers intersect")
     }
 
-    if (successful.filter { it.key is Register.VirtualRegister }.values.all { it !in allowedRegisters }) {
-        throw RegisterAllocationException("Not allowed hardware register was used for virtual register allocation")
+    val illegalAllocation = successful.filter { it.key is Register.VirtualRegister && it.value !in allowedRegisters }.entries.firstOrNull()
+    if (illegalAllocation != null) {
+        throw RegisterAllocationException(
+            "Not allowed hardware register was used for virtual register allocation: " +
+                "${illegalAllocation.key} -> ${illegalAllocation.value}",
+        )
     }
 
     if (
@@ -87,7 +98,7 @@ fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<Hardwa
         throw RegisterAllocationException("Hardware register was not allocated to itself")
     }
 
-    for ((reg1, interferences) in liveness.interference.entries) {
+    for ((reg1, interferences) in registersInteraction.interference.entries) {
         for (reg2 in interferences) {
             val hw1 = successful[reg1]
             val hw2 = successful[reg2]
@@ -97,7 +108,7 @@ fun RegisterAllocation.validate(liveness: Liveness, allowedRegisters: Set<Hardwa
         }
     }
 
-    liveness.allRegisters.filterIsInstance<Register.FixedRegister>().forEach {
+    registersInteraction.allRegisters.filterIsInstance<Register.FixedRegister>().forEach {
         if (!successful.containsKey(it)) {
             throw RegisterAllocationException("Fixed register $it was not allocated.")
         }

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class SpillHandlingTest {
-    private val mockLiveness = Liveness(setOf(), mapOf(), mapOf())
+    private val mockRegistersInteraction = RegistersInteraction(setOf(), mapOf(), mapOf())
     private val mockGraphColoring = mockk<GraphColoring<Register.VirtualRegister, Int>>()
 
     init {
@@ -81,7 +81,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg1, spareReg2),
                 mockGraphColoring,
@@ -155,7 +155,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg1, spareReg2),
                 mockGraphColoring,
@@ -229,7 +229,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg1, spareReg2),
                 mockGraphColoring,
@@ -294,7 +294,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block, block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg),
                 mockGraphColoring,
@@ -331,7 +331,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg),
                 mockGraphColoring,
@@ -376,7 +376,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg1, spareReg2),
                 mockGraphColoring,
@@ -415,7 +415,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg),
                 mockGraphColoring,
@@ -439,7 +439,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg),
                 mockGraphColoring,
@@ -479,7 +479,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg),
                 mockGraphColoring,
@@ -508,7 +508,7 @@ class SpillHandlingTest {
                 instructionCovering,
                 functionHandler,
                 listOf(block),
-                mockLiveness,
+                mockRegistersInteraction,
                 registerAllocation,
                 setOf(spareReg),
                 mockGraphColoring,
@@ -560,8 +560,8 @@ class SpillHandlingTest {
         every { instructionA.substituteRegisters(any()) } returns instructionAWithSubRegisters
         every { instructionB.substituteRegisters(any()) } returns instructionBWithSubRegisters
 
-        val liveness =
-            Liveness(
+        val registersInteraction =
+            RegistersInteraction(
                 setOf(spilledRegA, spilledRegB, spilledRegC, nonSpilledReg, spareRegA, spareRegB),
                 mapOf(
                     spilledRegA to setOf(spilledRegC, nonSpilledReg),
@@ -593,16 +593,15 @@ class SpillHandlingTest {
         val block = mockBlock(listOf(instructionA, instructionB))
 
         // when
-        val adjustedLoweredCFG =
-            adjustLoweredCFGToHandleSpills(
-                instructionCovering,
-                functionHandler,
-                listOf(block),
-                liveness,
-                registerAllocation,
-                setOf(spareRegA, spareRegB),
-                graphColoring,
-            )
+        adjustLoweredCFGToHandleSpills(
+            instructionCovering,
+            functionHandler,
+            listOf(block),
+            registersInteraction,
+            registerAllocation,
+            setOf(spareRegA, spareRegB),
+            graphColoring,
+        )
 
         // then
         // assert mocks were called with proper params
