@@ -12,7 +12,6 @@ class VarUseTypeAnalysisTest {
     fun `analysis of empty expression`() {
         val empty = Empty(mockRange())
         val ast = astOf(empty)
-        println(ast)
         val result =
             analyzeVarUseTypes(
                 ast,
@@ -408,7 +407,6 @@ class VarUseTypeAnalysisTest {
                     ),
                 ),
             )
-        println(result[fDeclaration.body])
         assertThat(result).containsAllEntriesOf(
             mapOf(
                 gCall to
