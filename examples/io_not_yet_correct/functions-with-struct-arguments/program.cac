@@ -1,0 +1,20 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Unit;
+
+let write_bool = [a: Bool] -> Unit => write_int[if a then 1 else 0];
+
+let sum = [a: {x: Int, y: Int}] -> Int => a.x * a.y;
+
+let sum10 = [a: {x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int, x7: Int, x8: Int, x9: Int, x10: Int}] -> Int =>
+             a.x1 + a.x2 + a.x3 + a.x4 + a.x5 + a.x6 + a.x7 + a.x8 + a.x9 + a.x10;
+
+let subtract = [a: {x: Int, t: {y: Int, z: Int}}, b: {t: {x: Int, y: Int}, z: Int}] -> {x: Int, y: Int, z: Int} =>
+                {x = a.x - b.t.x, y = a.t.y - b.t.y, z = a.t.z - b.z};
+
+write_int[sum[{x = 21, y = 37}]];
+write_int[sum10[{x1 = 1, x2 = 2, x3 = 3, x4 = 4, x5 = 5, x6 = 6, x7 = 7, x8 = 8, x9 = 9, x10 = 10}]];
+
+let result = subtract[{x = 6, t = {y = 3, z = 9}}, {t = {x = 2, y = 5}, z = 0}];
+write_int[result.x];
+write_int[result.y];
+write_int[result.z];
