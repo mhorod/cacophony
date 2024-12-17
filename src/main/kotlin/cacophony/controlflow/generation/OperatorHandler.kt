@@ -100,14 +100,16 @@ internal class OperatorHandler(
         context: Context,
     ): SubCFG {
         // TODO: consider generalizing assigning so it works not only for variables
-        // TODO: We need new access to Variables corresponding to subfields here
         val variableUse =
             expression.lhs as? VariableUse
                 ?: error("Expected variable use in assignment lhs, got ${expression.lhs}")
         val definition = cfgGenerator.resolveVariable(variableUse)
         val variableAccess = cfgGenerator.getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
         val rhs = cfgGenerator.visit(expression.rhs, EvalMode.Value, context)
-        val operatorNode = makeAssignOperatorNode(expression, variableAccess, rhs.getAccess())
+        val rhsAccess = rhs.access
+        // by type checking
+        require(rhsAccess is SimpleLayout)
+        val operatorNode = makeAssignOperatorNode(expression, variableAccess, rhsAccess.access)
         return when (rhs) {
             is SubCFG.Immediate -> SubCFG.Immediate(operatorNode)
             is SubCFG.Extracted -> {
