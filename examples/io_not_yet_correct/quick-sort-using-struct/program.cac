@@ -1,0 +1,101 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Unit;
+
+let array: {x0: Int, x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int, x7: Int, x8: Int, x9: Int,
+             x10: Int, x11: Int, x12: Int, x13: Int, x14: Int, x15: Int, x16: Int, x17: Int, x18: Int, x19: Int} =
+             {x0 = 0, x1 = 0, x2 = 0, x3 = 0, x4 = 0, x5 = 0, x6 = 0, x7 = 0, x8 = 0, x9 = 0,
+             x10 = 0, x11 = 0, x12 = 0, x13 = 0, x14 = 0, x15 = 0, x16 = 0, x17 = 0, x18 = 0, x19 = 0};
+
+let get = [i: Int] -> Int => (
+    if i == 0 then return array.x0;
+    if i == 1 then return array.x1;
+    if i == 2 then return array.x2;
+    if i == 3 then return array.x3;
+    if i == 4 then return array.x4;
+    if i == 5 then return array.x5;
+    if i == 6 then return array.x6;
+    if i == 7 then return array.x7;
+    if i == 8 then return array.x8;
+    if i == 9 then return array.x9;
+    if i == 10 then return array.x10;
+    if i == 11 then return array.x11;
+    if i == 12 then return array.x12;
+    if i == 13 then return array.x13;
+    if i == 14 then return array.x14;
+    if i == 15 then return array.x15;
+    if i == 16 then return array.x16;
+    if i == 17 then return array.x17;
+    if i == 18 then return array.x18;
+    if i == 19 then return array.x19;
+    -1
+);
+
+let set = [i: Int, val: Int] -> Unit => (
+    if i == 0 then ( array.x0 = val; );
+    if i == 1 then ( array.x1 = val; );
+    if i == 2 then ( array.x2 = val; );
+    if i == 3 then ( array.x3 = val; );
+    if i == 4 then ( array.x4 = val; );
+    if i == 5 then ( array.x5 = val; );
+    if i == 6 then ( array.x6 = val; );
+    if i == 7 then ( array.x7 = val; );
+    if i == 8 then ( array.x8 = val; );
+    if i == 9 then ( array.x9 = val; );
+    if i == 10 then ( array.x10 = val; );
+    if i == 11 then ( array.x11 = val; );
+    if i == 12 then ( array.x12 = val; );
+    if i == 13 then ( array.x13 = val; );
+    if i == 14 then ( array.x14 = val; );
+    if i == 15 then ( array.x15 = val; );
+    if i == 16 then ( array.x16 = val; );
+    if i == 17 then ( array.x17 = val; );
+    if i == 18 then ( array.x18 = val; );
+    if i == 19 then ( array.x19 = val; );
+);
+
+let swap = [i: Int, j: Int] -> Unit => (
+    let a = get[i];
+    let b = get[j];
+    set[i, b];
+    set[j, a];
+);
+
+let partition = [l: Int, r: Int] -> Int => (
+    let pivot = get[r];
+    let i = l - 1;
+    let j = l;
+    while j <= r - 1 do (
+        if get[j] < pivot then (
+            i += 1;
+            swap[i, j];
+        );
+        j += 1;
+    );
+
+    swap[i + 1, r];
+    i + 1
+);
+
+let quick_sort = [l: Int, r: Int] -> Unit => (
+    if l < r then (
+        let pi = partition[l, r];
+        quick_sort[l, pi - 1];
+        quick_sort[pi + 1, r];
+    );
+);
+
+let n = read_int[]; # n <= 20
+
+let i = 0;
+while i < n do (
+    set[i, read_int[]];
+    i += 1;
+);
+
+quick_sort[0, n - 1];
+
+i = 0;
+while i < n do (
+    write_int[get[i]];
+    i += 1;
+);

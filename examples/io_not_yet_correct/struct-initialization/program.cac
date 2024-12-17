@@ -1,0 +1,24 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Unit;
+
+let s1: {a: Int, b: Int} = {b = 6, a = 3};
+write_int[s1.a];
+write_int[s1.b];
+
+let empty = {};
+let two = 2;
+let s2 = {a = empty, two = two};
+write_int[s2.two];
+
+let b = {a = 3, b = 4}.b;
+write_int[b];
+
+let c = {a = true, y = {z = {}, t = {b = 9, c = 8}}, d = 3}.y.t.c;
+write_int[c];
+
+let f = [] -> Int => read_int[];
+
+let s3 = {a = f[], b = if f[] > 5 then 1 else 2, c = if f[] < 9 then 3 else 4};
+write_int[s3.a];
+write_int[s3.b];
+write_int[s3.c];
