@@ -40,12 +40,8 @@ internal class CFGGenerator(
 
         val extended =
             when (bodyCFG) {
-                is SubCFG.Extracted -> extendWithAssignment(bodyCFG, returnValueRegister.access, EvalMode.Value)
-                is SubCFG.Immediate -> {
-                    val node = CFGNode.Assignment(returnValueRegister.access, bodyCFG.getAccess())
-                    val vertex = cfg.addUnconditionalVertex(node)
-                    SubCFG.Extracted(vertex, vertex, returnValueRegister)
-                }
+                is SubCFG.Extracted -> extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
+                is SubCFG.Immediate -> assignLayoutWithValue(bodyCFG.access, returnValueRegister)
             }
 
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)
@@ -64,23 +60,62 @@ internal class CFGGenerator(
                 SubCFG.Extracted(vertex, vertex, noOpOrUnit(EvalMode.SideEffect))
             }.reduce(SubCFG.Extracted::merge)
 
+    private fun ensureExtractedLayoutNoValue(layout: Layout): SubCFG.Extracted =
+        when (layout) {
+            is SimpleLayout -> {
+                val vertex = cfg.addUnconditionalVertex(layout.access)
+                SubCFG.Extracted(vertex, vertex, CFGNode.NoOp)
+            }
+            is StructLayout -> {
+                layout.fields
+                    .map { (_, subLayout) ->
+                        ensureExtractedLayoutNoValue(subLayout)
+                    }.reduce(SubCFG.Extracted::merge)
+            }
+        }
+
+    private fun assignLayoutWithValue(source: Layout, destination: Layout): SubCFG.Extracted {
+        val assignments = makeVerticesForAssignment(source, destination)
+        val prerequisite =
+            assignments
+                .dropLast(1)
+                .map { SubCFG.Extracted(it, it, CFGNode.NoOp) }
+                .reduceOrNull(SubCFG.Extracted::merge)
+        val lastAssignment = assignments.last()
+        val last = SubCFG.Extracted(lastAssignment, lastAssignment, destination)
+        return if (prerequisite != null) {
+            prerequisite merge last
+        } else {
+            last
+        }
+    }
+
+    private fun assignLayoutNoValue(source: Layout, destination: Layout): SubCFG.Extracted =
+        makeVerticesForAssignment(source, destination)
+            .map { SubCFG.Extracted(it, it, CFGNode.NoOp) }
+            .reduce(SubCFG.Extracted::merge)
+
+    private fun makeVerticesForAssignment(source: Layout, destination: Layout): List<GeneralCFGVertex.UnconditionalVertex> =
+        when (source) {
+            is SimpleLayout -> {
+                require(destination is SimpleLayout) // by type checking
+                require(destination.access is CFGNode.LValue) // TODO: remove with LValueLayout
+                val write = CFGNode.Assignment(destination.access, source.access)
+                listOf(cfg.addUnconditionalVertex(write))
+            }
+            is StructLayout -> {
+                require(destination is StructLayout) // by type checking
+                destination.fields.map { (field, layout) -> makeVerticesForAssignment(layout, source.fields[field]!!) }.flatten()
+            }
+        }
+
     internal fun ensureExtracted(subCFG: SubCFG, mode: EvalMode): SubCFG.Extracted =
         when (subCFG) {
             is SubCFG.Extracted -> subCFG
             is SubCFG.Immediate ->
                 when (mode) {
-                    is EvalMode.Value -> {
-                        val register = Register.VirtualRegister()
-                        val tmpWrite = CFGNode.Assignment(CFGNode.RegisterUse(register), subCFG.getAccess())
-                        val tmpRead = CFGNode.RegisterUse(register)
-                        val vertex = cfg.addUnconditionalVertex(tmpWrite)
-                        SubCFG.Extracted(vertex, vertex, tmpRead)
-                    }
-
-                    else -> {
-                        val vertex = cfg.addUnconditionalVertex(subCFG.getAccess())
-                        SubCFG.Extracted(vertex, vertex, CFGNode.NoOp)
-                    }
+                    is EvalMode.Value -> assignLayoutWithValue(subCFG.access, generateLayoutOfVirtualRegisters(subCFG.access))
+                    else -> ensureExtractedLayoutNoValue(subCFG.access)
                 }
         }
 
@@ -99,7 +134,6 @@ internal class CFGGenerator(
      * @param mode Mode of conversion, see [EvalMode]
      */
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
-        // TODO: change to Layout
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
             is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
@@ -172,7 +206,7 @@ internal class CFGGenerator(
                 getCurrentFunctionHandler(),
                 function,
                 functionHandler,
-                argumentVertices.map { it.getAccess() },
+                argumentVertices.map { it.getAccess() }, // TODO: change when generateCall takes List<Layout>
                 resultRegister,
             ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
@@ -248,7 +282,8 @@ internal class CFGGenerator(
             )
         }
 
-        val resultValueRegister = CFGNode.RegisterUse(Register.VirtualRegister())
+        // TODO: fix for structs (we need TypeCheckingResult here or something like that)
+        val resultValueRegister = SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister()))
         val trueCFG = extendWithAssignment(visit(expression.doExpression, mode, context), resultValueRegister, mode)
         val falseCFG =
             extendWithAssignment(
@@ -272,21 +307,16 @@ internal class CFGGenerator(
         }
     }
 
-    internal fun extendWithAssignment(subCFG: SubCFG, destination: CFGNode.LValue, mode: EvalMode): SubCFG.Extracted =
+    internal fun extendWithAssignment(subCFG: SubCFG, destination: Layout, mode: EvalMode): SubCFG.Extracted =
         when (mode) {
             is EvalMode.Value -> {
-                val writeResultNode = CFGNode.Assignment(destination, subCFG.getAccess())
-                val writeResultVertex = cfg.addUnconditionalVertex(writeResultNode)
-                val entry =
-                    if (subCFG is SubCFG.Extracted) {
-                        subCFG.exit.connect(writeResultVertex.label)
-                        subCFG.entry
-                    } else {
-                        writeResultVertex
-                    }
-                SubCFG.Extracted(entry, writeResultVertex, destination)
+                val assignment = assignLayoutWithValue(subCFG.access, destination)
+                if (subCFG is SubCFG.Extracted) {
+                    subCFG merge assignment
+                } else {
+                    assignment
+                }
             }
-
             else -> ensureExtracted(subCFG, mode)
         }
 
@@ -304,11 +334,9 @@ internal class CFGGenerator(
 
     private fun visitReturnStatement(expression: Statement.ReturnStatement, mode: EvalMode, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
-        val resultAssignment =
-            CFGNode.Assignment(CFGNode.RegisterUse(getCurrentFunctionHandler().getResultRegister()), valueCFG.getAccess())
+        val resultAssignment = assignLayoutNoValue(valueCFG.access, getCurrentFunctionHandler().getResultLayout())
 
-        val resultAssignmentVertex = cfg.addUnconditionalVertex(resultAssignment)
-        resultAssignmentVertex.connect(epilogue.entry.label)
+        resultAssignment.exit.connect(epilogue.entry.label)
 
         // Similarly to break, return creates an artificial exit
         val artificialExit = if (mode is EvalMode.Conditional) mode.exit else cfg.addUnconditionalVertex(CFGNode.NoOp)
@@ -316,12 +344,11 @@ internal class CFGGenerator(
         val entry =
             when (valueCFG) {
                 is SubCFG.Extracted -> {
-                    valueCFG.exit.connect(resultAssignmentVertex.label)
+                    valueCFG.exit.connect(resultAssignment.entry.label)
                     valueCFG.entry
                 }
-                is SubCFG.Immediate -> resultAssignmentVertex
+                is SubCFG.Immediate -> resultAssignment.entry
             }
-
         return SubCFG.Extracted(entry, artificialExit, CFGNode.NoOp)
     }
 

@@ -7,9 +7,9 @@ import cacophony.controlflow.CFGNode
  * @property access Pure access to the value produced by the graph
  */
 internal sealed interface SubCFG {
-    val access: Layout // TODO: change to Layout
+    val access: Layout
 
-    // TODO: this is a version for no-structs
+    // TODO: this is a version for no-structs, should be deleted after all merges
     fun getAccess(): CFGNode
 
     /**
