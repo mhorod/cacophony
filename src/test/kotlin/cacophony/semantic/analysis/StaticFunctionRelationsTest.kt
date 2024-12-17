@@ -207,12 +207,6 @@ class StaticFunctionRelationsTest {
         //
         // f => ( let s, s.a = s.b.d)
         val sDeclaration = variableDeclaration("s", Empty(mockRange()))
-        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
-        val bDeclaration = variableDeclaration("b", Empty(mockRange()))
-        val cDeclaration = variableDeclaration("c", Empty(mockRange()))
-        val dDeclaration = variableDeclaration("d", Empty(mockRange()))
-        val eDeclaration = variableDeclaration("e", Empty(mockRange()))
-        val fDeclaration = variableDeclaration("f", Empty(mockRange()))
         val fVariable = Variable.PrimitiveVariable()
         val eVariable = Variable.PrimitiveVariable()
         val dVariable = Variable.StructVariable(mapOf("f" to fVariable))
@@ -266,12 +260,6 @@ class StaticFunctionRelationsTest {
             createVariablesMap(
                 mapOf(
                     sDeclaration to sVariable,
-                    aDeclaration to aVariable,
-                    bDeclaration to bVariable,
-                    cDeclaration to cVariable,
-                    dDeclaration to dVariable,
-                    eDeclaration to eVariable,
-                    fDeclaration to fVariable,
                 ),
                 mapOf(
                     varSUse1 to sVariable,

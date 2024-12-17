@@ -135,12 +135,6 @@ class VarUseTypeAnalysisTest {
         //
         // f => ( let s, s.a = s.b.d)
         val sDeclaration = variableDeclaration("s", Empty(mockRange()))
-        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
-        val bDeclaration = variableDeclaration("b", Empty(mockRange()))
-        val cDeclaration = variableDeclaration("c", Empty(mockRange()))
-        val dDeclaration = variableDeclaration("d", Empty(mockRange()))
-        val eDeclaration = variableDeclaration("e", Empty(mockRange()))
-        val fDeclaration = variableDeclaration("f", Empty(mockRange()))
         val fVariable = Variable.PrimitiveVariable()
         val eVariable = Variable.PrimitiveVariable()
         val dVariable = Variable.StructVariable(mapOf("f" to fVariable))
@@ -177,25 +171,11 @@ class VarUseTypeAnalysisTest {
                 saLValue,
                 sbdLValue,
             )
-        val funF =
-            unitFunctionDefinition(
-                "f",
-                block(
-                    sDeclaration,
-                    assignment,
-                ),
-            )
-        val ast = astOf(funF)
+        val ast = astOf(sDeclaration, assignment)
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
                     sDeclaration to sVariable,
-                    aDeclaration to aVariable,
-                    bDeclaration to bVariable,
-                    cDeclaration to cVariable,
-                    dDeclaration to dVariable,
-                    eDeclaration to eVariable,
-                    fDeclaration to fVariable,
                 ),
                 mapOf(
                     varSUse1 to sVariable,
@@ -242,8 +222,6 @@ class VarUseTypeAnalysisTest {
         // f => ( let x, let s, s = {x, 2})
         val xDeclaration = variableDeclaration("x", Empty(mockRange()))
         val sDeclaration = variableDeclaration("s", Empty(mockRange()))
-        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
-        val bDeclaration = variableDeclaration("b", Empty(mockRange()))
         val xVariable = Variable.PrimitiveVariable()
         val bVariable = Variable.PrimitiveVariable()
         val aVariable = Variable.PrimitiveVariable()
@@ -267,22 +245,12 @@ class VarUseTypeAnalysisTest {
                 varSUse,
                 structLiteral,
             )
-        val funF =
-            unitFunctionDefinition(
-                "f",
-                block(
-                    sDeclaration,
-                    assignment,
-                ),
-            )
-        val ast = astOf(funF)
+        val ast = astOf(xDeclaration, sDeclaration, assignment)
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
                     xDeclaration to xVariable,
                     sDeclaration to sVariable,
-                    aDeclaration to aVariable,
-                    bDeclaration to bVariable,
                 ),
                 mapOf(
                     varSUse to sVariable,
