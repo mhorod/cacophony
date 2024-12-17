@@ -12,13 +12,12 @@ interface FunctionHandler {
 
     fun generateVariableAccess(variable: Variable): CFGNode.LValue
 
-    // I think on labs we agreed we use here only PrimitiveVariable, but I'm not sure
     fun getVariableAllocation(variable: Variable): VariableAllocation
 
     fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation)
 
     // Returns static link to parent
-    fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable // TODO: change it to primitive variable
+    fun getStaticLink(): Variable.PrimitiveVariable
 
     fun getStackSpace(): CFGNode.ConstantLazy
 

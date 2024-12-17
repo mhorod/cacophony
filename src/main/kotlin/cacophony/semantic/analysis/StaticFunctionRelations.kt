@@ -1,17 +1,11 @@
 package cacophony.semantic.analysis
 
-import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.Statement
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.controlflow.Variable
+import cacophony.semantic.names.ResolvedVariables
+import cacophony.semantic.syntaxtree.*
 
-fun findStaticFunctionRelations(ast: AST): StaticFunctionRelationsMap {
-    val visitor = StaticFunctionsRelationsVisitor()
+fun findStaticFunctionRelations(ast: AST, resolvedVariables: ResolvedVariables, variablesMap: VariablesMap): StaticFunctionRelationsMap {
+    val visitor = StaticFunctionsRelationsVisitor(resolvedVariables, variablesMap)
     visitor.visit(ast)
     return visitor.getRelations()
 }
@@ -21,11 +15,11 @@ typealias StaticFunctionRelationsMap = Map<Definition.FunctionDefinition, Static
 data class StaticFunctionRelations(
     val parent: Definition.FunctionDefinition?,
     val staticDepth: Int,
-    val declaredVariables: Set<Definition.VariableDeclaration>,
+    val declaredVariables: Set<Variable>,
     val usedVariables: Set<UsedVariable>,
 )
 
-data class UsedVariable(val variable: VariableUse, val type: VariableUseType)
+data class UsedVariable(val variable: Variable, val type: VariableUseType)
 
 enum class VariableUseType {
     UNUSED,
@@ -46,7 +40,7 @@ enum class VariableUseType {
 private data class MutableStaticFunctionRelations(
     val parent: Definition.FunctionDefinition?,
     val staticDepth: Int,
-    val declaredVariables: MutableSet<Definition.VariableDeclaration>,
+    val declaredVariables: MutableSet<Variable>,
     val usedVariables: MutableSet<UsedVariable>,
 ) {
     fun toStaticFunctionRelations() =
@@ -68,7 +62,10 @@ private data class MutableStaticFunctionRelations(
     }
 }
 
-private class StaticFunctionsRelationsVisitor {
+private class StaticFunctionsRelationsVisitor(
+    val resolvedVariables: ResolvedVariables,
+    val variablesMap: VariablesMap,
+) {
     private val relations = mutableMapOf<Definition.FunctionDefinition, MutableStaticFunctionRelations>()
     private val functionStack = ArrayDeque<Definition.FunctionDefinition>()
 
@@ -77,9 +74,31 @@ private class StaticFunctionsRelationsVisitor {
     fun getRelations(): Map<Definition.FunctionDefinition, StaticFunctionRelations> =
         relations.mapValues { it.value.toStaticFunctionRelations() }
 
+    private fun markNestedVariables(variable: Variable, useType: VariableUseType) {
+        functionStack.lastOrNull()?.let {
+            relations[it]?.usedVariables?.add(UsedVariable(variable, useType))
+        }
+        if (variable is Variable.StructVariable) {
+            variable.fields.forEach {
+                markNestedVariables(it.value, useType)
+            }
+        }
+    }
+
+    private fun addVariableDeclaration(variable: Variable) {
+        functionStack.lastOrNull()?.let {
+            relations[it]?.declaredVariables?.add(variable)
+        }
+        if (variable is Variable.StructVariable) {
+            variable.fields.values.forEach { addVariableDeclaration(it) }
+        }
+    }
+
     private fun visitExpression(expr: Expression) {
         when (expr) {
             is Block -> visitBlock(expr)
+            is FieldRef.LValue -> visitFieldRefLValue(expr)
+            is FieldRef.RValue -> visitFieldRefRValue(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
             is Definition.FunctionDefinition -> visitFunctionDeclaration(expr)
             is FunctionCall -> visitFunctionCall(expr)
@@ -89,6 +108,7 @@ private class StaticFunctionsRelationsVisitor {
             is OperatorUnary -> visitUnaryOperator(expr)
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
+            is Struct -> visitStruct(expr)
             else -> {
                 // do nothing for expressions without nested expressions
             }
@@ -96,8 +116,11 @@ private class StaticFunctionsRelationsVisitor {
     }
 
     private fun visitVariableUse(expr: VariableUse) {
+        val definition = resolvedVariables[expr]
+        if (definition is Definition.FunctionDefinition)
+            return
         functionStack.lastOrNull()?.let {
-            relations[it]?.usedVariables?.add(UsedVariable(expr, VariableUseType.READ))
+            relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[expr]!!, VariableUseType.READ))
         }
     }
 
@@ -119,9 +142,24 @@ private class StaticFunctionsRelationsVisitor {
     }
 
     private fun visitAssignment(expr: OperatorBinary.Assignment) {
-        when (expr.lhs) {
-            is VariableUse -> visitVariableWrite(expr.lhs)
-            else -> visitExpression(expr.lhs)
+        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
+            val variable = variablesMap.lvalues[expr.lhs as Assignable]!!
+            // Mark all nested variables as written
+            markNestedVariables(variable, VariableUseType.WRITE)
+            // Mark all parents as written
+            var nestedExpression = expr.lhs
+            while (nestedExpression is Assignable) {
+                functionStack.lastOrNull()?.let {
+                    relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[nestedExpression]!!, VariableUseType.WRITE))
+                }
+                if (nestedExpression !is FieldRef) {
+                    break
+                }
+                nestedExpression = nestedExpression.struct()
+            }
+        } else {
+            // Could this happen?
+            visitExpression(expr.lhs)
         }
         visitExpression(expr.rhs)
     }
@@ -136,13 +174,13 @@ private class StaticFunctionsRelationsVisitor {
 
     private fun visitVariableWrite(expr: VariableUse) {
         functionStack.lastOrNull()?.let {
-            relations[it]?.usedVariables?.add(UsedVariable(expr, VariableUseType.WRITE))
+            relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[expr]!!, VariableUseType.WRITE))
         }
     }
 
     private fun visitVariableReadWrite(expr: VariableUse) {
         functionStack.lastOrNull()?.let {
-            relations[it]?.usedVariables?.add(UsedVariable(expr, VariableUseType.READ_WRITE))
+            relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[expr]!!, VariableUseType.READ_WRITE))
         }
     }
 
@@ -177,13 +215,38 @@ private class StaticFunctionsRelationsVisitor {
     }
 
     private fun visitVariableDeclaration(expr: Definition.VariableDeclaration) {
-        functionStack.lastOrNull()?.let {
-            relations[it]?.declaredVariables?.add(expr)
-        }
+        val variable = variablesMap.definitions[expr]!!
+        addVariableDeclaration(variable)
         visitExpression(expr.value)
     }
 
     private fun visitBlock(expr: Block) {
         expr.expressions.forEach { visitExpression(it) }
+    }
+
+    // We're not inside assignment, therefore it's read
+    private fun visitFieldRefLValue(expr: FieldRef.LValue) {
+        val variable = variablesMap.lvalues[expr]!!
+        // Mark all nested variables as read
+        markNestedVariables(variable, VariableUseType.READ)
+        // Mark all parents as read
+        var nestedExpression: Expression = expr
+        while (nestedExpression is Assignable) {
+            functionStack.lastOrNull()?.let {
+                relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[nestedExpression]!!, VariableUseType.READ))
+            }
+            if (nestedExpression !is FieldRef) {
+                break
+            }
+            nestedExpression = nestedExpression.struct()
+        }
+    }
+
+    private fun visitFieldRefRValue(expr: FieldRef.RValue) {
+        visitExpression(expr.obj)
+    }
+
+    private fun visitStruct(expr: Struct) {
+        expr.fields.values.forEach { visit(it) }
     }
 }
