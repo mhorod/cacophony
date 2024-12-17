@@ -51,9 +51,14 @@ class GenerateCallKtTest {
         verify {
             generateCall(
                 any(),
-                listOf(
-                    SimpleLayout(expectedStaticLink),
-                ),
+                match {
+                    if (it.size != 1) false
+                    else {
+                        val l = it.first()
+                        if (l !is SimpleLayout) false
+                        else l.access == expectedStaticLink
+                    }
+                },
                 any(),
                 match { matchStackSpaceToHandler(it, caller) },
             )
@@ -104,7 +109,7 @@ class GenerateCallKtTest {
     private fun getCallNodes(argumentCount: Int, result: Register?): List<CFGNode> =
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
-            (1..argumentCount + 1).map { mockk() },
+            (1..argumentCount + 1).map { SimpleLayout(mockk()) },
             result,
             CFGNode.ConstantKnown(0),
         )

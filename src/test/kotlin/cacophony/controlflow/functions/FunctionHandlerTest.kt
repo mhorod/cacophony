@@ -637,7 +637,14 @@ class FunctionHandlerTest {
             verify {
                 generateCall(
                     any(),
-                    listOf(SimpleLayout(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))))),
+                    match {
+                        if (it.size != 1) false
+                        else {
+                            val l = it.first()
+                            if (l !is SimpleLayout) false
+                            else l.access == CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))
+                        }
+                    },
                     any(),
                     any(),
                 )
