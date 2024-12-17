@@ -14,7 +14,6 @@ class PrologueEpilogueHandler(
         }
 
     fun generatePrologue(): List<CFGNode> {
-        println(flattenedArguments)
         val nodes = mutableListOf<CFGNode>()
         nodes.add(pushRegister(rbp))
         nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
