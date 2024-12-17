@@ -1,0 +1,30 @@
+foreign write_int: [Int] -> Unit;
+
+let factorial = [x: Int] -> Int => (
+    if x == 0 then
+        1
+    else
+        factorial[x - 1] * x
+);
+
+let fibonacci = [x: Int] -> Int => (
+    if x < 2 then
+        1
+    else
+        fibonacci[x - 1] + fibonacci[x - 2]
+);
+
+let ackermann = [x: Int, y: Int] -> Int => (
+    if x == 0 then
+        y + 1
+    else (
+        if y == 0 then
+            ackermann[x - 1, 1]
+        else
+            ackermann[x - 1, ackermann[x, y - 1]]
+    )
+);
+
+write_int[factorial[7]];
+write_int[fibonacci[7]];
+write_int[ackermann[3, 6]];

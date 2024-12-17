@@ -1,0 +1,48 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Unit;
+
+let write_bool = [a: Bool] -> Unit => write_int[if a then 1 else 0];
+
+let f1 = [aa: Int, bb: Int] -> {a: Int, b: Int} => (
+    let result = {a = aa, b = bb};
+    result
+);
+
+let f2 = [a: Int, b: Int] -> {a: Int, b: Int} => {a = a, b = b};
+
+let f3 = [aa: Int, bb: Int, cc: Bool, dd: Int, ee: Bool] -> {a: Int, y: {b: Int, z: {c: Bool, d: Int}}, e: Bool} => (
+    return {a = aa, y = {b = bb, z = {c = cc, d = dd}}, e = ee}
+);
+
+let f4 = [a1: Int, a2: Int, a3: Int, a4: Int, a5: Int, a6: Int, a7: Int, a8: Int, a9: Int, a10: Int] ->
+         {x1: Int, x2: Int, x3: Int, x4: Int, x5: Int, x6: Int, x7: Int, x8: Int, x9: Int, x10: Int} =>
+         {x1 = a1, x2 = a2, x3 = a3, x4 = a4, x5 = a5, x6 = a6, x7 = a7, x8 = a8, x9 = a9, x10 = a10};
+
+
+let result1 = f1[3, 5];
+let result2 = f2[6, 1];
+let result3 = f3[2, 3, false, 4, true];
+let result4 = f4[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+write_int[result1.a];
+write_int[result1.b];
+
+write_int[result2.a];
+write_int[result2.b];
+
+write_int[result3.a];
+write_int[result3.y.b];
+write_bool[result3.y.z.c];
+write_int[result3.y.z.d];
+write_bool[result3.e];
+
+write_int[result4.x1];
+write_int[result4.x2];
+write_int[result4.x3];
+write_int[result4.x4];
+write_int[result4.x5];
+write_int[result4.x6];
+write_int[result4.x7];
+write_int[result4.x8];
+write_int[result4.x9];
+write_int[result4.x10];
