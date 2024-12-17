@@ -19,7 +19,9 @@ internal class SideEffectAnalyzer(
     }
 
     private fun writtenVariables(expression: Expression): Set<Variable> =
-        analyzedUseTypes.getValue(expression)
+        analyzedUseTypes
+            .getValue(expression)
             .filter { it.value == VariableUseType.WRITE || it.value == VariableUseType.READ_WRITE }
-            .map { it.key }.toSet()
+            .map { it.key }
+            .toSet()
 }

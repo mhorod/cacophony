@@ -2,10 +2,9 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.Register
-import cacophony.controlflow.Variable
+import cacophony.semantic.syntaxtree.Assignable
 import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.VariableUse
 
 /**
  * Converts operators into CFG
@@ -99,23 +98,24 @@ internal class OperatorHandler(
         mode: EvalMode,
         context: Context,
     ): SubCFG {
-        // TODO: consider generalizing assigning so it works not only for variables
-        val variableUse =
-            expression.lhs as? VariableUse
-                ?: error("Expected variable use in assignment lhs, got ${expression.lhs}")
-        val definition = cfgGenerator.resolveVariable(variableUse)
-        val variableAccess = cfgGenerator.getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
+        val assignable =
+            expression.lhs as? Assignable
+                ?: error("Expected Assignable use in assignment lhs, got ${expression.lhs}")
+        val lhs = cfgGenerator.visit(assignable, EvalMode.Value, context)
         val rhs = cfgGenerator.visit(expression.rhs, EvalMode.Value, context)
+        val lhsAccess = lhs.access
         val rhsAccess = rhs.access
         // by type checking
+        require(lhsAccess is SimpleLayout)
         require(rhsAccess is SimpleLayout)
-        val operatorNode = makeAssignOperatorNode(expression, variableAccess, rhsAccess.access)
+        require(lhsAccess.access is CFGNode.LValue)
+        val operatorNode = makeAssignOperatorNode(expression, lhsAccess.access, rhsAccess.access)
         return when (rhs) {
             is SubCFG.Immediate -> SubCFG.Immediate(operatorNode)
             is SubCFG.Extracted -> {
                 val assignmentVertex = cfg.addUnconditionalVertex(operatorNode)
                 rhs.exit.connect(assignmentVertex.label)
-                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(SimpleLayout(variableAccess), mode))
+                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(SimpleLayout(lhsAccess.access), mode))
             }
         }
     }

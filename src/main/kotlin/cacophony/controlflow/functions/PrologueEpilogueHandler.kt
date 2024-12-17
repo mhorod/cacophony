@@ -3,10 +3,10 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 
 class PrologueEpilogueHandler(
-    private val handler: FunctionHandler,
     private val callConvention: CallConvention,
     private val stackSpace: CFGNode.ConstantLazy,
     private val resultAccess: Register.VirtualRegister,
+    private val flattenedArguments: List<CFGNode>,
 ) {
     private val spaceForPreservedRegisters: List<Register.VirtualRegister> =
         callConvention.preservedRegisters().map {
@@ -14,29 +14,24 @@ class PrologueEpilogueHandler(
         }
 
     fun generatePrologue(): List<CFGNode> {
+        println(flattenedArguments)
         val nodes = mutableListOf<CFGNode>()
-        with(handler) {
-            nodes.add(pushRegister(rbp))
-            nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
-            nodes.add(registerUse(rsp) subeq stackSpace)
+        nodes.add(pushRegister(rbp))
+        nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
+        nodes.add(registerUse(rsp) subeq stackSpace)
 
-            // Preserved registers
-            for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
-                nodes.add(registerUse(destination) assign registerUse(Register.FixedRegister(source)))
-            }
+        // Preserved registers
+        for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+            nodes.add(registerUse(destination) assign registerUse(Register.FixedRegister(source)))
+        }
 
-            // Defined function arguments
-            for ((ind, arg) in getFunctionDeclaration().arguments.withIndex()) {
-                nodes.add(
-                    wrapAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
-                        wrapAllocation(callConvention.argumentAllocation(ind)),
-                )
-            }
-
-            // Static link (implicit arg)
+        // Defined function arguments
+        for ((ind, destination) in flattenedArguments.withIndex()) {
+            // TODO: should be removed with LValueLayout
+            require(destination is CFGNode.LValue)
             nodes.add(
-                wrapAllocation(getVariableAllocation(getStaticLink())) assign
-                    wrapAllocation(callConvention.argumentAllocation(getFunctionDeclaration().arguments.size)),
+                destination assign
+                    wrapAllocation(callConvention.argumentAllocation(ind)),
             )
         }
         return nodes

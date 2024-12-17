@@ -6,16 +6,7 @@ import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Empty
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.Literal
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.Statement
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.types.TypeCheckingResult
 
 /**
@@ -23,10 +14,10 @@ import cacophony.semantic.types.TypeCheckingResult
  */
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
-    analyzedUseTypes: UseTypeAnalysisResult, // TODO: adjust to new specification of analyzedUseTypes
+    analyzedUseTypes: UseTypeAnalysisResult,
     private val function: Definition.FunctionDefinition,
     private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
-    private val variablesMap: VariablesMap,
+    val variablesMap: VariablesMap,
     private val typeCheckingResult: TypeCheckingResult,
     private val callGenerator: CallGenerator,
 ) {
@@ -150,7 +141,7 @@ internal class CFGGenerator(
             is Statement.IfElseStatement -> visitIfElseStatement(expression, mode, context)
             is Statement.ReturnStatement -> visitReturnStatement(expression, mode, context)
             is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
-            is VariableUse -> visitVariableUse(expression, mode)
+            is Assignable -> visitAssignable(expression, mode)
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
@@ -177,10 +168,9 @@ internal class CFGGenerator(
 
     private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
-    // TODO: remove the SourceVariable creation with VariablesUse map once variable allocation is done in FunctionHandler
     private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode, context: Context) =
         assignmentHandler.generateAssignment(
-            Variable.SourceVariable(expression), /* variablesMap.definitions[expression]!! */
+            variablesMap.definitions[expression]!!,
             expression.value,
             mode,
             context,
@@ -261,13 +251,11 @@ internal class CFGGenerator(
         }
 
     private fun visitAssignment(expression: OperatorBinary.Assignment, mode: EvalMode, context: Context): SubCFG {
-        val variableUse =
-            expression.lhs as? VariableUse
-                ?: error("Expected variable use in assignment lhs, got ${expression.lhs}")
-        val definition = resolvedVariables[variableUse] ?: error("Unresolved variable $variableUse")
-        // TODO: remove the SourceVariable creation with VariablesUse map once variable allocation is done in FunctionHandler
+        val lhs =
+            expression.lhs as? Assignable
+                ?: error("Expected Assignable in assignment lhs, got ${expression.lhs}")
         return assignmentHandler.generateAssignment(
-            Variable.SourceVariable(definition), /* variablesMap.lvalues[variableUse] */
+            variablesMap.lvalues[lhs]!!,
             expression.rhs,
             mode,
             context,
@@ -393,19 +381,19 @@ internal class CFGGenerator(
         return SubCFG.Extracted(vertex, artificialExit, CFGNode.NoOp)
     }
 
-    private fun visitVariableUse(expression: VariableUse, mode: EvalMode): SubCFG {
-        val definition = resolvedVariables[expression] ?: error("Unresolved variable $expression")
-        // TODO: remove the SourceVariable creation with VariablesUse map once variable allocation is done in FunctionHandler
-        val variableAccess =
-            getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
+    private fun visitAssignable(expression: Assignable, mode: EvalMode): SubCFG {
+        val variable = variablesMap.lvalues[expression]!!
+        val variableAccess = getVariableLayout(getCurrentFunctionHandler(), variable)
         return when (mode) {
             is EvalMode.Value -> SubCFG.Immediate(variableAccess)
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
             is EvalMode.Conditional -> {
+                // by type checking
+                require(variableAccess is SimpleLayout)
                 val conditionVertex =
                     cfg.addConditionalVertex(
                         CFGNode.NotEquals(
-                            variableAccess,
+                            variableAccess.access,
                             CFGNode.ConstantKnown(0),
                         ),
                     )
@@ -417,8 +405,6 @@ internal class CFGGenerator(
     }
 
     internal fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
-
-    internal fun resolveVariable(variable: VariableUse) = resolvedVariables[variable] ?: error("Unresolved variable $variable")
 
     private fun getFunctionHandler(function: Definition.FunctionDefinition): FunctionHandler =
         functionHandlers[function] ?: error("Function $function has no handler")

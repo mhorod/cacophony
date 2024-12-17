@@ -2,6 +2,8 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.Register
+import cacophony.controlflow.Variable
+import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.types.BuiltinType
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.StructType
@@ -25,4 +27,20 @@ fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
         is StructType -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
         TypeExpr.VoidType -> SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister())) // TODO: ???
         is FunctionType -> throw IllegalArgumentException("No layout for function types")
+    }
+
+fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
+    when (variable) {
+        is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable))
+        is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(handler, subfield) })
+    }
+
+fun flattenLayout(layout: Layout): List<CFGNode> =
+    when (layout) {
+        is SimpleLayout -> listOf(layout.access)
+        is StructLayout ->
+            layout.fields
+                .toSortedMap()
+                .map { (_, subLayout) -> flattenLayout(subLayout) }
+                .flatten()
     }

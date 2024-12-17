@@ -225,8 +225,6 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     private fun variableToString(variable: Variable): String =
         when (variable) {
             is Variable.PrimitiveVariable -> "$variable".split("$").last()
-            is Variable.AuxVariable -> "$variable".split("$").last()
-            is Variable.SourceVariable -> "$variable".split("$").last()
             is Variable.StructVariable ->
                 "$variable".split("$").last() + " { " +
                     variable.fields.entries.joinToString(", ") { (k, v) -> "$k -> ${variableToString(v)}" } + " }"

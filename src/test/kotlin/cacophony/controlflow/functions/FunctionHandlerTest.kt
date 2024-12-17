@@ -247,13 +247,13 @@ class FunctionHandlerTest {
         val handler = makeDefaultHandler(funDef, analyzedFunction)
         assertEquals(8, handler.getStackSpace().value)
 
-        handler.allocateFrameVariable(mockk<Variable>())
+        handler.allocateFrameVariable(mockk<Variable.PrimitiveVariable>())
         assertEquals(16, handler.getStackSpace().value)
 
-        handler.registerVariableAllocation(mockk<Variable>(), VariableAllocation.OnStack(32))
+        handler.registerVariableAllocation(mockk<Variable.PrimitiveVariable>(), VariableAllocation.OnStack(32))
         assertEquals(40, handler.getStackSpace().value)
 
-        handler.allocateFrameVariable(mockk<Variable>())
+        handler.allocateFrameVariable(mockk<Variable.PrimitiveVariable>())
         assertEquals(48, handler.getStackSpace().value)
     }
 
@@ -273,17 +273,17 @@ class FunctionHandlerTest {
         val handler = makeDefaultHandler(funDef, analyzedFunction)
         assertEquals(8, handler.getStackSpace().value)
 
-        var auxVariable = mockk<Variable>()
-        handler.allocateFrameVariable(auxVariable)
+        var primVariable = mockk<Variable.PrimitiveVariable>()
+        handler.allocateFrameVariable(primVariable)
 
-        var allocation = handler.getVariableAllocation(auxVariable)
+        var allocation = handler.getVariableAllocation(primVariable)
         require(allocation is VariableAllocation.OnStack)
         assertEquals(8, allocation.offset)
 
-        auxVariable = mockk<Variable>()
-        handler.allocateFrameVariable(auxVariable)
+        primVariable = mockk<Variable.PrimitiveVariable>()
+        handler.allocateFrameVariable(primVariable)
 
-        allocation = handler.getVariableAllocation(auxVariable)
+        allocation = handler.getVariableAllocation(primVariable)
         require(allocation is VariableAllocation.OnStack)
         assertEquals(16, allocation.offset)
     }
@@ -676,9 +676,7 @@ class FunctionHandlerTest {
             // when & then
             org.junit.jupiter.api.assertThrows<GenerateVariableAccessException> {
                 fHandler.generateVariableAccess(
-                    Variable.SourceVariable(
-                        variableDeclaration("x", lit(10)),
-                    ),
+                    Variable.PrimitiveVariable(),
                 )
             }
         }

@@ -117,7 +117,7 @@ private class StaticFunctionsRelationsVisitor(
 
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]
-        if (definition is Definition.FunctionDefinition)
+        if (definition is Definition.FunctionDefinition || definition is Definition.ForeignFunctionDeclaration)
             return
         functionStack.lastOrNull()?.let {
             relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[expr]!!, VariableUseType.READ))

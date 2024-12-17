@@ -10,11 +10,11 @@ import cacophony.semantic.syntaxtree.Definition
 interface FunctionHandler {
     fun getFunctionDeclaration(): Definition.FunctionDefinition
 
-    fun generateVariableAccess(variable: Variable): CFGNode.LValue
+    fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
-    fun getVariableAllocation(variable: Variable): VariableAllocation
+    fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation
 
-    fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation)
+    fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation)
 
     // Returns static link to parent
     fun getStaticLink(): Variable.PrimitiveVariable
@@ -27,7 +27,7 @@ interface FunctionHandler {
 
     fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode
 
-    fun allocateFrameVariable(variable: Variable): CFGNode.LValue
+    fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
     fun generatePrologue(): List<CFGNode>
 

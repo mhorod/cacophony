@@ -112,7 +112,7 @@ private class VarUseVisitor(
 
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]
-        if (definition is Definition.FunctionDefinition)
+        if (definition is Definition.FunctionDefinition || definition is Definition.ForeignFunctionDeclaration)
             return
         useTypeAnalysis[expr] = UseTypesForExpression.empty()
         useTypeAnalysis[expr]!!.add(

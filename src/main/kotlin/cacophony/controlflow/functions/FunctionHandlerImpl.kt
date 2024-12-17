@@ -5,6 +5,8 @@ import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.controlflow.generation.Layout
 import cacophony.controlflow.generation.SimpleLayout
+import cacophony.controlflow.generation.flattenLayout
+import cacophony.controlflow.generation.getVariableLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
@@ -19,20 +21,20 @@ class FunctionHandlerImpl(
     callConvention: CallConvention,
     private val variablesMap: VariablesMap,
 ) : FunctionHandler {
-    private val staticLink = Variable.PrimitiveVariable()
+    private val staticLink = Variable.PrimitiveVariable("sl")
     private var stackSpace = 0
-    private val variableAllocation: MutableMap<Variable, VariableAllocation> = mutableMapOf()
+    private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
 
     // This does not perform any checks and may override previous allocation.
     // Holes in the stack may be also created if stack variables are directly allocated with this method.
-    override fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation) {
+    override fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation) {
         if (allocation is VariableAllocation.OnStack) {
             stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
         }
         variableAllocation[variable] = allocation
     }
 
-    override fun allocateFrameVariable(variable: Variable): CFGNode.LValue {
+    override fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue {
         val currentStackSpace = stackSpace
         registerVariableAllocation(variable, VariableAllocation.OnStack(stackSpace))
         return MemoryAccess(
@@ -47,15 +49,20 @@ class FunctionHandlerImpl(
         introduceStaticLinksParams()
 
         run {
-            val usedVars = analyzedFunction.variablesUsedInNestedFunctions
+            val usedVars = analyzedFunction.variablesUsedInNestedFunctions.map { it.getPrimitives() }.flatten()
             val regVar =
                 (
                     analyzedFunction
                         .declaredVariables()
-                        .map { it.origin } union function.arguments.map { variablesMap.definitions[it]!! }
+                        .map { it.origin.getPrimitives() }
+                        .flatten() union
+                        function.arguments
+                            .map { variablesMap.definitions[it]!! }
+                            .map { it.getPrimitives() }
+                            .flatten()
                 ).toSet()
-                    .minus(usedVars)
-                    .filterIsInstance<Variable.PrimitiveVariable>()
+                    .minus(usedVars.toSet())
+
             regVar.forEach {
                 registerVariableAllocation(
                     it,
@@ -63,15 +70,13 @@ class FunctionHandlerImpl(
                 )
             }
 
-            usedVars.filterIsInstance<Variable.PrimitiveVariable>().forEach {
+            usedVars.forEach {
                 allocateFrameVariable(it)
             }
         }
     }
 
     override fun getFunctionDeclaration(): FunctionDefinition = function
-
-    public fun getAnalyzedFunction(): AnalyzedFunction = analyzedFunction
 
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {
@@ -98,7 +103,10 @@ class FunctionHandlerImpl(
             callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
         }
 
-    override fun generateVariableAccess(variable: Variable): CFGNode.LValue {
+    override fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
+        if (variable in variableAllocation) { // WARN: hack to handle arguments not used inside function
+            return wrapAllocation(variableAllocation[variable]!!)
+        }
         val analyzedVariable = analyzedFunction.variables.find { it.origin == variable }
         val definedInFunctionHandler =
             if (analyzedVariable != null) {
@@ -129,7 +137,7 @@ class FunctionHandlerImpl(
         }
     }
 
-    override fun getVariableAllocation(variable: Variable): VariableAllocation =
+    override fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation =
         variableAllocation.getOrElse(variable) {
             throw IllegalArgumentException("Variable $variable have not been allocated inside $this FunctionHandler")
         }
@@ -149,12 +157,23 @@ class FunctionHandlerImpl(
 
     override fun getResultLayout(): Layout = SimpleLayout(registerUse(getResultRegister()))
 
+    private fun getFlattenedArguments(): List<CFGNode> =
+        function.arguments
+            .map { variablesMap.definitions[it]!! }
+            .map {
+                getVariableLayout(
+                    this,
+                    it,
+                )
+            }.map { flattenLayout(it) }
+            .flatten() + generateVariableAccess(getStaticLink())
+
     private val prologueEpilogueHandler =
         PrologueEpilogueHandler(
-            this,
             callConvention,
             getStackSpace(),
             resultRegister,
+            getFlattenedArguments(),
         )
 
     override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()

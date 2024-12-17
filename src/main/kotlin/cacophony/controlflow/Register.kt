@@ -1,7 +1,7 @@
 package cacophony.controlflow
 
 sealed class Register {
-    class VirtualRegister() : Register() {
+    class VirtualRegister : Register() {
         private val myNumber = number++
 
         override fun toString(): String = "reg$myNumber"

@@ -17,7 +17,7 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
         context: Context,
         propagate: Boolean,
     ): SubCFG {
-        val variableLayout = getVariableLayout(variable)
+        val variableLayout = getVariableLayout(handler, variable)
         return when (val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)) {
             is SubCFG.Immediate -> SubCFG.Immediate(getLayoutOfAssignments(valueCFG.access, variableLayout))
             is SubCFG.Extracted -> {
@@ -31,15 +31,6 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
             }
         }
     }
-
-    private fun getVariableLayout(variable: Variable): Layout =
-        when (variable) {
-            is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable))
-            is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(subfield) })
-            // TODO: These two should be removed
-            is Variable.SourceVariable -> SimpleLayout(handler.generateVariableAccess(variable))
-            is Variable.AuxVariable.StaticLinkVariable -> SimpleLayout(handler.generateVariableAccess(variable))
-        }
 
     private fun getLayoutOfAssignments(source: Layout, destination: Layout): Layout =
         when (destination) {
