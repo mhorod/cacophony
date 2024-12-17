@@ -9,19 +9,11 @@ import cacophony.controlflow.CFGNode
 internal sealed interface SubCFG {
     val access: Layout
 
-    // TODO: this is a version for no-structs, should be deleted after all merges
-    fun getAccess(): CFGNode
-
     /**
      * Indicates that no control flow vertex was created during expression translation
      */
     data class Immediate(override val access: Layout) : SubCFG {
         constructor(access: CFGNode) : this(SimpleLayout(access))
-
-        override fun getAccess(): CFGNode {
-            require(access is SimpleLayout)
-            return access.access
-        }
     }
 
     /**
@@ -44,11 +36,6 @@ internal sealed interface SubCFG {
         infix fun merge(rhs: Extracted): Extracted {
             exit.connect(rhs.entry.label)
             return Extracted(entry, rhs.exit, rhs.access)
-        }
-
-        override fun getAccess(): CFGNode {
-            require(access is SimpleLayout)
-            return access.access
         }
     }
 }

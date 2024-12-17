@@ -6,6 +6,7 @@ import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
 import cacophony.controlflow.VariableAllocation
+import cacophony.controlflow.generation.SimpleLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.AnalyzedVariable
 import cacophony.semantic.analysis.ParentLink
@@ -636,7 +637,7 @@ class FunctionHandlerTest {
             verify {
                 generateCall(
                     any(),
-                    listOf(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
+                    listOf(SimpleLayout(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))))),
                     any(),
                     any(),
                 )

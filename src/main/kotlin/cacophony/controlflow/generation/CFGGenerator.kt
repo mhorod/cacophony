@@ -1,8 +1,8 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
+import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.FunctionHandler
-import cacophony.controlflow.functions.generateCallFrom
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
@@ -28,6 +28,7 @@ internal class CFGGenerator(
     private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
     private val variablesMap: VariablesMap,
     private val typeCheckingResult: TypeCheckingResult,
+    private val callGenerator: CallGenerator,
 ) {
     private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
@@ -211,13 +212,14 @@ internal class CFGGenerator(
             }
 
         val callSequence =
-            generateCallFrom(
-                getCurrentFunctionHandler(),
-                function,
-                functionHandler,
-                argumentVertices.map { it.getAccess() }, // TODO: change when generateCall takes List<Layout>
-                resultRegister,
-            ).map { ensureExtracted(it) }
+            callGenerator
+                .generateCallFrom(
+                    getCurrentFunctionHandler(),
+                    function,
+                    functionHandler,
+                    argumentVertices.map { it.access },
+                    resultRegister,
+                ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
         val entry =

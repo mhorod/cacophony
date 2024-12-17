@@ -3,7 +3,6 @@ package cacophony.controlflow.generation
 import cacophony.*
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.add
-import cacophony.controlflow.cfg
 import cacophony.controlflow.integer
 import cacophony.controlflow.minus
 import cacophony.controlflow.mod
@@ -23,11 +22,9 @@ class SingleCFGNodeGenerationTest {
     private fun assertGeneratedSingleNode(programCFG: ProgramCFG, expectedNode: CFGNode) {
         val function = programCFG.keys.first()
         val expectedCFG =
-            cfg {
-                fragment(function, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("return unit") { writeRegister("y", expectedNode) }
-                    "return unit" does jump("exit") { writeRegister(getResultRegister(), unit) }
-                }
+            singleWrappedFragmentCFG(function) {
+                "bodyEntry" does jump("return unit") { writeRegister("y", expectedNode) }
+                "return unit" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
         assertEquivalent(programCFG, expectedCFG)
     }
@@ -43,7 +40,7 @@ class SingleCFGNodeGenerationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedNode = makeNode(integer(1), integer(2))
@@ -63,7 +60,7 @@ class SingleCFGNodeGenerationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedNode = minus(integer(1))
@@ -83,7 +80,7 @@ class SingleCFGNodeGenerationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedNode = not(integer(0))
@@ -100,7 +97,7 @@ class SingleCFGNodeGenerationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedNode = exprNode
@@ -118,7 +115,7 @@ class SingleCFGNodeGenerationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedNode = makeNode(exprNode, exprNode)

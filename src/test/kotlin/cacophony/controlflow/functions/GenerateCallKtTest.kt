@@ -5,6 +5,7 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
+import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
@@ -51,7 +52,7 @@ class GenerateCallKtTest {
             generateCall(
                 any(),
                 listOf(
-                    expectedStaticLink,
+                    SimpleLayout(expectedStaticLink),
                 ),
                 any(),
                 match { matchStackSpaceToHandler(it, caller) },

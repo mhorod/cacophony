@@ -27,43 +27,43 @@ typealias MakeBinaryNode = (CFGNode, CFGNode) -> CFGNode
 class TestOperators {
     companion object {
         val minus: MakeUnaryExpression = { child -> cacophony.minus(child) }
-        val minusNode: MakeUnaryNode = { child -> minus(child) }
+        private val minusNode: MakeUnaryNode = { child -> minus(child) }
 
-        val not: MakeUnaryExpression = { child -> cacophony.lnot(child) }
-        val notNode: MakeUnaryNode = { child -> not(child) }
+        val not: MakeUnaryExpression = { child -> lnot(child) }
+        private val notNode: MakeUnaryNode = { child -> not(child) }
 
         val add: MakeBinaryExpression = { lhs, rhs -> lhs add rhs }
-        val addNode: MakeBinaryNode = { lhs, rhs -> lhs add rhs }
+        private val addNode: MakeBinaryNode = { lhs, rhs -> lhs add rhs }
 
-        val sub: MakeBinaryExpression = { lhs, rhs -> lhs sub rhs }
-        val subNode: MakeBinaryNode = { lhs, rhs -> lhs sub rhs }
+        private val sub: MakeBinaryExpression = { lhs, rhs -> lhs sub rhs }
+        private val subNode: MakeBinaryNode = { lhs, rhs -> lhs sub rhs }
 
-        val mul: MakeBinaryExpression = { lhs, rhs -> lhs mul rhs }
-        val mulNode: MakeBinaryNode = { lhs, rhs -> lhs mul rhs }
+        private val mul: MakeBinaryExpression = { lhs, rhs -> lhs mul rhs }
+        private val mulNode: MakeBinaryNode = { lhs, rhs -> lhs mul rhs }
 
         val div: MakeBinaryExpression = { lhs, rhs -> lhs div rhs }
-        val divNode: MakeBinaryNode = { lhs, rhs -> lhs div rhs }
+        private val divNode: MakeBinaryNode = { lhs, rhs -> lhs div rhs }
 
-        val mod: MakeBinaryExpression = { lhs, rhs -> lhs mod rhs }
-        val modNode: MakeBinaryNode = { lhs, rhs -> lhs mod rhs }
+        private val mod: MakeBinaryExpression = { lhs, rhs -> lhs mod rhs }
+        private val modNode: MakeBinaryNode = { lhs, rhs -> lhs mod rhs }
 
-        val eq: MakeBinaryExpression = { lhs, rhs -> lhs eq rhs }
-        val eqNode: MakeBinaryNode = { lhs, rhs -> lhs eq rhs }
+        private val eq: MakeBinaryExpression = { lhs, rhs -> lhs eq rhs }
+        private val eqNode: MakeBinaryNode = { lhs, rhs -> lhs eq rhs }
 
-        val neq: MakeBinaryExpression = { lhs, rhs -> lhs neq rhs }
-        val neqNode: MakeBinaryNode = { lhs, rhs -> lhs neq rhs }
+        private val neq: MakeBinaryExpression = { lhs, rhs -> lhs neq rhs }
+        private val neqNode: MakeBinaryNode = { lhs, rhs -> lhs neq rhs }
 
-        val lt: MakeBinaryExpression = { lhs, rhs -> lhs lt rhs }
-        val ltNode: MakeBinaryNode = { lhs, rhs -> lhs lt rhs }
+        private val lt: MakeBinaryExpression = { lhs, rhs -> lhs lt rhs }
+        private val ltNode: MakeBinaryNode = { lhs, rhs -> lhs lt rhs }
 
-        val leq: MakeBinaryExpression = { lhs, rhs -> lhs leq rhs }
-        val leqNode: MakeBinaryNode = { lhs, rhs -> lhs leq rhs }
+        private val leq: MakeBinaryExpression = { lhs, rhs -> lhs leq rhs }
+        private val leqNode: MakeBinaryNode = { lhs, rhs -> lhs leq rhs }
 
-        val gt: MakeBinaryExpression = { lhs, rhs -> lhs gt rhs }
-        val gtNode: MakeBinaryNode = { lhs, rhs -> lhs gt rhs }
+        private val gt: MakeBinaryExpression = { lhs, rhs -> lhs gt rhs }
+        private val gtNode: MakeBinaryNode = { lhs, rhs -> lhs gt rhs }
 
-        val geq: MakeBinaryExpression = { lhs, rhs -> lhs geq rhs }
-        val geqNode: MakeBinaryNode = { lhs, rhs -> lhs geq rhs }
+        private val geq: MakeBinaryExpression = { lhs, rhs -> lhs geq rhs }
+        private val geqNode: MakeBinaryNode = { lhs, rhs -> lhs geq rhs }
 
         fun unaryExpressions(): List<Arguments> =
             listOf(

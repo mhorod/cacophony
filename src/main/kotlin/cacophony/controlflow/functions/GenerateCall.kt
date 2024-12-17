@@ -1,6 +1,8 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
+import cacophony.controlflow.generation.Layout
+import cacophony.controlflow.generation.SimpleLayout
 import cacophony.semantic.syntaxtree.Definition
 
 /**
@@ -10,7 +12,7 @@ fun generateCallFrom(
     callerFunction: FunctionHandler,
     function: Definition.FunctionDeclaration,
     functionHandler: FunctionHandler?,
-    arguments: List<CFGNode>,
+    arguments: List<Layout>,
     result: Register?,
 ): List<CFGNode> =
     when (function) {
@@ -20,21 +22,29 @@ fun generateCallFrom(
             }
             generateCall(function, arguments, result, callerFunction.getStackSpace())
         }
+
         is Definition.FunctionDefinition -> {
             if (function.arguments.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
-            generateCall(function, arguments + listOf(staticLinkVar), result, callerFunction.getStackSpace())
+            generateCall(function, arguments + listOf(SimpleLayout(staticLinkVar)), result, callerFunction.getStackSpace())
         }
     }
 
 fun generateCall(
     function: Definition.FunctionDeclaration,
-    arguments: List<CFGNode>,
+    arguments: List<Layout>,
     result: Register?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
+    // TODO: intentional shadowing, remove after the struct flattening is done
+    val arguments =
+        arguments.map {
+            require(it is SimpleLayout)
+            it.access
+        }
+
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
 
@@ -72,4 +82,31 @@ fun generateCall(
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(result), CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RAX))))
 
     return nodes
+}
+
+interface CallGenerator {
+    fun generateCallFrom(
+        callerFunction: FunctionHandler,
+        function: Definition.FunctionDeclaration,
+        functionHandler: FunctionHandler?,
+        arguments: List<Layout>,
+        result: Register?,
+    ): List<CFGNode>
+}
+
+class SimpleCallGenerator : CallGenerator {
+    override fun generateCallFrom(
+        callerFunction: FunctionHandler,
+        function: Definition.FunctionDeclaration,
+        functionHandler: FunctionHandler?,
+        arguments: List<Layout>,
+        result: Register?,
+    ): List<CFGNode> =
+        cacophony.controlflow.functions.generateCallFrom(
+            callerFunction,
+            function,
+            functionHandler,
+            arguments,
+            result,
+        )
 }

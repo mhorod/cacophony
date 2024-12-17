@@ -10,9 +10,7 @@ import cacophony.codegen.linearization.linearize
 import cacophony.codegen.registers.*
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
-import cacophony.controlflow.functions.FunctionHandler
-import cacophony.controlflow.functions.SystemVAMD64CallConvention
-import cacophony.controlflow.functions.generateFunctionHandlers
+import cacophony.controlflow.functions.*
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.controlflow.generation.generateCFG
 import cacophony.diagnostics.Diagnostics
@@ -201,7 +199,7 @@ class CacophonyPipeline(
         return result
     }
 
-    private fun analyzeAst(ast: AST): AstAnalysisResult {
+    fun analyzeAst(ast: AST): AstAnalysisResult {
         val resolvedNames = resolveNames(ast)
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
         val types = checkTypes(ast, resolvedVariables)
@@ -216,9 +214,9 @@ class CacophonyPipeline(
 
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
 
-    fun generateControlFlowGraph(ast: AST): ProgramCFG = generateControlFlowGraph(analyzeAst(ast))
+    private fun generateControlFlowGraph(ast: AST): ProgramCFG = generateControlFlowGraph(analyzeAst(ast), SimpleCallGenerator())
 
-    fun generateControlFlowGraph(analyzedAst: AstAnalysisResult): ProgramCFG {
+    fun generateControlFlowGraph(analyzedAst: AstAnalysisResult, callGenerator: CallGenerator): ProgramCFG {
         val cfg =
             generateCFG(
                 analyzedAst.resolvedVariables,
@@ -226,6 +224,7 @@ class CacophonyPipeline(
                 analyzedAst.functionHandlers,
                 analyzedAst.variablesMap,
                 analyzedAst.types,
+                callGenerator,
             )
         logger?.logSuccessfulControlFlowGraphGeneration(cfg)
         return cfg
@@ -322,7 +321,7 @@ class CacophonyPipeline(
 
     private fun generateAsmImpl(ast: AST): Pair<String, Map<FunctionDefinition, String>> {
         val analyzedAst = analyzeAst(ast)
-        val cfg = generateControlFlowGraph(analyzedAst)
+        val cfg = generateControlFlowGraph(analyzedAst, SimpleCallGenerator())
         val covering = coverWithInstructions(cfg)
         val registersInteractions = analyzeRegistersInteraction(covering)
         val registerAllocation = allocateRegisters(registersInteractions)
