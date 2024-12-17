@@ -109,8 +109,8 @@ private class StaticFunctionsRelationsVisitor(
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
             is Struct -> visitStruct(expr)
-            else -> {
-                // do nothing for expressions without nested expressions
+            is LeafExpression -> {
+                // do nothing
             }
         }
     }
