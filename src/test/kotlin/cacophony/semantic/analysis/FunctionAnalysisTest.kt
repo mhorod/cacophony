@@ -459,7 +459,7 @@ class FunctionAnalysisTest {
                 barVariableAUse to barDeclarationA,
             )
         val variablesMap: VariablesMap =
-                createVariablesMap(
+            createVariablesMap(
                 mapOf(
                     fooDeclarationA to fooVariableA,
                     barDeclarationA to barVariableA,

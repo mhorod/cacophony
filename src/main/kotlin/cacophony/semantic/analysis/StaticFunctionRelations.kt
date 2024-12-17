@@ -115,13 +115,29 @@ private class StaticFunctionsRelationsVisitor(
         }
     }
 
+    private fun visitAssignable(expr: Assignable, type: VariableUseType) {
+        val variable = variablesMap.lvalues[expr]!!
+        // Mark all nested variables as read
+        markNestedVariables(variable, type)
+        // Mark all parents as read
+        var nestedExpression: Expression = expr
+        while (nestedExpression is Assignable) {
+            functionStack.lastOrNull()?.let {
+                relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[nestedExpression]!!, type))
+            }
+            if (nestedExpression !is FieldRef) {
+                break
+            }
+            nestedExpression = nestedExpression.struct()
+        }
+    }
+
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]
         if (definition is Definition.FunctionDefinition)
             return
-        functionStack.lastOrNull()?.let {
-            relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[expr]!!, VariableUseType.READ))
-        }
+        if (functionStack.isNotEmpty())
+            markNestedVariables(variablesMap.lvalues[expr]!!, VariableUseType.READ)
     }
 
     private fun visitBinaryOperator(expr: OperatorBinary) {
@@ -143,23 +159,10 @@ private class StaticFunctionsRelationsVisitor(
 
     private fun visitAssignment(expr: OperatorBinary.Assignment) {
         if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
-            val variable = variablesMap.lvalues[expr.lhs as Assignable]!!
-            // Mark all nested variables as written
-            markNestedVariables(variable, VariableUseType.WRITE)
-            // Mark all parents as written
-            var nestedExpression = expr.lhs
-            while (nestedExpression is Assignable) {
-                functionStack.lastOrNull()?.let {
-                    relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[nestedExpression]!!, VariableUseType.WRITE))
-                }
-                if (nestedExpression !is FieldRef) {
-                    break
-                }
-                nestedExpression = nestedExpression.struct()
-            }
+            visitAssignable(expr.lhs as Assignable, VariableUseType.WRITE)
         } else {
-            // Could this happen?
-            visitExpression(expr.lhs)
+            TODO("unimplemented branch for different assignment type")
+//            visitExpression(expr.lhs)
         }
         visitExpression(expr.rhs)
     }
@@ -170,12 +173,6 @@ private class StaticFunctionsRelationsVisitor(
             else -> visitExpression(expr.lhs)
         }
         visitExpression(expr.rhs)
-    }
-
-    private fun visitVariableWrite(expr: VariableUse) {
-        functionStack.lastOrNull()?.let {
-            relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[expr]!!, VariableUseType.WRITE))
-        }
     }
 
     private fun visitVariableReadWrite(expr: VariableUse) {
@@ -226,20 +223,7 @@ private class StaticFunctionsRelationsVisitor(
 
     // We're not inside assignment, therefore it's read
     private fun visitFieldRefLValue(expr: FieldRef.LValue) {
-        val variable = variablesMap.lvalues[expr]!!
-        // Mark all nested variables as read
-        markNestedVariables(variable, VariableUseType.READ)
-        // Mark all parents as read
-        var nestedExpression: Expression = expr
-        while (nestedExpression is Assignable) {
-            functionStack.lastOrNull()?.let {
-                relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[nestedExpression]!!, VariableUseType.READ))
-            }
-            if (nestedExpression !is FieldRef) {
-                break
-            }
-            nestedExpression = nestedExpression.struct()
-        }
+        visitAssignable(expr, VariableUseType.READ)
     }
 
     private fun visitFieldRefRValue(expr: FieldRef.RValue) {
