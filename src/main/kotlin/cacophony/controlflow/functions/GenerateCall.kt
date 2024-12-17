@@ -2,7 +2,9 @@ package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
+import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.Type
 
 /**
  * Wrapper for generateCall that additionally fills staticLink to parent function.
@@ -19,16 +21,25 @@ fun generateCallFrom(
             if (function.type!!.argumentsType.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
+            if (!layoutMatchesType(result, function.type.returnType)) {
+                throw IllegalArgumentException("Wrong result layout")
+            }
             generateCall(function, arguments, result, callerFunction.getStackSpace())
         }
+
         is Definition.FunctionDefinition -> {
             if (function.arguments.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
+            }
+            if (!layoutMatchesType(result, function.returnType)) {
+                throw IllegalArgumentException("Wrong result layout")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
             generateCall(function, arguments + listOf(staticLinkVar), result, callerFunction.getStackSpace())
         }
     }
+
+private fun layoutMatchesType(layout: Layout?, type: Type): Boolean = layout?.matchesType(type) ?: true
 
 fun generateCall(
     function: Definition.FunctionDeclaration,
@@ -38,9 +49,13 @@ fun generateCall(
 ): List<CFGNode> {
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
-    val results = result?.flatten() ?: listOf()
-    val registerResults = results.zip(RETURN_REGISTER_ORDER)
-    val stackResults = results.drop(registerResults.size)
+    val resultSize =
+        when (function.returnType) {
+            is BaseType.Basic -> 1
+            is BaseType.Structural -> function.returnType.fields.size
+            else -> throw IllegalArgumentException("Cannot return value of type " + function.returnType)
+        }
+    val stackResultsSize = (resultSize - RETURN_REGISTER_ORDER.size).let { if (it > 0) it else 0 }
 
     val nodes: MutableList<CFGNode> = mutableListOf()
 
@@ -51,14 +66,14 @@ fun generateCall(
     // Finally, here we are going to increase the stack size to store all the stack arguments
     // Therefore we have to shift the stack by (callerFunctionStackSize.value + 8 * stackArguments.size + 8 * stackResults.size) % 16 manually
 
-    val stackShift = 8 * stackArguments.size + 8 * stackResults.size
+    val stackShift = 8 * stackArguments.size + 8 * stackResultsSize
 
     val alignmentShift = CFGNode.ConstantLazy { (callerFunctionStackSize.value + stackShift) % 16 }
 
     val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))
     nodes.add(CFGNode.SubtractionAssignment(rsp, alignmentShift))
 
-    if (stackResults.isNotEmpty()) nodes.add(CFGNode.SubtractionAssignment(rsp, CFGNode.ConstantKnown(8 * stackResults.size)))
+    if (stackResultsSize > 0) nodes.add(CFGNode.SubtractionAssignment(rsp, CFGNode.ConstantKnown(8 * stackResultsSize)))
 
     // in what order should we evaluate arguments? gcc uses reversed order
     for ((argument, register) in registerArguments) {
@@ -74,23 +89,40 @@ fun generateCall(
     }
 
     nodes.add(CFGNode.Call(function))
-    if (stackResults.isEmpty()) {
-        nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value + 8 * stackArguments.size }))
+
+    if (result == null) {
+        nodes.add(
+            CFGNode.AdditionAssignment(
+                rsp,
+                CFGNode.ConstantLazy {
+                    alignmentShift.value + 8 * stackArguments.size +
+                        8 * stackResultsSize
+                },
+            ),
+        )
     } else {
-        nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantKnown(8 * stackArguments.size)))
-    }
-
-    for ((access, register) in registerResults) {
-        nodes.add(CFGNode.Assignment(access as CFGNode.LValue, CFGNode.RegisterUse(Register.FixedRegister(register))))
-    }
-
-    if (stackResults.isNotEmpty()) {
-        for (access in stackResults.reversed()) {
-            val tmpReg = Register.VirtualRegister()
-            nodes.add(CFGNode.Pop(registerUse(tmpReg)))
-            nodes.add(CFGNode.Assignment(access as CFGNode.LValue, registerUse(tmpReg)))
+        if (stackResultsSize == 0) {
+            nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value + 8 * stackArguments.size }))
+        } else {
+            nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantKnown(8 * stackArguments.size)))
         }
-        nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value }))
+
+        val results = result.flatten()
+        val registerResults = results.zip(RETURN_REGISTER_ORDER)
+        val stackResults = results.drop(registerResults.size)
+
+        for ((access, register) in registerResults) {
+            nodes.add(CFGNode.Assignment(access as CFGNode.LValue, CFGNode.RegisterUse(Register.FixedRegister(register))))
+        }
+
+        if (stackResults.isNotEmpty()) {
+            for (access in stackResults.reversed()) {
+                val tmpReg = Register.VirtualRegister()
+                nodes.add(CFGNode.Pop(registerUse(tmpReg)))
+                nodes.add(CFGNode.Assignment(access as CFGNode.LValue, registerUse(tmpReg)))
+            }
+            nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value }))
+        }
     }
 
     return nodes
