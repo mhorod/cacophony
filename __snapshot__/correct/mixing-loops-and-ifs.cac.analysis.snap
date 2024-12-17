@@ -1478,50 +1478,8 @@
     "variables": [
       {
         "__class__": "AnalyzedVariable",
-        "declaration": {
-          "__class__": "VariableDeclaration",
-          "type": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 112
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 114
-              }
-            }
-          },
-          "value": {
-            "__class__": "IntLiteral",
-            "value": 1,
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 118
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 118
-              }
-            }
-          },
-          "identifier": "d",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": 105
-            },
-            "second": {
-              "__class__": "Location",
-              "value": 118
-            }
-          }
+        "origin": {
+          "__class__": "PrimitiveVariable"
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -3000,50 +2958,8 @@
       },
       {
         "__class__": "AnalyzedVariable",
-        "declaration": {
-          "__class__": "VariableDeclaration",
-          "type": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 77
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 79
-              }
-            }
-          },
-          "value": {
-            "__class__": "IntLiteral",
-            "value": 54,
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 83
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 84
-              }
-            }
-          },
-          "identifier": "b",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": 70
-            },
-            "second": {
-              "__class__": "Location",
-              "value": 84
-            }
-          }
+        "origin": {
+          "__class__": "PrimitiveVariable"
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -4522,50 +4438,8 @@
       },
       {
         "__class__": "AnalyzedVariable",
-        "declaration": {
-          "__class__": "VariableDeclaration",
-          "type": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 179
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 181
-              }
-            }
-          },
-          "value": {
-            "__class__": "IntLiteral",
-            "value": 0,
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 185
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 185
-              }
-            }
-          },
-          "identifier": "x",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": 172
-            },
-            "second": {
-              "__class__": "Location",
-              "value": 185
-            }
-          }
+        "origin": {
+          "__class__": "PrimitiveVariable"
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -6044,50 +5918,8 @@
       },
       {
         "__class__": "AnalyzedVariable",
-        "declaration": {
-          "__class__": "VariableDeclaration",
-          "type": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 96
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 98
-              }
-            }
-          },
-          "value": {
-            "__class__": "IntLiteral",
-            "value": 0,
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 102
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 102
-              }
-            }
-          },
-          "identifier": "ans",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": 87
-            },
-            "second": {
-              "__class__": "Location",
-              "value": 102
-            }
-          }
+        "origin": {
+          "__class__": "PrimitiveVariable"
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -7566,50 +7398,8 @@
       },
       {
         "__class__": "AnalyzedVariable",
-        "declaration": {
-          "__class__": "VariableDeclaration",
-          "type": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 404
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 406
-              }
-            }
-          },
-          "value": {
-            "__class__": "IntLiteral",
-            "value": 5,
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 410
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 410
-              }
-            }
-          },
-          "identifier": "c",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": 397
-            },
-            "second": {
-              "__class__": "Location",
-              "value": 410
-            }
-          }
+        "origin": {
+          "__class__": "PrimitiveVariable"
         },
         "definedIn": {
           "__class__": "FunctionDefinition",

@@ -5,8 +5,10 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
+import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.Definition
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -21,10 +23,11 @@ class GenerateCallKtTest {
         function: Definition.FunctionDefinition,
         analyzedFunction: AnalyzedFunction,
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
+        definitions: Map<Definition, Variable>,
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
-        return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention)
+        return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention, createVariablesMap(definitions))
     }
 
     // there is no easy way to check if constant computes exactly the stack space of a function handler
@@ -50,9 +53,14 @@ class GenerateCallKtTest {
         verify {
             generateCall(
                 any(),
-                listOf(
-                    expectedStaticLink,
-                ),
+                match {
+                    if (it.size != 1) false
+                    else {
+                        val l = it.first()
+                        if (l !is SimpleLayout) false
+                        else l.access == expectedStaticLink
+                    }
+                },
                 any(),
                 match { matchStackSpaceToHandler(it, caller) },
             )
@@ -77,6 +85,10 @@ class GenerateCallKtTest {
         run {
             val functionHandlers = mutableListOf<FunctionHandlerImpl>()
             for (i in 1..chainLength) {
+                val argDeclarations =
+                    (1..argumentCount).map {
+                        mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }
+                    }
                 functionHandlers.add(
                     0,
                     makeDefaultHandler(
@@ -84,12 +96,13 @@ class GenerateCallKtTest {
                             mockk(),
                             "fun def",
                             mockk(),
-                            (1..argumentCount).map { mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" } },
+                            argDeclarations,
                             mockk(),
                             mockk(),
                         ),
                         mockAnalyzedFunction(),
                         functionHandlers.toList(),
+                        argDeclarations.associateWith { Variable.PrimitiveVariable() },
                     ),
                 )
             }
@@ -103,7 +116,7 @@ class GenerateCallKtTest {
     private fun getCallNodes(argumentCount: Int, result: Register?): List<CFGNode> =
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
-            (1..argumentCount + 1).map { mockk() },
+            (1..argumentCount + 1).map { SimpleLayout(mockk()) },
             result,
             CFGNode.ConstantKnown(0),
         )
