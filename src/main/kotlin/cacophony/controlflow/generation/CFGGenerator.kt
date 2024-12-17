@@ -28,7 +28,7 @@ internal class CFGGenerator(
     private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
     private val operatorHandler = OperatorHandler(cfg, this, sideEffectAnalyzer)
-    private val assignmentHandler = AssignmentHandler(cfg, this)
+    private val assignmentHandler = AssignmentHandler(this)
     private val prologue = listOfNodesToExtracted(getCurrentFunctionHandler().generatePrologue())
     private val epilogue = listOfNodesToExtracted(getCurrentFunctionHandler().generateEpilogue())
 
@@ -41,7 +41,7 @@ internal class CFGGenerator(
         val extended =
             when (bodyCFG) {
                 is SubCFG.Extracted -> extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
-                is SubCFG.Immediate -> assignLayoutWithValue(bodyCFG.access, returnValueRegister)
+                is SubCFG.Immediate -> assignLayoutWithValue(bodyCFG.access, returnValueRegister, returnValueRegister)
             }
 
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)
@@ -74,7 +74,7 @@ internal class CFGGenerator(
             }
         }
 
-    private fun assignLayoutWithValue(source: Layout, destination: Layout): SubCFG.Extracted {
+    internal fun assignLayoutWithValue(source: Layout, destination: Layout, returnedValue: Layout): SubCFG.Extracted {
         val assignments = makeVerticesForAssignment(source, destination)
         val prerequisite =
             assignments
@@ -82,18 +82,13 @@ internal class CFGGenerator(
                 .map { SubCFG.Extracted(it, it, CFGNode.NoOp) }
                 .reduceOrNull(SubCFG.Extracted::merge)
         val lastAssignment = assignments.last()
-        val last = SubCFG.Extracted(lastAssignment, lastAssignment, destination)
+        val last = SubCFG.Extracted(lastAssignment, lastAssignment, returnedValue)
         return if (prerequisite != null) {
             prerequisite merge last
         } else {
             last
         }
     }
-
-    private fun assignLayoutNoValue(source: Layout, destination: Layout): SubCFG.Extracted =
-        makeVerticesForAssignment(source, destination)
-            .map { SubCFG.Extracted(it, it, CFGNode.NoOp) }
-            .reduce(SubCFG.Extracted::merge)
 
     private fun makeVerticesForAssignment(source: Layout, destination: Layout): List<GeneralCFGVertex.UnconditionalVertex> =
         when (source) {
@@ -114,7 +109,10 @@ internal class CFGGenerator(
             is SubCFG.Extracted -> subCFG
             is SubCFG.Immediate ->
                 when (mode) {
-                    is EvalMode.Value -> assignLayoutWithValue(subCFG.access, generateLayoutOfVirtualRegisters(subCFG.access))
+                    is EvalMode.Value -> {
+                        val destination = generateLayoutOfVirtualRegisters(subCFG.access)
+                        assignLayoutWithValue(subCFG.access, destination, destination)
+                    }
                     else -> ensureExtractedLayoutNoValue(subCFG.access)
                 }
         }
@@ -174,8 +172,9 @@ internal class CFGGenerator(
 
     private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
+    // TODO: remove the SourceVariable creation with VariablesUse map
     private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode, context: Context) =
-        assignmentHandler.generateAssignment(expression, expression.value, mode, context, false)
+        assignmentHandler.generateAssignment(Variable.SourceVariable(expression), expression.value, mode, context, false)
 
     private fun visitEmpty(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
@@ -254,7 +253,8 @@ internal class CFGGenerator(
             expression.lhs as? VariableUse
                 ?: error("Expected variable use in assignment lhs, got ${expression.lhs}")
         val definition = resolvedVariables[variableUse] ?: error("Unresolved variable $variableUse")
-        return assignmentHandler.generateAssignment(definition, expression.rhs, mode, context, true)
+        // TODO: remove the SourceVariable creation with VariablesUse map
+        return assignmentHandler.generateAssignment(Variable.SourceVariable(definition), expression.rhs, mode, context, true)
     }
 
     private fun visitOperatorBinary(expression: OperatorBinary, mode: EvalMode, context: Context): SubCFG =
@@ -310,7 +310,7 @@ internal class CFGGenerator(
     internal fun extendWithAssignment(subCFG: SubCFG, destination: Layout, mode: EvalMode): SubCFG.Extracted =
         when (mode) {
             is EvalMode.Value -> {
-                val assignment = assignLayoutWithValue(subCFG.access, destination)
+                val assignment = assignLayoutWithValue(subCFG.access, destination, destination)
                 if (subCFG is SubCFG.Extracted) {
                     subCFG merge assignment
                 } else {
@@ -334,7 +334,8 @@ internal class CFGGenerator(
 
     private fun visitReturnStatement(expression: Statement.ReturnStatement, mode: EvalMode, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
-        val resultAssignment = assignLayoutNoValue(valueCFG.access, getCurrentFunctionHandler().getResultLayout())
+        val resultAssignment =
+            assignLayoutWithValue(valueCFG.access, getCurrentFunctionHandler().getResultLayout(), SimpleLayout(CFGNode.NoOp))
 
         resultAssignment.exit.connect(epilogue.entry.label)
 
@@ -377,6 +378,7 @@ internal class CFGGenerator(
 
     private fun visitVariableUse(expression: VariableUse, mode: EvalMode): SubCFG {
         val definition = resolvedVariables[expression] ?: error("Unresolved variable $expression")
+        // TODO: remove the SourceVariable creation with VariablesUse map
         val variableAccess =
             getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
         return when (mode) {

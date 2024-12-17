@@ -115,7 +115,7 @@ internal class OperatorHandler(
             is SubCFG.Extracted -> {
                 val assignmentVertex = cfg.addUnconditionalVertex(operatorNode)
                 rhs.exit.connect(assignmentVertex.label)
-                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(variableAccess, mode))
+                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(SimpleLayout(variableAccess), mode))
             }
         }
     }
