@@ -1,13 +1,11 @@
 package cacophony.controlflow.generation
 
 import cacophony.block
-import cacophony.controlflow.cfg
 import cacophony.controlflow.integer
 import cacophony.controlflow.unit
 import cacophony.controlflow.writeRegister
 import cacophony.empty
 import cacophony.lit
-import cacophony.testPipeline
 import cacophony.unitFunctionDefinition
 import cacophony.variableDeclaration
 import cacophony.variableUse
@@ -39,35 +37,33 @@ class SideEffectSeparationTest {
             )
 
         // when
-        val cfg = testPipeline().generateControlFlowGraph(fDef)
+        val cfg = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("compute lhs") {
-                            writeRegister("x", integer(5))
-                        }
-                    "compute lhs" does
-                        jump("add") {
-                            writeRegister("lhs", writeRegister("x", integer(10)))
-                        }
-                    "add" does
-                        jump("empty") {
-                            writeRegister(
-                                "y",
-                                makeNode(
-                                    readRegister("lhs"),
-                                    (writeRegister("x", integer(20))),
-                                ),
-                            )
-                        }
-                    "empty" does
-                        jump("exit") {
-                            writeRegister(getResultRegister(), unit)
-                        }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("compute lhs") {
+                        writeRegister("x", integer(5))
+                    }
+                "compute lhs" does
+                    jump("add") {
+                        writeRegister("lhs", writeRegister("x", integer(10)))
+                    }
+                "add" does
+                    jump("empty") {
+                        writeRegister(
+                            "y",
+                            makeNode(
+                                readRegister("lhs"),
+                                (writeRegister("x", integer(20))),
+                            ),
+                        )
+                    }
+                "empty" does
+                    jump("bodyExit") {
+                        writeRegister(getResultRegister(), unit)
+                    }
             }
         assertEquivalent(cfg, expectedCFG)
     }
@@ -90,35 +86,33 @@ class SideEffectSeparationTest {
             )
 
         // when
-        val cfg = testPipeline().generateControlFlowGraph(fDef)
+        val cfg = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("compute lhs") {
-                            writeRegister("x", integer(5))
-                        }
-                    "compute lhs" does
-                        jump("add") {
-                            writeRegister("lhs", readRegister("x"))
-                        }
-                    "add" does
-                        jump("empty") {
-                            writeRegister(
-                                "y",
-                                makeNode(
-                                    readRegister("lhs"),
-                                    (writeRegister("x", integer(20))),
-                                ),
-                            )
-                        }
-                    "empty" does
-                        jump("exit") {
-                            writeRegister(getResultRegister(), unit)
-                        }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("compute lhs") {
+                        writeRegister("x", integer(5))
+                    }
+                "compute lhs" does
+                    jump("add") {
+                        writeRegister("lhs", readRegister("x"))
+                    }
+                "add" does
+                    jump("empty") {
+                        writeRegister(
+                            "y",
+                            makeNode(
+                                readRegister("lhs"),
+                                (writeRegister("x", integer(20))),
+                            ),
+                        )
+                    }
+                "empty" does
+                    jump("bodyExit") {
+                        writeRegister(getResultRegister(), unit)
+                    }
             }
         assertEquivalent(cfg, expectedCFG)
     }
@@ -141,35 +135,33 @@ class SideEffectSeparationTest {
             )
 
         // when
-        val cfg = testPipeline().generateControlFlowGraph(fDef)
+        val cfg = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("compute lhs") {
-                            writeRegister("x", integer(5))
-                        }
-                    "compute lhs" does
-                        jump("add") {
-                            writeRegister("lhs", writeRegister("x", integer(10)))
-                        }
-                    "add" does
-                        jump("empty") {
-                            writeRegister(
-                                "y",
-                                makeNode(
-                                    readRegister("lhs"),
-                                    readRegister("x"),
-                                ),
-                            )
-                        }
-                    "empty" does
-                        jump("exit") {
-                            writeRegister(getResultRegister(), unit)
-                        }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("compute lhs") {
+                        writeRegister("x", integer(5))
+                    }
+                "compute lhs" does
+                    jump("add") {
+                        writeRegister("lhs", writeRegister("x", integer(10)))
+                    }
+                "add" does
+                    jump("empty") {
+                        writeRegister(
+                            "y",
+                            makeNode(
+                                readRegister("lhs"),
+                                readRegister("x"),
+                            ),
+                        )
+                    }
+                "empty" does
+                    jump("bodyExit") {
+                        writeRegister(getResultRegister(), unit)
+                    }
             }
         assertEquivalent(cfg, expectedCFG)
     }

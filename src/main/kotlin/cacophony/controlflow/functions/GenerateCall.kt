@@ -127,3 +127,23 @@ fun generateCall(
 
     return nodes
 }
+
+interface CallGenerator {
+    fun generateCallFrom(
+        callerFunction: FunctionHandler,
+        function: Definition.FunctionDeclaration,
+        functionHandler: FunctionHandler?,
+        arguments: List<CFGNode>,
+        result: Layout?,
+    ): List<CFGNode>
+}
+
+class SimpleCallGenerator : CallGenerator {
+    override fun generateCallFrom(
+        callerFunction: FunctionHandler,
+        function: Definition.FunctionDeclaration,
+        functionHandler: FunctionHandler?,
+        arguments: List<CFGNode>,
+        result: Layout?,
+    ): List<CFGNode> = cacophony.controlflow.functions.generateCallFrom(callerFunction, function, functionHandler, arguments, result)
+}

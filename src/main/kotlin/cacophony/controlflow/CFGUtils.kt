@@ -3,6 +3,7 @@ package cacophony.controlflow
 import cacophony.semantic.syntaxtree.Definition
 
 val rax = Register.FixedRegister(HardwareRegister.RAX)
+val rbx = Register.FixedRegister(HardwareRegister.RBX)
 val rsp = Register.FixedRegister(HardwareRegister.RSP)
 val rbp = Register.FixedRegister(HardwareRegister.RBP)
 val rdi = Register.FixedRegister(HardwareRegister.RDI)
@@ -21,6 +22,7 @@ val r15 = Register.FixedRegister(HardwareRegister.R15)
 val unit = CFGNode.UNIT
 val trueValue = CFGNode.TRUE
 val falseValue = CFGNode.FALSE
+val returnNode = CFGNode.Return(CFGNode.ConstantKnown(1))
 
 fun integer(value: Int) = CFGNode.ConstantKnown(value)
 

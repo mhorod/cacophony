@@ -1,15 +1,12 @@
 package cacophony.controlflow
 
-import cacophony.controlflow.functions.CallConvention
-import cacophony.controlflow.functions.SystemVAMD64CallConvention
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.semantic.syntaxtree.Definition
 
-class CFGFragmentBuilder {
+class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
     private val labels: MutableMap<String, CFGLabel> = mutableMapOf()
     private val vertices = mutableMapOf<CFGLabel, CFGVertex>()
     private val resultRegister = Register.VirtualRegister()
-    private val callConvention: CallConvention = SystemVAMD64CallConvention
 
     private fun getLabel(label: String): CFGLabel = labels.getOrPut(label) { CFGLabel() }
 
@@ -19,44 +16,20 @@ class CFGFragmentBuilder {
 
     fun jump(destination: String, node: () -> CFGNode): CFGVertex = CFGVertex.Jump(node(), getLabel(destination))
 
+    fun final(node: () -> CFGNode): CFGVertex = CFGVertex.Final(node())
+
     fun conditional(trueDestination: String, falseDestination: String, condition: () -> CFGNode): CFGVertex =
         CFGVertex.Conditional(condition(), getLabel(trueDestination), getLabel(falseDestination))
 
-    fun prologueAndEpilogue(args: List<VariableAllocation>, stackSpace: Int) {
-        var curLabel = "entry"
-        var nextLabel = 1
-        val single = { getNode: () -> CFGNode ->
-            curLabel does jump(nextLabel.toString(), getNode)
-            curLabel = nextLabel.toString()
-            nextLabel++
-        }
-        val spaceForPreservedRegisters = callConvention.preservedRegisters().map { Register.VirtualRegister() }
-        // prologue
-        single { pushRegister(rbp) }
-        single { registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)) }
-        single { registerUse(rsp) subeq CFGNode.ConstantLazy { stackSpace } }
-        for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
-            single { registerUse(destination) assign registerUse(Register.FixedRegister(source)) }
-        }
-        for ((ind, allocation) in args.dropLast(1).withIndex()) {
-            single { wrapAllocation(allocation) assign wrapAllocation(callConvention.argumentAllocation(ind)) }
-        }
-        // jump to body
-        curLabel does
-            jump("bodyEntry") {
-                wrapAllocation(args.last()) assign wrapAllocation(callConvention.argumentAllocation(args.size - 1))
-            }
+    fun virtualRegister(name: String): Register = registers.getOrPut(name) { Register.VirtualRegister() }
 
-        // epilogue
-        curLabel = "exit"
-        for ((destination, source) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
-            single { registerUse(Register.FixedRegister(destination)) assign registerUse(source) }
-        }
-        single { registerUse(Register.FixedRegister(RETURN_REGISTER_ORDER[0])) assign registerUse(getResultRegister()) }
-        single { registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)) }
-        curLabel does jump("return") { popRegister(rbp) }
-        "return" does CFGVertex.Final(CFGNode.Return(CFGNode.ConstantKnown(1)))
-    }
+    fun writeRegister(name: String, node: CFGNode) = writeRegister(virtualRegister(name), node)
+
+    fun writeRegister(register: Register, name: String) = writeRegister(register, registerUse(virtualRegister(name)))
+
+    fun pushRegister(name: String) = pushRegister(virtualRegister(name))
+
+    fun readRegister(name: String) = registerUse(virtualRegister(name))
 
     infix fun String.does(vertex: CFGVertex) {
         vertices[getLabel(this)] = vertex
@@ -67,27 +40,13 @@ class CFGBuilder {
     private val programCFG = mutableMapOf<Definition.FunctionDefinition, CFGFragment>()
     private val registers: MutableMap<String, Register> = mutableMapOf()
 
-    fun fragment(
-        function: Definition.FunctionDefinition,
-        args: List<VariableAllocation>,
-        stackSpace: Int,
-        init: CFGFragmentBuilder.() -> Unit,
-    ) {
-        val builder = CFGFragmentBuilder()
-        builder.prologueAndEpilogue(args, stackSpace)
+    fun fragment(function: Definition.FunctionDefinition, init: CFGFragmentBuilder.() -> Unit) {
+        val builder = CFGFragmentBuilder(registers)
         builder.init()
         programCFG[function] = builder.build()
     }
 
     fun build(): ProgramCFG = programCFG
-
-    fun virtualRegister(name: String): Register = registers.getOrPut(name) { Register.VirtualRegister() }
-
-    fun writeRegister(name: String, node: CFGNode) = writeRegister(virtualRegister(name), node)
-
-    fun pushRegister(name: String) = pushRegister(virtualRegister(name))
-
-    fun readRegister(name: String) = registerUse(virtualRegister(name))
 }
 
 fun cfg(init: CFGBuilder.() -> Unit): ProgramCFG {

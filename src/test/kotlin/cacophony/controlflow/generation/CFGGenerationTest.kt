@@ -6,10 +6,6 @@ import cacophony.controlflow.CFGNode.Companion.TRUE
 import cacophony.controlflow.CFGNode.Companion.UNIT
 import org.junit.jupiter.api.Test
 
-fun argStack(offset: Int) = VariableAllocation.OnStack(offset)
-
-fun argReg(reg: Register.VirtualRegister) = VariableAllocation.InRegister(reg)
-
 class CFGGenerationTest {
     @Test
     fun `CFG of empty function`() {
@@ -18,15 +14,12 @@ class CFGGenerationTest {
         val fDef = unitFunctionDefinition("f", emptyBlock)
 
         // when
-        val cfg = testPipeline().generateControlFlowGraph(fDef)
+        val cfg = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    val resReg = getResultRegister()
-                    "bodyEntry" does jump("exit") { writeRegister(resReg, UNIT) }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), UNIT) }
             }
 
         assertEquivalent(cfg, expectedCFG)
@@ -38,14 +31,12 @@ class CFGGenerationTest {
         val fDef = boolFunctionDefinition("f", lit(true))
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("exit") { writeRegister(getResultRegister(), TRUE) }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), TRUE) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -71,21 +62,19 @@ class CFGGenerationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("condition") { writeRegister(virtualRegister("x"), integer(1)) }
-                    "condition" does
-                        conditional("true", "false") {
-                            registerUse(virtualRegister("x")) neq integer(0)
-                        }
-                    "true" does jump("end") { writeRegister(virtualRegister("t"), integer(11)) }
-                    "false" does jump("end") { writeRegister(virtualRegister("t"), integer(22)) }
-                    "end" does jump("exit") { writeRegister(getResultRegister(), registerUse(virtualRegister("t"))) }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("condition") { writeRegister(virtualRegister("x"), integer(1)) }
+                "condition" does
+                    conditional("true", "false") {
+                        registerUse(virtualRegister("x")) neq integer(0)
+                    }
+                "true" does jump("end") { writeRegister(virtualRegister("t"), integer(11)) }
+                "false" does jump("end") { writeRegister(virtualRegister("t"), integer(22)) }
+                "end" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("t"))) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -109,26 +98,24 @@ class CFGGenerationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does
-                        jump("condition") {
-                            writeRegister(virtualRegister("x"), integer(0))
-                        }
-                    "condition" does
-                        conditional("body", "exitWhile") {
-                            readRegister("x") lt integer(10)
-                        }
-                    "body" does
-                        jump("condition") {
-                            readRegister("x") addeq integer(1)
-                        }
-                    "exitWhile" does jump("exit") { writeRegister(getResultRegister(), unit) }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("condition") {
+                        writeRegister(virtualRegister("x"), integer(0))
+                    }
+                "condition" does
+                    conditional("body", "exitWhile") {
+                        readRegister("x") lt integer(10)
+                    }
+                "body" does
+                    jump("condition") {
+                        readRegister("x") addeq integer(1)
+                    }
+                "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -151,15 +138,14 @@ class CFGGenerationTest {
             )
 
         // when
-        val actualCFG = testPipeline().generateControlFlowGraph(fDef)
+        val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
         val expectedCFG =
-            cfg {
-                fragment(fDef, listOf(argStack(0)), 8) {
-                    "bodyEntry" does jump("bodyEntry") { CFGNode.NoOp }
-                }
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("bodyEntry") { CFGNode.NoOp }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 }
