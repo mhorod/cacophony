@@ -4,6 +4,7 @@ import cacophony.controlflow.*
 import cacophony.controlflow.functions.FunctionHandler
 import cacophony.controlflow.functions.generateCallFrom
 import cacophony.semantic.analysis.UseTypeAnalysisResult
+import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
@@ -15,6 +16,7 @@ import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.types.TypeCheckingResult
 
 /**
  * Converts Expressions into CFG
@@ -24,6 +26,8 @@ internal class CFGGenerator(
     analyzedUseTypes: UseTypeAnalysisResult, // TODO: adjust to new specification of analyzedUseTypes
     private val function: Definition.FunctionDefinition,
     private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
+    private val variablesMap: VariablesMap,
+    private val typeCheckingResult: TypeCheckingResult,
 ) {
     private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
@@ -172,9 +176,15 @@ internal class CFGGenerator(
 
     private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
-    // TODO: remove the SourceVariable creation with VariablesUse map
+    // TODO: remove the SourceVariable creation with VariablesUse map once variable allocation is done in FunctionHandler
     private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode, context: Context) =
-        assignmentHandler.generateAssignment(Variable.SourceVariable(expression), expression.value, mode, context, false)
+        assignmentHandler.generateAssignment(
+            Variable.SourceVariable(expression), /* variablesMap.definitions[expression]!! */
+            expression.value,
+            mode,
+            context,
+            false,
+        )
 
     private fun visitEmpty(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
@@ -253,8 +263,14 @@ internal class CFGGenerator(
             expression.lhs as? VariableUse
                 ?: error("Expected variable use in assignment lhs, got ${expression.lhs}")
         val definition = resolvedVariables[variableUse] ?: error("Unresolved variable $variableUse")
-        // TODO: remove the SourceVariable creation with VariablesUse map
-        return assignmentHandler.generateAssignment(Variable.SourceVariable(definition), expression.rhs, mode, context, true)
+        // TODO: remove the SourceVariable creation with VariablesUse map once variable allocation is done in FunctionHandler
+        return assignmentHandler.generateAssignment(
+            Variable.SourceVariable(definition), /* variablesMap.lvalues[variableUse] */
+            expression.rhs,
+            mode,
+            context,
+            true,
+        )
     }
 
     private fun visitOperatorBinary(expression: OperatorBinary, mode: EvalMode, context: Context): SubCFG =
@@ -282,13 +298,12 @@ internal class CFGGenerator(
             )
         }
 
-        // TODO: fix for structs (we need TypeCheckingResult here or something like that)
-        val resultValueRegister = SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister()))
-        val trueCFG = extendWithAssignment(visit(expression.doExpression, mode, context), resultValueRegister, mode)
+        val resultValueLayout = generateLayoutOfVirtualRegisters(typeCheckingResult.expressionTypes[expression]!!)
+        val trueCFG = extendWithAssignment(visit(expression.doExpression, mode, context), resultValueLayout, mode)
         val falseCFG =
             extendWithAssignment(
                 expression.elseExpression?.let { visit(it, mode, context) } ?: SubCFG.Immediate(CFGNode.NoOp),
-                resultValueRegister,
+                resultValueLayout,
                 mode,
             )
 
@@ -303,7 +318,7 @@ internal class CFGGenerator(
             conditionalCFG
         } else {
             val extractedConditionalCFG = ensureExtracted(conditionalCFG, mode)
-            SubCFG.Extracted(extractedConditionalCFG.entry, extractedConditionalCFG.exit, resultValueRegister)
+            SubCFG.Extracted(extractedConditionalCFG.entry, extractedConditionalCFG.exit, resultValueLayout)
         }
     }
 
@@ -378,7 +393,7 @@ internal class CFGGenerator(
 
     private fun visitVariableUse(expression: VariableUse, mode: EvalMode): SubCFG {
         val definition = resolvedVariables[expression] ?: error("Unresolved variable $expression")
-        // TODO: remove the SourceVariable creation with VariablesUse map
+        // TODO: remove the SourceVariable creation with VariablesUse map once variable allocation is done in FunctionHandler
         val variableAccess =
             getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
         return when (mode) {

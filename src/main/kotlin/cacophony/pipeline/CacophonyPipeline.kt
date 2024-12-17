@@ -219,7 +219,14 @@ class CacophonyPipeline(
     fun generateControlFlowGraph(ast: AST): ProgramCFG = generateControlFlowGraph(analyzeAst(ast))
 
     fun generateControlFlowGraph(analyzedAst: AstAnalysisResult): ProgramCFG {
-        val cfg = generateCFG(analyzedAst.resolvedVariables, analyzedAst.analyzedExpressions, analyzedAst.functionHandlers)
+        val cfg =
+            generateCFG(
+                analyzedAst.resolvedVariables,
+                analyzedAst.analyzedExpressions,
+                analyzedAst.functionHandlers,
+                analyzedAst.variablesMap,
+                analyzedAst.types,
+            )
         logger?.logSuccessfulControlFlowGraphGeneration(cfg)
         return cfg
     }
