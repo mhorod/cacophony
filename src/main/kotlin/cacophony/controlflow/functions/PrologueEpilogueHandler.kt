@@ -1,12 +1,15 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
+import cacophony.controlflow.generation.Layout
+import cacophony.controlflow.generation.SimpleLayout
+import cacophony.controlflow.generation.StructLayout
 
 class PrologueEpilogueHandler(
     private val handler: FunctionHandler,
     private val callConvention: CallConvention,
     private val stackSpace: CFGNode.ConstantLazy,
-    private val resultAccess: Register.VirtualRegister,
+    private val resultAccess: Layout,
 ) {
     private val spaceForPreservedRegisters: List<Register.VirtualRegister> =
         callConvention.preservedRegisters().map {
@@ -42,6 +45,20 @@ class PrologueEpilogueHandler(
         return nodes
     }
 
+    private val returnLocations =
+        listOf(
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RAX)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RDI)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RSI)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RDX)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RCX)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.R8)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.R9)),
+        )
+
+    private fun getReturnLocation(index: Int): VariableAllocation =
+        callConvention.returnAllocation(index, handler.getFunctionDeclaration().arguments.size)
+
     fun generateEpilogue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
         // Restoring preserved registers
@@ -50,7 +67,25 @@ class PrologueEpilogueHandler(
         }
 
         // Write the result to its destination
-        nodes.add(registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(resultAccess))
+        when (resultAccess) {
+            is SimpleLayout ->
+                nodes.add(
+                    handler.variableAllocationAccess(
+                        getReturnLocation(0),
+                        handler.generateAccessToFramePointer(handler.getFunctionDeclaration()),
+                    ) assign resultAccess.access,
+                )
+
+            is StructLayout ->
+                nodes.addAll(
+                    resultAccess.flatten().withIndex().map { (i, access) ->
+                        handler.variableAllocationAccess(
+                            getReturnLocation(i),
+                            handler.generateAccessToFramePointer(handler.getFunctionDeclaration()),
+                        ) assign access
+                    },
+                )
+        }
 
         // Restoring RSP
         nodes.add(registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)))

@@ -56,8 +56,9 @@ sealed interface CFGNode {
         override fun toString(): String = "call ${functionRef.function?.identifier}"
     }
 
-    data object Return :
-        Leaf
+    data class Return(val resultSize: CFGNode) : Leaf {
+        override fun children() = listOf(resultSize)
+    }
 
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
     data class Push(

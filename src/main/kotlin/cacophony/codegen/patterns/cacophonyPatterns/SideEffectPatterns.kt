@@ -210,11 +210,12 @@ object CallPattern : NoTemporaryRegistersPattern {
 }
 
 object ReturnPattern : NoTemporaryRegistersPattern {
-    override val tree = CFGNode.Return
+    val resultSizeLabel = ConstantLabel()
+    override val tree = CFGNode.Return(CFGNode.ConstantSlot(resultSizeLabel) { true })
 
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
-            ret()
+            ret(const(resultSizeLabel))
         }
 }
 

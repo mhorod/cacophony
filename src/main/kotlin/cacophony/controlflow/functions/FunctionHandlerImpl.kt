@@ -3,6 +3,7 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
+import cacophony.controlflow.generation.SimpleLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
@@ -119,21 +120,27 @@ class FunctionHandlerImpl(
         val definedInFunctionHandler =
             ancestorFunctionHandlers.find { it.getFunctionDeclaration() == definedInDeclaration } ?: this
 
-        return when (val variableAllocation = definedInFunctionHandler.getVariableAllocation(variable)) {
+        return variableAllocationAccess(
+            definedInFunctionHandler.getVariableAllocation(variable),
+            generateAccessToFramePointer(definedInDeclaration),
+        )
+    }
+
+    override fun variableAllocationAccess(allocation: VariableAllocation, framePointerAccess: CFGNode): CFGNode.LValue =
+        when (allocation) {
             is VariableAllocation.InRegister -> {
-                RegisterUse(variableAllocation.register)
+                RegisterUse(allocation.register)
             }
 
             is VariableAllocation.OnStack -> {
                 MemoryAccess(
                     CFGNode.Subtraction(
-                        generateAccessToFramePointer(definedInDeclaration),
-                        CFGNode.ConstantKnown(variableAllocation.offset),
+                        framePointerAccess,
+                        CFGNode.ConstantKnown(allocation.offset),
                     ),
                 )
             }
         }
-    }
 
     override fun getVariableAllocation(variable: Variable): VariableAllocation =
         variableAllocation.getOrElse(variable) {
@@ -158,7 +165,7 @@ class FunctionHandlerImpl(
             this,
             callConvention,
             getStackSpace(),
-            resultRegister,
+            SimpleLayout(registerUse(resultRegister)),
         )
 
     override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()

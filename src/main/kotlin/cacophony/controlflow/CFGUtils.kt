@@ -22,7 +22,7 @@ val r15 = Register.FixedRegister(HardwareRegister.R15)
 val unit = CFGNode.UNIT
 val trueValue = CFGNode.TRUE
 val falseValue = CFGNode.FALSE
-val returnNode = CFGNode.Return
+val returnNode = CFGNode.Return(CFGNode.ConstantKnown(1))
 
 fun integer(value: Int) = CFGNode.ConstantKnown(value)
 

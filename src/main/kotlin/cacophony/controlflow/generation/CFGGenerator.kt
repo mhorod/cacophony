@@ -5,16 +5,7 @@ import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.names.ResolvedVariables
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Empty
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.Literal
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.Statement
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.syntaxtree.*
 
 /**
  * Converts Expressions into CFG
@@ -47,7 +38,14 @@ internal class CFGGenerator(
                 }
             }
 
-        val returnVertex = cfg.addFinalVertex(CFGNode.Return)
+        val resultSize =
+            when (function.returnType) {
+                is BaseType.Basic -> 1
+                is BaseType.Structural -> function.returnType.fields.size
+                else -> throw IllegalArgumentException("Cannot return value of type " + function.returnType)
+            }
+
+        val returnVertex = cfg.addFinalVertex(CFGNode.Return(CFGNode.ConstantKnown(resultSize)))
 
         prologue.exit.connect(extended.entry.label)
         extended.exit.connect(epilogue.entry.label)
@@ -172,7 +170,7 @@ internal class CFGGenerator(
                 function,
                 functionHandler,
                 argumentVertices.map { it.access },
-                resultRegister,
+                resultRegister?.let { SimpleLayout(registerUse(it)) },
             ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
@@ -318,6 +316,7 @@ internal class CFGGenerator(
                     valueCFG.exit.connect(resultAssignmentVertex.label)
                     valueCFG.entry
                 }
+
                 is SubCFG.Immediate -> resultAssignmentVertex
             }
 

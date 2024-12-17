@@ -8,13 +8,16 @@ interface CallConvention {
     fun argumentAllocation(index: Int): VariableAllocation
 
     // Where the returned value should be put into
-    fun returnRegister(): HardwareRegister
+    fun returnAllocation(index: Int, argumentCount: Int): VariableAllocation
 
     // Which GPR registers should be preserved by the function call (except RSP and RBP!)
     fun preservedRegisters(): List<HardwareRegister>
 }
 
-abstract class StackCallConvention(private val registerOrder: List<HardwareRegister>) : CallConvention {
+abstract class StackCallConvention(
+    private val registerOrder: List<HardwareRegister>,
+    private val resultRegisterOrder: List<HardwareRegister>,
+) : CallConvention {
     override fun argumentAllocation(index: Int): VariableAllocation =
         if (index < registerOrder.size) {
             VariableAllocation.InRegister(Register.FixedRegister(registerOrder[index]))
@@ -28,13 +31,22 @@ abstract class StackCallConvention(private val registerOrder: List<HardwareRegis
             // [static link] <- curr rbp
             VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerOrder.size + 3))
         }
+
+    override fun returnAllocation(index: Int, argumentCount: Int): VariableAllocation =
+        if (index < resultRegisterOrder.size) {
+            VariableAllocation.InRegister(Register.FixedRegister(resultRegisterOrder[index]))
+        } else {
+            if (argumentCount <= registerOrder.size) {
+                VariableAllocation.OnStack(-REGISTER_SIZE * (index - resultRegisterOrder.size + 3))
+            } else {
+                VariableAllocation.OnStack(-REGISTER_SIZE * (index - resultRegisterOrder.size + argumentCount - registerOrder.size + 3))
+            }
+        }
 }
 
-object SystemVAMD64CallConvention : StackCallConvention(REGISTER_ARGUMENT_ORDER) {
+object SystemVAMD64CallConvention : StackCallConvention(REGISTER_ARGUMENT_ORDER, RETURN_REGISTER_ORDER) {
     private val preservedRegisters =
         listOf(HardwareRegister.RBX, HardwareRegister.R12, HardwareRegister.R13, HardwareRegister.R14, HardwareRegister.R15)
-
-    override fun returnRegister(): HardwareRegister = HardwareRegister.RAX
 
     override fun preservedRegisters(): List<HardwareRegister> = preservedRegisters
 }

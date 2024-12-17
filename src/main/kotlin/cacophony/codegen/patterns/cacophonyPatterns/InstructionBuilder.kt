@@ -157,8 +157,8 @@ class InstructionBuilder(val slotFill: SlotFill) {
         instructions.add(Comment(comment))
     }
 
-    fun ret() {
-        instructions.add(Ret)
+    fun ret(resultSize: CFGNode.Constant) {
+        instructions.add(Ret(resultSize.value))
     }
 
     fun byte(register: Register) = RegisterByte(register)

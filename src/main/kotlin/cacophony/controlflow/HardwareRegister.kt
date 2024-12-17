@@ -60,3 +60,14 @@ val REGISTER_ARGUMENT_ORDER =
         HardwareRegister.R8,
         HardwareRegister.R9,
     )
+
+val RETURN_REGISTER_ORDER =
+    listOf(
+        HardwareRegister.RAX,
+        HardwareRegister.RDI,
+        HardwareRegister.RSI,
+        HardwareRegister.RDX,
+        HardwareRegister.RCX,
+        HardwareRegister.R8,
+        HardwareRegister.R9,
+    )
