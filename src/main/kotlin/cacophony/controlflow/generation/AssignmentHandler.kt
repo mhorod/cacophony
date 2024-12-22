@@ -19,18 +19,22 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
     ): SubCFG {
         val variableLayout = getVariableLayout(handler, variable)
         val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)
-        println("in generate assignment:\n$variable, $variableLayout, $valueCFG")
+        println("in generate assignment:\n$variable, $variableLayout, $valueCFG, $propagate")
 
         return when (valueCFG) {
             // dark magic - this way it is compatible with previous tests
             is SubCFG.Immediate -> {
-                if (propagate || variableLayout is SimpleLayout) SubCFG.Immediate(getLayoutOfAssignments(valueCFG.access, variableLayout))
-                else {
+                if (variableLayout is SimpleLayout) {
+                    require(variableLayout.access is CFGNode.LValue)
+                    val source = valueCFG.access
+                    require(source is SimpleLayout)
+                    SubCFG.Immediate(SimpleLayout(CFGNode.Assignment(variableLayout.access, source.access)))
+                } else {
                     val assignment =
                         cfgGenerator.assignLayoutWithValue(
                             valueCFG.access,
                             variableLayout,
-                            noOpOrUnit(mode),
+                            noOpOr(if (propagate) variableLayout else SimpleLayout(CFGNode.UNIT), mode),
                         )
                     println(assignment)
                     cfgGenerator.ensureExtracted(valueCFG, EvalMode.SideEffect) merge assignment
@@ -47,19 +51,4 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
             }
         }
     }
-
-    private fun getLayoutOfAssignments(source: Layout, destination: Layout): Layout =
-        when (destination) {
-            is SimpleLayout -> {
-                // by type checking
-                require(source is SimpleLayout)
-                require(destination.access is CFGNode.LValue) // TODO: remove after LValueLayout
-                SimpleLayout(CFGNode.Assignment(destination.access, source.access))
-            }
-            is StructLayout -> {
-                // by type checking
-                require(source is StructLayout)
-                StructLayout(destination.fields.mapValues { (field, layout) -> getLayoutOfAssignments(source.fields[field]!!, layout) })
-            }
-        }
 }
