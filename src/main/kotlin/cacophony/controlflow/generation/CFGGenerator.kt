@@ -30,12 +30,12 @@ internal class CFGGenerator(
 
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
-        val returnValueRegister = getCurrentFunctionHandler().getResultLayout()
+        val returnValueLayout = getCurrentFunctionHandler().getResultLayout()
 
         val extended =
             when (bodyCFG) {
-                is SubCFG.Extracted -> extendWithAssignment(bodyCFG, returnValueRegister, EvalMode.Value)
-                is SubCFG.Immediate -> assignLayoutWithValue(bodyCFG.access, returnValueRegister, returnValueRegister)
+                is SubCFG.Extracted -> extendWithAssignment(bodyCFG, returnValueLayout, EvalMode.Value)
+                is SubCFG.Immediate -> assignLayoutWithValue(bodyCFG.access, returnValueLayout, returnValueLayout)
             }
 
         val returnVertex = cfg.addFinalVertex(CFGNode.Return)
