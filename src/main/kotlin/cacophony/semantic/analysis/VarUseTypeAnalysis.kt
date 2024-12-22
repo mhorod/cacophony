@@ -93,8 +93,10 @@ private class VarUseVisitor(
     }
 
     private fun visitFieldRef(expr: FieldRef) {
+        println("visit field ref $expr")
         expr.struct().let {
             visitExpression(it)
+            println(it.javaClass)
             useTypeAnalysis[expr] = useTypeAnalysis[it] ?: error("Variable use types missing for child $it of $expr")
         }
     }
@@ -144,6 +146,7 @@ private class VarUseVisitor(
     }
 
     private fun visitCompoundAssignment(expr: OperatorBinary) {
+        println("Hello ${expr.lhs} ${expr.rhs}")
         visitExpression(expr.rhs)
         when (expr.lhs) {
             is VariableUse -> {
@@ -257,7 +260,9 @@ private class VarUseVisitor(
         scopeStack.addLast(mutableSetOf())
         expr.expressions.forEach {
             visitExpression(it)
-            useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[it]!!)
+            println(it)
+            useTypeAnalysis[expr]!!
+                .mergeWith(useTypeAnalysis[it]!!)
         }
         useTypeAnalysis[expr]!!.filter(scopeStack.last())
         scopeStack.removeLast()
