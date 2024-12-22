@@ -373,4 +373,63 @@ class StructTest {
 
         assertEquivalent(actualCFG, expectedCFG)
     }
+
+    // TODO: fix this test - accessing subfield makes whole structure land on stack
+    @Test
+    fun `access simple subfield in nested function`() {
+        // given
+
+        /*
+         * let f = [] -> Int => (
+         *  let x = {a = 7, b = true};
+         *  let g = [] -> Int => x.a = 3;
+         *  x.a
+         * );
+         */
+        val gDef =
+            intFunctionDefinition(
+                "g",
+                listOf(),
+                lvalueFieldRef(variableUse("x"), "a") assign lit(3),
+            )
+        val fDef =
+            intFunctionDefinition(
+                "f",
+                listOf(),
+                block(
+                    variableDeclaration("x", simpleStruct()),
+                    gDef,
+                    rvalueFieldRef(variableUse("x"), "a"),
+                ),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+        val fCFG = actualCFG[fDef]!!
+        val gCFG = actualCFG[gDef]!!
+
+        // then
+
+        val expectedCFGf =
+            standaloneWrappedCFGFragment(fDef) {
+                "bodyEntry" does jump("assign b") { memoryAccess(registerUse(rbp) sub integer(16)) assign integer(7) }
+                "assign b" does jump("assign res") { memoryAccess(registerUse(rbp) sub integer(24)) assign integer(1) }
+                "assign res" does jump("bodyExit") { writeRegister(getResultRegister(), memoryAccess(registerUse(rbp) sub integer(16))) }
+            }
+
+        val expectedCFGg =
+            standaloneWrappedCFGFragment(gDef) {
+                "bodyEntry" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            memoryAccess(memoryAccess(registerUse(rbp)) sub integer(16)) assign integer(3),
+                        )
+                    }
+            }
+
+        // TODO: expected should be different
+        assertFragmentIsEquivalent(fCFG, expectedCFGf)
+        assertFragmentIsEquivalent(gCFG, expectedCFGg)
+    }
 }
