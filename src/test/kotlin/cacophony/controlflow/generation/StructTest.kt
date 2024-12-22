@@ -6,7 +6,6 @@ import cacophony.controlflow.Register
 import cacophony.controlflow.programCfgToGraphviz
 import cacophony.controlflow.registerUse
 import cacophony.semantic.syntaxtree.*
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class StructTest {
@@ -131,7 +130,6 @@ class StructTest {
         assertEquivalent(actualCFG, expectedCFG)
     }
 
-    @Disabled
     @Test
     fun `single level return field from variable after modification`() {
         // given
