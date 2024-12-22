@@ -69,6 +69,32 @@ private class VarUseVisitor(
 
     fun getAnalysisResult(): UseTypeAnalysisResult = useTypeAnalysis.mapValues { it.value.getMap() }
 
+    private fun gatherNestedVariables(variable: Variable): Set<Variable> {
+        val result = HashSet<Variable>()
+        result.add(variable)
+        if (variable is Variable.StructVariable) {
+            variable.fields.values.forEach {
+                result.addAll(gatherNestedVariables(it))
+            }
+        }
+        return result
+    }
+
+    private fun gatherAffectedVariables(expr: Assignable): Set<Variable> {
+        val result = HashSet<Variable>()
+        result.addAll(gatherNestedVariables(variablesMap.lvalues[expr]!!))
+
+        var nestedExpression: Expression = expr
+        while (nestedExpression is Assignable) {
+            result.add(variablesMap.lvalues[nestedExpression]!!)
+            if (nestedExpression !is FieldRef) {
+                break
+            }
+            nestedExpression = nestedExpression.struct()
+        }
+        return result
+    }
+
     private fun visitExpression(expr: Expression) {
         if (expr is Definition.VariableDeclaration) {
             scopeStack.lastOrNull()?.add(variablesMap.definitions[expr]!!)
@@ -85,20 +111,40 @@ private class VarUseVisitor(
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
             is Struct -> visitStruct(expr)
-            is FieldRef -> visitFieldRef(expr)
+            is FieldRef.LValue -> visitFieldRefLValue(expr)
+            is FieldRef.RValue -> visitFieldRefRValue(expr)
             is LeafExpression -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
         }
     }
 
-    private fun visitFieldRef(expr: FieldRef) {
-        println("visit field ref $expr")
-        expr.struct().let {
-            visitExpression(it)
-            println(it.javaClass)
-            useTypeAnalysis[expr] = useTypeAnalysis[it] ?: error("Variable use types missing for child $it of $expr")
+    private fun visitAssignable(expr: Assignable, type: VariableUseType) {
+        val affectedVariables = gatherAffectedVariables(expr)
+
+        var nestedExpression: Expression = expr
+        while (nestedExpression is Assignable) {
+            useTypeAnalysis[nestedExpression] = UseTypesForExpression.empty()
+            affectedVariables.forEach {
+                useTypeAnalysis[nestedExpression]!!.add(
+                    it,
+                    type,
+                )
+            }
+            if (nestedExpression !is FieldRef) {
+                break
+            }
+            nestedExpression = nestedExpression.struct()
         }
+    }
+
+    private fun visitFieldRefLValue(expr: FieldRef.LValue) {
+        visitAssignable(expr, VariableUseType.READ)
+    }
+
+    private fun visitFieldRefRValue(expr: FieldRef.RValue) {
+        visitExpression(expr.obj)
+        useTypeAnalysis[expr] = useTypeAnalysis[expr.obj] ?: error("Variable use types missing for child ${expr.obj} of $expr")
     }
 
     private fun visitStruct(expr: Struct) {
@@ -114,13 +160,15 @@ private class VarUseVisitor(
 
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]
-        if (definition is Definition.FunctionDefinition || definition is Definition.ForeignFunctionDeclaration)
+        if (definition is Definition.FunctionDefinition)
             return
         useTypeAnalysis[expr] = UseTypesForExpression.empty()
-        useTypeAnalysis[expr]!!.add(
-            variablesMap.definitions[definition]!!,
-            VariableUseType.READ,
-        )
+        gatherNestedVariables(variablesMap.lvalues[expr]!!).forEach {
+            useTypeAnalysis[expr]!!.add(
+                it,
+                VariableUseType.READ,
+            )
+        }
     }
 
     private fun visitBinaryOperator(expr: OperatorBinary) {
@@ -146,7 +194,6 @@ private class VarUseVisitor(
     }
 
     private fun visitCompoundAssignment(expr: OperatorBinary) {
-        println("Hello ${expr.lhs} ${expr.rhs}")
         visitExpression(expr.rhs)
         when (expr.lhs) {
             is VariableUse -> {
@@ -163,18 +210,18 @@ private class VarUseVisitor(
     }
 
     private fun visitAssignment(expr: OperatorBinary.Assignment) {
+        useTypeAnalysis[expr] = UseTypesForExpression.empty()
         visitExpression(expr.rhs)
-        when (expr.lhs) {
-            is VariableUse -> {
-                useTypeAnalysis[expr] = UseTypesForExpression.empty()
-                useTypeAnalysis[expr]!!.add(
-                    variablesMap.definitions[resolvedVariables[expr.lhs]]!!,
-                    VariableUseType.WRITE,
+        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
+            visitAssignable(expr.lhs as Assignable, VariableUseType.WRITE)
+            useTypeAnalysis[expr] =
+                UseTypesForExpression.merge(
+                    useTypeAnalysis[expr.lhs],
+                    useTypeAnalysis[expr.rhs],
                 )
-                useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.rhs]!!)
-            }
-
-            else -> visitExpression(expr.lhs)
+        } else {
+            TODO("unimplemented branch for different assignment type")
+//            visitExpression(expr.lhs)
         }
     }
 
@@ -260,9 +307,7 @@ private class VarUseVisitor(
         scopeStack.addLast(mutableSetOf())
         expr.expressions.forEach {
             visitExpression(it)
-            println(it)
-            useTypeAnalysis[expr]!!
-                .mergeWith(useTypeAnalysis[it]!!)
+            useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[it]!!)
         }
         useTypeAnalysis[expr]!!.filter(scopeStack.last())
         scopeStack.removeLast()
