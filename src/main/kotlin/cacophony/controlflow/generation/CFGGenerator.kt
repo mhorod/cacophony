@@ -54,24 +54,8 @@ internal class CFGGenerator(
                 SubCFG.Extracted(vertex, vertex, noOpOrUnit(EvalMode.SideEffect))
             }.reduce(SubCFG.Extracted::merge)
 
-    private fun ensureExtractedLayoutNoValue(layout: Layout): SubCFG.Extracted =
-        when (layout) {
-            is SimpleLayout -> {
-                val vertex = cfg.addUnconditionalVertex(layout.access)
-                SubCFG.Extracted(vertex, vertex, CFGNode.NoOp)
-            }
-            is StructLayout -> {
-                layout.fields
-                    .map { (_, subLayout) ->
-                        ensureExtractedLayoutNoValue(subLayout)
-                    }.reduce(SubCFG.Extracted::merge)
-            }
-        }
-
     internal fun assignLayoutWithValue(source: Layout, destination: Layout, returnedValue: Layout): SubCFG.Extracted {
-        println("$source, $destination")
         val assignments = makeVerticesForAssignment(source, destination)
-        println(assignments)
         val prerequisite =
             assignments
                 .dropLast(1)
@@ -90,7 +74,7 @@ internal class CFGGenerator(
         when (source) {
             is SimpleLayout -> {
                 require(destination is SimpleLayout) // by type checking
-                require(destination.access is CFGNode.LValue) // TODO: remove with LValueLayout
+                require(destination.access is CFGNode.LValue)
                 val write = CFGNode.Assignment(destination.access, source.access)
                 listOf(cfg.addUnconditionalVertex(write))
             }
@@ -100,9 +84,8 @@ internal class CFGGenerator(
             }
         }
 
-    internal fun ensureExtracted(subCFG: SubCFG, mode: EvalMode): SubCFG.Extracted {
-        println("ensureExtracted: ${subCFG.access}, $mode")
-        return when (subCFG) {
+    internal fun ensureExtracted(subCFG: SubCFG, mode: EvalMode): SubCFG.Extracted =
+        when (subCFG) {
             is SubCFG.Extracted -> subCFG
             is SubCFG.Immediate ->
                 when (mode) {
@@ -120,7 +103,6 @@ internal class CFGGenerator(
                     }
                 }
         }
-    }
 
     private fun ensureExtracted(node: CFGNode): SubCFG.Extracted = ensureExtracted(SubCFG.Immediate(node), EvalMode.SideEffect)
 
@@ -136,10 +118,8 @@ internal class CFGGenerator(
      * @param expression Expression to be converted
      * @param mode Mode of conversion, see [EvalMode]
      */
-    internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG {
-        println(expression)
-        println(mode)
-        return when (expression) {
+    internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
+        when (expression) {
             is Block -> visitBlock(expression, mode, context)
             is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
@@ -157,7 +137,6 @@ internal class CFGGenerator(
             is FieldRef -> visitFieldRef(expression, mode, context)
             else -> error("Unexpected expression for CFG generation: $expression")
         }
-    }
 
     private fun visitFieldRef(expression: FieldRef, mode: EvalMode, context: Context): SubCFG {
         val structGeneration = wrapExtracted(visit(expression.struct(), mode, context))
@@ -179,11 +158,7 @@ internal class CFGGenerator(
     private fun visitStruct(expression: Struct, mode: EvalMode, context: Context): SubCFG {
         val fields = expression.fields.map { (name, field) -> name.name to visit(field, mode, context) }.toMap()
         if (fields.all { (_, field) -> field is SubCFG.Immediate }) {
-            println("$expression HERE")
-            println(fields)
-            val res = SubCFG.Immediate(StructLayout(fields.mapValues { (_, subCFG) -> subCFG.access }))
-            println(res)
-            return res
+            return SubCFG.Immediate(StructLayout(fields.mapValues { (_, subCFG) -> subCFG.access }))
         }
         val layout = StructLayout(fields.mapValues { (_, field) -> field.access })
         val structGeneration = fields.map { (_, field) -> ensureExtracted(field, mode) }.reduce(SubCFG.Extracted::merge)

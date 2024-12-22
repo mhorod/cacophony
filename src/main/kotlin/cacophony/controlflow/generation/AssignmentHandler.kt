@@ -18,10 +18,8 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
         propagate: Boolean,
     ): SubCFG {
         val variableLayout = getVariableLayout(handler, variable)
-        val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)
-        println("in generate assignment:\n$variable, $variableLayout, $valueCFG, $propagate")
 
-        return when (valueCFG) {
+        return when (val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)) {
             // dark magic - this way it is compatible with previous tests
             is SubCFG.Immediate -> {
                 if (variableLayout is SimpleLayout) {
@@ -36,7 +34,6 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
                             variableLayout,
                             noOpOr(if (propagate) variableLayout else SimpleLayout(CFGNode.UNIT), mode),
                         )
-                    println(assignment)
                     cfgGenerator.ensureExtracted(valueCFG, EvalMode.SideEffect) merge assignment
                 }
             }

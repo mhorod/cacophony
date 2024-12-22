@@ -102,8 +102,7 @@ class StructTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(actualCFG)
-        println(programCfgToGraphviz(actualCFG))
+
         // then
         val virA = Register.VirtualRegister()
         val virB = Register.VirtualRegister()
@@ -203,7 +202,6 @@ class StructTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
 
         // then
         val virA = Register.VirtualRegister()
@@ -240,7 +238,6 @@ class StructTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
 
         // then
         val virA = Register.VirtualRegister()
@@ -278,7 +275,6 @@ class StructTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
 
         // then
         val virA = Register.VirtualRegister()
@@ -316,7 +312,6 @@ class StructTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
 
         // then
         val virA = Register.VirtualRegister()
@@ -354,7 +349,6 @@ class StructTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
 
         // then
         val virA = Register.VirtualRegister()
