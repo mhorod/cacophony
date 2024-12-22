@@ -167,10 +167,13 @@ private class StaticFunctionsRelationsVisitor(
         visitExpression(expr.rhs)
     }
 
+    // TODO: copied from visitAssignment with WRITE -> READ_WRITE change
     private fun visitCompoundAssignment(expr: OperatorBinary) {
-        when (expr.lhs) {
-            is VariableUse -> visitVariableReadWrite(expr.lhs)
-            else -> visitExpression(expr.lhs)
+        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
+            visitAssignable(expr.lhs as Assignable, VariableUseType.READ_WRITE)
+        } else {
+            TODO("unimplemented branch for different assignment type")
+//            visitExpression(expr.lhs)
         }
         visitExpression(expr.rhs)
     }

@@ -135,7 +135,7 @@ class StructTest {
         // given
 
         /*
-         * let f = [] -> Int => (let x = {a = 7, b = true}; x.a += x.a; x.a);
+         * let f = [] -> Int => (let x = {a = 7, b = true}; x.a = x.a + 12; x.a);
          */
         val fDef =
             intFunctionDefinition(
@@ -148,7 +148,7 @@ class StructTest {
                         OperatorBinary.AdditionAssignment(
                             mockRange(),
                             FieldRef.LValue(mockRange(), variableUse("x"), "a"),
-                            FieldRef.RValue(mockRange(), variableUse("x"), "a"),
+                            FieldRef.LValue(mockRange(), variableUse("x"), "a"),
                         ),
                         FieldRef.RValue(mockRange(), variableUse("x"), "a"),
                     ),
@@ -166,10 +166,11 @@ class StructTest {
         val expectedCFG =
             singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("assign b") { cacophony.controlflow.writeRegister(virA, CFGNode.ConstantKnown(7)) }
-                "assign b" does jump("assign res") { cacophony.controlflow.writeRegister(virB, CFGNode.ConstantKnown(1)) }
+                "assign b" does jump("+=") { cacophony.controlflow.writeRegister(virB, CFGNode.ConstantKnown(1)) }
+                "+=" does jump("assign res") { CFGNode.AdditionAssignment(registerUse(virA), registerUse(virA)) }
                 "assign res" does jump("bodyExit") { cacophony.controlflow.writeRegister(getResultRegister(), registerUse(virA)) }
             }
 
-//        assertEquivalent(actualCFG, expectedCFG)
+        assertEquivalent(actualCFG, expectedCFG)
     }
 }

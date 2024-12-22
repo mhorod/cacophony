@@ -193,19 +193,20 @@ private class VarUseVisitor(
         }
     }
 
+    // TODO: copied from visitAssignment with WRITE -> READ_WRITE change
     private fun visitCompoundAssignment(expr: OperatorBinary) {
+        useTypeAnalysis[expr] = UseTypesForExpression.empty()
         visitExpression(expr.rhs)
-        when (expr.lhs) {
-            is VariableUse -> {
-                useTypeAnalysis[expr] = UseTypesForExpression.empty()
-                useTypeAnalysis[expr]!!.add(
-                    variablesMap.definitions[resolvedVariables[expr.lhs]]!!,
-                    VariableUseType.READ_WRITE,
+        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
+            visitAssignable(expr.lhs as Assignable, VariableUseType.READ_WRITE)
+            useTypeAnalysis[expr] =
+                UseTypesForExpression.merge(
+                    useTypeAnalysis[expr.lhs],
+                    useTypeAnalysis[expr.rhs],
                 )
-                useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.rhs]!!)
-            }
-
-            else -> visitExpression(expr.lhs)
+        } else {
+            TODO("unimplemented branch for different assignment type")
+//            visitExpression(expr.lhs)
         }
     }
 
