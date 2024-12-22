@@ -6,6 +6,10 @@ import cacophony.controlflow.CFGNode
 
 sealed class Layout
 
-class SimpleLayout(val access: CFGNode) : Layout()
+class SimpleLayout(val access: CFGNode) : Layout() {
+    override fun toString(): String = "SimpleLayout($access)"
+}
 
-class StructLayout(val fields: Map<String, Layout>) : Layout()
+class StructLayout(val fields: Map<String, Layout>) : Layout() {
+    override fun toString(): String = "StructLayout($fields)"
+}

@@ -18,8 +18,24 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
         propagate: Boolean,
     ): SubCFG {
         val variableLayout = getVariableLayout(handler, variable)
-        return when (val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)) {
-            is SubCFG.Immediate -> SubCFG.Immediate(getLayoutOfAssignments(valueCFG.access, variableLayout))
+        val valueCFG = cfgGenerator.visit(value, EvalMode.Value, context)
+        println("in generate assignment:\n$variable, $variableLayout, $valueCFG")
+
+        return when (valueCFG) {
+            // dark magic - this way it is compatible with previous tests
+            is SubCFG.Immediate -> {
+                if (propagate || variableLayout is SimpleLayout) SubCFG.Immediate(getLayoutOfAssignments(valueCFG.access, variableLayout))
+                else {
+                    val assignment =
+                        cfgGenerator.assignLayoutWithValue(
+                            valueCFG.access,
+                            variableLayout,
+                            noOpOrUnit(mode),
+                        )
+                    println(assignment)
+                    cfgGenerator.ensureExtracted(valueCFG, EvalMode.SideEffect) merge assignment
+                }
+            }
             is SubCFG.Extracted -> {
                 val assignment =
                     cfgGenerator.assignLayoutWithValue(

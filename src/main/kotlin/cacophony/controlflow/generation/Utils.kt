@@ -25,7 +25,7 @@ fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
         BuiltinType.IntegerType -> SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister()))
         BuiltinType.UnitType -> SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister()))
         is StructType -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
-        TypeExpr.VoidType -> SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister())) // TODO: ???
+        TypeExpr.VoidType -> StructLayout(emptyMap())
         is FunctionType -> throw IllegalArgumentException("No layout for function types")
     }
 
