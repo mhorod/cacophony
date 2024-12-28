@@ -142,6 +142,32 @@ private fun operatorRegexToAST(children: List<ParseTree<CacophonyGrammarSymbol>>
     }
 }
 
+private fun callAndFieldRegexToAst(children: List<ParseTree<CacophonyGrammarSymbol>>, diagnostics: Diagnostics): Expression {
+    val childNum = children.size
+    if (childNum == 1) {
+        return generateASTInternal(children[0], diagnostics)
+    } else {
+        val newChildren = children.subList(0, childNum - 1)
+        val range = Pair(first = children[0].range.first, second = children[childNum - 1].range.second)
+        val lhs = callAndFieldRegexToAst(newChildren, diagnostics)
+        val lastChild = children[childNum - 1]
+        return if (lastChild is ParseTree.Leaf && lastChild.token.category == VARIABLE_IDENTIFIER) { // field reference
+            if (lhs is Assignable) {
+                FieldRef.LValue(range, lhs, lastChild.token.context)
+            } else {
+                FieldRef.RValue(range, lhs, lastChild.token.context)
+            }
+        } else if (lastChild is ParseTree.Branch && lastChild.production.lhs == FUNCTION_CALL) {
+            val arguments = mutableListOf<Expression>()
+            assert(lastChild.production.lhs == FUNCTION_CALL)
+            for (child in lastChild.children) {
+                arguments.add(generateASTInternal(child, diagnostics))
+            }
+            FunctionCall(range, lhs, arguments)
+        } else throw IllegalArgumentException("Expected either field access or function call symbol, got: $lastChild")
+    }
+}
+
 private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Expression {
     if (parseTree is ParseTree.Leaf) {
         val symbol: CacophonyGrammarSymbol = parseTree.token.category
@@ -193,21 +219,6 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     )
                 }
                 Block(range, newChildren)
-            }
-            // call level is in the pruned tree iff there is an actual function call underneath
-            CALL_LEVEL -> {
-                assert(childNum == 2)
-                val function = generateASTInternal(parseTree.children[0], diagnostics)
-                val argumentsParent = parseTree.children[1]
-                val arguments = mutableListOf<Expression>()
-                if (argumentsParent is ParseTree.Branch<CacophonyGrammarSymbol>) {
-                    assert(argumentsParent.production.lhs == FUNCTION_CALL)
-                    for (child in argumentsParent.children) {
-                        arguments.add(generateASTInternal(child, diagnostics))
-                    }
-                    return FunctionCall(range, function, arguments)
-                }
-                throw Exception("Fatal: set of function call arguments should be a parse tree Branch!")
             }
             // DECLARATION_LEVEL is in the pruned graph iff it corresponds to a declaration
             DECLARATION_LEVEL -> {
@@ -330,23 +341,14 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
                 }
             }
-
-            ATOM_LEVEL -> {
-                require(childNum >= 2) { "Field access missing rhs: $parseTree" }
-                val lhs = parseTree.children[0]
-                parseTree.children.slice(1..<parseTree.children.size).fold(generateASTInternal(lhs, diagnostics)) { ast, field ->
-                    require(field is ParseTree.Leaf) { "Field access rhs should be a leaf: $field in $parseTree" }
-                    require(
-                        getGrammarSymbol(field) == VARIABLE_IDENTIFIER,
-                    ) { "Field access rhs should be an identifier: $field in $parseTree" }
-
-                    if (ast is Assignable) {
-                        FieldRef.LValue(field.range, ast, field.token.context)
-                    } else {
-                        FieldRef.RValue(field.range, ast, field.token.context)
-                    }
-                }
+            // call level is in the pruned tree iff there is an actual function call or field access underneath
+            CALL_LEVEL -> {
+                assert(childNum >= 2)
+                callAndFieldRegexToAst(parseTree.children, diagnostics)
             }
+            /* ATOM_LEVEL -> { we don't expect atom level for now
+
+            } */
 
             STRUCT ->
                 Struct(

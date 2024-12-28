@@ -4,7 +4,7 @@
     "message": {
       "__class__": "UnexpectedToken",
       "tokenName": "INT_LITERAL",
-      "symbolName": "ATOM_LEVEL"
+      "symbolName": "CALL_LEVEL"
     },
     "range": {
       "__class__": "Pair",
@@ -22,7 +22,7 @@
     "__class__": "ReportedError",
     "message": {
       "__class__": "ChildrenEmpty",
-      "symbolName": "LITERAL_LEVEL"
+      "symbolName": "STATEMENT_LEVEL"
     },
     "range": {
       "__class__": "Pair",
