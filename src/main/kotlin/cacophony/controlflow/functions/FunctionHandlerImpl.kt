@@ -49,7 +49,7 @@ class FunctionHandlerImpl(
         introduceStaticLinksParams()
 
         run {
-            val usedVars = analyzedFunction.variablesUsedInNestedFunctions.map { it.getPrimitives() }.flatten()
+            val usedVars = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
             val regVar =
                 (
                     analyzedFunction
