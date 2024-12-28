@@ -406,9 +406,9 @@ class StructTest {
 
         val expectedCFGf =
             standaloneWrappedCFGFragment(fDef) {
-                "bodyEntry" does jump("assign b") { memoryAccess(registerUse(rbp) sub integer(16)) assign integer(7) }
-                "assign b" does jump("assign res") { memoryAccess(registerUse(rbp) sub integer(24)) assign integer(1) }
-                "assign res" does jump("bodyExit") { writeRegister(getResultRegister(), memoryAccess(registerUse(rbp) sub integer(16))) }
+                "bodyEntry" does jump("assign b") { memoryAccess(registerUse(rbp) sub integer(8)) assign integer(7) }
+                "assign b" does jump("assign res") { registerUse(virtualRegister("x.b")) assign integer(1) }
+                "assign res" does jump("bodyExit") { writeRegister(getResultRegister(), memoryAccess(registerUse(rbp) sub integer(8))) }
             }
 
         val expectedCFGg =
@@ -417,7 +417,7 @@ class StructTest {
                     jump("bodyExit") {
                         writeRegister(
                             getResultRegister(),
-                            memoryAccess(memoryAccess(registerUse(rbp)) sub integer(16)) assign integer(3),
+                            memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)) assign integer(3),
                         )
                     }
             }
