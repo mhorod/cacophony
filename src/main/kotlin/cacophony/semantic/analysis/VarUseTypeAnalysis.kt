@@ -79,6 +79,8 @@ private class VarUseVisitor(
             is VariableUse -> visitVariableUse(expr)
             is Struct -> visitStruct(expr)
             is FieldRef -> visitFieldRef(expr)
+            is Allocation -> throw NotImplementedError()
+            is Dereference -> throw NotImplementedError()
             is LeafExpression -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
