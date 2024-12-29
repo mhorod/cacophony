@@ -3,18 +3,7 @@ package cacophony.semantic.analysis
 import cacophony.diagnostics.CallGraphDiagnostics
 import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.names.ResolvedVariables
-import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.Block
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Expression
-import cacophony.semantic.syntaxtree.FieldRef
-import cacophony.semantic.syntaxtree.FunctionCall
-import cacophony.semantic.syntaxtree.LeafExpression
-import cacophony.semantic.syntaxtree.OperatorBinary
-import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.Statement
-import cacophony.semantic.syntaxtree.Struct
-import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.syntaxtree.*
 import kotlin.collections.mutableMapOf
 
 typealias CallGraph = Map<Definition.FunctionDefinition, Set<Definition.FunctionDefinition>>
@@ -68,6 +57,9 @@ private class CallGraphProvider(
                 )
 
             is FieldRef -> generateDirectCallGraph(node.struct(), currentFn)
+
+            is Allocation -> throw NotImplementedError()
+            is Dereference -> throw NotImplementedError()
 
             is LeafExpression -> mutableMapOf() // don't use else branch to prevent this from breaking when SyntaxTree is changed
             null -> mutableMapOf()

@@ -171,8 +171,7 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                     .flatten()
                     .onEach { argNode ->
                         diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument(argNode.identifier), argNode.range)
-                    }
-                    .let { if (it.isNotEmpty()) throw diagnostics.fatal() }
+                    }.let { if (it.isNotEmpty()) throw diagnostics.fatal() }
 
                 // Open new block to make arguments visible in function body, but not after
                 // the whole function declaration.
@@ -229,6 +228,9 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
             is FieldRef -> {
                 traverseAst(node.struct(), false)
             }
+
+            is Allocation -> throw NotImplementedError()
+            is Dereference -> throw NotImplementedError()
 
             is LeafExpression -> {}
         }
