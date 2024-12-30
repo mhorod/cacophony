@@ -146,26 +146,22 @@ private fun callAndFieldRegexToAst(children: List<ParseTree<CacophonyGrammarSymb
     val childNum = children.size
     if (childNum == 1) {
         return generateASTInternal(children[0], diagnostics)
-    } else {
-        val newChildren = children.subList(0, childNum - 1)
-        val range = Pair(first = children[0].range.first, second = children[childNum - 1].range.second)
-        val lhs = callAndFieldRegexToAst(newChildren, diagnostics)
-        val lastChild = children[childNum - 1]
-        return if (lastChild is ParseTree.Leaf && lastChild.token.category == VARIABLE_IDENTIFIER) { // field reference
-            if (lhs is Assignable) {
-                FieldRef.LValue(range, lhs, lastChild.token.context)
-            } else {
-                FieldRef.RValue(range, lhs, lastChild.token.context)
-            }
-        } else if (lastChild is ParseTree.Branch && lastChild.production.lhs == FUNCTION_CALL) {
-            val arguments = mutableListOf<Expression>()
-            assert(lastChild.production.lhs == FUNCTION_CALL)
-            for (child in lastChild.children) {
-                arguments.add(generateASTInternal(child, diagnostics))
-            }
-            FunctionCall(range, lhs, arguments)
-        } else throw IllegalArgumentException("Expected either field access or function call symbol, got: $lastChild")
     }
+    val newChildren = children.subList(0, childNum - 1)
+    val range = Pair(first = children[0].range.first, second = children[childNum - 1].range.second)
+    val lhs = callAndFieldRegexToAst(newChildren, diagnostics)
+    val lastChild = children[childNum - 1]
+    return if (lastChild is ParseTree.Leaf && lastChild.token.category == VARIABLE_IDENTIFIER) { // field reference
+        if (lhs is Assignable) {
+            FieldRef.LValue(range, lhs, lastChild.token.context)
+        } else {
+            FieldRef.RValue(range, lhs, lastChild.token.context)
+        }
+    } else if (lastChild is ParseTree.Branch && lastChild.production.lhs == FUNCTION_CALL) {
+        assert(lastChild.production.lhs == FUNCTION_CALL)
+        val arguments = lastChild.children.map { generateASTInternal(it, diagnostics) }
+        FunctionCall(range, lhs, arguments)
+    } else throw IllegalArgumentException("Expected either field access or function call symbol, got: $lastChild")
 }
 
 private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Expression {
