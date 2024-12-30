@@ -6,6 +6,7 @@ import cacophony.controlflow.generation.Layout
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -84,7 +85,7 @@ class GenerateCallKtTest {
                             "fun def",
                             mockk(),
                             (1..argumentCount).map { mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" } },
-                            mockk(),
+                            BaseType.Basic(mockk(), "Int"),
                             mockk(),
                         ),
                         mockAnalyzedFunction(),
