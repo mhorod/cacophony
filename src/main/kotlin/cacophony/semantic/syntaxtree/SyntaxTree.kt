@@ -75,6 +75,15 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
                 other is Structural &&
                 areEquivalentTypes(fields, other.fields)
     }
+
+    class Referential(range: Pair<Location, Location>, val type: Type) : BaseType(range), NonFunctionalType {
+        override fun toString() = "&$type"
+
+        override fun isEquivalent(other: SyntaxTree?) =
+            super<BaseType>.isEquivalent(other) &&
+                other is Referential &&
+                areEquivalentTypes(type, other.type)
+    }
 }
 
 // everything in cacophony is an expression
@@ -203,6 +212,28 @@ class FunctionCall(
             other is FunctionCall &&
             areEquivalentExpressions(function, other.function) &&
             areEquivalentExpressions(arguments, other.arguments)
+}
+
+class Dereference(range: Pair<Location, Location>, val value: Expression) : BaseExpression(range) {
+    override fun toString() = "deref"
+
+    override fun children() = listOf(value)
+
+    override fun isEquivalent(other: SyntaxTree?): Boolean =
+        super.isEquivalent(other) &&
+            other is Dereference &&
+            areEquivalentExpressions(value, other.value)
+}
+
+class Allocation(range: Pair<Location, Location>, val value: Expression) : BaseExpression(range) {
+    override fun toString() = "allocation"
+
+    override fun children() = listOf(value)
+
+    override fun isEquivalent(other: SyntaxTree?): Boolean =
+        super.isEquivalent(other) &&
+            other is Allocation &&
+            areEquivalentExpressions(value, other.value)
 }
 
 class StructField(range: Pair<Location, Location>, val name: String, val type: Type?) : BaseExpression(range), LeafExpression {

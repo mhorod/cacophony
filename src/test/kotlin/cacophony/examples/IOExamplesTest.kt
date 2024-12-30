@@ -45,8 +45,8 @@ class IOExamplesTest {
 
         assertThatPath(actualOutputPath).exists()
 
-        val expectedOutput = expectedOutputPath.readText()
-        val actualOutput = actualOutputPath.readText()
+        val expectedOutput = expectedOutputPath.readText().filterNot { it == '\r' }
+        val actualOutput = actualOutputPath.readText().filterNot { it == '\r' }
 
         assertThat(actualOutput).isEqualTo(expectedOutput)
     }

@@ -1,0 +1,25 @@
+foreign read_int: [] -> Int;
+foreign write_int: [Int] -> Unit;
+
+let write_bool = [a: Bool] -> Unit => write_int[if a then 1 else 0];
+
+let s1: {a: Int} = {a = 3, b = 2};
+write_int[s1.a];
+
+let s2: {a: Bool} = {b = 5, a = true};
+write_bool[s2.a];
+
+let s3 = {a = 1, x = {y = {b = 2, c = 3}, d = false}};
+
+let s4 : {a: Int, x: {y : {c: Int}, d: Bool}} = s3;
+write_int[s4.a];
+write_int[s4.x.y.c];
+write_bool[s4.x.d];
+
+let s5 : {x: {y : {b: Int}, d: Bool}} = s3;
+write_int[s5.x.y.b];
+write_bool[s5.x.d];
+
+let s6 : {a: Int, x: {y : {c: Int}}} = s4;
+write_int[s6.a];
+write_int[s6.x.y.c];

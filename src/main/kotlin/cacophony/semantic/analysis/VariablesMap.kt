@@ -3,9 +3,11 @@ package cacophony.semantic.analysis
 import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.syntaxtree.Allocation
 import cacophony.semantic.syntaxtree.Assignable
 import cacophony.semantic.syntaxtree.Block
 import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.Dereference
 import cacophony.semantic.syntaxtree.Expression
 import cacophony.semantic.syntaxtree.FieldRef
 import cacophony.semantic.syntaxtree.FunctionCall
@@ -73,6 +75,8 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
             }
 
             is Struct -> expression.fields.values.forEach { visit(it) }
+            is Allocation -> throw NotImplementedError()
+            is Dereference -> throw NotImplementedError()
             is LeafExpression -> {
                 /* do nothing */
             }
@@ -138,6 +142,9 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
 
             is Struct -> expression.fields.values.forEach { visit(it) }
 
+            is Allocation -> throw NotImplementedError()
+            is Dereference -> throw NotImplementedError()
+
             is LeafExpression -> {
                 /* do nothing */
             }
@@ -157,10 +164,9 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
         definitions[expression] = variable
     }
 
-    private fun createVariable(type: TypeExpr): Variable {
-        return when (type) {
+    private fun createVariable(type: TypeExpr): Variable =
+        when (type) {
             is StructType -> Variable.StructVariable(type.fields.mapValues { createVariable(it.value) })
             else -> Variable.PrimitiveVariable()
         }
-    }
 }
