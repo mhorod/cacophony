@@ -109,6 +109,8 @@ private class StaticFunctionsRelationsVisitor(
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
             is Struct -> visitStruct(expr)
+            is Allocation -> TODO()
+            is Dereference -> TODO()
             is LeafExpression -> {
                 // do nothing
             }

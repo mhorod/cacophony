@@ -113,8 +113,8 @@ private class VarUseVisitor(
             is Struct -> visitStruct(expr)
             is FieldRef.LValue -> visitFieldRefLValue(expr)
             is FieldRef.RValue -> visitFieldRefRValue(expr)
-            is Allocation -> throw NotImplementedError()
-            is Dereference -> throw NotImplementedError()
+            is Allocation -> TODO()
+            is Dereference -> TODO()
             is LeafExpression -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
