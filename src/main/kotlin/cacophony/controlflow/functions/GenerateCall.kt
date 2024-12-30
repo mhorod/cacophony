@@ -2,7 +2,6 @@ package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
-import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type
 
@@ -49,12 +48,8 @@ fun generateCall(
 ): List<CFGNode> {
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
-    val resultSize =
-        when (function.returnType) {
-            is BaseType.Basic -> 1
-            is BaseType.Structural -> function.returnType.fields.size
-            else -> throw IllegalArgumentException("Cannot return value of type " + function.returnType)
-        }
+    val resultSize = function.returnType.size()
+
     val stackResultsSize = (resultSize - RETURN_REGISTER_ORDER.size).let { if (it > 0) it else 0 }
 
     val nodes: MutableList<CFGNode> = mutableListOf()

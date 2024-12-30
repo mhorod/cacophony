@@ -38,12 +38,7 @@ internal class CFGGenerator(
                 }
             }
 
-        val resultSize =
-            when (function.returnType) {
-                is BaseType.Basic -> 1
-                is BaseType.Structural -> function.returnType.fields.size
-                else -> throw IllegalArgumentException("Cannot return value of type " + function.returnType)
-            }
+        val resultSize = function.returnType.size()
 
         val returnVertex = cfg.addFinalVertex(CFGNode.Return(CFGNode.ConstantKnown(resultSize)))
 
@@ -165,13 +160,14 @@ internal class CFGGenerator(
             }
 
         val callSequence =
-            callGenerator.generateCallFrom(
-                getCurrentFunctionHandler(),
-                function,
-                functionHandler,
-                argumentVertices.map { it.access },
-                resultRegister?.let { SimpleLayout(registerUse(it)) },
-            ).map { ensureExtracted(it) }
+            callGenerator
+                .generateCallFrom(
+                    getCurrentFunctionHandler(),
+                    function,
+                    functionHandler,
+                    argumentVertices.map { it.access },
+                    resultRegister?.let { SimpleLayout(registerUse(it)) },
+                ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
         val entry =
