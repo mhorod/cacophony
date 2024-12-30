@@ -14,6 +14,8 @@ interface FunctionHandler {
 
     fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation
 
+    fun variableAllocationAccess(allocation: VariableAllocation, framePointerAccess: CFGNode): CFGNode.LValue
+
     fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation)
 
     // Returns static link to parent

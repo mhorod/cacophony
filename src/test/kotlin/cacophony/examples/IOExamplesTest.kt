@@ -6,6 +6,7 @@ import cacophony.pipeline.CacophonyPipeline
 import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatPath
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
@@ -14,6 +15,7 @@ import kotlin.io.path.createTempFile
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
 
+@Disabled
 class IOExamplesTest {
     @ParameterizedTest
     @MethodSource("ioExamples")

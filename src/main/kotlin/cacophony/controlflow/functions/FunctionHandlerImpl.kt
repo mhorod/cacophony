@@ -142,6 +142,22 @@ class FunctionHandlerImpl(
             throw IllegalArgumentException("Variable $variable have not been allocated inside $this FunctionHandler")
         }
 
+    override fun variableAllocationAccess(allocation: VariableAllocation, framePointerAccess: CFGNode): CFGNode.LValue =
+        when (allocation) {
+            is VariableAllocation.InRegister -> {
+                RegisterUse(allocation.register)
+            }
+
+            is VariableAllocation.OnStack -> {
+                MemoryAccess(
+                    CFGNode.Subtraction(
+                        framePointerAccess,
+                        CFGNode.ConstantKnown(allocation.offset),
+                    ),
+                )
+            }
+        }
+
     override fun getVariableFromDefinition(varDef: Definition): Variable =
         variablesMap.definitions.getOrElse(varDef) {
             throw IllegalArgumentException("Variable $varDef have not been defined inside function $function")
@@ -170,10 +186,11 @@ class FunctionHandlerImpl(
 
     private val prologueEpilogueHandler =
         PrologueEpilogueHandler(
+            this,
             callConvention,
             getStackSpace(),
-            resultRegister,
             getFlattenedArguments(),
+            getResultLayout(),
         )
 
     override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()

@@ -1,14 +1,17 @@
 package cacophony.controlflow.functions
 
 import cacophony.basicType
+import cacophony.controlflow.*
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
+import cacophony.controlflow.generation.Layout
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.createVariablesMap
+import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -57,8 +60,7 @@ class GenerateCallKtTest {
                     if (it.size != 1) false
                     else {
                         val l = it.first()
-                        if (l !is SimpleLayout) false
-                        else l.access == expectedStaticLink
+                        l == expectedStaticLink
                     }
                 },
                 any(),
@@ -96,8 +98,8 @@ class GenerateCallKtTest {
                             mockk(),
                             "fun def",
                             mockk(),
-                            argDeclarations,
-                            mockk(),
+                            (1..argumentCount).map { mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" } },
+                            BaseType.Basic(mockk(), "Int"),
                             mockk(),
                         ),
                         mockAnalyzedFunction(),
@@ -113,10 +115,10 @@ class GenerateCallKtTest {
     private fun mockFunDeclarationAndFunHandler(argumentCount: Int): FunctionHandlerImpl =
         mockFunDeclarationAndFunHandlerWithParents(argumentCount, 1)[0]
 
-    private fun getCallNodes(argumentCount: Int, result: Register?): List<CFGNode> =
+    private fun getCallNodes(argumentCount: Int, result: Layout?): List<CFGNode> =
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
-            (1..argumentCount + 1).map { SimpleLayout(mockk()) },
+            (1..argumentCount + 1).map { mockk() },
             result,
             CFGNode.ConstantKnown(0),
         )
@@ -166,7 +168,7 @@ class GenerateCallKtTest {
     @Test
     fun `value is returned if requested`() {
         val register = Register.VirtualRegister()
-        val nodes = getCallNodes(0, register)
+        val nodes = getCallNodes(0, SimpleLayout(registerUse(register)))
         val resultDestination = getResultDestination(nodes)
         assertThat(resultDestination).isInstanceOf(CFGNode.RegisterUse::class.java)
         assertThat((resultDestination as CFGNode.RegisterUse).register).isEqualTo(register)

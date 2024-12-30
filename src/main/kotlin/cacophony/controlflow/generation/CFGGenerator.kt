@@ -38,7 +38,9 @@ internal class CFGGenerator(
                 is SubCFG.Immediate -> assignLayoutWithValue(bodyCFG.access, returnValueLayout, returnValueLayout)
             }
 
-        val returnVertex = cfg.addFinalVertex(CFGNode.Return)
+        val resultSize = function.returnType.size()
+
+        val returnVertex = cfg.addFinalVertex(CFGNode.Return(CFGNode.ConstantKnown(resultSize)))
 
         prologue.exit.connect(extended.entry.label)
         extended.exit.connect(epilogue.entry.label)
@@ -229,8 +231,8 @@ internal class CFGGenerator(
                     getCurrentFunctionHandler(),
                     function,
                     functionHandler,
-                    argumentVertices.map { it.access },
-                    resultRegister,
+                    argumentVertices.flatMap { it.access.flatten() },
+                    resultRegister?.let { SimpleLayout(registerUse(it)) },
                 ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
