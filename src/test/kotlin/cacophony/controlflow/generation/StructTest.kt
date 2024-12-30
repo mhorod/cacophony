@@ -368,7 +368,6 @@ class StructTest {
         assertEquivalent(actualCFG, expectedCFG)
     }
 
-    // TODO: fix this test - accessing subfield makes whole structure land on stack
     @Test
     fun `access simple subfield in nested function`() {
         // given
@@ -422,7 +421,6 @@ class StructTest {
                     }
             }
 
-        // TODO: expected should be different
         assertFragmentIsEquivalent(fCFG, expectedCFGf)
         assertFragmentIsEquivalent(gCFG, expectedCFGg)
     }

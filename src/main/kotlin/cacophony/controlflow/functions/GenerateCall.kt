@@ -20,7 +20,7 @@ fun generateCallFrom(
             if (function.type!!.argumentsType.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
-            if (!layoutMatchesType(result, function.type.returnType)) {
+            if (result != null && !layoutMatchesType(result, function.type.returnType)) {
                 throw IllegalArgumentException("Wrong result layout")
             }
             generateCall(function, arguments, result, callerFunction.getStackSpace())
@@ -30,7 +30,7 @@ fun generateCallFrom(
             if (function.arguments.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
-            if (!layoutMatchesType(result, function.returnType)) {
+            if (result != null && !layoutMatchesType(result, function.returnType)) {
                 throw IllegalArgumentException("Wrong result layout")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
@@ -38,7 +38,7 @@ fun generateCallFrom(
         }
     }
 
-private fun layoutMatchesType(layout: Layout?, type: Type): Boolean = layout?.matchesType(type) ?: true
+private fun layoutMatchesType(layout: Layout, type: Type): Boolean = layout.matchesType(type)
 
 fun generateCall(
     function: Definition.FunctionDeclaration,

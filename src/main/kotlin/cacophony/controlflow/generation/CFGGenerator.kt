@@ -213,14 +213,10 @@ internal class CFGGenerator(
                 is Definition.ForeignFunctionDeclaration -> null
             }
 
-        val (resultRegister, resultAccess) =
-            if (mode is EvalMode.SideEffect) {
-                Pair(null, CFGNode.NoOp)
-            } else {
-                val register = Register.VirtualRegister()
-                val rawAccess = CFGNode.RegisterUse(register)
-                val access = if (mode is EvalMode.Conditional) CFGNode.NotEquals(rawAccess, CFGNode.ConstantKnown(0)) else rawAccess
-                Pair(register, access)
+        val resultLayout =
+            when (mode) {
+                is EvalMode.SideEffect -> null
+                else -> generateLayoutOfVirtualRegisters(typeCheckingResult.expressionTypes[expression]!!)
             }
 
         val callSequence =
@@ -230,7 +226,7 @@ internal class CFGGenerator(
                     function,
                     functionHandler,
                     argumentVertices.flatMap { it.access.flatten() },
-                    resultRegister?.let { SimpleLayout(registerUse(it)) },
+                    resultLayout,
                 ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
@@ -244,12 +240,14 @@ internal class CFGGenerator(
             }
 
         return if (mode is EvalMode.Conditional) {
-            val conditionVertex = cfg.addConditionalVertex(resultAccess)
+            // by type checking
+            require(resultLayout is SimpleLayout)
+            val conditionVertex = cfg.addConditionalVertex(resultLayout.access neq integer(0))
             callSequence.exit.connect(conditionVertex.label)
             conditionVertex.connectTrue(mode.trueEntry.label)
             conditionVertex.connectFalse(mode.falseEntry.label)
             SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
-        } else SubCFG.Extracted(entry, callSequence.exit, resultAccess)
+        } else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp))
     }
 
     private fun visitLiteral(literal: Literal, mode: EvalMode): SubCFG =
