@@ -1,12 +1,14 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
+import cacophony.controlflow.generation.Layout
 
 class PrologueEpilogueHandler(
     private val handler: FunctionHandler,
     private val callConvention: CallConvention,
     private val stackSpace: CFGNode.ConstantLazy,
-    private val resultAccess: Register.VirtualRegister,
+    private val flattenedArguments: List<CFGNode>,
+    private val resultAccess: Layout,
 ) {
     private val spaceForPreservedRegisters: List<Register.VirtualRegister> =
         callConvention.preservedRegisters().map {
@@ -15,32 +17,39 @@ class PrologueEpilogueHandler(
 
     fun generatePrologue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
-        with(handler) {
-            nodes.add(pushRegister(rbp))
-            nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
-            nodes.add(registerUse(rsp) subeq stackSpace)
+        nodes.add(pushRegister(rbp))
+        nodes.add(registerUse(rbp) assign (registerUse(rsp) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
+        nodes.add(registerUse(rsp) subeq stackSpace)
 
-            // Preserved registers
-            for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
-                nodes.add(registerUse(destination) assign registerUse(Register.FixedRegister(source)))
-            }
+        // Preserved registers
+        for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
+            nodes.add(registerUse(destination) assign registerUse(Register.FixedRegister(source)))
+        }
 
-            // Defined function arguments
-            for ((ind, arg) in getFunctionDeclaration().arguments.withIndex()) {
-                nodes.add(
-                    wrapAllocation(getVariableAllocation(getVariableFromDefinition(arg))) assign
-                        wrapAllocation(callConvention.argumentAllocation(ind)),
-                )
-            }
-
-            // Static link (implicit arg)
+        // Defined function arguments
+        for ((ind, destination) in flattenedArguments.withIndex()) {
+            require(destination is CFGNode.LValue)
             nodes.add(
-                wrapAllocation(getVariableAllocation(getStaticLink())) assign
-                    wrapAllocation(callConvention.argumentAllocation(getFunctionDeclaration().arguments.size)),
+                destination assign
+                    wrapAllocation(callConvention.argumentAllocation(ind)),
             )
         }
         return nodes
     }
+
+    private val returnLocations =
+        listOf(
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RAX)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RDI)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RSI)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RDX)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RCX)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.R8)),
+            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.R9)),
+        )
+
+    private fun getReturnLocation(index: Int): VariableAllocation =
+        callConvention.returnAllocation(index, handler.getFunctionDeclaration().arguments.sumOf { it.type.size() })
 
     fun generateEpilogue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
@@ -49,8 +58,11 @@ class PrologueEpilogueHandler(
             nodes.add(registerUse(Register.FixedRegister(destination)) assign registerUse(source))
         }
 
-        // Write the result to its destination
-        nodes.add(registerUse(Register.FixedRegister(callConvention.returnRegister())) assign registerUse(resultAccess))
+        nodes.addAll(
+            resultAccess.flatten().withIndex().map { (i, access) ->
+                wrapAllocation(getReturnLocation(i)) assign access
+            },
+        )
 
         // Restoring RSP
         nodes.add(registerUse(rsp) assign (registerUse(rbp) add CFGNode.ConstantKnown(REGISTER_SIZE)))

@@ -1,23 +1,22 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.CFGNode
-import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
 import cacophony.controlflow.VariableAllocation
+import cacophony.controlflow.generation.Layout
 import cacophony.semantic.syntaxtree.Definition
 
 interface FunctionHandler {
     fun getFunctionDeclaration(): Definition.FunctionDefinition
 
-    fun generateVariableAccess(variable: Variable): CFGNode.LValue
+    fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
-    // I think on labs we agreed we use here only PrimitiveVariable, but I'm not sure
-    fun getVariableAllocation(variable: Variable): VariableAllocation
+    fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation
 
-    fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation)
+    fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation)
 
     // Returns static link to parent
-    fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable // TODO: change it to primitive variable
+    fun getStaticLink(): Variable.PrimitiveVariable
 
     fun getStackSpace(): CFGNode.ConstantLazy
 
@@ -27,11 +26,11 @@ interface FunctionHandler {
 
     fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode
 
-    fun allocateFrameVariable(variable: Variable): CFGNode.LValue
+    fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
     fun generatePrologue(): List<CFGNode>
 
     fun generateEpilogue(): List<CFGNode>
 
-    fun getResultRegister(): Register.VirtualRegister
+    fun getResultLayout(): Layout
 }

@@ -1,10 +1,10 @@
 package cacophony.controlflow
 
 sealed class Register {
-    class VirtualRegister(private val name: String = "") : Register() {
+    class VirtualRegister : Register() {
         private val myNumber = number++
 
-        override fun toString(): String = "reg$myNumber($name)"
+        override fun toString(): String = "reg$myNumber"
 
         private companion object {
             private var number: Int = 0
