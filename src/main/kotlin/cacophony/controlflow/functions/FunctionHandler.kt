@@ -1,7 +1,6 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.CFGNode
-import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
 import cacophony.controlflow.VariableAllocation
 import cacophony.controlflow.generation.Layout
@@ -32,8 +31,6 @@ interface FunctionHandler {
     fun generatePrologue(): List<CFGNode>
 
     fun generateEpilogue(): List<CFGNode>
-
-    fun getResultRegister(): Register.VirtualRegister
 
     fun getResultLayout(): Layout
 }

@@ -3,10 +3,7 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
-import cacophony.controlflow.generation.Layout
-import cacophony.controlflow.generation.SimpleLayout
-import cacophony.controlflow.generation.flattenLayout
-import cacophony.controlflow.generation.getVariableLayout
+import cacophony.controlflow.generation.*
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
@@ -151,11 +148,9 @@ class FunctionHandlerImpl(
 
     override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
 
-    private val resultRegister = Register.VirtualRegister()
+    private val resultLayout = generateLayoutOfVirtualRegisters(function.returnType)
 
-    override fun getResultRegister(): Register.VirtualRegister = resultRegister
-
-    override fun getResultLayout(): Layout = SimpleLayout(registerUse(getResultRegister()))
+    override fun getResultLayout(): Layout = resultLayout
 
     private fun getFlattenedArguments(): List<CFGNode> =
         function.arguments

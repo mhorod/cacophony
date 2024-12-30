@@ -61,6 +61,7 @@ class CacophonyPipeline(
     private fun <T> assertEmptyDiagnosticsAfter(action: () -> T): T {
         val x = action()
         if (diagnostics.getErrors().isNotEmpty()) {
+            println(x)
             throw diagnostics.fatal()
         }
         return x
@@ -289,7 +290,7 @@ class CacophonyPipeline(
     ): Pair<
         Map<FunctionDefinition, LoweredCFGFragment>,
         Map<FunctionDefinition, RegisterAllocation>,
-        > {
+    > {
         if (registerAllocation.values.all { it.spills.isEmpty() }) {
             return covering to registerAllocation
         }

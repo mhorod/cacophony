@@ -4,6 +4,9 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.registerUse
+import cacophony.semantic.syntaxtree.BaseType
+import cacophony.semantic.syntaxtree.Type
 import cacophony.semantic.types.BuiltinType
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.StructType
@@ -21,12 +24,20 @@ fun generateLayoutOfVirtualRegisters(layout: Layout): Layout =
 
 fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
     when (type) {
-        BuiltinType.BooleanType -> SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister()))
-        BuiltinType.IntegerType -> SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister()))
-        BuiltinType.UnitType -> SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister()))
+        BuiltinType.BooleanType -> SimpleLayout(registerUse(Register.VirtualRegister()))
+        BuiltinType.IntegerType -> SimpleLayout(registerUse(Register.VirtualRegister()))
+        BuiltinType.UnitType -> SimpleLayout(registerUse(Register.VirtualRegister()))
         is StructType -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
         TypeExpr.VoidType -> StructLayout(emptyMap())
         is FunctionType -> throw IllegalArgumentException("No layout for function types")
+    }
+
+fun generateLayoutOfVirtualRegisters(type: Type): Layout =
+    when (type) {
+        is BaseType.Basic -> SimpleLayout(registerUse(Register.VirtualRegister()))
+        is BaseType.Structural -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
+        is BaseType.Referential -> TODO()
+        is BaseType.Functional -> throw IllegalArgumentException("No layout for function types")
     }
 
 fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
