@@ -80,15 +80,16 @@ private class Typer(
 
                 is Struct -> {
                     StructType(
-                        expression.fields.map { (field, fieldExpr) ->
-                            field.name to (
-                                initializedType(
-                                    field.type,
-                                    (typeExpression(fieldExpr) ?: return null),
-                                    fieldExpr.range,
-                                ) ?: return null
-                            )
-                        }.toMap(),
+                        expression.fields
+                            .map { (field, fieldExpr) ->
+                                field.name to (
+                                    initializedType(
+                                        field.type,
+                                        (typeExpression(fieldExpr) ?: return null),
+                                        fieldExpr.range,
+                                    ) ?: return null
+                                )
+                            }.toMap(),
                     )
                 }
                 is StructField -> {
@@ -266,6 +267,9 @@ private class Typer(
                     }
                     BuiltinType.UnitType
                 }
+
+                is Allocation -> throw NotImplementedError()
+                is Dereference -> throw NotImplementedError()
 
                 is VariableUse -> typedVariables[resolvedVariables[expression]!!]
             }

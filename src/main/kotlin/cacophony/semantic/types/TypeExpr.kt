@@ -39,9 +39,9 @@ class FunctionType(
 class StructType(
     val fields: Map<String, TypeExpr>,
 ) : TypeExpr(
-        fields.map {
-            it.key + ": " + it.value.toString()
-        }.joinToString(", ", "{", "}"),
+        fields
+            .map { it.key + ": " + it.value.toString() }
+            .joinToString(", ", "{", "}"),
     )
 
 class TypeTranslator(
@@ -69,13 +69,13 @@ class TypeTranslator(
 
             is BaseType.Structural -> {
                 val fields =
-                    type.fields.map {
-                        it.key to (translateType(it.value) ?: return null)
-                    }.toMap()
-                StructType(
-                    fields,
-                )
+                    type.fields
+                        .map { it.key to (translateType(it.value) ?: return null) }
+                        .toMap()
+                StructType(fields)
             }
+
+            is BaseType.Referential -> throw NotImplementedError()
         }
     }
 }
