@@ -424,4 +424,47 @@ class StructTest {
         assertFragmentIsEquivalent(fCFG, expectedCFGf)
         assertFragmentIsEquivalent(gCFG, expectedCFGg)
     }
+
+    @Test
+    fun `literal with variable`() {
+        // given
+
+        /*
+         * let f = [a: Int, b: Int] -> Int => (let x = {a = a, b = b}; x.a);
+         */
+        val fDef =
+            intFunctionDefinition(
+                "f",
+                listOf(intArg("a"), intArg("b")),
+                block(
+                    variableDeclaration(
+                        "x",
+                        struct(
+                            "a" to variableUse("a"),
+                            "b" to variableUse("b"),
+                        ),
+                    ),
+                    rvalueFieldRef(variableUse("x"), "a"),
+                ),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+
+        // then
+        val virA = Register.VirtualRegister()
+        val virB = Register.VirtualRegister()
+        val virC = Register.VirtualRegister()
+        val virD = Register.VirtualRegister()
+        val virE = Register.VirtualRegister()
+
+        val expectedCFG =
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("assign b") { writeRegister(virC, registerUse(virA)) }
+                "assign b" does jump("assign res") { writeRegister(virD, registerUse(virB)) }
+                "assign res" does jump("bodyExit") { writeRegister(virE, registerUse(virC)) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
 }

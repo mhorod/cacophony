@@ -1,0 +1,5 @@
+let x = 3;
+let f = [y : Int] -> Unit => (
+    x += y;
+);
+f[2];

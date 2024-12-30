@@ -31,7 +31,7 @@ class FunctionPrologueAndEpilogueTest {
                 restorePreservedRegisters("restore preserved", "move result to rax")
                 "move result to rax" does jump("teardown") { writeRegister(rax, "result") }
                 teardownStackFrame("teardown", "exit")
-                "exit" does final { returnNode }
+                "exit" does final { returnNode(1) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -63,7 +63,7 @@ class FunctionPrologueAndEpilogueTest {
                 restorePreservedRegisters("restore preserved", "move result to rax")
                 "move result to rax" does jump("teardown") { writeRegister(rax, "result") }
                 teardownStackFrame("teardown", "exit")
-                "exit" does final { returnNode }
+                "exit" does final { returnNode(1) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -117,7 +117,7 @@ class FunctionPrologueAndEpilogueTest {
                 restorePreservedRegisters("restore preserved", "move result to rax")
                 "move result to rax" does jump("teardown") { writeRegister(rax, "result") }
                 teardownStackFrame("teardown", "exit")
-                "exit" does final { returnNode }
+                "exit" does final { returnNode(1) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -170,12 +170,14 @@ class FunctionPrologueAndEpilogueTest {
                 restorePreservedRegisters("restore preserved", "move result to rax")
                 "move result to rax" does jump("teardown") { writeRegister(rax, "result") }
                 teardownStackFrame("teardown", "exit")
-                "exit" does final { returnNode }
+                "exit" does final { returnNode(1) }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 }
+
+// TODO: struct prologue and epilogue test
 
 private fun generateCFGWithSimplifiedCalls(definition: Definition.FunctionDefinition) =
     generateSimplifiedCFG(definition, realPrologue = true, realEpilogue = true, fullCallSequences = false)
