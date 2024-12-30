@@ -15,12 +15,12 @@ interface CallConvention {
 }
 
 abstract class StackCallConvention(
-    private val registerOrder: List<HardwareRegister>,
-    private val resultRegisterOrder: List<HardwareRegister>,
+    private val registerArgumentOrder: List<HardwareRegister>,
+    private val registerReturnOrder: List<HardwareRegister>,
 ) : CallConvention {
     override fun argumentAllocation(index: Int): VariableAllocation =
-        if (index < registerOrder.size) {
-            VariableAllocation.InRegister(Register.FixedRegister(registerOrder[index]))
+        if (index < registerArgumentOrder.size) {
+            VariableAllocation.InRegister(Register.FixedRegister(registerArgumentOrder[index]))
         } else {
             // Stack is
             // [arg2]
@@ -29,22 +29,24 @@ abstract class StackCallConvention(
             // [ret address] + 16
             // [old rbp] + 8
             // [static link] <- curr rbp
-            VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerOrder.size + 3))
+            VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerArgumentOrder.size + 3))
         }
 
     override fun returnAllocation(index: Int, argumentCount: Int): VariableAllocation =
-        if (index < resultRegisterOrder.size) {
-            VariableAllocation.InRegister(Register.FixedRegister(resultRegisterOrder[index]))
+        if (index < registerReturnOrder.size) {
+            VariableAllocation.InRegister(Register.FixedRegister(registerReturnOrder[index]))
         } else {
-            if (argumentCount <= registerOrder.size) {
-                VariableAllocation.OnStack(-REGISTER_SIZE * (index - resultRegisterOrder.size + 3))
+            if (argumentCount <= registerArgumentOrder.size) {
+                VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerReturnOrder.size + 3))
             } else {
-                VariableAllocation.OnStack(-REGISTER_SIZE * (index - resultRegisterOrder.size + argumentCount - registerOrder.size + 3))
+                VariableAllocation.OnStack(
+                    -REGISTER_SIZE * (index - registerReturnOrder.size + argumentCount - registerArgumentOrder.size + 3),
+                )
             }
         }
 }
 
-object SystemVAMD64CallConvention : StackCallConvention(REGISTER_ARGUMENT_ORDER, RETURN_REGISTER_ORDER) {
+object SystemVAMD64CallConvention : StackCallConvention(REGISTER_ARGUMENT_ORDER, REGISTER_RETURN_ORDER) {
     private val preservedRegisters =
         listOf(HardwareRegister.RBX, HardwareRegister.R12, HardwareRegister.R13, HardwareRegister.R14, HardwareRegister.R15)
 

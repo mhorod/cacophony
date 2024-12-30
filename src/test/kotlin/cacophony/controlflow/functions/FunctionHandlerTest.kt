@@ -6,7 +6,6 @@ import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
 import cacophony.controlflow.VariableAllocation
-import cacophony.controlflow.generation.SimpleLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.AnalyzedVariable
 import cacophony.semantic.analysis.ParentLink
@@ -80,7 +79,6 @@ class FunctionHandlerTest {
         // setup
         val funDef = mockk<Definition.FunctionDefinition>()
         every { funDef.arguments } returns emptyList()
-        val varDef = mockk<Definition>()
         val variable = Variable.PrimitiveVariable()
         val analyzedVariable = mockk<AnalyzedVariable>()
         every { analyzedVariable.origin } returns variable
@@ -641,8 +639,7 @@ class FunctionHandlerTest {
                         if (it.size != 1) false
                         else {
                             val l = it.first()
-                            if (l !is SimpleLayout) false
-                            else l.access == CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))
+                            l == CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))
                         }
                     },
                     any(),

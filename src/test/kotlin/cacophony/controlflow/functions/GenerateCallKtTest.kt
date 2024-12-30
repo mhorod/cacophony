@@ -98,7 +98,7 @@ class GenerateCallKtTest {
                             mockk(),
                             "fun def",
                             mockk(),
-                            (1..argumentCount).map { mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" } },
+                            argDeclarations,
                             BaseType.Basic(mockk(), "Int"),
                             mockk(),
                         ),

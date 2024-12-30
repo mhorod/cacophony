@@ -50,7 +50,7 @@ fun generateCall(
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
     val resultSize = function.returnType.size()
 
-    val stackResultsSize = (resultSize - RETURN_REGISTER_ORDER.size).let { if (it > 0) it else 0 }
+    val stackResultsSize = (resultSize - REGISTER_RETURN_ORDER.size).let { if (it > 0) it else 0 }
 
     val nodes: MutableList<CFGNode> = mutableListOf()
 
@@ -103,7 +103,7 @@ fun generateCall(
         }
 
         val results = result.flatten()
-        val registerResults = results.zip(RETURN_REGISTER_ORDER)
+        val registerResults = results.zip(REGISTER_RETURN_ORDER)
         val stackResults = results.drop(registerResults.size)
 
         for ((access, register) in registerResults) {

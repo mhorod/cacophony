@@ -94,8 +94,6 @@ internal class CFGGenerator(
                     is EvalMode.Value -> {
                         val destination = generateLayoutOfVirtualRegisters(subCFG.access)
                         assignLayoutWithValue(subCFG.access, destination, destination)
-//                        val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
-//                        SubCFG.Extracted(vertex, vertex, subCFG.access)
                     }
 
                     else -> {

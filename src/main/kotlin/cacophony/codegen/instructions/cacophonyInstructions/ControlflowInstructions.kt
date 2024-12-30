@@ -139,7 +139,7 @@ data class Ret(val resultSize: Int) : InstructionTemplates.FixedRegistersInstruc
         (
             setOf(
                 HardwareRegister.RSP,
-            ) + RETURN_REGISTER_ORDER.take(resultSize) + SystemVAMD64CallConvention.preservedRegisters()
+            ) + REGISTER_RETURN_ORDER.take(resultSize) + SystemVAMD64CallConvention.preservedRegisters()
         ).map(Register::FixedRegister).toSet()
     override val registersWritten = setOf<Register>()
 
