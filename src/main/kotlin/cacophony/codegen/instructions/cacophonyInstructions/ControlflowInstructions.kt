@@ -131,17 +131,16 @@ data class Comment(private val comment: String) : InstructionTemplates.FixedRegi
     override val registersWritten: Set<Register> = emptySet()
 
     // This class is not marked as noop, as we do not want to remove it.
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
-        return "; $comment"
-    }
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String = "; $comment"
 }
 
-data object Ret : InstructionTemplates.FixedRegistersInstruction() {
-    override val registersRead =
-        setOf(
-            Register.FixedRegister(HardwareRegister.RSP),
-            Register.FixedRegister(SystemVAMD64CallConvention.returnRegister()),
-        ) union SystemVAMD64CallConvention.preservedRegisters().map(Register::FixedRegister)
+data class Ret(val resultSize: Int) : InstructionTemplates.FixedRegistersInstruction() {
+    override val registersRead: Set<Register> =
+        (
+            setOf(
+                HardwareRegister.RSP,
+            ) + REGISTER_RETURN_ORDER.take(resultSize) + SystemVAMD64CallConvention.preservedRegisters()
+        ).map(Register::FixedRegister).toSet()
     override val registersWritten = setOf<Register>()
 
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "ret"

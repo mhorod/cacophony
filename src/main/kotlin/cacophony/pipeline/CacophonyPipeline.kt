@@ -184,13 +184,27 @@ class CacophonyPipeline(
 
     fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables): FunctionAnalysisResult {
         val callGraph = generateCallGraph(ast, resolvedVariables)
-        return analyzeFunctions(ast, resolvedVariables, callGraph)
+        val types = checkTypes(ast, resolvedVariables)
+        val variablesMap = createVariables(ast, resolvedVariables, types)
+        return analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
     }
 
-    private fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, callGraph: CallGraph): FunctionAnalysisResult {
+    private fun analyzeFunctions(
+        ast: AST,
+        variablesMap: VariablesMap,
+        resolvedVariables: ResolvedVariables,
+        callGraph: CallGraph,
+    ): FunctionAnalysisResult {
         val result =
             try {
-                assertEmptyDiagnosticsAfter { cacophony.semantic.analysis.analyzeFunctions(ast, resolvedVariables, callGraph) }
+                assertEmptyDiagnosticsAfter {
+                    analyzeFunctions(
+                        ast,
+                        resolvedVariables,
+                        callGraph,
+                        variablesMap,
+                    )
+                }
             } catch (e: CompileException) {
                 logger?.logFailedFunctionAnalysis()
                 throw e
@@ -205,19 +219,27 @@ class CacophonyPipeline(
         val types = checkTypes(ast, resolvedVariables)
         val variablesMap = createVariables(ast, resolvedVariables, types)
         val callGraph = generateCallGraph(ast, resolvedVariables)
-        val analyzedFunctions = analyzeFunctions(ast, resolvedVariables, callGraph)
-        val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions)
-        val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention)
+        val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
+        val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
+        val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention, variablesMap)
         val foreignFunctions = findForeignFunctions(resolvedNames)
         return AstAnalysisResult(resolvedVariables, types, variablesMap, analyzedExpressions, functionHandlers, foreignFunctions)
     }
 
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
 
-    fun generateControlFlowGraph(ast: AST): ProgramCFG = generateControlFlowGraph(analyzeAst(ast), SimpleCallGenerator())
+    private fun generateControlFlowGraph(ast: AST): ProgramCFG = generateControlFlowGraph(analyzeAst(ast), SimpleCallGenerator())
 
     fun generateControlFlowGraph(analyzedAst: AstAnalysisResult, callGenerator: CallGenerator): ProgramCFG {
-        val cfg = generateCFG(analyzedAst.resolvedVariables, analyzedAst.analyzedExpressions, analyzedAst.functionHandlers, callGenerator)
+        val cfg =
+            generateCFG(
+                analyzedAst.resolvedVariables,
+                analyzedAst.analyzedExpressions,
+                analyzedAst.functionHandlers,
+                analyzedAst.variablesMap,
+                analyzedAst.types,
+                callGenerator,
+            )
         logger?.logSuccessfulControlFlowGraphGeneration(cfg)
         return cfg
     }

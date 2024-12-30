@@ -2,10 +2,9 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.Register
-import cacophony.controlflow.Variable
+import cacophony.semantic.syntaxtree.Assignable
 import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
-import cacophony.semantic.syntaxtree.VariableUse
 
 /**
  * Converts operators into CFG
@@ -29,12 +28,16 @@ internal class OperatorHandler(
             } else {
                 lhsCFG
             }
-
+        val lhsAccess = safeLhs.access
+        val rhsAccess = rhsCFG.access
+        // by type checking
+        require(lhsAccess is SimpleLayout)
+        require(rhsAccess is SimpleLayout)
         val access =
             when (mode) {
                 is EvalMode.Conditional -> error("Arithmetic operator $expression cannot be used as conditional")
                 is EvalMode.SideEffect -> CFGNode.NoOp
-                is EvalMode.Value -> makeOperatorNode(expression, safeLhs.access, rhsCFG.access)
+                is EvalMode.Value -> makeOperatorNode(expression, lhsAccess.access, rhsAccess.access)
             }
         return join(safeLhs, rhsCFG, access)
     }
@@ -95,40 +98,46 @@ internal class OperatorHandler(
         mode: EvalMode,
         context: Context,
     ): SubCFG {
-        // TODO: consider generalizing assigning so it works not only for variables
-        val variableUse =
-            expression.lhs as? VariableUse
-                ?: error("Expected variable use in assignment lhs, got ${expression.lhs}")
-        val definition = cfgGenerator.resolveVariable(variableUse)
-        val variableAccess = cfgGenerator.getCurrentFunctionHandler().generateVariableAccess(Variable.SourceVariable(definition))
+        val assignable =
+            expression.lhs as? Assignable
+                ?: error("Expected Assignable use in assignment lhs, got ${expression.lhs}")
+        val lhs = cfgGenerator.visit(assignable, EvalMode.Value, context)
         val rhs = cfgGenerator.visit(expression.rhs, EvalMode.Value, context)
-        val operatorNode = makeAssignOperatorNode(expression, variableAccess, rhs.access)
+        val lhsAccess = lhs.access
+        val rhsAccess = rhs.access
+        // by type checking
+        require(lhsAccess is SimpleLayout)
+        require(rhsAccess is SimpleLayout)
+        require(lhsAccess.access is CFGNode.LValue)
+        val operatorNode = makeAssignOperatorNode(expression, lhsAccess.access, rhsAccess.access)
         return when (rhs) {
             is SubCFG.Immediate -> SubCFG.Immediate(operatorNode)
             is SubCFG.Extracted -> {
                 val assignmentVertex = cfg.addUnconditionalVertex(operatorNode)
                 rhs.exit.connect(assignmentVertex.label)
-                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(variableAccess, mode))
+                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(SimpleLayout(lhsAccess.access), mode))
             }
         }
     }
 
-    internal fun visitLogicalOperator(expression: OperatorBinary.LogicalOperator, mode: EvalMode, context: Context): SubCFG {
-        return when (expression) {
+    internal fun visitLogicalOperator(expression: OperatorBinary.LogicalOperator, mode: EvalMode, context: Context): SubCFG =
+        when (expression) {
             is OperatorBinary.LogicalAnd -> visitLogicalAndOperator(expression, mode, context)
             is OperatorBinary.LogicalOr -> visitLogicalOrOperator(expression, mode, context)
             else -> visitNormalLogicalOperator(expression, mode, context)
         }
-    }
 
     private fun visitNormalLogicalOperator(expression: OperatorBinary.LogicalOperator, mode: EvalMode, context: Context): SubCFG {
         // If we are computing logical operator in Conditional mode then we want to compute both sides
         // and then perform jump basing on the operation on their values.
         val innerMode = if (mode is EvalMode.Conditional) EvalMode.Value else mode
         val valueCFG = visitBinaryOperator(expression, innerMode, context)
+        val valueAccess = valueCFG.access
+        // by type checking
+        require(valueAccess is SimpleLayout)
         return when (mode) {
             is EvalMode.Conditional -> {
-                val conditionVertex = cfg.addConditionalVertex(valueCFG.access)
+                val conditionVertex = cfg.addConditionalVertex(valueAccess.access)
                 val entry =
                     if (valueCFG is SubCFG.Extracted) {
                         valueCFG.exit.connect(conditionVertex.label)
@@ -167,7 +176,7 @@ internal class OperatorHandler(
                 val writeTrue = cfg.addUnconditionalVertex(CFGNode.Assignment(access, CFGNode.TRUE))
                 writeTrue.connect(exit.label)
 
-                val extendedRhs = cfgGenerator.extendWithAssignment(rhs, access, EvalMode.Value)
+                val extendedRhs = cfgGenerator.extendWithAssignment(rhs, SimpleLayout(access), EvalMode.Value)
                 extendedRhs.exit.connect(exit.label)
 
                 val innerMode = EvalMode.Conditional(writeTrue, extendedRhs.entry, exit)
@@ -211,7 +220,7 @@ internal class OperatorHandler(
                 val writeFalse = cfg.addUnconditionalVertex(CFGNode.Assignment(access, CFGNode.FALSE))
                 writeFalse.connect(exit.label)
 
-                val extendedRhs = cfgGenerator.extendWithAssignment(rhs, access, EvalMode.Value)
+                val extendedRhs = cfgGenerator.extendWithAssignment(rhs, SimpleLayout(access), EvalMode.Value)
                 extendedRhs.exit.connect(exit.label)
 
                 val innerMode = EvalMode.Conditional(extendedRhs.entry, writeFalse, exit)
@@ -238,13 +247,17 @@ internal class OperatorHandler(
             is EvalMode.Conditional -> error("Minus is not a conditional operator")
             is EvalMode.SideEffect -> cfgGenerator.visit(expression.expression, EvalMode.SideEffect, context)
             is EvalMode.Value -> {
-                when (val expressionCFG = cfgGenerator.visit(expression.expression, EvalMode.Value, context)) {
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionCFG.access))
+                val expressionCFG = cfgGenerator.visit(expression.expression, EvalMode.Value, context)
+                val expressionAccess = expressionCFG.access
+                // by type checking
+                require(expressionAccess is SimpleLayout)
+                when (expressionCFG) {
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionAccess.access))
                     is SubCFG.Extracted ->
                         SubCFG.Extracted(
                             expressionCFG.entry,
                             expressionCFG.exit,
-                            CFGNode.Minus(expressionCFG.access),
+                            CFGNode.Minus(expressionAccess.access),
                         )
                 }
             }
@@ -261,13 +274,17 @@ internal class OperatorHandler(
 
             is EvalMode.SideEffect -> cfgGenerator.visit(expression.expression, EvalMode.SideEffect, context)
             is EvalMode.Value -> {
-                when (val expressionCFG = cfgGenerator.visit(expression.expression, EvalMode.Value, context)) {
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.LogicalNot(expressionCFG.access))
+                val expressionCFG = cfgGenerator.visit(expression.expression, EvalMode.Value, context)
+                val expressionAccess = expressionCFG.access
+                // by type checking
+                require(expressionAccess is SimpleLayout)
+                when (expressionCFG) {
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.LogicalNot(expressionAccess.access))
                     is SubCFG.Extracted ->
                         SubCFG.Extracted(
                             expressionCFG.entry,
                             expressionCFG.exit,
-                            CFGNode.LogicalNot(expressionCFG.access),
+                            CFGNode.LogicalNot(expressionAccess.access),
                         )
                 }
             }

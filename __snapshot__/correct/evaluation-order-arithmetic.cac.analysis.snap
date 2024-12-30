@@ -335,50 +335,8 @@
     "variables": [
       {
         "__class__": "AnalyzedVariable",
-        "declaration": {
-          "__class__": "VariableDeclaration",
-          "type": {
-            "__class__": "Basic",
-            "identifier": "Int",
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 7
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 9
-              }
-            }
-          },
-          "value": {
-            "__class__": "IntLiteral",
-            "value": 3,
-            "range": {
-              "__class__": "Pair",
-              "first": {
-                "__class__": "Location",
-                "value": 13
-              },
-              "second": {
-                "__class__": "Location",
-                "value": 13
-              }
-            }
-          },
-          "identifier": "x",
-          "range": {
-            "__class__": "Pair",
-            "first": {
-              "__class__": "Location",
-              "value": 0
-            },
-            "second": {
-              "__class__": "Location",
-              "value": 13
-            }
-          }
+        "origin": {
+          "__class__": "PrimitiveVariable"
         },
         "definedIn": {
           "__class__": "FunctionDefinition",

@@ -136,8 +136,10 @@ private class FragmentEquivalenceVisitor {
                 assertThat(actual.register).isEqualTo(expected.register)
             }
 
-            CFGNode.Return -> {
+            is CFGNode.Return -> {
                 assertThat(actual).isInstanceOf(CFGNode.Return::class.java)
+                check(actual is CFGNode.Return)
+                assertThat(actual.resultSize).isEqualTo(expected.resultSize)
             }
 
             is CFGNode.Push -> {

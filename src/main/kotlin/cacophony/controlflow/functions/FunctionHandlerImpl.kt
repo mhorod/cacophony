@@ -3,7 +3,9 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
+import cacophony.controlflow.generation.*
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import kotlin.math.max
@@ -14,23 +16,22 @@ class FunctionHandlerImpl(
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<FunctionHandler>,
     callConvention: CallConvention,
+    private val variablesMap: VariablesMap,
 ) : FunctionHandler {
-    private val staticLink = Variable.AuxVariable.StaticLinkVariable() // TODO: change to primitive variable
-    private val definitionToVariable = // TODO: remove
-        (analyzedFunction.variables.map { it.declaration } union function.arguments).associateWith { Variable.SourceVariable(it) }
+    private val staticLink = Variable.PrimitiveVariable("sl")
     private var stackSpace = 0
-    private val variableAllocation: MutableMap<Variable, VariableAllocation> = mutableMapOf()
+    private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
 
     // This does not perform any checks and may override previous allocation.
     // Holes in the stack may be also created if stack variables are directly allocated with this method.
-    override fun registerVariableAllocation(variable: Variable, allocation: VariableAllocation) {
+    override fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation) {
         if (allocation is VariableAllocation.OnStack) {
             stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
         }
         variableAllocation[variable] = allocation
     }
 
-    override fun allocateFrameVariable(variable: Variable): CFGNode.LValue {
+    override fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue {
         val currentStackSpace = stackSpace
         registerVariableAllocation(variable, VariableAllocation.OnStack(stackSpace))
         return MemoryAccess(
@@ -45,23 +46,29 @@ class FunctionHandlerImpl(
         introduceStaticLinksParams()
 
         run {
-            val usedVars = analyzedFunction.variablesUsedInNestedFunctions
+            val usedVars = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
             val regVar =
                 (
                     analyzedFunction
                         .declaredVariables()
-                        .map { it.declaration } union function.arguments
+                        .map { it.origin.getPrimitives() }
+                        .flatten() union
+                        function.arguments
+                            .map { variablesMap.definitions[it]!! }
+                            .map { it.getPrimitives() }
+                            .flatten()
                 ).toSet()
-                    .minus(usedVars)
-            regVar.forEach { varDef ->
+                    .minus(usedVars.toSet())
+
+            regVar.forEach {
                 registerVariableAllocation(
-                    definitionToVariable[varDef]!!,
-                    VariableAllocation.InRegister(Register.VirtualRegister(varDef.identifier)),
+                    it,
+                    VariableAllocation.InRegister(Register.VirtualRegister()),
                 )
             }
 
-            usedVars.forEach { varDef ->
-                allocateFrameVariable(definitionToVariable[varDef]!!)
+            usedVars.forEach {
+                allocateFrameVariable(it)
             }
         }
     }
@@ -93,31 +100,23 @@ class FunctionHandlerImpl(
             callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
         }
 
-    override fun generateVariableAccess(variable: Variable): CFGNode.LValue {
-        val definedInDeclaration =
-            when (variable) { // TODO: remove when on variable type
-                is Variable.SourceVariable -> {
-                    // TODO: adjust to new analyzedFunction semantics
-                    analyzedFunction.variables.find { it.declaration == variable.definition }?.definedIn
-                }
-                is Variable.AuxVariable.StaticLinkVariable -> {
-                    if (getStaticLink() == variable) {
-                        function
-                    } else {
-                        ancestorFunctionHandlers.find { it.getStaticLink() == variable }?.getFunctionDeclaration()
-                    }
-                }
-                else -> throw GenerateVariableAccessException(
-                    "Cannot generate access to variables other than static links and source variables.",
-                )
+    override fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
+        if (variable in variableAllocation) { // WARN: hack to handle arguments not used inside function
+            return wrapAllocation(variableAllocation[variable]!!)
+        }
+        val analyzedVariable = analyzedFunction.variables.find { it.origin == variable }
+        val definedInFunctionHandler =
+            if (analyzedVariable != null) {
+                (ancestorFunctionHandlers + this).find { it.getFunctionDeclaration() == analyzedVariable.definedIn }
+            } else {
+                (ancestorFunctionHandlers + this).find { it.getStaticLink() == variable }
             }
 
-        if (definedInDeclaration == null) {
+        if (definedInFunctionHandler == null) {
             throw GenerateVariableAccessException("Function $function has no access to $variable.")
         }
 
-        val definedInFunctionHandler =
-            ancestorFunctionHandlers.find { it.getFunctionDeclaration() == definedInDeclaration } ?: this
+        val definedInDeclaration = definedInFunctionHandler.getFunctionDeclaration()
 
         return when (val variableAllocation = definedInFunctionHandler.getVariableAllocation(variable)) {
             is VariableAllocation.InRegister -> {
@@ -135,30 +134,42 @@ class FunctionHandlerImpl(
         }
     }
 
-    override fun getVariableAllocation(variable: Variable): VariableAllocation =
+    override fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation =
         variableAllocation.getOrElse(variable) {
             throw IllegalArgumentException("Variable $variable have not been allocated inside $this FunctionHandler")
         }
 
     override fun getVariableFromDefinition(varDef: Definition): Variable =
-        definitionToVariable.getOrElse(varDef) {
+        variablesMap.definitions.getOrElse(varDef) {
             throw IllegalArgumentException("Variable $varDef have not been defined inside function $function")
         }
 
-    override fun getStaticLink(): Variable.AuxVariable.StaticLinkVariable = staticLink
+    override fun getStaticLink(): Variable.PrimitiveVariable = staticLink
 
     override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
 
-    private val resultRegister = Register.VirtualRegister()
+    private val resultLayout = generateLayoutOfVirtualRegisters(function.returnType)
 
-    override fun getResultRegister(): Register.VirtualRegister = resultRegister
+    override fun getResultLayout(): Layout = resultLayout
+
+    private fun getFlattenedArguments(): List<CFGNode> =
+        function.arguments
+            .map { variablesMap.definitions[it]!! }
+            .map {
+                getVariableLayout(
+                    this,
+                    it,
+                )
+            }.map { flattenLayout(it) }
+            .flatten() + generateVariableAccess(getStaticLink())
 
     private val prologueEpilogueHandler =
         PrologueEpilogueHandler(
             this,
             callConvention,
             getStackSpace(),
-            resultRegister,
+            getFlattenedArguments(),
+            getResultLayout(),
         )
 
     override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()
