@@ -16,7 +16,9 @@ sealed interface Assignable : Expression
 
 sealed interface LeafExpression : Expression, TreeLeaf
 
-sealed interface Type : SyntaxTree
+sealed interface Type : SyntaxTree {
+    fun size(): Int = 1
+}
 
 sealed interface NonFunctionalType : Type
 
@@ -69,6 +71,8 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
 
     class Structural(range: Pair<Location, Location>, val fields: Map<String, Type>) : BaseType(range), NonFunctionalType {
         override fun toString() = "{${fields.map { (k, v) -> "$k: $v" }.joinToString(", ")}}"
+
+        override fun size() = fields.values.sumOf { it.size() }
 
         override fun isEquivalent(other: SyntaxTree?) =
             super<BaseType>.isEquivalent(other) &&

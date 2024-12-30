@@ -1,30 +1,36 @@
 package cacophony.semantic.analysis
 
+import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import kotlin.error
 
 // Type of variables usage for each expression
-typealias UseTypeAnalysisResult = Map<Expression, Map<Definition, VariableUseType>>
+typealias UseTypeAnalysisResult = Map<Expression, Map<Variable, VariableUseType>>
 
-fun analyzeVarUseTypes(ast: AST, resolvedVariables: ResolvedVariables, functionAnalysis: FunctionAnalysisResult): UseTypeAnalysisResult {
-    val visitor = VarUseVisitor(resolvedVariables, functionAnalysis)
+fun analyzeVarUseTypes(
+    ast: AST,
+    resolvedVariables: ResolvedVariables,
+    functionAnalysis: FunctionAnalysisResult,
+    variablesMap: VariablesMap,
+): UseTypeAnalysisResult {
+    val visitor = VarUseVisitor(resolvedVariables, functionAnalysis, variablesMap)
     visitor.visit(ast)
     return visitor.getAnalysisResult()
 }
 
 private class UseTypesForExpression(
-    private val map: MutableMap<Definition, VariableUseType>,
+    private val map: MutableMap<Variable, VariableUseType>,
 ) {
-    fun add(definition: Definition, type: VariableUseType) {
+    fun add(variable: Variable, type: VariableUseType) {
         val previousType =
             map.getOrElse(
-                definition,
+                variable,
             ) { VariableUseType.UNUSED }
-        map[definition] = previousType.union(type)
+        map[variable] = previousType.union(type)
     }
 
-    fun getMap(): Map<Definition, VariableUseType> = map
+    fun getMap(): Map<Variable, VariableUseType> = map
 
     fun mergeWith(other: UseTypesForExpression) {
         other.getMap().forEach {
@@ -32,7 +38,7 @@ private class UseTypesForExpression(
         }
     }
 
-    fun filter(collection: Collection<Definition>) {
+    fun filter(collection: Collection<Variable>) {
         map.keys.removeAll(collection.toSet())
     }
 
@@ -54,17 +60,44 @@ private class UseTypesForExpression(
 private class VarUseVisitor(
     val resolvedVariables: ResolvedVariables,
     val functionAnalysis: FunctionAnalysisResult,
+    val variablesMap: VariablesMap,
 ) {
     private val useTypeAnalysis = mutableMapOf<Expression, UseTypesForExpression>()
-    private val scopeStack = ArrayDeque<MutableSet<Definition>>()
+    private val scopeStack = ArrayDeque<MutableSet<Variable>>()
 
     fun visit(ast: AST) = visitExpression(ast)
 
     fun getAnalysisResult(): UseTypeAnalysisResult = useTypeAnalysis.mapValues { it.value.getMap() }
 
+    private fun gatherNestedVariables(variable: Variable): Set<Variable> {
+        val result = HashSet<Variable>()
+        result.add(variable)
+        if (variable is Variable.StructVariable) {
+            variable.fields.values.forEach {
+                result.addAll(gatherNestedVariables(it))
+            }
+        }
+        return result
+    }
+
+    private fun gatherAffectedVariables(expr: Assignable): Set<Variable> {
+        val result = HashSet<Variable>()
+        result.addAll(gatherNestedVariables(variablesMap.lvalues[expr]!!))
+
+        var nestedExpression: Expression = expr
+        while (nestedExpression is Assignable) {
+            result.add(variablesMap.lvalues[nestedExpression]!!)
+            if (nestedExpression !is FieldRef) {
+                break
+            }
+            nestedExpression = nestedExpression.struct()
+        }
+        return result
+    }
+
     private fun visitExpression(expr: Expression) {
-        if (expr is Definition) {
-            scopeStack.lastOrNull()?.add(expr)
+        if (expr is Definition.VariableDeclaration) {
+            scopeStack.lastOrNull()?.add(variablesMap.definitions[expr]!!)
         }
         when (expr) {
             is Block -> visitBlock(expr)
@@ -78,20 +111,42 @@ private class VarUseVisitor(
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
             is Struct -> visitStruct(expr)
-            is FieldRef -> visitFieldRef(expr)
-            is Allocation -> throw NotImplementedError()
-            is Dereference -> throw NotImplementedError()
+            is FieldRef.LValue -> visitFieldRefLValue(expr)
+            is FieldRef.RValue -> visitFieldRefRValue(expr)
+            is Allocation -> TODO()
+            is Dereference -> TODO()
             is LeafExpression -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
         }
     }
 
-    private fun visitFieldRef(expr: FieldRef) {
-        expr.struct().let {
-            visitExpression(it)
-            useTypeAnalysis[expr] = useTypeAnalysis[it] ?: error("Variable use types missing for child $it of $expr")
+    private fun visitAssignable(expr: Assignable, type: VariableUseType) {
+        val affectedVariables = gatherAffectedVariables(expr)
+
+        var nestedExpression: Expression = expr
+        while (nestedExpression is Assignable) {
+            useTypeAnalysis[nestedExpression] = UseTypesForExpression.empty()
+            affectedVariables.forEach {
+                useTypeAnalysis[nestedExpression]!!.add(
+                    it,
+                    type,
+                )
+            }
+            if (nestedExpression !is FieldRef) {
+                break
+            }
+            nestedExpression = nestedExpression.struct()
         }
+    }
+
+    private fun visitFieldRefLValue(expr: FieldRef.LValue) {
+        visitAssignable(expr, VariableUseType.READ)
+    }
+
+    private fun visitFieldRefRValue(expr: FieldRef.RValue) {
+        visitExpression(expr.obj)
+        useTypeAnalysis[expr] = useTypeAnalysis[expr.obj] ?: error("Variable use types missing for child ${expr.obj} of $expr")
     }
 
     private fun visitStruct(expr: Struct) {
@@ -106,11 +161,16 @@ private class VarUseVisitor(
     }
 
     private fun visitVariableUse(expr: VariableUse) {
+        val definition = resolvedVariables[expr]
+        if (definition is Definition.FunctionDefinition || definition is Definition.ForeignFunctionDeclaration)
+            return
         useTypeAnalysis[expr] = UseTypesForExpression.empty()
-        useTypeAnalysis[expr]!!.add(
-            resolvedVariables[expr]!!,
-            VariableUseType.READ,
-        )
+        gatherNestedVariables(variablesMap.lvalues[expr]!!).forEach {
+            useTypeAnalysis[expr]!!.add(
+                it,
+                VariableUseType.READ,
+            )
+        }
     }
 
     private fun visitBinaryOperator(expr: OperatorBinary) {
@@ -135,35 +195,36 @@ private class VarUseVisitor(
         }
     }
 
+    // TODO: copied from visitAssignment with WRITE -> READ_WRITE change
     private fun visitCompoundAssignment(expr: OperatorBinary) {
+        useTypeAnalysis[expr] = UseTypesForExpression.empty()
         visitExpression(expr.rhs)
-        when (expr.lhs) {
-            is VariableUse -> {
-                useTypeAnalysis[expr] = UseTypesForExpression.empty()
-                useTypeAnalysis[expr]!!.add(
-                    resolvedVariables[expr.lhs]!!,
-                    VariableUseType.READ_WRITE,
+        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
+            visitAssignable(expr.lhs as Assignable, VariableUseType.READ_WRITE)
+            useTypeAnalysis[expr] =
+                UseTypesForExpression.merge(
+                    useTypeAnalysis[expr.lhs],
+                    useTypeAnalysis[expr.rhs],
                 )
-                useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.rhs]!!)
-            }
-
-            else -> visitExpression(expr.lhs)
+        } else {
+            TODO("unimplemented branch for different assignment type")
+//            visitExpression(expr.lhs)
         }
     }
 
     private fun visitAssignment(expr: OperatorBinary.Assignment) {
+        useTypeAnalysis[expr] = UseTypesForExpression.empty()
         visitExpression(expr.rhs)
-        when (expr.lhs) {
-            is VariableUse -> {
-                useTypeAnalysis[expr] = UseTypesForExpression.empty()
-                useTypeAnalysis[expr]!!.add(
-                    resolvedVariables[expr.lhs]!!,
-                    VariableUseType.WRITE,
+        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
+            visitAssignable(expr.lhs as Assignable, VariableUseType.WRITE)
+            useTypeAnalysis[expr] =
+                UseTypesForExpression.merge(
+                    useTypeAnalysis[expr.lhs],
+                    useTypeAnalysis[expr.rhs],
                 )
-                useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.rhs]!!)
-            }
-
-            else -> visitExpression(expr.lhs)
+        } else {
+            TODO("unimplemented branch for different assignment type")
+//            visitExpression(expr.lhs)
         }
     }
 
@@ -222,7 +283,7 @@ private class VarUseVisitor(
         if (calledFunction is Definition.FunctionDefinition) {
             val map =
                 functionAnalysis[calledFunction]!!.outerVariables().associate {
-                    it.declaration to it.useType
+                    it.origin to it.useType
                 }
             useTypeAnalysis[expr]!!.mergeWith(UseTypesForExpression(map.toMutableMap()))
         } else if (calledFunction !is Definition.ForeignFunctionDeclaration) {

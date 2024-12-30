@@ -61,7 +61,7 @@ fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, bod
         "entry" does jump("bodyEntry") { MockFunctionParts.prologue }
         body()
         "bodyExit" does jump("exit") { MockFunctionParts.epilogue }
-        "exit" does final { returnNode }
+        "exit" does final { returnNode(definition.returnType.size()) }
     }
 
 fun standaloneWrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =

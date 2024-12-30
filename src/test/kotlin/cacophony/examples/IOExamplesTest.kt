@@ -53,8 +53,6 @@ class IOExamplesTest {
 
     companion object {
         @JvmStatic
-        fun ioExamples(): List<Path> {
-            return Path.of("examples/io").listDirectoryEntries().toList()
-        }
+        fun ioExamples(): List<Path> = Path.of("examples/io").listDirectoryEntries().toList()
     }
 }

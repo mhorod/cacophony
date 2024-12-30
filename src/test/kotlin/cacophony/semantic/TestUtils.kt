@@ -1,9 +1,7 @@
 package cacophony.semantic
 
-import cacophony.semantic.analysis.AnalyzedFunction
-import cacophony.semantic.analysis.AnalyzedVariable
-import cacophony.semantic.analysis.CallGraph
-import cacophony.semantic.analysis.StaticFunctionRelations
+import cacophony.controlflow.Variable
+import cacophony.semantic.analysis.*
 import cacophony.semantic.syntaxtree.*
 
 fun program(ast: Block) = ast.expressions[0] as Definition.FunctionDefinition
@@ -36,3 +34,7 @@ fun analyzedFunction(function: Definition.FunctionDefinition, staticDepth: Int, 
         staticDepth,
         emptySet(),
     )
+
+fun createVariablesMap(definitions: Map<Definition, Variable> = emptyMap(), lvalues: Map<Assignable, Variable> = emptyMap()): VariablesMap {
+    return VariablesMap(lvalues, definitions)
+}
