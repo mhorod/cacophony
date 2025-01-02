@@ -156,7 +156,10 @@ class CacophonyGrammar {
                         ),
                     TYPE produces
                         (
-                            atomic(TYPE_IDENTIFIER) or atomic(FUNCTION_TYPE) or atomic(STRUCT_TYPE)
+                            atomic(TYPE_IDENTIFIER) or
+                                atomic(FUNCTION_TYPE) or
+                                atomic(STRUCT_TYPE) or
+                                atomic(REFERENCE_TYPE)
                         ),
                     FUNCTION_TYPE produces (
                         (
@@ -194,6 +197,9 @@ class CacophonyGrammar {
                             atomic(LEFT_CURLY_BRACE) concat atomic(RIGHT_CURLY_BRACE)
                         )
 
+                    ),
+                    REFERENCE_TYPE produces (
+                        atomic(AMPERSAND) concat atomic(TYPE)
                     ),
                     ASSIGNMENT_LEVEL produces
                         (
@@ -288,10 +294,16 @@ class CacophonyGrammar {
                         ),
                     STATEMENT_LEVEL produces
                         (
-                            atomic(CALL_LEVEL) or
+                            atomic(REFERENCE_LEVEL) or
                                 atomic(RETURN_STATEMENT) or
                                 atomic(WHILE_CLAUSE) or
                                 atomic(IF_CLAUSE)
+                        ),
+                    REFERENCE_LEVEL produces
+                        (
+                            atomic(CALL_LEVEL) or
+                                (atomic(DOLLAR) concat atomic(REFERENCE_LEVEL)) or
+                                (atomic(AT) concat atomic(REFERENCE_LEVEL))
                         ),
                     CALL_LEVEL produces
                         (

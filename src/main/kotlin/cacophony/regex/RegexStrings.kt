@@ -33,6 +33,9 @@ object RegexStrings {
             TokenCategorySpecific.SEMICOLON to """;""",
             TokenCategorySpecific.COMMA to """,""",
             TokenCategorySpecific.PERIOD to """.""",
+            TokenCategorySpecific.AMPERSAND to """&""",
+            TokenCategorySpecific.AT to """@""",
+            TokenCategorySpecific.DOLLAR to """$""",
             // keywords
             TokenCategorySpecific.KEYWORD_LET to """let""",
             TokenCategorySpecific.KEYWORD_IF to """if""",
@@ -73,7 +76,7 @@ object RegexStrings {
             TokenCategorySpecific.COMMENT to """#\N*""",
         )
 
-    fun getCategoryRegex(category: TokenCategoryGeneral): String? = generalCategoryMap.get(category)
+    fun getCategoryRegex(category: TokenCategoryGeneral): String? = generalCategoryMap[category]
 
-    fun getCategoryRegex(category: TokenCategorySpecific): String? = specificCategoryMap.get(category)
+    fun getCategoryRegex(category: TokenCategorySpecific): String? = specificCategoryMap[category]
 }

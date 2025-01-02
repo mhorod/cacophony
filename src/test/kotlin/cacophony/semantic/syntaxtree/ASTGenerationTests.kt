@@ -91,6 +91,16 @@ class ASTGenerationTests {
         return ast ?: throw exc!!
     }
 
+    private fun getInnerBlock(ast: AST): AST { // unwrap AST
+        return ast.children().first().children().first() as Block
+    }
+
+    private fun computeType(type: String): Type? {
+        val ast = computeAST("let x:$type=()") // that would fail type check, but here we dont care
+        val definition = getInnerBlock(ast).children().first() as Definition.VariableDeclaration
+        return definition.type
+    }
+
     private fun computeFailDiagnostics(content: String): List<String> {
         val (ast, diagnostics, _) = computeASTAndDiagnostics(content)
         assertThat(ast).isNull()
@@ -715,5 +725,90 @@ class ASTGenerationTests {
                 basicType("Int"),
             )
         assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `simple allocation`() {
+        val actual = computeAST("$2")
+        val expected =
+            Allocation(
+                anyLocation(),
+                literal(2),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `simple dereference`() {
+        val actual = computeAST("@x")
+        val expected =
+            Dereference(
+                anyLocation(),
+                variableUse("x"),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `dereference assignment`() {
+        val actual = computeAST("@x=2")
+        val expected =
+            OperatorBinary.Assignment(
+                anyLocation(),
+                Dereference(
+                    anyLocation(),
+                    variableUse("x"),
+                ),
+                literal(2),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `compute basic type`() {
+        val actual = computeType("Type")
+        val expected =
+            BaseType.Basic(
+                anyLocation(),
+                "Type",
+            )
+        assertThat(areEquivalentTypes(expected, actual))
+    }
+
+    @Test
+    fun `compute functional type`() {
+        val actual = computeType("[Type1]->Type2")
+        val expected =
+            BaseType.Functional(
+                anyLocation(),
+                listOf(BaseType.Basic(anyLocation(), "Type1")),
+                BaseType.Basic(anyLocation(), "Type2"),
+            )
+        assertThat(areEquivalentTypes(expected, actual))
+    }
+
+    @Test
+    fun `compute structural type`() {
+        val actual = computeType("{x:Type1, y:Type2}")
+        val expected =
+            BaseType.Structural(
+                anyLocation(),
+                mapOf(
+                    "x" to BaseType.Basic(anyLocation(), "Type1"),
+                    "y" to BaseType.Basic(anyLocation(), "Type2"),
+                ),
+            )
+        assertThat(areEquivalentTypes(expected, actual))
+    }
+
+    @Test
+    fun `compute referential type`() {
+        val actual = computeType("&Type")
+        val expected =
+            BaseType.Referential(
+                anyLocation(),
+                BaseType.Basic(anyLocation(), "Type"),
+            )
+        assertThat(areEquivalentTypes(expected, actual))
     }
 }

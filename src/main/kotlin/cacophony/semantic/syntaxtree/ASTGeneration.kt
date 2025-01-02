@@ -66,6 +66,11 @@ private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnost
                     .toMap(),
             )
         }
+        REFERENCE_TYPE -> {
+            require(parseTree is ParseTree.Branch) { "Unable to construct referential type from leaf node $symbol" }
+            val innerType = constructType(parseTree.children.last(), diagnostics)
+            BaseType.Referential(parseTree.range, innerType)
+        }
         else -> throw IllegalStateException("Can't construct type from node $symbol")
     }
 
@@ -98,7 +103,7 @@ fun <T : OperatorBinary> createInstanceBinary(
     return constructor!!.call(range, lhs, rhs)
 }
 
-fun <T : OperatorUnary> createInstanceUnary(kClass: KClass<T>, range: Pair<Location, Location>, subExpression: Expression): Expression {
+fun <T : Expression> createInstanceUnary(kClass: KClass<T>, range: Pair<Location, Location>, subExpression: Expression): Expression {
     val constructor = kClass.primaryConstructor
     return constructor!!.call(range, subExpression)
 }
@@ -329,7 +334,21 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                         return OperatorUnary.Minus(range, generateASTInternal(parseTree.children[1], diagnostics))
                     }
                     return createInstanceUnary(
-                        unarySymbol.syntaxTreeClass!! as KClass<OperatorUnary>,
+                        unarySymbol.syntaxTreeClass!! as KClass<out Expression>,
+                        range,
+                        generateASTInternal(parseTree.children[1], diagnostics),
+                    )
+                } else {
+                    throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
+                }
+            }
+            REFERENCE_LEVEL -> { // very similar to unary operators
+                assert(childNum == 2)
+                val operatorKind = parseTree.children[0]
+                if (operatorKind is ParseTree.Leaf) {
+                    val unarySymbol = operatorKind.token.category
+                    return createInstanceUnary(
+                        unarySymbol.syntaxTreeClass!! as KClass<out Expression>,
                         range,
                         generateASTInternal(parseTree.children[1], diagnostics),
                     )
