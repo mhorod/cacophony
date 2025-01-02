@@ -6,6 +6,7 @@ import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
+import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.types.TypeCheckingResult
 
@@ -18,6 +19,7 @@ fun generateCFG(
     variablesMap: VariablesMap,
     typeCheckingResult: TypeCheckingResult,
     callGenerator: CallGenerator,
+    objectOutlineLocation: ObjectOutlineLocation,
 ): ProgramCFG {
     val result =
         functionHandlers.mapValues { (function, _) ->
@@ -29,6 +31,7 @@ fun generateCFG(
                 variablesMap,
                 typeCheckingResult,
                 callGenerator,
+                objectOutlineLocation,
             )
         }
     return result
@@ -42,6 +45,7 @@ internal fun generateFunctionCFG(
     variablesMap: VariablesMap,
     typeCheckingResult: TypeCheckingResult,
     callGenerator: CallGenerator,
+    objectOutlineLocation: ObjectOutlineLocation,
 ): CFGFragment {
     val generator =
         CFGGenerator(
@@ -52,6 +56,7 @@ internal fun generateFunctionCFG(
             variablesMap,
             typeCheckingResult,
             callGenerator,
+            objectOutlineLocation,
         )
     return generator.generateFunctionCFG()
 }
