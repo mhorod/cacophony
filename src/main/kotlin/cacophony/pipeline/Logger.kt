@@ -64,6 +64,8 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
 
     fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>)
 
+    fun logSuccessfulAsmGeneration(functions: Map<Definition.FunctionDefinition, String>)
+
     fun logSuccessfulAssembling(dest: Path)
 
     fun logFailedAssembling(status: Int)

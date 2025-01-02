@@ -25,40 +25,56 @@ import cacophony.token.TokenCategorySpecific
 import cacophony.utils.TreePrinter
 import java.nio.file.Path
 
-class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbol> {
+class CacophonyLogger(
+    private val logParsing: Boolean,
+    private val logAST: Boolean,
+    private val logAnalysis: Boolean,
+    private val logCFG: Boolean,
+    private val logCover: Boolean,
+    private val logRegs: Boolean,
+    private val logAsm: Boolean,
+) : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbol> {
     override fun logSuccessfulGrammarAnalysis(analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol>) =
         println("Grammar analysis successful :D")
 
     override fun logFailedGrammarAnalysis() = println("Grammar analysis failed :(")
 
     override fun logSuccessfulLexing(tokens: List<Token<TokenCategorySpecific>>) {
-        println("Lexing successful :D")
-        println("Found tokens:")
-        tokens.forEach { println("  $it") }
+        if (logParsing) {
+            println("Lexing successful :D")
+            println("Found tokens:")
+            tokens.forEach { println("  $it") }
+        }
     }
 
     override fun logFailedLexing() = println("Lexing failed :(")
 
     override fun logSuccessfulParsing(parseTree: ParseTree<CacophonyGrammarSymbol>) {
-        println("Parsing successful :D")
-        println("Parse tree:")
-        println(TreePrinter(StringBuilder()).printTree(parseTree))
+        if (logParsing) {
+            println("Parsing successful :D")
+            println("Parse tree:")
+            println(TreePrinter(StringBuilder()).printTree(parseTree))
+        }
     }
 
     override fun logFailedParsing() = println("Parsing failed :(")
 
     override fun logSuccessfulAstGeneration(ast: AST) {
-        println("AST generation successful :D")
-        println("AST:")
-        println(TreePrinter(StringBuilder()).printTree(ast))
+        if (logAST) {
+            println("AST generation successful :D")
+            println("AST:")
+            println(TreePrinter(StringBuilder()).printTree(ast))
+        }
     }
 
     override fun logFailedAstGeneration() = println("AST generation failed :(")
 
     override fun logSuccessfulNameResolution(result: NameResolutionResult) {
-        println("Name resolution successful :D")
-        println("Resolved names:")
-        result.forEach { println("  ${it.key.identifier} -> ${resolvedNameToString(it.value)}") }
+        if (logAnalysis) {
+            println("Name resolution successful :D")
+            println("Resolved names:")
+            result.forEach { println("  ${it.key.identifier} -> ${resolvedNameToString(it.value)}") }
+        }
     }
 
     private fun resolvedNameToString(resolvedName: ResolvedName) =
@@ -71,28 +87,49 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logFailedNameResolution() = println("Name resolution failed :(")
 
     override fun logSuccessfulOverloadResolution(result: ResolvedVariables) {
-        println("Overload resolution successful :D")
-        println("Resolved variables:")
-        result.forEach { println("  ${it.key.identifier} -> ${it.value}") }
+        if (logAnalysis) {
+            println("Overload resolution successful :D")
+            println("Resolved variables:")
+            result.forEach { println("  ${it.key.identifier} -> ${it.value}") }
+        }
     }
 
     override fun logFailedOverloadResolution() = println("Overload resolution failed :(")
 
     override fun logSuccessfulTypeChecking(result: TypeCheckingResult) {
-        println("Type checking successful :D")
-        println("Types:")
-        result.expressionTypes.forEach { println("  ${it.key} : ${it.value}") }
+        if (logAnalysis) {
+            println("Type checking successful :D")
+            println("Types:")
+            result.expressionTypes.forEach { println("  ${it.key} : ${it.value}") }
+        }
     }
 
     override fun logFailedTypeChecking() = println("Type checking failed :(")
 
+    override fun logSuccessfulVariableCreation(variableMap: VariablesMap) {
+        if (logAnalysis) {
+            println("Variable creation successful :D")
+            println("  Definition variables:")
+            variableMap.definitions.forEach { (definition, variable) ->
+                println("    $definition -> ${variableToString(variable)}")
+            }
+
+            println("  Assignables' variables:")
+            variableMap.lvalues.forEach { (assignable, variable) ->
+                println("    $assignable -> ${variableToString(variable)}")
+            }
+        }
+    }
+
     override fun logSuccessfulCallGraphGeneration(callGraph: CallGraph) {
-        println("Call graph generation successful :D")
-        println("Calls:")
-        callGraph.forEach { (caller, callees) ->
-            println("  $caller (${caller.identifier}/${caller.arguments.size}) calls:")
-            callees.forEach { callee ->
-                println("    $callee (${callee.identifier}/${callee.arguments.size})")
+        if (logAnalysis) {
+            println("Call graph generation successful :D")
+            println("Calls:")
+            callGraph.forEach { (caller, callees) ->
+                println("  $caller (${caller.identifier}/${caller.arguments.size}) calls:")
+                callees.forEach { callee ->
+                    println("    $callee (${callee.identifier}/${callee.arguments.size})")
+                }
             }
         }
     }
@@ -100,48 +137,37 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     override fun logFailedCallGraphGeneration() = println("Call graph generation failed :(")
 
     override fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult) {
-        println("Function analysis successful :D")
-        result.forEach { (function, analysis) ->
-            println("  $function (${function.identifier}/${function.arguments.size}) at static depth ${analysis.staticDepth}:")
-            println("    Parent link: ${analysis.parentLink}")
-            println("    Used variables: ${analysis.variables.size}")
-            analysis.variables.forEach { variable ->
-                val usage =
-                    when (variable.useType) {
-                        VariableUseType.UNUSED -> "--"
-                        VariableUseType.READ -> "r-"
-                        VariableUseType.WRITE -> "-w"
-                        VariableUseType.READ_WRITE -> "rw"
-                    }
-                val from =
-                    "${variable.definedIn} (${variable.definedIn.identifier}/${variable.definedIn.arguments.size})"
-                println("      [$usage] $variable ($variable) from $from")
+        if (logAnalysis) {
+            println("Function analysis successful :D")
+            result.forEach { (function, analysis) ->
+                println("  $function (${function.identifier}/${function.arguments.size}) at static depth ${analysis.staticDepth}:")
+                println("    Parent link: ${analysis.parentLink}")
+                println("    Used variables: ${analysis.variables.size}")
+                analysis.variables.forEach { variable ->
+                    val usage =
+                        when (variable.useType) {
+                            VariableUseType.UNUSED -> "--"
+                            VariableUseType.READ -> "r-"
+                            VariableUseType.WRITE -> "-w"
+                            VariableUseType.READ_WRITE -> "rw"
+                        }
+                    val from =
+                        "${variable.definedIn} (${variable.definedIn.identifier}/${variable.definedIn.arguments.size})"
+                    println("      [$usage] $variable ($variable) from $from")
+                }
+                println("    Variables used in nested functions: ${analysis.variablesUsedInNestedFunctions.size}")
+                analysis.variablesUsedInNestedFunctions.forEach { println("      $it") }
             }
-            println("    Variables used in nested functions: ${analysis.variablesUsedInNestedFunctions.size}")
-            analysis.variablesUsedInNestedFunctions.forEach { println("      $it") }
         }
     }
 
     override fun logFailedFunctionAnalysis() = println("Function analysis failed :(")
 
-    override fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>) {
-        println("Register allocation successful :D")
-        allocatedRegisters.forEach { (function, allocation) ->
-            println("  $function (${function.identifier}/${function.arguments.size})")
-            println("Successful registers:")
-            allocation.successful.toSortedMap(compareBy { it.toString() }).forEach { (variable, register) ->
-                println("  $variable -> $register")
-            }
-            println("Spilled registers:")
-            allocation.spills.forEach { spill ->
-                println("  $spill")
-            }
-        }
-    }
-
     override fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>) {
-        println("Control flow graph generation successful :D")
-        println(programCfgToGraphviz(cfg))
+        if (logCFG) {
+            println("Control flow graph generation successful :D")
+            println(programCfgToGraphviz(cfg))
+        }
     }
 
     private fun logCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>) {
@@ -157,40 +183,71 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
     }
 
     override fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>) {
-        println("Instruction covering successful :D")
-        logCovering(covering)
+        if (logCover) {
+            println("Instruction covering successful :D")
+            logCovering(covering)
+        }
     }
 
     override fun logSuccessfulRegistersInteractionGeneration(
         registersInteractions: Map<Definition.FunctionDefinition, RegistersInteraction>,
     ) {
-        println("Registers interaction generation successful :D")
-        registersInteractions.forEach { (function, registersInteraction) ->
-            println("  Function $function registers interaction: ")
-            println("        Interference:")
-            registersInteraction.interference.forEach { (k, v) ->
-                if (v.isNotEmpty())
-                    println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
-            }
+        if (logRegs) {
+            println("Registers interaction generation successful :D")
+            registersInteractions.forEach { (function, registersInteraction) ->
+                println("  Function $function registers interaction: ")
+                println("        Interference:")
+                registersInteraction.interference.forEach { (k, v) ->
+                    if (v.isNotEmpty())
+                        println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
+                }
 
-            println("        Copying:")
-            registersInteraction.copying.forEach { (k, v) ->
-                if (v.isNotEmpty())
-                    println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
+                println("        Copying:")
+                registersInteraction.copying.forEach { (k, v) ->
+                    if (v.isNotEmpty())
+                        println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
+                }
+            }
+        }
+    }
+
+    override fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>) {
+        if (logRegs) {
+            println("Register allocation successful :D")
+            allocatedRegisters.forEach { (function, allocation) ->
+                println("  $function (${function.identifier}/${function.arguments.size})")
+                println("Successful registers:")
+                allocation.successful.toSortedMap(compareBy { it.toString() }).forEach { (variable, register) ->
+                    println("  $variable -> $register")
+                }
+                println("Spilled registers:")
+                allocation.spills.forEach { spill ->
+                    println("  $spill")
+                }
             }
         }
     }
 
     override fun logSpillHandlingAttempt(spareRegisters: Set<Register.FixedRegister>) {
-        println(
-            "Some virtual registers have spilled. Attempting to handle spills using spare registers: [" +
-                spareRegisters.joinToString(", ") { shortRegisterName(it) } + "]",
-        )
+        if (logRegs) {
+            println(
+                "Some virtual registers have spilled. Attempting to handle spills using spare registers: [" +
+                    spareRegisters.joinToString(", ") { shortRegisterName(it) } + "]",
+            )
+        }
     }
 
     override fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>) {
-        println("Spill handling successful :D")
-        logCovering(covering)
+        if (logRegs) {
+            println("Spill handling successful :D")
+            logCovering(covering)
+        }
+    }
+
+    override fun logSuccessfulAsmGeneration(functions: Map<Definition.FunctionDefinition, String>) {
+        if (logAsm) {
+            functions.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
+        }
     }
 
     override fun logSuccessfulAssembling(dest: Path) {
@@ -207,19 +264,6 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
 
     override fun logFailedLinking(status: Int) {
         println("gcc failed with exit code: $status")
-    }
-
-    override fun logSuccessfulVariableCreation(variableMap: VariablesMap) {
-        println("Variable creation successful :D")
-        println("  Definition variables:")
-        variableMap.definitions.forEach { (definition, variable) ->
-            println("    $definition -> ${variableToString(variable)}")
-        }
-
-        println("  Assignables' variables:")
-        variableMap.lvalues.forEach { (assignable, variable) ->
-            println("    $assignable -> ${variableToString(variable)}")
-        }
     }
 
     private fun variableToString(variable: Variable): String =

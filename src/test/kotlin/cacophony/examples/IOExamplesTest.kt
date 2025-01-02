@@ -1,7 +1,6 @@
 package cacophony.examples
 
 import cacophony.diagnostics.CacophonyDiagnostics
-import cacophony.pipeline.CacophonyLogger
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
@@ -30,7 +29,7 @@ class IOExamplesTest {
 
         val input = FileInput(programPath.toString())
         val diagnostics = CacophonyDiagnostics(input)
-        val pipeline = CacophonyPipeline(diagnostics, CacophonyLogger())
+        val pipeline = CacophonyPipeline(diagnostics, null)
 
         pipeline.compile(input, additionalObjects, asmFile, objFile, binFile)
 

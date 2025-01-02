@@ -289,7 +289,7 @@ class CacophonyPipeline(
     ): Pair<
         Map<FunctionDefinition, LoweredCFGFragment>,
         Map<FunctionDefinition, RegisterAllocation>,
-        > {
+    > {
         if (registerAllocation.values.all { it.spills.isEmpty() }) {
             return covering to registerAllocation
         }
@@ -355,13 +355,12 @@ class CacophonyPipeline(
                     generateAsm(functionBodyLabel(function), loweredCFG, ra)
                 }
             }
-        asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return Pair(generateAsmPreamble(analyzedAst.foreignFunctions), asm)
     }
 
     private fun generateAsm(ast: AST): String {
         val (preamble, functions) = generateAsmImpl(ast)
-        functions.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
+        logger?.logSuccessfulAsmGeneration(functions)
         return (listOf(preamble) + functions.values).joinToString("\n")
     }
 
@@ -397,13 +396,13 @@ class CacophonyPipeline(
         link(listOf(objFile, Paths.get("libcacophony.c")) + additionalObjectFiles, binFile)
     }
 
-    fun compile(input: Input, src: Path) {
+    fun compile(input: Input, output: Path) {
         compile(
             input,
             emptyList(),
-            Paths.get("${src.fileName}.asm"),
-            Paths.get("${src.fileName}.o"),
-            Paths.get("${src.fileName}.bin"),
+            Paths.get("${output.fileName}.asm"),
+            Paths.get("${output.fileName}.o"),
+            Paths.get("${output.fileName}.bin"),
         )
     }
 }
