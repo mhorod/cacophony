@@ -3,4 +3,4 @@ let bool_reference: &Bool = $true;
 
 let struct_reference: &{x: Int, y: Int} = ${x=1, y=2};
 
-#let nested_reference: &&&Int = $$$3;
+let nested_reference: &&&Int = $$$3;

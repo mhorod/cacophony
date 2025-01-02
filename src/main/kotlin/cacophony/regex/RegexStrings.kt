@@ -65,7 +65,6 @@ object RegexStrings {
             TokenCategorySpecific.OPERATOR_DIVISION_ASSIGNMENT to """/=""",
             TokenCategorySpecific.OPERATOR_MODULO_ASSIGNMENT to """%=""",
             TokenCategorySpecific.OPERATOR_LOGICAL_OR to """\|\|""",
-            TokenCategorySpecific.OPERATOR_LOGICAL_AND to """&&""",
             TokenCategorySpecific.OPERATOR_LOGICAL_NOT to """!""",
             // and the others
             TokenCategorySpecific.INT_LITERAL to """\d(\d)*""",

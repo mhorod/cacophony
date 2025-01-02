@@ -228,6 +228,10 @@ class CacophonyGrammar {
                                         atomic(COMPARATOR_LEVEL)
                                 ).star()
                         ),
+                    OPERATOR_LOGICAL_AND produces
+                        (
+                            atomic(AMPERSAND) concat atomic(AMPERSAND)
+                        ),
                     COMPARATOR_LEVEL produces
                         (
                             atomic(EQUALITY_LEVEL) concat

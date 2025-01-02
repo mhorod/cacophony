@@ -133,8 +133,11 @@ private fun operatorRegexToAST(children: List<ParseTree<CacophonyGrammarSymbol>>
         val operatorKind = children[childNum - 2]
         val newChildren = children.subList(0, childNum - 2)
         val range = Pair(first = children[0].range.first, second = children[childNum - 1].range.second)
-        if (operatorKind is ParseTree.Leaf) {
-            val symbol = operatorKind.token.category
+        if (operatorKind is ParseTree.Leaf ||
+            // cheat code to distinguish logical and from double reference
+            (operatorKind is ParseTree.Branch && operatorKind.production.lhs == OPERATOR_LOGICAL_AND)
+        ) {
+            val symbol = getGrammarSymbol(operatorKind)
             return createInstanceBinary(
                 symbol.syntaxTreeClass!! as KClass<OperatorBinary>,
                 range,
