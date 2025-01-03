@@ -6,7 +6,7 @@ import cacophony.codegen.registers.RegistersInteraction
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
-import cacophony.controlflow.programCfgToGraphviz
+import cacophony.controlflow.print.programCfgToGraphviz
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
