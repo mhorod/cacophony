@@ -9,7 +9,6 @@ import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
-import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.semantic.types.TypeExpr
 
@@ -150,7 +149,7 @@ internal class CFGGenerator(
             is EvalMode.Value ->
                 generateFunctionCall(
                     mallocFunction,
-                    ReferentialType(expression.type.toTypeExpr()),
+                    typeCheckingResult.expressionTypes[expression]!!,
                     mode,
                     listOf(
                         ensureExtracted(
