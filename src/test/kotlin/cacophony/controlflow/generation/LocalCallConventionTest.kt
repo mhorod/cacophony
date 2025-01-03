@@ -2,6 +2,7 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
+import cacophony.controlflow.print.programCfgToBuilder
 import org.junit.jupiter.api.Test
 
 class LocalCallConventionTest {
@@ -256,9 +257,6 @@ class LocalCallConventionTest {
                 "forward result out" does
                     jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result out"))) }
             }
-
-        cfgFragmentToGraphviz(actualFragment)
-        cfgFragmentToGraphviz(expectedFragment)
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 
@@ -288,7 +286,6 @@ class LocalCallConventionTest {
                         writeRegister(getResultRegister(), integer(1) add registerUse(virtualRegister("result")))
                     }
             }
-
         assertEquivalent(actualCFG, expectedCFG)
     }
 }
