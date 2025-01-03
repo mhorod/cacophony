@@ -3,12 +3,15 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.mallocFunction
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.TypeCheckingResult
+import cacophony.semantic.types.TypeExpr
 
 /**
  * Converts Expressions into CFG
@@ -137,25 +140,50 @@ internal class CFGGenerator(
             is Assignable -> visitAssignable(expression, mode)
             is Struct -> visitStruct(expression, mode, context)
             is FieldRef -> visitFieldRef(expression, mode, context)
+            is Allocation -> visitAllocation(expression, mode)
+            is Dereference -> visitDereference(expression, mode, context)
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
+    private fun visitAllocation(expression: Allocation, mode: EvalMode): SubCFG =
+        when (mode) {
+            is EvalMode.Value ->
+                generateFunctionCall(
+                    mallocFunction,
+                    ReferentialType(expression.type.toTypeExpr()),
+                    mode,
+                    listOf(
+                        ensureExtracted(
+                            integer(
+                                expression.type.size() * REGISTER_SIZE,
+                            ),
+                        ),
+                    ),
+                )
+            // do nothing if value is not used
+            else -> SubCFG.Immediate(CFGNode.NoOp)
+        }
+
+    private fun visitDereference(expression: Dereference, mode: EvalMode, context: Context): SubCFG {
+        val pointerGeneration = visitExtracted(expression.value, mode, context)
+        require(pointerGeneration.access is SimpleLayout) // by type checking
+        val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
+        val res =
+            SubCFG.Extracted(
+                vertex,
+                vertex,
+                generateLayoutOfHeapObject(pointerGeneration.access.access, typeCheckingResult.expressionTypes[expression.value]!!),
+            )
+        return pointerGeneration merge res
+    }
+
     private fun visitFieldRef(expression: FieldRef, mode: EvalMode, context: Context): SubCFG {
-        val structGeneration = wrapExtracted(visit(expression.struct(), mode, context))
+        val structGeneration = ensureExtracted(visit(expression.struct(), mode, context), EvalMode.SideEffect)
         require(structGeneration.access is StructLayout) // by type checking
         val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
         val res = SubCFG.Extracted(vertex, vertex, structGeneration.access.fields[expression.field]!!)
         return structGeneration merge res
     }
-
-    private fun wrapExtracted(subCFG: SubCFG): SubCFG.Extracted =
-        when (subCFG) {
-            is SubCFG.Extracted -> subCFG
-            is SubCFG.Immediate -> {
-                val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
-                SubCFG.Extracted(vertex, vertex, subCFG.access)
-            }
-        }
 
     private fun visitStruct(expression: Struct, mode: EvalMode, context: Context): SubCFG {
         val fields = expression.fields.map { (name, field) -> name.name to visit(field, mode, context) }.toMap()
@@ -208,7 +236,20 @@ internal class CFGGenerator(
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
-        val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
+        return generateFunctionCall(
+            resolvedVariables[expression.function] as Definition.FunctionDeclaration,
+            typeCheckingResult.expressionTypes[expression]!!,
+            mode,
+            argumentVertices,
+        )
+    }
+
+    private fun generateFunctionCall(
+        function: Definition.FunctionDeclaration,
+        returnType: TypeExpr,
+        mode: EvalMode,
+        arguments: List<SubCFG.Extracted>,
+    ): SubCFG {
         val functionHandler =
             when (function) {
                 is Definition.FunctionDefinition -> getFunctionHandler(function)
@@ -218,7 +259,7 @@ internal class CFGGenerator(
         val resultLayout =
             when (mode) {
                 is EvalMode.SideEffect -> null
-                else -> generateLayoutOfVirtualRegisters(typeCheckingResult.expressionTypes[expression]!!)
+                else -> generateLayoutOfVirtualRegisters(returnType)
             }
 
         val callSequence =
@@ -227,14 +268,14 @@ internal class CFGGenerator(
                     getCurrentFunctionHandler(),
                     function,
                     functionHandler,
-                    argumentVertices.flatMap { it.access.flatten() },
+                    arguments.flatMap { it.access.flatten() },
                     resultLayout,
                 ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
         val entry =
-            if (argumentVertices.isNotEmpty()) {
-                val extractedArguments = argumentVertices.reduce(SubCFG.Extracted::merge)
+            if (arguments.isNotEmpty()) {
+                val extractedArguments = arguments.reduce(SubCFG.Extracted::merge)
                 extractedArguments.exit.connect(callSequence.entry.label)
                 extractedArguments.entry
             } else {

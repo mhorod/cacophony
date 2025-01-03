@@ -1,5 +1,6 @@
 package cacophony.semantic.syntaxtree
 
+import cacophony.semantic.types.*
 import cacophony.utils.Location
 import cacophony.utils.Tree
 import cacophony.utils.TreeLeaf
@@ -17,7 +18,9 @@ sealed interface Assignable : Expression
 sealed interface LeafExpression : Expression, TreeLeaf
 
 sealed interface Type : SyntaxTree {
-    fun size(): Int = 1
+    fun size(): Int
+
+    fun toTypeExpr(): TypeExpr
 }
 
 sealed interface NonFunctionalType : Type
@@ -49,6 +52,10 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
     ) : BaseType(range), NonFunctionalType {
         override fun toString() = identifier
 
+        override fun size(): Int = 1
+
+        override fun toTypeExpr(): TypeExpr = BUILTIN_TYPES[identifier]!!
+
         override fun isEquivalent(other: SyntaxTree?): Boolean =
             super<BaseType>.isEquivalent(other) &&
                 other is Basic &&
@@ -62,6 +69,10 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
     ) : BaseType(range) {
         override fun toString() = "[${argumentsType.joinToString(", ")}] => $returnType"
 
+        override fun size(): Int = throw IllegalArgumentException("Function does not have size")
+
+        override fun toTypeExpr(): TypeExpr = FunctionType(argumentsType.map { it.toTypeExpr() }, returnType.toTypeExpr())
+
         override fun isEquivalent(other: SyntaxTree?): Boolean =
             super.isEquivalent(other) &&
                 other is Functional &&
@@ -74,6 +85,8 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
 
         override fun size() = fields.values.sumOf { it.size() }
 
+        override fun toTypeExpr(): TypeExpr = StructType(fields.mapValues { it.value.toTypeExpr() })
+
         override fun isEquivalent(other: SyntaxTree?) =
             super<BaseType>.isEquivalent(other) &&
                 other is Structural &&
@@ -82,6 +95,10 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
 
     class Referential(range: Pair<Location, Location>, val type: Type) : BaseType(range), NonFunctionalType {
         override fun toString() = "&$type"
+
+        override fun size(): Int = 1
+
+        override fun toTypeExpr(): TypeExpr = ReferentialType(type.toTypeExpr())
 
         override fun isEquivalent(other: SyntaxTree?) =
             super<BaseType>.isEquivalent(other) &&
@@ -229,15 +246,13 @@ class Dereference(range: Pair<Location, Location>, val value: Expression) : Base
             areEquivalentExpressions(value, other.value)
 }
 
-class Allocation(range: Pair<Location, Location>, val value: Expression) : BaseExpression(range) {
+class Allocation(range: Pair<Location, Location>, val type: Type) : BaseExpression(range), LeafExpression {
     override fun toString() = "allocation"
 
-    override fun children() = listOf(value)
-
     override fun isEquivalent(other: SyntaxTree?): Boolean =
-        super.isEquivalent(other) &&
+        super<BaseExpression>.isEquivalent(other) &&
             other is Allocation &&
-            areEquivalentExpressions(value, other.value)
+            areEquivalentTypes(type, other.type)
 }
 
 class StructField(range: Pair<Location, Location>, val name: String, val type: Type?) : BaseExpression(range), LeafExpression {

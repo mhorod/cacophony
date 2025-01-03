@@ -4,7 +4,7 @@ import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 
-private val builtinTypes = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
+val BUILTIN_TYPES = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
 
 sealed class TypeExpr(
     val name: String,
@@ -63,7 +63,7 @@ class TypeTranslator(
     diagnostics: Diagnostics,
 ) {
     private val error = ErrorHandler(diagnostics)
-    private val basicTypes: Map<String, TypeExpr> = builtinTypes
+    private val basicTypes: Map<String, TypeExpr> = BUILTIN_TYPES
 
     internal fun translateType(type: Type): TypeExpr? {
         return when (type) {
