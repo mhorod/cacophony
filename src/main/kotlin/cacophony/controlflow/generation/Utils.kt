@@ -7,10 +7,7 @@ import cacophony.controlflow.functions.FunctionHandler
 import cacophony.controlflow.registerUse
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
-import cacophony.semantic.types.BuiltinType
-import cacophony.semantic.types.FunctionType
-import cacophony.semantic.types.StructType
-import cacophony.semantic.types.TypeExpr
+import cacophony.semantic.types.*
 
 internal fun noOpOr(value: Layout, mode: EvalMode): Layout = if (mode is EvalMode.Value) value else SimpleLayout(CFGNode.NoOp)
 
@@ -30,14 +27,15 @@ fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
         is StructType -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
         TypeExpr.VoidType -> StructLayout(emptyMap())
         is FunctionType -> throw IllegalArgumentException("No layout for function types")
+        is ReferentialType -> TODO()
     }
 
 fun generateLayoutOfVirtualRegisters(type: Type): Layout =
     when (type) {
         is BaseType.Basic -> SimpleLayout(registerUse(Register.VirtualRegister()))
         is BaseType.Structural -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
-        is BaseType.Referential -> TODO()
         is BaseType.Functional -> throw IllegalArgumentException("No layout for function types")
+        is BaseType.Referential -> TODO()
     }
 
 fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
@@ -55,3 +53,7 @@ fun flattenLayout(layout: Layout): List<CFGNode> =
                 .map { (_, subLayout) -> flattenLayout(subLayout) }
                 .flatten()
     }
+
+fun generateLayoutOfHeapObject(base: CFGNode, type: TypeExpr): Layout {
+    TODO()
+}
