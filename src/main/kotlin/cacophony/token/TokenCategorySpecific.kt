@@ -14,6 +14,9 @@ enum class TokenCategorySpecific {
     SEMICOLON,
     COMMA,
     PERIOD,
+    AMPERSAND,
+    AT,
+    DOLLAR,
 
     // keywords
     KEYWORD_LET,

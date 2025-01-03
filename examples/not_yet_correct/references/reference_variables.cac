@@ -1,0 +1,6 @@
+let int_reference = $2;
+let bool_reference = $true;
+
+let struct_reference = ${x=1, y=2};
+
+let nested_reference = $$$3;
