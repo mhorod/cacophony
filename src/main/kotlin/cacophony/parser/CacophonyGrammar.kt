@@ -295,11 +295,11 @@ class CacophonyGrammar {
                         ),
                     CALL_LEVEL produces
                         (
-                            atomic(LITERAL_LEVEL) or
+                            atomic(LITERAL_LEVEL) concat
                                 (
-                                    atomic(LITERAL_LEVEL) concat
-                                        atomic(FUNCTION_CALL)
-                                )
+                                    atomic(FUNCTION_CALL) or
+                                        (atomic(PERIOD) concat atomic(VARIABLE_IDENTIFIER))
+                                ).star()
 
                         ),
                     LITERAL_LEVEL produces
@@ -311,11 +311,9 @@ class CacophonyGrammar {
                         ),
                     ATOM_LEVEL produces
                         (
-                            (
-                                atomic(VARIABLE_IDENTIFIER) or
-                                    atomic(STRUCT) or
-                                    atomic(BLOCK)
-                            ) concat (atomic(PERIOD) concat atomic(VARIABLE_IDENTIFIER)).star()
+                            atomic(VARIABLE_IDENTIFIER) or
+                                atomic(STRUCT) or
+                                atomic(BLOCK)
                         ),
                     BLOCK produces
                         (
