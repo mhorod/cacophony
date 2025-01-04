@@ -268,8 +268,15 @@ private class Typer(
                     BuiltinType.UnitType
                 }
 
-                is Allocation -> throw NotImplementedError()
-                is Dereference -> throw NotImplementedError()
+                is Allocation -> ReferentialType(translator.translateType(expression.type) ?: return null)
+                is Dereference -> {
+                    val referenceType = typeExpression(expression.value) ?: return null
+                    if (referenceType !is ReferentialType) {
+                        error.expectedReferentialType(expression.range)
+                        return null
+                    }
+                    referenceType.type
+                }
 
                 is VariableUse -> typedVariables[resolvedVariables[expression]!!]
             }

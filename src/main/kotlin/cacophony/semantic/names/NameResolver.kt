@@ -229,8 +229,7 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                 traverseAst(node.struct(), false)
             }
 
-            is Allocation -> throw NotImplementedError()
-            is Dereference -> throw NotImplementedError()
+            is Dereference -> traverseAst(node.value, true)
 
             is LeafExpression -> {}
         }

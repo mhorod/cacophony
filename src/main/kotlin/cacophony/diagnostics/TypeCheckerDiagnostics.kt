@@ -52,4 +52,8 @@ class TypeCheckerDiagnostics {
     data object BreakOutsideWhile : DiagnosticMessage {
         override fun getMessage() = "Break outside while loop body"
     }
+
+    data object ExpectedReference : DiagnosticMessage {
+        override fun getMessage() = "Expected referential type"
+    }
 }

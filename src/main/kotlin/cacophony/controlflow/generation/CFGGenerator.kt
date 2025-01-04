@@ -3,12 +3,14 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.mallocFunction
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.types.TypeCheckingResult
+import cacophony.semantic.types.TypeExpr
 
 /**
  * Converts Expressions into CFG
@@ -134,28 +136,56 @@ internal class CFGGenerator(
             is Statement.IfElseStatement -> visitIfElseStatement(expression, mode, context)
             is Statement.ReturnStatement -> visitReturnStatement(expression, mode, context)
             is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
-            is Assignable -> visitAssignable(expression, mode)
             is Struct -> visitStruct(expression, mode, context)
-            is FieldRef -> visitFieldRef(expression, mode, context)
+            is FieldRef.RValue -> visitFieldRef(expression, mode, context)
+            is Allocation -> visitAllocation(expression, mode)
+            is Dereference -> visitDereference(expression, mode, context)
+            is Assignable -> visitAssignable(expression, mode)
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
+    private fun visitAllocation(expression: Allocation, mode: EvalMode): SubCFG =
+        when (mode) {
+            is EvalMode.Value ->
+                generateFunctionCall(
+                    mallocFunction,
+                    typeCheckingResult.expressionTypes[expression]!!,
+                    mode,
+                    listOf(
+                        ensureExtracted(
+                            integer(
+                                expression.type.size() * REGISTER_SIZE,
+                            ),
+                        ),
+                    ),
+                )
+            // do nothing if value is not used
+            else -> SubCFG.Immediate(CFGNode.NoOp)
+        }
+
+    // TODO: check if conditions works for field ref and dereference
+    private fun visitDereference(expression: Dereference, mode: EvalMode, context: Context): SubCFG {
+        if (mode is EvalMode.SideEffect) return SubCFG.Immediate(CFGNode.NoOp)
+        val pointerGeneration = visit(expression.value, mode, context)
+        val access = pointerGeneration.access
+        require(access is SimpleLayout) // by type checking
+        val layout = generateLayoutOfHeapObject(access.access, typeCheckingResult.expressionTypes[expression.value]!!)
+        return when (pointerGeneration) {
+            is SubCFG.Extracted -> {
+                val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
+                pointerGeneration merge SubCFG.Extracted(vertex, vertex, layout)
+            }
+            is SubCFG.Immediate -> SubCFG.Immediate(layout)
+        }
+    }
+
     private fun visitFieldRef(expression: FieldRef, mode: EvalMode, context: Context): SubCFG {
-        val structGeneration = wrapExtracted(visit(expression.struct(), mode, context))
+        val structGeneration = ensureExtracted(visit(expression.struct(), mode, context), EvalMode.SideEffect)
         require(structGeneration.access is StructLayout) // by type checking
         val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
         val res = SubCFG.Extracted(vertex, vertex, structGeneration.access.fields[expression.field]!!)
         return structGeneration merge res
     }
-
-    private fun wrapExtracted(subCFG: SubCFG): SubCFG.Extracted =
-        when (subCFG) {
-            is SubCFG.Extracted -> subCFG
-            is SubCFG.Immediate -> {
-                val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
-                SubCFG.Extracted(vertex, vertex, subCFG.access)
-            }
-        }
 
     private fun visitStruct(expression: Struct, mode: EvalMode, context: Context): SubCFG {
         val fields = expression.fields.map { (name, field) -> name.name to visit(field, mode, context) }.toMap()
@@ -194,7 +224,7 @@ internal class CFGGenerator(
 
     private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode, context: Context): SubCFG =
         assignmentHandler.generateAssignment(
-            variablesMap.definitions[expression]!!,
+            getVariableLayout(getCurrentFunctionHandler(), variablesMap.definitions[expression]!!),
             expression.value,
             mode,
             context,
@@ -208,7 +238,20 @@ internal class CFGGenerator(
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
-        val function = resolvedVariables[expression.function] as Definition.FunctionDeclaration
+        return generateFunctionCall(
+            resolvedVariables[expression.function] as Definition.FunctionDeclaration,
+            typeCheckingResult.expressionTypes[expression]!!,
+            mode,
+            argumentVertices,
+        )
+    }
+
+    private fun generateFunctionCall(
+        function: Definition.FunctionDeclaration,
+        returnType: TypeExpr,
+        mode: EvalMode,
+        arguments: List<SubCFG.Extracted>,
+    ): SubCFG {
         val functionHandler =
             when (function) {
                 is Definition.FunctionDefinition -> getFunctionHandler(function)
@@ -218,7 +261,7 @@ internal class CFGGenerator(
         val resultLayout =
             when (mode) {
                 is EvalMode.SideEffect -> null
-                else -> generateLayoutOfVirtualRegisters(typeCheckingResult.expressionTypes[expression]!!)
+                else -> generateLayoutOfVirtualRegisters(returnType)
             }
 
         val callSequence =
@@ -227,14 +270,14 @@ internal class CFGGenerator(
                     getCurrentFunctionHandler(),
                     function,
                     functionHandler,
-                    argumentVertices.flatMap { it.access.flatten() },
+                    arguments.flatMap { it.access.flatten() },
                     resultLayout,
                 ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
 
         val entry =
-            if (argumentVertices.isNotEmpty()) {
-                val extractedArguments = argumentVertices.reduce(SubCFG.Extracted::merge)
+            if (arguments.isNotEmpty()) {
+                val extractedArguments = arguments.reduce(SubCFG.Extracted::merge)
                 extractedArguments.exit.connect(callSequence.entry.label)
                 extractedArguments.entry
             } else {
@@ -276,13 +319,31 @@ internal class CFGGenerator(
         val lhs =
             expression.lhs as? Assignable
                 ?: error("Expected Assignable in assignment lhs, got ${expression.lhs}")
-        return assignmentHandler.generateAssignment(
-            variablesMap.lvalues[lhs]!!,
-            expression.rhs,
-            mode,
-            context,
-            true,
-        )
+        return when (expression.lhs) {
+            is VariableUse, is FieldRef.LValue ->
+                assignmentHandler.generateAssignment(
+                    getVariableLayout(getCurrentFunctionHandler(), variablesMap.lvalues[lhs]!!),
+                    expression.rhs,
+                    mode,
+                    context,
+                    true,
+                )
+            is Dereference -> {
+                val pointer = visitDereference(expression.lhs, EvalMode.Value, context)
+                val assignment =
+                    assignmentHandler.generateAssignment(
+                        pointer.access,
+                        expression.rhs,
+                        mode,
+                        context,
+                        true,
+                    )
+                when (pointer) {
+                    is SubCFG.Extracted -> pointer merge ensureExtracted(assignment, mode)
+                    is SubCFG.Immediate -> assignment
+                }
+            }
+        }
     }
 
     private fun visitOperatorBinary(expression: OperatorBinary, mode: EvalMode, context: Context): SubCFG =
