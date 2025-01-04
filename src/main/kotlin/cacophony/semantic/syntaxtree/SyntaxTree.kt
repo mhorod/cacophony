@@ -224,13 +224,13 @@ class FunctionCall(
             areEquivalentExpressions(arguments, other.arguments)
 }
 
-class Dereference(range: Pair<Location, Location>, val value: Expression) : BaseExpression(range) {
+class Dereference(range: Pair<Location, Location>, val value: Expression) : BaseExpression(range), Assignable {
     override fun toString() = "deref"
 
     override fun children() = listOf(value)
 
     override fun isEquivalent(other: SyntaxTree?): Boolean =
-        super.isEquivalent(other) &&
+        super<BaseExpression>.isEquivalent(other) &&
             other is Dereference &&
             areEquivalentExpressions(value, other.value)
 }

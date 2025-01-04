@@ -136,11 +136,11 @@ internal class CFGGenerator(
             is Statement.IfElseStatement -> visitIfElseStatement(expression, mode, context)
             is Statement.ReturnStatement -> visitReturnStatement(expression, mode, context)
             is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
-            is Assignable -> visitAssignable(expression, mode)
             is Struct -> visitStruct(expression, mode, context)
             is FieldRef -> visitFieldRef(expression, mode, context)
             is Allocation -> visitAllocation(expression, mode)
             is Dereference -> visitDereference(expression, mode, context)
+            is Assignable -> visitAssignable(expression, mode)
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
@@ -163,17 +163,20 @@ internal class CFGGenerator(
             else -> SubCFG.Immediate(CFGNode.NoOp)
         }
 
+    // TODO: check if conditions works for field ref and dereference
     private fun visitDereference(expression: Dereference, mode: EvalMode, context: Context): SubCFG {
-        val pointerGeneration = visitExtracted(expression.value, mode, context)
-        require(pointerGeneration.access is SimpleLayout) // by type checking
-        val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
-        val res =
-            SubCFG.Extracted(
-                vertex,
-                vertex,
-                generateLayoutOfHeapObject(pointerGeneration.access.access, typeCheckingResult.expressionTypes[expression.value]!!),
-            )
-        return pointerGeneration merge res
+        if (mode is EvalMode.SideEffect) return SubCFG.Immediate(CFGNode.NoOp)
+        val pointerGeneration = visit(expression.value, mode, context)
+        val access = pointerGeneration.access
+        require(access is SimpleLayout) // by type checking
+        val layout = generateLayoutOfHeapObject(access.access, typeCheckingResult.expressionTypes[expression.value]!!)
+        return when (pointerGeneration) {
+            is SubCFG.Extracted -> {
+                val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
+                pointerGeneration merge SubCFG.Extracted(vertex, vertex, layout)
+            }
+            is SubCFG.Immediate -> SubCFG.Immediate(layout)
+        }
     }
 
     private fun visitFieldRef(expression: FieldRef, mode: EvalMode, context: Context): SubCFG {
@@ -221,7 +224,7 @@ internal class CFGGenerator(
 
     private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode, context: Context): SubCFG =
         assignmentHandler.generateAssignment(
-            variablesMap.definitions[expression]!!,
+            getVariableLayout(getCurrentFunctionHandler(), variablesMap.definitions[expression]!!),
             expression.value,
             mode,
             context,
@@ -316,13 +319,31 @@ internal class CFGGenerator(
         val lhs =
             expression.lhs as? Assignable
                 ?: error("Expected Assignable in assignment lhs, got ${expression.lhs}")
-        return assignmentHandler.generateAssignment(
-            variablesMap.lvalues[lhs]!!,
-            expression.rhs,
-            mode,
-            context,
-            true,
-        )
+        return when (expression.lhs) {
+            is VariableUse, is FieldRef.LValue ->
+                assignmentHandler.generateAssignment(
+                    getVariableLayout(getCurrentFunctionHandler(), variablesMap.lvalues[lhs]!!),
+                    expression.rhs,
+                    mode,
+                    context,
+                    true,
+                )
+            is Dereference -> {
+                val pointer = visitDereference(expression.lhs, EvalMode.Value, context)
+                val assignment =
+                    assignmentHandler.generateAssignment(
+                        pointer.access,
+                        expression.rhs,
+                        mode,
+                        context,
+                        true,
+                    )
+                when (pointer) {
+                    is SubCFG.Extracted -> pointer merge ensureExtracted(assignment, mode)
+                    is SubCFG.Immediate -> assignment
+                }
+            }
+        }
     }
 
     private fun visitOperatorBinary(expression: OperatorBinary, mode: EvalMode, context: Context): SubCFG =

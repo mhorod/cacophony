@@ -109,8 +109,7 @@ private class StaticFunctionsRelationsVisitor(
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
             is Struct -> visitStruct(expr)
-            is Allocation -> TODO()
-            is Dereference -> TODO()
+            is Dereference -> visitExpression(expr.value)
             is LeafExpression -> {
                 // do nothing
             }
@@ -160,22 +159,20 @@ private class StaticFunctionsRelationsVisitor(
     }
 
     private fun visitAssignment(expr: OperatorBinary.Assignment) {
-        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
-            visitAssignable(expr.lhs as Assignable, VariableUseType.WRITE)
-        } else {
-            TODO("unimplemented branch for different assignment type")
-//            visitExpression(expr.lhs)
+        when (expr.lhs) {
+            is VariableUse, is FieldRef -> visitAssignable(expr.lhs as Assignable, VariableUseType.WRITE)
+            is Dereference -> visitExpression(expr.lhs.value)
+            else -> TODO("unimplemented branch for different assignment type")
         }
         visitExpression(expr.rhs)
     }
 
     // TODO: copied from visitAssignment with WRITE -> READ_WRITE change
     private fun visitCompoundAssignment(expr: OperatorBinary) {
-        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
-            visitAssignable(expr.lhs as Assignable, VariableUseType.READ_WRITE)
-        } else {
-            TODO("unimplemented branch for different assignment type")
-//            visitExpression(expr.lhs)
+        when (expr.lhs) {
+            is VariableUse, is FieldRef -> visitAssignable(expr.lhs as Assignable, VariableUseType.READ_WRITE)
+            is Dereference -> visitExpression(expr.lhs.value)
+            else -> TODO("unimplemented branch for different assignment type")
         }
         visitExpression(expr.rhs)
     }
