@@ -18,10 +18,9 @@ class AccessTest {
         val actualCFG = generateSimplifiedCFG(fDef)
 
         // then
-        val virReg = Register.VirtualRegister()
         val expectedCFG =
             singleWrappedFragmentCFG(fDef) {
-                "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virReg)) }
+                "bodyEntry" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse("")) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)

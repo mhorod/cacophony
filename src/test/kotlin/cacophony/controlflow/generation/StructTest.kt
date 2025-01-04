@@ -149,7 +149,13 @@ class StructTest {
             singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("assign b") { writeRegister(virA, integer(7)) }
                 "assign b" does jump("+=") { writeRegister(virB, integer(1)) }
-                "+=" does jump("assign res") { CFGNode.AdditionAssignment(registerUse(virA), registerUse(virA)) }
+                "+=" does
+                    jump("assign res") {
+                        CFGNode.AdditionAssignment(
+                            registerUse(virA),
+                            registerUse(virA),
+                        )
+                    }
                 "assign res" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virA)) }
             }
 

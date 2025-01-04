@@ -30,7 +30,13 @@ class ForeignCallConventionTest {
                 "call" does jump("restore rsp") { call(calleeDef) }
                 "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(8) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                "forward result" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
