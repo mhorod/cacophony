@@ -30,7 +30,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `declaration is not usage`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val variable = Variable.PrimitiveVariable()
         val ast = astOf(declaration)
         val variablesMap: VariablesMap = createVariablesMap(mapOf(declaration to variable))
@@ -49,7 +49,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `read only access`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val variable = Variable.PrimitiveVariable()
         val varUse = variableUse("a")
         val ast = astOf(declaration, varUse)
@@ -74,7 +74,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `only information about variables visible in current scope`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val variable = Variable.PrimitiveVariable()
         val varUse = variableUse("a")
         val ast = astOf(declaration, varUse)
@@ -98,7 +98,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `information about variables usage in nested blocks`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val variable = Variable.PrimitiveVariable()
         val varUse = variableUse("a")
         val block = block(varUse)
@@ -134,7 +134,7 @@ class VarUseTypeAnalysisTest {
         //
         //
         // f => ( let s, s.a = s.b.d)
-        val sDeclaration = variableDeclaration("s", Empty(mockRange()))
+        val sDeclaration = dummyDeclaration("s")
         val fVariable = Variable.PrimitiveVariable()
         val eVariable = Variable.PrimitiveVariable()
         val dVariable = Variable.StructVariable(mapOf("f" to fVariable))
@@ -220,8 +220,8 @@ class VarUseTypeAnalysisTest {
         //     a   b
         //
         // f => ( let x, let s, s = {x, 2})
-        val xDeclaration = variableDeclaration("x", Empty(mockRange()))
-        val sDeclaration = variableDeclaration("s", Empty(mockRange()))
+        val xDeclaration = dummyDeclaration("x")
+        val sDeclaration = dummyDeclaration("s")
         val xVariable = Variable.PrimitiveVariable()
         val bVariable = Variable.PrimitiveVariable()
         val aVariable = Variable.PrimitiveVariable()
@@ -285,7 +285,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `write usage`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val variable = Variable.PrimitiveVariable()
         val varUse = variableUse("a")
         val write = variableWrite(varUse)
@@ -312,7 +312,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `read-write usage`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val variable = Variable.PrimitiveVariable()
         val varUse1 = variableUse("a")
         val varUse2 = variableUse("a")
@@ -346,9 +346,9 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `more variables and blocks`() {
-        val xDeclaration = variableDeclaration("x", Empty(mockRange()))
-        val yDeclaration = variableDeclaration("y", Empty(mockRange()))
-        val zDeclaration = variableDeclaration("z", Empty(mockRange()))
+        val xDeclaration = dummyDeclaration("x")
+        val yDeclaration = dummyDeclaration("y")
+        val zDeclaration = dummyDeclaration("z")
         val xVariable = Variable.PrimitiveVariable()
         val yVariable = Variable.PrimitiveVariable()
         val zVariable = Variable.PrimitiveVariable()
@@ -398,7 +398,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `function declaration is not usage`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val variable = Variable.PrimitiveVariable()
         val varUse1 = variableUse("a")
         val varUse2 = variableUse("a")
@@ -443,7 +443,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `function call is read-only usage on arguments`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val aVariable = Variable.PrimitiveVariable()
         val argument = arg("x")
         val xVariable = Variable.PrimitiveVariable()
@@ -488,7 +488,7 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `nested function using outer variables`() {
-        val declaration = variableDeclaration("a", Empty(mockRange()))
+        val declaration = dummyDeclaration("a")
         val variable = Variable.PrimitiveVariable()
         val varUse1 = variableUse("a")
         val varUse2 = variableUse("a")
@@ -538,8 +538,8 @@ class VarUseTypeAnalysisTest {
 
     @Test
     fun `nested function call has information about variables in current scope`() {
-        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
-        val bDeclaration = variableDeclaration("b", Empty(mockRange()))
+        val aDeclaration = dummyDeclaration("a")
+        val bDeclaration = dummyDeclaration("b")
         val aVariable = Variable.PrimitiveVariable()
         val bVariable = Variable.PrimitiveVariable()
         val aUse = variableUse("a")
@@ -595,7 +595,6 @@ class VarUseTypeAnalysisTest {
                 gCall to
                     mapOf(
                         aVariable to VariableUseType.READ,
-                        aVariable to VariableUseType.READ,
                         bVariable to VariableUseType.READ,
                     ),
                 fCall to
@@ -605,4 +604,150 @@ class VarUseTypeAnalysisTest {
             ),
         )
     }
+
+    @Test
+    fun `should find uses and heap write in allocation`() {
+        val aDeclaration = dummyDeclaration("a")
+        val bDeclaration = dummyDeclaration("b")
+        val cDeclaration = dummyDeclaration("c")
+        val aVariable = Variable.PrimitiveVariable()
+        val bVariable = Variable.PrimitiveVariable()
+        val cVariable = Variable.PrimitiveVariable()
+        val pVariable = Variable.PrimitiveVariable()
+        val aUse = variableUse("a")
+        val bUse = variableUse("b")
+        val cUse = variableUse("c")
+
+        // let p = $(a + (b = 1) * (c -= 2))
+        val allocation =
+            alloc(
+                block(aUse add (block(bUse assign lit(1)) mul block(cUse subeq lit(2)))),
+            )
+        val pDeclaration = variableDeclaration("p", allocation)
+        val ast = astOf(aDeclaration, bDeclaration, cDeclaration, pDeclaration)
+        val program = program(ast)
+        val variablesMap =
+            createVariablesMap(
+                mapOf(aDeclaration to aVariable, bDeclaration to bVariable, cDeclaration to cVariable, pDeclaration to pVariable),
+                mapOf(aUse to aVariable, bUse to bVariable, cUse to cVariable),
+            )
+        val result =
+            analyzeVarUseTypes(
+                program,
+                mapOf(
+                    programResolvedName(ast),
+                    aUse to aDeclaration,
+                    bUse to bDeclaration,
+                    cUse to cDeclaration,
+                ),
+                mapOf(programFunctionAnalysis(ast)),
+                variablesMap,
+            )
+        assertThat(result).containsAllEntriesOf(
+            mapOf(
+                allocation to
+                    mapOf(
+                        aVariable to VariableUseType.READ,
+                        bVariable to VariableUseType.WRITE,
+                        cVariable to VariableUseType.READ_WRITE,
+                        Variable.Heap to VariableUseType.WRITE,
+                    ),
+            ),
+        )
+    }
+
+    @Test
+    fun `should find uses and heap read in dereference used as rvalue`() {
+        val pDeclaration = dummyDeclaration("p")
+        val qDeclaration = dummyDeclaration("q")
+        val pVariable = Variable.PrimitiveVariable()
+        val qVariable = Variable.PrimitiveVariable()
+        val xVariable = Variable.PrimitiveVariable()
+        val pUse1 = variableUse("p")
+        val pUse2 = variableUse("p")
+        val qUse1 = variableUse("q")
+        val qUse2 = variableUse("q")
+
+        // let x = @(if true then p else if false then q = p else q)
+        val dereference = deref(block(ifThenElse(lit(true), pUse1, ifThenElse(lit(false), qUse1 assign pUse2, qUse2))))
+        val xDeclaration = variableDeclaration("x", dereference)
+        val ast = astOf(pDeclaration, qDeclaration, xDeclaration)
+        val program = program(ast)
+        val variablesMap =
+            createVariablesMap(
+                mapOf(pDeclaration to pVariable, qDeclaration to qVariable, xDeclaration to xVariable),
+                mapOf(pUse1 to pVariable, pUse2 to pVariable, qUse1 to qVariable, qUse2 to qVariable),
+            )
+        val result =
+            analyzeVarUseTypes(
+                program,
+                mapOf(
+                    programResolvedName(ast),
+                    pUse1 to pDeclaration,
+                    pUse2 to pDeclaration,
+                    qUse1 to qDeclaration,
+                    qUse2 to qDeclaration,
+                ),
+                mapOf(programFunctionAnalysis(ast)),
+                variablesMap,
+            )
+        assertThat(result).containsAllEntriesOf(
+            mapOf(
+                dereference to
+                    mapOf(
+                        pVariable to VariableUseType.READ,
+                        qVariable to VariableUseType.READ_WRITE,
+                        Variable.Heap to VariableUseType.READ,
+                    ),
+            ),
+        )
+    }
+
+    @Test
+    fun `should find uses and heap read in dereference used as lvalue in assignment`() {
+        val pDeclaration = dummyDeclaration("p")
+        val qDeclaration = dummyDeclaration("q")
+        val pVariable = Variable.PrimitiveVariable()
+        val qVariable = Variable.PrimitiveVariable()
+        val pUse1 = variableUse("p")
+        val pUse2 = variableUse("p")
+        val qUse1 = variableUse("q")
+        val qUse2 = variableUse("q")
+
+        // @(if true then p else if false then p = q else q) = 5
+        val dereference = deref(block(ifThenElse(lit(true), pUse1, ifThenElse(lit(false), pUse2 assign qUse1, qUse2))))
+        val assignment = dereference assign lit(5)
+        val ast = astOf(pDeclaration, qDeclaration, assignment)
+        val program = program(ast)
+        val variablesMap =
+            createVariablesMap(
+                mapOf(pDeclaration to pVariable, qDeclaration to qVariable),
+                mapOf(pUse1 to pVariable, pUse2 to pVariable, qUse1 to qVariable, qUse2 to qVariable),
+            )
+        val result =
+            analyzeVarUseTypes(
+                program,
+                mapOf(
+                    programResolvedName(ast),
+                    pUse1 to pDeclaration,
+                    pUse2 to pDeclaration,
+                    qUse1 to qDeclaration,
+                    qUse2 to qDeclaration,
+                ),
+                mapOf(programFunctionAnalysis(ast)),
+                variablesMap,
+            )
+        assertThat(result).containsAllEntriesOf(
+            mapOf(
+                assignment to
+                    mapOf(
+                        pVariable to VariableUseType.READ_WRITE,
+                        qVariable to VariableUseType.READ,
+                        Variable.Heap to VariableUseType.WRITE,
+                    ),
+            ),
+        )
+    }
+
+    private fun dummyDeclaration(identifier: String): Definition.VariableDeclaration = variableDeclaration(identifier, empty())
 }

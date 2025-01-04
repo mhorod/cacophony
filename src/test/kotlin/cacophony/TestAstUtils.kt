@@ -215,3 +215,7 @@ fun functionalType(argTypes: List<Type>, resType: Type) = BaseType.Functional(mo
 fun structType(vararg fields: Pair<String, Type>) = BaseType.Structural(mockRange(), fields.toMap())
 
 fun structTypeExpr(vararg fields: Pair<String, TypeExpr>) = StructType(fields.toMap())
+
+fun alloc(expr: Expression) = Allocation(mockRange(), expr)
+
+fun deref(expr: Expression) = Dereference(mockRange(), expr)

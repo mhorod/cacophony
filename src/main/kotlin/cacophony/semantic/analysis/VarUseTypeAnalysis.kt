@@ -130,6 +130,13 @@ private class VarUseVisitor(
     }
 
     private fun visitAssignable(expr: Assignable, type: VariableUseType) {
+        // TODO: Should `Dereference` be considered Assignable?
+        if (expr is Dereference) {
+            visitExpression(expr.value)
+            useTypeAnalysis[expr] = useTypeAnalysis[expr.value]!! withHeapUse type
+            return
+        }
+
         val affectedVariables = gatherAffectedVariables(expr)
 
         var nestedExpression: Expression = expr
@@ -200,17 +207,14 @@ private class VarUseVisitor(
     private fun visitAssignment(expr: OperatorBinary.LValueOperator, compound: Boolean) {
         useTypeAnalysis[expr] = UseTypesForExpression.empty()
         visitExpression(expr.rhs)
-        val lhsUseType = if (compound) { VariableUseType.READ_WRITE } else { VariableUseType.WRITE }
-        when (expr.lhs) {
-            is VariableUse, is FieldRef -> visitAssignable(expr.lhs as Assignable, lhsUseType)
-
-            is Dereference -> {
-                visitExpression(expr.lhs)
-                useTypeAnalysis[expr]!!.add(Variable.Heap, lhsUseType)
+        val lhsUseType =
+            if (compound) {
+                VariableUseType.READ_WRITE
+            } else {
+                VariableUseType.WRITE
             }
-
-            else -> error("Invalid lhs of assignment")
-        }
+        check(expr.lhs is Assignable) { "Invalid lhs of assignment" }
+        visitAssignable(expr.lhs, lhsUseType)
         useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.lhs], useTypeAnalysis[expr.rhs])
     }
 

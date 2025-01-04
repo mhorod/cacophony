@@ -546,8 +546,7 @@ sealed class OperatorBinary(
         lhs: Assignable,
         rhs: Expression,
     ) : LValueOperator(range, lhs, rhs) {
-        override fun isEquivalent(other: SyntaxTree?): Boolean =
-            super.isEquivalent(other) && other is Assignment
+        override fun isEquivalent(other: SyntaxTree?): Boolean = super.isEquivalent(other) && other is Assignment
     }
 
     class AdditionAssignment(
