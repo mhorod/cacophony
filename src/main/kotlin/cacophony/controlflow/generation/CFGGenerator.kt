@@ -137,7 +137,7 @@ internal class CFGGenerator(
             is Statement.ReturnStatement -> visitReturnStatement(expression, mode, context)
             is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
             is Struct -> visitStruct(expression, mode, context)
-            is FieldRef -> visitFieldRef(expression, mode, context)
+            is FieldRef.RValue -> visitFieldRef(expression, mode, context)
             is Allocation -> visitAllocation(expression, mode)
             is Dereference -> visitDereference(expression, mode, context)
             is Assignable -> visitAssignable(expression, mode)
