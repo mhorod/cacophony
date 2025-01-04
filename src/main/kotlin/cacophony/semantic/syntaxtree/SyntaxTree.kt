@@ -235,13 +235,15 @@ class Dereference(range: Pair<Location, Location>, val value: Expression) : Base
             areEquivalentExpressions(value, other.value)
 }
 
-class Allocation(range: Pair<Location, Location>, val type: Type) : BaseExpression(range), LeafExpression {
+class Allocation(range: Pair<Location, Location>, val value: Expression) : BaseExpression(range) {
     override fun toString() = "allocation"
 
+    override fun children() = listOf(value)
+
     override fun isEquivalent(other: SyntaxTree?): Boolean =
-        super<BaseExpression>.isEquivalent(other) &&
+        super.isEquivalent(other) &&
             other is Allocation &&
-            areEquivalentTypes(type, other.type)
+            areEquivalentExpressions(value, other.value)
 }
 
 class StructField(range: Pair<Location, Location>, val name: String, val type: Type?) : BaseExpression(range), LeafExpression {

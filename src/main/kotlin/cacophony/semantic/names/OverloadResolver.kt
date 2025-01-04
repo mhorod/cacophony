@@ -80,6 +80,8 @@ fun resolveOverloads(ast: AST, diagnostics: Diagnostics, nr: NameResolutionResul
                 resolveOverloadsRec(expr.rhs)
             }
 
+            is Allocation -> resolveOverloadsRec(expr.value)
+
             is Dereference -> resolveOverloadsRec(expr.value)
 
             is LeafExpression -> {} // don't use else branch to prevent this from breaking when SyntaxTree is changed

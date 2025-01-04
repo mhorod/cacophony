@@ -220,4 +220,4 @@ fun referenceType(type: Type) = BaseType.Referential(mockRange(), type)
 
 fun dereference(value: Expression) = Dereference(mockRange(), value)
 
-fun allocation(type: Type) = Allocation(mockRange(), type)
+fun allocation(value: Expression) = Allocation(mockRange(), value)

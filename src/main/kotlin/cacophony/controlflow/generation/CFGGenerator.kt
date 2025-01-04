@@ -154,7 +154,7 @@ internal class CFGGenerator(
                     listOf(
                         ensureExtracted(
                             integer(
-                                expression.type.size() * REGISTER_SIZE,
+                                typeCheckingResult.expressionTypes[expression.value]!!.size() * REGISTER_SIZE,
                             ),
                         ),
                     ),

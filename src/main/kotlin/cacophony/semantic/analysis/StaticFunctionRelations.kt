@@ -109,6 +109,7 @@ private class StaticFunctionsRelationsVisitor(
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
             is Struct -> visitStruct(expr)
+            is Allocation -> visitExpression(expr.value)
             is Dereference -> visitExpression(expr.value)
             is LeafExpression -> {
                 // do nothing

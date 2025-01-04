@@ -268,7 +268,10 @@ private class Typer(
                     BuiltinType.UnitType
                 }
 
-                is Allocation -> ReferentialType(translator.translateType(expression.type) ?: return null)
+                is Allocation -> {
+                    val valueType = typeExpression(expression.value) ?: return null
+                    ReferentialType(valueType)
+                }
                 is Dereference -> {
                     val referenceType = typeExpression(expression.value) ?: return null
                     if (referenceType !is ReferentialType) {

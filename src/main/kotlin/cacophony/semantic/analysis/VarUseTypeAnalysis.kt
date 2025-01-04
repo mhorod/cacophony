@@ -113,11 +113,20 @@ private class VarUseVisitor(
             is Struct -> visitStruct(expr)
             is FieldRef.LValue -> visitFieldRefLValue(expr)
             is FieldRef.RValue -> visitFieldRefRValue(expr)
+            is Allocation -> visitAllocation(expr)
             is Dereference -> visitDereference(expr)
             is LeafExpression -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
         }
+    }
+
+    private fun visitAllocation(expr: Allocation) {
+        visitExpression(expr.value)
+        useTypeAnalysis[expr] =
+            UseTypesForExpression.merge(
+                useTypeAnalysis[expr.value],
+            )
     }
 
     private fun visitDereference(expr: Dereference) {
