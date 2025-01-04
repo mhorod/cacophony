@@ -2,7 +2,6 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
-import cacophony.controlflow.print.programCfgToBuilder
 import org.junit.jupiter.api.Test
 
 class LocalCallConventionTest {
