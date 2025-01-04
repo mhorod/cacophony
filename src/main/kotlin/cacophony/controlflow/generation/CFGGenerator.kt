@@ -180,11 +180,26 @@ internal class CFGGenerator(
     }
 
     private fun visitFieldRef(expression: FieldRef, mode: EvalMode, context: Context): SubCFG {
-        val structGeneration = ensureExtracted(visit(expression.struct(), mode, context), EvalMode.SideEffect)
+        val structGeneration = ensureExtracted(visit(expression.struct(), EvalMode.Value, context), EvalMode.SideEffect)
         require(structGeneration.access is StructLayout) // by type checking
+        val resultLayout = structGeneration.access.fields[expression.field]!!
         val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
-        val res = SubCFG.Extracted(vertex, vertex, structGeneration.access.fields[expression.field]!!)
-        return structGeneration merge res
+        val fieldAccess = structGeneration merge SubCFG.Extracted(vertex, vertex, noOpOr(resultLayout, mode))
+        return if (mode is EvalMode.Conditional) extendWithConditional(fieldAccess, mode)
+        else fieldAccess
+    }
+
+    private fun extendWithConditional(fieldAccess: SubCFG, mode: EvalMode.Conditional): SubCFG.Extracted {
+        val access = fieldAccess.access
+        // by type checking
+        require(access is SimpleLayout)
+        val conditionVertex = cfg.addConditionalVertex(access.access neq integer(0))
+        if (fieldAccess is SubCFG.Extracted) {
+            fieldAccess.exit.connect(conditionVertex.label)
+        }
+        conditionVertex.connectTrue(mode.trueEntry.label)
+        conditionVertex.connectFalse(mode.falseEntry.label)
+        return SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
     }
 
     private fun visitStruct(expression: Struct, mode: EvalMode, context: Context): SubCFG {
@@ -284,15 +299,8 @@ internal class CFGGenerator(
                 callSequence.entry
             }
 
-        return if (mode is EvalMode.Conditional) {
-            // by type checking
-            require(resultLayout is SimpleLayout)
-            val conditionVertex = cfg.addConditionalVertex(resultLayout.access neq integer(0))
-            callSequence.exit.connect(conditionVertex.label)
-            conditionVertex.connectTrue(mode.trueEntry.label)
-            conditionVertex.connectFalse(mode.falseEntry.label)
-            SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
-        } else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp))
+        return if (mode is EvalMode.Conditional) extendWithConditional(callSequence, mode)
+        else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp))
     }
 
     private fun visitLiteral(literal: Literal, mode: EvalMode): SubCFG =
@@ -470,24 +478,11 @@ internal class CFGGenerator(
         return when (mode) {
             is EvalMode.Value -> SubCFG.Immediate(variableAccess)
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
-            is EvalMode.Conditional -> {
-                // by type checking
-                require(variableAccess is SimpleLayout)
-                val conditionVertex =
-                    cfg.addConditionalVertex(
-                        CFGNode.NotEquals(
-                            variableAccess.access,
-                            CFGNode.ConstantKnown(0),
-                        ),
-                    )
-                conditionVertex.connectTrue(mode.trueEntry.label)
-                conditionVertex.connectFalse(mode.falseEntry.label)
-                SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
-            }
+            is EvalMode.Conditional -> extendWithConditional(SubCFG.Immediate(variableAccess), mode)
         }
     }
 
-    internal fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
+    private fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
 
     private fun getFunctionHandler(function: Definition.FunctionDefinition): FunctionHandler =
         functionHandlers[function] ?: error("Function $function has no handler")

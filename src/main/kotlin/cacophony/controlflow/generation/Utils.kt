@@ -6,7 +6,7 @@ import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 import cacophony.semantic.types.*
 
-internal fun noOpOr(value: Layout, mode: EvalMode): Layout = if (mode is EvalMode.Value) value else SimpleLayout(CFGNode.NoOp)
+internal fun noOpOr(value: Layout, mode: EvalMode): Layout = if (mode !is EvalMode.SideEffect) value else SimpleLayout(CFGNode.NoOp)
 
 internal fun noOpOrUnit(mode: EvalMode): Layout = noOpOr(SimpleLayout(CFGNode.UNIT), mode)
 

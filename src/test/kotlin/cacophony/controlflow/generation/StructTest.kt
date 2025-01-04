@@ -467,4 +467,86 @@ class StructTest {
 
         assertEquivalent(actualCFG, expectedCFG)
     }
+
+    @Test
+    fun `condition with immediate`() {
+        // given
+
+        /*
+         * let f = [] -> Int => if {a : 7, b : true}.b then 1 else 2;
+         */
+        val fDef =
+            intFunctionDefinition(
+                "f",
+                emptyList(),
+                ifThenElse(
+                    rvalueFieldRef(simpleStruct(), "b"),
+                    lit(1),
+                    lit(2),
+                ),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+        println(programCfgToGraphviz(actualCFG))
+//        // then
+//        val virA = Register.VirtualRegister()
+//        val virB = Register.VirtualRegister()
+//        val virC = Register.VirtualRegister()
+//        val virD = Register.VirtualRegister()
+//        val virE = Register.VirtualRegister()
+//
+//        val expectedCFG =
+//            singleWrappedFragmentCFG(fDef) {
+//                "bodyEntry" does jump("assign b") { writeRegister(virC, registerUse(virA)) }
+//                "assign b" does jump("assign res") { writeRegister(virD, registerUse(virB)) }
+//                "assign res" does jump("bodyExit") { writeRegister(virE, registerUse(virC)) }
+//            }
+//
+//        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `condition with variable`() {
+        // given
+
+        /*
+         * let f = [] -> Int => (
+         *  let x = {a : 7, b : true};
+         *  if x.b then 1 else 2
+         * );
+         */
+        val fDef =
+            intFunctionDefinition(
+                "f",
+                emptyList(),
+                block(
+                    variableDeclaration("x", simpleStruct()),
+                    ifThenElse(
+                        rvalueFieldRef(variableUse("x"), "b"),
+                        lit(1),
+                        lit(2),
+                    ),
+                ),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+        println(programCfgToGraphviz(actualCFG))
+//        // then
+//        val virA = Register.VirtualRegister()
+//        val virB = Register.VirtualRegister()
+//        val virC = Register.VirtualRegister()
+//        val virD = Register.VirtualRegister()
+//        val virE = Register.VirtualRegister()
+//
+//        val expectedCFG =
+//            singleWrappedFragmentCFG(fDef) {
+//                "bodyEntry" does jump("assign b") { writeRegister(virC, registerUse(virA)) }
+//                "assign b" does jump("assign res") { writeRegister(virD, registerUse(virB)) }
+//                "assign res" does jump("bodyExit") { writeRegister(virE, registerUse(virC)) }
+//            }
+//
+//        assertEquivalent(actualCFG, expectedCFG)
+    }
 }
