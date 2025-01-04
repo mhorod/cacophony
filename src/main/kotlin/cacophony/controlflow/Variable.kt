@@ -16,10 +16,13 @@ sealed class Variable(
         constructor(fields: Map<String, Variable>) : this(fields, "sv${index++}")
     }
 
+    object Heap : Variable("<heap>")
+
     fun getPrimitives(): List<PrimitiveVariable> =
         when (this) {
             is PrimitiveVariable -> listOf(this)
             is StructVariable -> fields.map { (_, field) -> field.getPrimitives() }.flatten()
+            Heap -> emptyList()
         }
 
     override fun toString(): String = name

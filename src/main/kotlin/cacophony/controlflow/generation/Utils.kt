@@ -42,6 +42,7 @@ fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
     when (variable) {
         is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable))
         is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(handler, subfield) })
+        Variable.Heap -> error("Unreachable")
     }
 
 fun flattenLayout(layout: Layout): List<CFGNode> =

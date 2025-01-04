@@ -17,7 +17,9 @@ class ASTGenerationTests {
             return
         }
         val expectedStr = TreePrinter().printTree(expected)
+        println(expectedStr)
         val actualStr = TreePrinter().printTree(actual)
+        println(actualStr)
         if (expectedStr != actualStr) {
             fail("Expected AST:\n$expectedStr\nActual AST:\n$actualStr")
         } else {

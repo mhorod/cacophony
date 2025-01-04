@@ -218,13 +218,13 @@ class FunctionCall(
             areEquivalentExpressions(arguments, other.arguments)
 }
 
-class Dereference(range: Pair<Location, Location>, val value: Expression) : BaseExpression(range) {
+class Dereference(range: Pair<Location, Location>, val value: Expression) : BaseExpression(range), Assignable {
     override fun toString() = "deref"
 
     override fun children() = listOf(value)
 
     override fun isEquivalent(other: SyntaxTree?): Boolean =
-        super.isEquivalent(other) &&
+        super<BaseExpression>.isEquivalent(other) &&
             other is Dereference &&
             areEquivalentExpressions(value, other.value)
 }
@@ -248,8 +248,6 @@ class StructField(range: Pair<Location, Location>, val name: String, val type: T
             other is StructField &&
             name == other.name &&
             areEquivalentTypes(type, other.type)
-
-    override fun equals(other: Any?) = other is Expression? && this.isEquivalent(other)
 }
 
 sealed class FieldRef(range: Pair<Location, Location>, val field: String) : BaseExpression(range) {
@@ -268,7 +266,7 @@ sealed class FieldRef(range: Pair<Location, Location>, val field: String) : Base
 
         override fun struct() = obj
 
-        override fun isEquivalent(other: SyntaxTree?) = other is FieldRef.LValue && super<FieldRef>.isEquivalent(other)
+        override fun isEquivalent(other: SyntaxTree?) = other is LValue && super<FieldRef>.isEquivalent(other)
     }
 
     class RValue(range: Pair<Location, Location>, val obj: Expression, field: String) : FieldRef(range, field) {
@@ -276,7 +274,7 @@ sealed class FieldRef(range: Pair<Location, Location>, val field: String) : Base
 
         override fun struct() = obj
 
-        override fun isEquivalent(other: SyntaxTree?) = other is FieldRef.RValue && super.isEquivalent(other)
+        override fun isEquivalent(other: SyntaxTree?) = other is RValue && super.isEquivalent(other)
     }
 }
 
@@ -288,7 +286,7 @@ class Struct(range: Pair<Location, Location>, val fields: Map<StructField, Expre
     override fun isEquivalent(other: SyntaxTree?): Boolean =
         super.isEquivalent(other) &&
             other is Struct &&
-            areEquivalentExpressions(fields, other.fields)
+            areEquivalentExpressions(fields.mapKeys { it.key.name }, other.fields.mapKeys { it.key.name })
 }
 
 sealed class Literal(range: Pair<Location, Location>) : BaseExpression(range), LeafExpression {
@@ -549,7 +547,7 @@ sealed class OperatorBinary(
         rhs: Expression,
     ) : LValueOperator(range, lhs, rhs) {
         override fun isEquivalent(other: SyntaxTree?): Boolean =
-            super<OperatorBinary.LValueOperator>.isEquivalent(other) && other is Assignment
+            super.isEquivalent(other) && other is Assignment
     }
 
     class AdditionAssignment(
