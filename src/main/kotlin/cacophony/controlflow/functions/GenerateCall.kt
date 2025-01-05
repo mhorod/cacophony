@@ -2,8 +2,14 @@ package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
+import cacophony.controlflow.generation.SimpleLayout
+import cacophony.controlflow.generation.generateSubLayout
+import cacophony.diagnostics.DiagnosticMessage
+import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type
+import cacophony.semantic.types.TypeTranslator
+import cacophony.utils.Location
 
 /**
  * Wrapper for generateCall that additionally fills staticLink to parent function.
@@ -12,7 +18,7 @@ fun generateCallFrom(
     callerFunction: FunctionHandler,
     function: Definition.FunctionDeclaration,
     functionHandler: FunctionHandler?,
-    arguments: List<CFGNode>,
+    arguments: List<Layout>,
     result: Layout?,
 ): List<CFGNode> =
     when (function) {
@@ -34,7 +40,7 @@ fun generateCallFrom(
                 throw IllegalArgumentException("Wrong result layout")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
-            generateCall(function, arguments + listOf(staticLinkVar), result, callerFunction.getStackSpace())
+            generateCall(function, arguments + listOf(SimpleLayout(staticLinkVar)), result, callerFunction.getStackSpace())
         }
     }
 
@@ -42,10 +48,30 @@ private fun layoutMatchesType(layout: Layout, type: Type): Boolean = layout.matc
 
 fun generateCall(
     function: Definition.FunctionDeclaration,
-    arguments: List<CFGNode>,
+    argumentLayouts: List<Layout>,
     result: Layout?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
+    val translator =
+        TypeTranslator(
+            object : Diagnostics {
+                override fun report(message: DiagnosticMessage, range: Pair<Location, Location>): Unit =
+                    throw IllegalArgumentException("Invalid type $message")
+
+                override fun fatal(): Throwable = throw IllegalArgumentException("Invalid type")
+
+                override fun getErrors(): List<String> = listOf()
+            },
+        )
+    val argumentTypes =
+        when (function) {
+            is Definition.ForeignFunctionDeclaration -> function.type!!.argumentsType
+            is Definition.FunctionDefinition -> function.arguments.map { it.type }
+        }
+    val arguments =
+        argumentLayouts.zip(argumentTypes).flatMap { (layout, type) ->
+            generateSubLayout(layout, translator.translateType(type)!!).flatten()
+        }
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
     val resultSize = function.returnType.size()
@@ -128,7 +154,7 @@ interface CallGenerator {
         callerFunction: FunctionHandler,
         function: Definition.FunctionDeclaration,
         functionHandler: FunctionHandler?,
-        arguments: List<CFGNode>,
+        arguments: List<Layout>,
         result: Layout?,
     ): List<CFGNode>
 }
@@ -138,7 +164,7 @@ class SimpleCallGenerator : CallGenerator {
         callerFunction: FunctionHandler,
         function: Definition.FunctionDeclaration,
         functionHandler: FunctionHandler?,
-        arguments: List<CFGNode>,
+        arguments: List<Layout>,
         result: Layout?,
     ): List<CFGNode> = cacophony.controlflow.functions.generateCallFrom(callerFunction, function, functionHandler, arguments, result)
 }

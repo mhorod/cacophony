@@ -38,6 +38,22 @@ fun generateLayoutOfVirtualRegisters(type: Type): Layout =
         is BaseType.Referential -> TODO()
     }
 
+fun generateSubLayout(layout: Layout, type: TypeExpr): Layout {
+    if (layout is StructLayout && type is StructType) {
+        return StructLayout(
+            type.fields.mapValues {
+                generateSubLayout(
+                    layout.fields[it.key] ?: throw IllegalArgumentException("layout does not match type"),
+                    it.value,
+                )
+            },
+        )
+    } else if (layout is SimpleLayout && type !is StructType) {
+        return layout
+    }
+    throw IllegalArgumentException("layout does not match type")
+}
+
 fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
     when (variable) {
         is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable))

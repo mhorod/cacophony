@@ -77,10 +77,14 @@ internal class CFGGenerator(
     private fun makeVerticesForAssignment(source: Layout, destination: Layout): List<GeneralCFGVertex.UnconditionalVertex> =
         when (source) {
             is SimpleLayout -> {
-                require(destination is SimpleLayout) // by type checking
-                require(destination.access is CFGNode.LValue)
-                val write = CFGNode.Assignment(destination.access, source.access)
-                listOf(cfg.addUnconditionalVertex(write))
+                if (source.access is CFGNode.NoOp && destination is StructLayout) {
+                    listOf(cfg.addUnconditionalVertex(CFGNode.NoOp))
+                } else {
+                    require(destination is SimpleLayout) // by type checking
+                    require(destination.access is CFGNode.LValue)
+                    val write = CFGNode.Assignment(destination.access, source.access)
+                    listOf(cfg.addUnconditionalVertex(write))
+                }
             }
             is StructLayout -> {
                 require(destination is StructLayout) // by type checking
@@ -227,7 +231,7 @@ internal class CFGGenerator(
                     getCurrentFunctionHandler(),
                     function,
                     functionHandler,
-                    argumentVertices.flatMap { it.access.flatten() },
+                    argumentVertices.map { it.access },
                     resultLayout,
                 ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
