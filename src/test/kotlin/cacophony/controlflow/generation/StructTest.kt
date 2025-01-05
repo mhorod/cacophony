@@ -468,6 +468,7 @@ class StructTest {
         assertEquivalent(actualCFG, expectedCFG)
     }
 
+    // TODO: write expected
     @Test
     fun `condition with immediate`() {
         // given

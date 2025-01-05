@@ -86,7 +86,7 @@ internal class CFGGenerator(
             }
             is StructLayout -> {
                 require(destination is StructLayout) // by type checking
-                destination.fields.map { (field, layout) -> makeVerticesForAssignment(source.fields[field]!!, layout) }.flatten()
+                destination.fields.flatMap { (field, layout) -> makeVerticesForAssignment(source.fields[field]!!, layout) }
             }
         }
 
