@@ -109,8 +109,8 @@ private class StaticFunctionsRelationsVisitor(
             is OperatorBinary -> visitBinaryOperator(expr)
             is VariableUse -> visitVariableUse(expr)
             is Struct -> visitStruct(expr)
-            is Allocation -> TODO()
-            is Dereference -> TODO()
+            is Allocation -> visitAllocation(expr)
+            is Dereference -> visitDereference(expr)
             is LeafExpression -> {
                 // do nothing
             }
@@ -238,4 +238,8 @@ private class StaticFunctionsRelationsVisitor(
     private fun visitStruct(expr: Struct) {
         expr.fields.values.forEach { visit(it) }
     }
+
+    private fun visitAllocation(expr: Allocation) = visit(expr.value)
+
+    private fun visitDereference(expr: Dereference) = visit(expr.value)
 }

@@ -75,8 +75,8 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
             }
 
             is Struct -> expression.fields.values.forEach { visit(it) }
-            is Allocation -> throw NotImplementedError()
-            is Dereference -> throw NotImplementedError()
+            is Allocation -> visit(expression.value)
+            is Dereference -> visitDereference(expression)
             is LeafExpression -> {
                 /* do nothing */
             }
@@ -94,6 +94,11 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
         val variable = lvalues.getValue(expression.obj)
         val field = (variable as Variable.StructVariable).fields.getValue(expression.field)
         lvalues[expression] = field
+    }
+
+    private fun visitDereference(expression: Dereference) {
+        visit(expression.value)
+        lvalues[expression] = Variable.Heap
     }
 }
 
@@ -142,8 +147,8 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
 
             is Struct -> expression.fields.values.forEach { visit(it) }
 
-            is Allocation -> throw NotImplementedError()
-            is Dereference -> throw NotImplementedError()
+            is Allocation -> visit(expression.value)
+            is Dereference -> visit(expression.value)
 
             is LeafExpression -> {
                 /* do nothing */

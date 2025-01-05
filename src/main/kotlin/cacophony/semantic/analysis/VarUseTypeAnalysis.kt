@@ -1,7 +1,8 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
-import cacophony.semantic.analysis.UseTypesForExpression.Companion.withHeapUse
+import cacophony.semantic.analysis.UseTypesForExpression.Companion.empty
+import cacophony.semantic.analysis.UseTypesForExpression.Companion.merge
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import kotlin.error
@@ -23,12 +24,13 @@ fun analyzeVarUseTypes(
 private class UseTypesForExpression(
     private val map: MutableMap<Variable, VariableUseType>,
 ) {
-    fun add(variable: Variable, type: VariableUseType) {
+    fun add(variable: Variable, type: VariableUseType): UseTypesForExpression {
         val previousType =
             map.getOrElse(
                 variable,
             ) { VariableUseType.UNUSED }
         map[variable] = previousType.union(type)
+        return this
     }
 
     fun getMap(): Map<Variable, VariableUseType> = map
@@ -56,11 +58,6 @@ private class UseTypesForExpression(
                 }
             }
             return result
-        }
-
-        infix fun UseTypesForExpression.withHeapUse(heapUseType: VariableUseType): UseTypesForExpression {
-            val heapUseTypes = UseTypesForExpression(mutableMapOf(Variable.Heap to heapUseType))
-            return merge(this, heapUseTypes)
         }
     }
 }
@@ -124,30 +121,24 @@ private class VarUseVisitor(
             is Allocation -> visitAllocation(expr)
             is Dereference -> visitDereference(expr)
             is LeafExpression -> {
-                useTypeAnalysis[expr] = UseTypesForExpression.empty()
+                useTypeAnalysis[expr] = empty()
             }
         }
     }
 
     private fun visitAssignable(expr: Assignable, type: VariableUseType) {
-        // TODO: Should `Dereference` be considered Assignable?
-        if (expr is Dereference) {
-            visitExpression(expr.value)
-            useTypeAnalysis[expr] = useTypeAnalysis[expr.value]!! withHeapUse type
-            return
-        }
-
-        val affectedVariables = gatherAffectedVariables(expr)
+        val (primaryExpr, initialUseTypeAnalysis) =
+            getUnderlyingDereferenceFromChainOfFieldRef(expr)?.let {
+                visitExpression(it.value)
+                Pair(it, useTypeAnalysis[it.value])
+            } ?: Pair(expr, empty())
+        val affectedVariables = gatherAffectedVariables(primaryExpr)
 
         var nestedExpression: Expression = expr
         while (nestedExpression is Assignable) {
-            useTypeAnalysis[nestedExpression] = UseTypesForExpression.empty()
-            affectedVariables.forEach {
-                useTypeAnalysis[nestedExpression]!!.add(
-                    it,
-                    type,
-                )
-            }
+            val analysis = merge(initialUseTypeAnalysis)
+            affectedVariables.forEach { analysis.add(it, type) }
+            useTypeAnalysis[nestedExpression] = analysis
             if (nestedExpression !is FieldRef) {
                 break
             }
@@ -166,7 +157,7 @@ private class VarUseVisitor(
 
     private fun visitStruct(expr: Struct) {
         useTypeAnalysis[expr] =
-            UseTypesForExpression.merge(
+            merge(
                 *expr.fields.values
                     .map {
                         visitExpression(it)
@@ -179,7 +170,7 @@ private class VarUseVisitor(
         val definition = resolvedVariables[expr]
         if (definition is Definition.FunctionDefinition || definition is Definition.ForeignFunctionDeclaration)
             return
-        useTypeAnalysis[expr] = UseTypesForExpression.empty()
+        useTypeAnalysis[expr] = empty()
         gatherNestedVariables(variablesMap.lvalues[expr]!!).forEach {
             useTypeAnalysis[expr]!!.add(
                 it,
@@ -196,7 +187,7 @@ private class VarUseVisitor(
                 visitExpression(expr.lhs)
                 visitExpression(expr.rhs)
                 useTypeAnalysis[expr] =
-                    UseTypesForExpression.merge(
+                    merge(
                         useTypeAnalysis[expr.lhs],
                         useTypeAnalysis[expr.rhs],
                     )
@@ -205,23 +196,24 @@ private class VarUseVisitor(
     }
 
     private fun visitAssignment(expr: OperatorBinary.LValueOperator, compound: Boolean) {
-        useTypeAnalysis[expr] = UseTypesForExpression.empty()
-        visitExpression(expr.rhs)
         val lhsUseType =
             if (compound) {
                 VariableUseType.READ_WRITE
             } else {
                 VariableUseType.WRITE
             }
-        check(expr.lhs is Assignable) { "Invalid lhs of assignment" }
+        check(expr.lhs is Assignable) {
+            "A cosmic ray must have hit a bit in the RAM because `expr.lhs !is `Assignable` but this should not be possible"
+        }
         visitAssignable(expr.lhs, lhsUseType)
-        useTypeAnalysis[expr]!!.mergeWith(useTypeAnalysis[expr.lhs], useTypeAnalysis[expr.rhs])
+        visitExpression(expr.rhs)
+        useTypeAnalysis[expr] = merge(useTypeAnalysis[expr.lhs], useTypeAnalysis[expr.rhs])
     }
 
     private fun visitUnaryOperator(expr: OperatorUnary) {
         visitExpression(expr.expression)
         useTypeAnalysis[expr] =
-            UseTypesForExpression.merge(
+            merge(
                 useTypeAnalysis[expr.expression],
             )
     }
@@ -229,7 +221,7 @@ private class VarUseVisitor(
     private fun visitReturnStatement(expr: Statement.ReturnStatement) {
         visitExpression(expr.value)
         useTypeAnalysis[expr] =
-            UseTypesForExpression.merge(
+            merge(
                 useTypeAnalysis[expr.value],
             )
     }
@@ -238,7 +230,7 @@ private class VarUseVisitor(
         visitExpression(expr.testExpression)
         visitExpression(expr.doExpression)
         useTypeAnalysis[expr] =
-            UseTypesForExpression.merge(
+            merge(
                 useTypeAnalysis[expr.testExpression],
                 useTypeAnalysis[expr.doExpression],
             )
@@ -249,7 +241,7 @@ private class VarUseVisitor(
         visitExpression(expr.doExpression)
         expr.elseExpression?.let { visitExpression(it) }
         useTypeAnalysis[expr] =
-            UseTypesForExpression.merge(
+            merge(
                 useTypeAnalysis[expr.testExpression],
                 useTypeAnalysis[expr.doExpression],
                 useTypeAnalysis[expr.elseExpression],
@@ -259,7 +251,7 @@ private class VarUseVisitor(
     private fun visitFunctionCall(expr: FunctionCall) {
         visitExpression(expr.function)
         useTypeAnalysis[expr] =
-            UseTypesForExpression.merge(
+            merge(
                 useTypeAnalysis[expr.function],
             )
         expr.arguments.forEach {
@@ -287,19 +279,19 @@ private class VarUseVisitor(
     private fun visitFunctionDeclaration(expr: Definition.FunctionDefinition) {
         // we don't want to merge with declaration body, as it need to be called to use the variables
         visitExpression(expr.body)
-        useTypeAnalysis[expr] = UseTypesForExpression.empty()
+        useTypeAnalysis[expr] = empty()
     }
 
     private fun visitVariableDeclaration(expr: Definition.VariableDeclaration) {
         visitExpression(expr.value)
         useTypeAnalysis[expr] =
-            UseTypesForExpression.merge(
+            merge(
                 useTypeAnalysis[expr.value],
             )
     }
 
     private fun visitBlock(expr: Block) {
-        useTypeAnalysis[expr] = UseTypesForExpression.empty()
+        useTypeAnalysis[expr] = empty()
         scopeStack.addLast(mutableSetOf())
         expr.expressions.forEach {
             visitExpression(it)
@@ -311,11 +303,31 @@ private class VarUseVisitor(
 
     private fun visitAllocation(expr: Allocation) {
         visitExpression(expr.value)
-        useTypeAnalysis[expr] = useTypeAnalysis[expr.value]!! withHeapUse VariableUseType.WRITE
+        useTypeAnalysis[expr] = merge(useTypeAnalysis[expr.value]).add(Variable.Heap, VariableUseType.WRITE)
     }
 
     private fun visitDereference(expr: Dereference) {
         visitExpression(expr.value)
-        useTypeAnalysis[expr] = useTypeAnalysis[expr.value]!! withHeapUse VariableUseType.READ
+        val analysis = merge(useTypeAnalysis[expr.value]!!)
+        gatherAffectedVariables(expr).forEach { analysis.add(it, VariableUseType.READ) }
+        useTypeAnalysis[expr] = analysis
+    }
+
+    /**
+     * If possible, decomposes the given expression into the following form:
+     * Dereference.Field.Field. ... .Field (zero or more field refs)
+     *
+     * @param expr the expression to decompose
+     * @return the AST node of the Dereference, if the expression is of the form mentioned above, else null
+     */
+    private fun getUnderlyingDereferenceFromChainOfFieldRef(expr: Assignable): Dereference? {
+        var current = expr
+        while (true) {
+            when (current) {
+                is VariableUse -> return null // reached
+                is Dereference -> return current
+                is FieldRef.LValue -> current = current.obj
+            }
+        }
     }
 }
