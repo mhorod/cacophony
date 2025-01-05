@@ -6,10 +6,12 @@ import cacophony.utils.Location
 
 // TODO: hacked atm
 private val loc = Pair(Location(0), Location(0))
-val mallocFunction =
+val allocStructFunction =
     Definition.ForeignFunctionDeclaration(
         loc,
-        "malloc",
+        "alloc_struct",
         BaseType.Functional(loc, listOf(BaseType.Basic(loc, "Int")), BaseType.Basic(loc, "")),
         BaseType.Basic(loc, ""),
     )
+
+val builtinFunctions = setOf(allocStructFunction)

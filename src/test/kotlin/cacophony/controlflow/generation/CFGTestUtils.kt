@@ -40,11 +40,12 @@ fun generateSimplifiedCFG(
         else {
             val generator: CallGenerator = mockk()
             every { generator.generateCallFrom(any(), any(), any(), any(), any()) } answers {
-                listOf(CFGNode.Call(arg<Definition.FunctionDefinition>(1)))
+                listOf(CFGNode.Call(arg<Definition.FunctionDeclaration>(1)))
             }
             generator
         }
-    return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator, mockk())
+    val objectOutlines = pipeline.createObjectOutlines(pipeline.getUsedTypes(analyzedAST.types))
+    return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator, objectOutlines.locations)
 }
 
 fun singleFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
