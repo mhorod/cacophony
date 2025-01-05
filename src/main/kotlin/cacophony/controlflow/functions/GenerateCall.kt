@@ -103,12 +103,13 @@ fun generateCall(
 
     if (stackResultsSize > 0) nodes.add(CFGNode.SubtractionAssignment(rsp, CFGNode.ConstantKnown(8 * stackResultsSize)))
 
+    for ((argument, register) in stackArguments) {
+        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(register), argument))
+    }
+
     // in what order should we evaluate arguments? gcc uses reversed order
     for ((argument, register) in registerArguments) {
         nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(register)), argument))
-    }
-    for ((argument, register) in stackArguments) {
-        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(register), argument))
     }
 
     // is this indirection necessary?
@@ -144,7 +145,7 @@ fun generateCall(
         }
 
         if (stackResults.isNotEmpty()) {
-            for (access in stackResults.reversed()) {
+            for (access in stackResults) {
                 val tmpReg = Register.VirtualRegister()
                 nodes.add(CFGNode.Pop(registerUse(tmpReg)))
                 nodes.add(CFGNode.Assignment(access as CFGNode.LValue, registerUse(tmpReg)))

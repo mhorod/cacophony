@@ -39,8 +39,9 @@ abstract class StackCallConvention(
             if (argumentCount <= registerArgumentOrder.size) {
                 VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerReturnOrder.size + 3))
             } else {
+                // TODO: why does it need to be +4 instead of +3?
                 VariableAllocation.OnStack(
-                    -REGISTER_SIZE * (index - registerReturnOrder.size + argumentCount - registerArgumentOrder.size + 3),
+                    -REGISTER_SIZE * (index - registerReturnOrder.size + argumentCount - registerArgumentOrder.size + 4),
                 )
             }
         }
