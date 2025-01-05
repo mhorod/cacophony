@@ -17,13 +17,20 @@ class ObjectOutlinesCreator {
     private val locations: MutableMap<TypeExpr, String> = mutableMapOf()
     private val asmDataSectionEntries = mutableListOf<String>()
 
-    private fun structToLabel(type: StructType): String = "${type.fields.keys.sorted().joinToString("_")}_${type.hashCode().absoluteValue}"
+    private fun structToLabel(type: TypeExpr): String =
+        when (type) {
+            is StructType -> "Struct_${type.fields.keys.sorted().joinToString("_")}_${type.hashCode().absoluteValue}"
+            is BuiltinType.BooleanType -> "Boolean_${type.hashCode().absoluteValue}"
+            is BuiltinType.IntegerType -> "Int_${type.hashCode().absoluteValue}"
+            is BuiltinType.UnitType -> "Unit_${type.hashCode().absoluteValue}"
+            is FunctionType -> "Function_${type.hashCode().absoluteValue}"
+            is ReferentialType -> "Ref_${structToLabel(type.type)}"
+            is TypeExpr.VoidType -> "Void_${type.hashCode().absoluteValue}"
+        }
 
     private fun toIsPointerList(type: TypeExpr): List<Boolean> =
         when (type) {
-            is StructType -> {
-                type.fields.entries.sortedBy { it.key }.map { it.value }.flatMap { toIsPointerList(it) }.toList()
-            }
+            is StructType -> type.fields.entries.sortedBy { it.key }.map { it.value }.flatMap { toIsPointerList(it) }.toList()
             is ReferentialType -> listOf(true)
             is BuiltinType -> listOf(false)
             is FunctionType -> listOf(true) // maybe update in the future
@@ -45,9 +52,10 @@ class ObjectOutlinesCreator {
     }
 
     fun add(type: TypeExpr) {
-        if (type !is StructType) return
+        if (locations.containsKey(type)) return
+        if (type is FunctionType) return // functional types not supported for now
 
-        val label = structToLabel(type)
+        val label = "outline_${structToLabel(type)}"
         val outline = listOf(type.size().toULong()) + toIsPointerMaskChunks(type)
         val asmEntry = "$label: dq ${outline.joinToString(", ")}"
 

@@ -11,6 +11,75 @@ import kotlin.math.absoluteValue
 
 class ObjectOutlinesCreatorTest {
     @Test
+    fun `builtin types`() {
+        val ooCreator = ObjectOutlinesCreator()
+        ooCreator.add(listOf(BuiltinType.IntegerType, BuiltinType.BooleanType, BuiltinType.UnitType))
+
+        val labelInt = "outline_Int_${BuiltinType.IntegerType.hashCode().absoluteValue}"
+        val labelBoolean = "outline_Boolean_${BuiltinType.BooleanType.hashCode().absoluteValue}"
+        val labelUnit = "outline_Unit_${BuiltinType.UnitType.hashCode().absoluteValue}"
+
+        assertThat(ooCreator.getLocations()).containsExactlyInAnyOrderEntriesOf(
+            mapOf(BuiltinType.IntegerType to labelInt, BuiltinType.BooleanType to labelBoolean, BuiltinType.UnitType to labelUnit),
+        )
+        assertThat(ooCreator.getAsm()).containsExactlyInAnyOrder(
+            "$labelInt: dq 1, 0",
+            "$labelBoolean: dq 1, 0",
+            "$labelUnit: dq 1, 0",
+        )
+    }
+
+    @Test
+    fun references() {
+        val refInt = ReferentialType(BuiltinType.IntegerType)
+        val labelRefInt = "outline_Ref_Int_${BuiltinType.IntegerType.hashCode().absoluteValue}"
+        val struct =
+            StructType(
+                mapOf(
+                    "x" to BuiltinType.IntegerType,
+                    "z" to ReferentialType(BuiltinType.IntegerType),
+                    "y" to BuiltinType.BooleanType,
+                ),
+            )
+        val refStruct = ReferentialType(struct)
+        val labelRefStruct = "outline_Ref_Struct_x_y_z_${struct.hashCode().absoluteValue}"
+
+        val ooCreator = ObjectOutlinesCreator()
+        ooCreator.add(listOf(refInt, refStruct))
+
+        assertThat(ooCreator.getLocations()).containsExactlyInAnyOrderEntriesOf(
+            mapOf(refInt to labelRefInt, refStruct to labelRefStruct),
+        )
+        assertThat(ooCreator.getAsm()).containsExactlyInAnyOrder("$labelRefInt: dq 1, 1", "$labelRefStruct: dq 1, 1")
+    }
+
+    @Test
+    fun `double reference`() {
+        val refInt = ReferentialType(BuiltinType.IntegerType)
+        val refRefInt = ReferentialType(refInt)
+        val labelRefRefInt = "outline_Ref_Ref_Int_${BuiltinType.IntegerType.hashCode().absoluteValue}"
+        val struct =
+            StructType(
+                mapOf(
+                    "x" to BuiltinType.IntegerType,
+                    "z" to ReferentialType(BuiltinType.IntegerType),
+                    "y" to BuiltinType.BooleanType,
+                ),
+            )
+        val refStruct = ReferentialType(struct)
+        val refRefStruct = ReferentialType(refStruct)
+        val labelRefRefStruct = "outline_Ref_Ref_Struct_x_y_z_${struct.hashCode().absoluteValue}"
+
+        val ooCreator = ObjectOutlinesCreator()
+        ooCreator.add(listOf(refRefInt, refRefStruct))
+
+        assertThat(ooCreator.getLocations()).containsExactlyInAnyOrderEntriesOf(
+            mapOf(refRefInt to labelRefRefInt, refRefStruct to labelRefRefStruct),
+        )
+        assertThat(ooCreator.getAsm()).containsExactlyInAnyOrder("$labelRefRefInt: dq 1, 1", "$labelRefRefStruct: dq 1, 1")
+    }
+
+    @Test
     fun `simple struct`() {
         val struct =
             StructType(
@@ -20,7 +89,7 @@ class ObjectOutlinesCreatorTest {
                     "y" to BuiltinType.BooleanType,
                 ),
             )
-        val label = "x_y_z_${struct.hashCode().absoluteValue}"
+        val label = "outline_Struct_x_y_z_${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
         ooCreator.add(struct)
@@ -41,24 +110,13 @@ class ObjectOutlinesCreatorTest {
                     "z" to refStructT,
                 ),
             )
-        val label = "x_y_z_${struct.hashCode().absoluteValue}"
+        val label = "outline_Struct_x_y_z_${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
         ooCreator.add(struct)
 
         assertThat(ooCreator.getLocations()).containsExactly(entry(struct, label))
         assertThat(ooCreator.getAsm()).containsExactlyInAnyOrder("$label: dq 4, 10")
-    }
-
-    @Test
-    fun `non-structs are ignored`() {
-        val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(BuiltinType.IntegerType)
-        ooCreator.add(BuiltinType.BooleanType)
-        ooCreator.add(BuiltinType.UnitType)
-
-        assertThat(ooCreator.getLocations()).isEmpty()
-        assertThat(ooCreator.getAsm()).isEmpty()
     }
 
     @Test
@@ -75,7 +133,7 @@ class ObjectOutlinesCreatorTest {
         fieldsMap["y1"] = refIntT
         fieldNames.add("y0")
         fieldNames.add("y1")
-        val label = fieldNames.sorted().joinToString("_") + "_${struct.hashCode().absoluteValue}"
+        val label = "outline_Struct_" + fieldNames.sorted().joinToString("_") + "_${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
         ooCreator.add(struct)
@@ -94,7 +152,7 @@ class ObjectOutlinesCreatorTest {
         for (i in 0..20) {
             struct = StructType(mapOf("x" to struct))
         }
-        val label = "x_${struct.hashCode().absoluteValue}"
+        val label = "outline_Struct_x_${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
         ooCreator.add(struct)
@@ -104,7 +162,7 @@ class ObjectOutlinesCreatorTest {
     }
 
     @Test
-    fun `many structs`() {
+    fun `many structs with repetitions`() {
         val refStructT = ReferentialType(StructType(mapOf("t" to BuiltinType.IntegerType)))
         val struct1 =
             StructType(
@@ -114,14 +172,17 @@ class ObjectOutlinesCreatorTest {
                     "y" to BuiltinType.BooleanType,
                 ),
             )
-        val label1 = "x_y_z_${struct1.hashCode().absoluteValue}"
+        val label1 = "outline_Struct_x_y_z_${struct1.hashCode().absoluteValue}"
         val struct2 = StructType(mapOf("a" to BuiltinType.IntegerType, "b" to BuiltinType.IntegerType))
-        val label2 = "a_b_${struct2.hashCode().absoluteValue}"
+        val label2 = "outline_Struct_a_b_${struct2.hashCode().absoluteValue}"
         val struct3 = StructType(mapOf("r" to refStructT, "x" to BuiltinType.UnitType))
-        val label3 = "r_x_${struct3.hashCode().absoluteValue}"
+        val label3 = "outline_Struct_r_x_${struct3.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
         ooCreator.add(listOf(struct1, struct2, struct3))
+        ooCreator.add(struct1)
+        ooCreator.add(struct2)
+        ooCreator.add(struct1)
 
         assertThat(ooCreator.getLocations()).containsExactlyInAnyOrderEntriesOf(
             mapOf(struct1 to label1, struct2 to label2, struct3 to label3),
