@@ -170,18 +170,23 @@ internal class CFGGenerator(
 
     // TODO: check if conditions works for field ref and dereference
     private fun visitDereference(expression: Dereference, mode: EvalMode, context: Context): SubCFG {
-        if (mode is EvalMode.SideEffect) return SubCFG.Immediate(CFGNode.NoOp)
-        val pointerGeneration = visit(expression.value, mode, context)
+        val pointerGeneration = visit(expression.value, EvalMode.Value, context)
         val access = pointerGeneration.access
         require(access is SimpleLayout) // by type checking
-        val layout = generateLayoutOfHeapObject(access.access, typeCheckingResult.expressionTypes[expression.value]!!)
-        return when (pointerGeneration) {
-            is SubCFG.Extracted -> {
-                val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
-                pointerGeneration merge SubCFG.Extracted(vertex, vertex, layout)
-            }
-            is SubCFG.Immediate -> SubCFG.Immediate(layout)
+        if (mode is EvalMode.SideEffect) {
+            return pointerGeneration
         }
+        val layout = generateLayoutOfHeapObject(access.access, typeCheckingResult.expressionTypes[expression.value]!!)
+        val dereference =
+            when (pointerGeneration) {
+                is SubCFG.Extracted -> {
+                    val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
+                    pointerGeneration merge SubCFG.Extracted(vertex, vertex, layout)
+                }
+                is SubCFG.Immediate -> SubCFG.Immediate(layout)
+            }
+        return if (mode is EvalMode.Conditional) extendWithConditional(dereference, mode)
+        else dereference
     }
 
     private fun visitFieldRef(expression: FieldRef, mode: EvalMode, context: Context): SubCFG {
@@ -418,6 +423,7 @@ internal class CFGGenerator(
                     assignment
                 }
             }
+
             else -> ensureExtracted(subCFG, mode)
         }
 

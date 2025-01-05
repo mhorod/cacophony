@@ -109,4 +109,35 @@ class ReferenceTest {
 
         assertEquivalent(actualCFG, expectedCFG)
     }
+
+    @Test
+    fun `dereference in condition`() {
+        // given
+
+        /*
+         * let f = [x: &Bool] -> Unit => while @x do @x = false;
+         */
+        val fDef =
+            unitFunctionDefinition(
+                "f",
+                listOf(typedArg("x", referenceType(boolType()))),
+                whileLoop(
+                    dereference(variableUse("x")),
+                    dereference(variableUse("x")) assign lit(false),
+                ),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+
+        // then
+        val expectedCFG =
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does conditional("body", "while exit") { memoryAccess(readRegister("@x") add integer(0)) neq integer(0) }
+                "body" does jump("bodyEntry") { memoryAccess(readRegister("@x") add integer(0)) assign integer(0) }
+                "while exit" does jump("bodyExit") { writeRegister("res", integer(42)) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
 }
