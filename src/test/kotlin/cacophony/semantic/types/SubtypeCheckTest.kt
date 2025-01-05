@@ -250,20 +250,23 @@ class SubtypeCheckTest {
 
     @Test
     fun `covariance on reference types`() {
-        val referenceType1 = ReferentialType(
-            StructType(
-                mapOf(
-                    "x" to BuiltinType.IntegerType,
-                ),
-            ))
-        val referenceType2 = ReferentialType(
-            StructType(
-                mapOf(
-                    "x" to BuiltinType.IntegerType,
-                    "y" to BuiltinType.IntegerType,
+        val referenceType1 =
+            ReferentialType(
+                StructType(
+                    mapOf(
+                        "x" to BuiltinType.IntegerType,
+                    ),
                 ),
             )
-        )
+        val referenceType2 =
+            ReferentialType(
+                StructType(
+                    mapOf(
+                        "x" to BuiltinType.IntegerType,
+                        "y" to BuiltinType.IntegerType,
+                    ),
+                ),
+            )
         assertThat(isSubtype(referenceType1, referenceType2)).isFalse
         assertThat(isSubtype(referenceType2, referenceType1)).isTrue
     }
