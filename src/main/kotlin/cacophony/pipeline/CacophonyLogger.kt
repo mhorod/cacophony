@@ -28,7 +28,13 @@ import java.nio.file.Path
 class CacophonyLogger(
     private val logParsing: Boolean,
     private val logAST: Boolean,
-    private val logAnalysis: Boolean,
+    // private val logAnalysis: Boolean,
+    private val logNameRes: Boolean,
+    private val logOverloads: Boolean,
+    private val logTypes: Boolean,
+    private val logVariables: Boolean,
+    private val logCallGraph: Boolean,
+    private val logFunctions: Boolean,
     private val logCFG: Boolean,
     private val logCover: Boolean,
     private val logRegs: Boolean,
@@ -70,7 +76,7 @@ class CacophonyLogger(
     override fun logFailedAstGeneration() = println("AST generation failed :(")
 
     override fun logSuccessfulNameResolution(result: NameResolutionResult) {
-        if (logAnalysis) {
+        if (logNameRes) {
             println("Name resolution successful :D")
             println("Resolved names:")
             result.forEach { println("  ${it.key.identifier} -> ${resolvedNameToString(it.value)}") }
@@ -87,7 +93,7 @@ class CacophonyLogger(
     override fun logFailedNameResolution() = println("Name resolution failed :(")
 
     override fun logSuccessfulOverloadResolution(result: ResolvedVariables) {
-        if (logAnalysis) {
+        if (logOverloads) {
             println("Overload resolution successful :D")
             println("Resolved variables:")
             result.forEach { println("  ${it.key.identifier} -> ${it.value}") }
@@ -97,7 +103,7 @@ class CacophonyLogger(
     override fun logFailedOverloadResolution() = println("Overload resolution failed :(")
 
     override fun logSuccessfulTypeChecking(result: TypeCheckingResult) {
-        if (logAnalysis) {
+        if (logTypes) {
             println("Type checking successful :D")
             println("Types:")
             result.expressionTypes.forEach { println("  ${it.key} : ${it.value}") }
@@ -107,7 +113,7 @@ class CacophonyLogger(
     override fun logFailedTypeChecking() = println("Type checking failed :(")
 
     override fun logSuccessfulVariableCreation(variableMap: VariablesMap) {
-        if (logAnalysis) {
+        if (logVariables) {
             println("Variable creation successful :D")
             println("  Definition variables:")
             variableMap.definitions.forEach { (definition, variable) ->
@@ -122,7 +128,7 @@ class CacophonyLogger(
     }
 
     override fun logSuccessfulCallGraphGeneration(callGraph: CallGraph) {
-        if (logAnalysis) {
+        if (logCallGraph) {
             println("Call graph generation successful :D")
             println("Calls:")
             callGraph.forEach { (caller, callees) ->
@@ -137,7 +143,7 @@ class CacophonyLogger(
     override fun logFailedCallGraphGeneration() = println("Call graph generation failed :(")
 
     override fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult) {
-        if (logAnalysis) {
+        if (logFunctions) {
             println("Function analysis successful :D")
             result.forEach { (function, analysis) ->
                 println("  $function (${function.identifier}/${function.arguments.size}) at static depth ${analysis.staticDepth}:")

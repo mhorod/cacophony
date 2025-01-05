@@ -12,15 +12,21 @@ import java.nio.file.Paths
 
 class Main : CliktCommand() {
     val file by argument()
-    val outputFile: String? by option("-o", "--output")
-    val logParsing by option("--log-parsing").flag()
-    val logAST by option("--log-ast").flag()
-    val logAnalysis by option("--log-analysis").flag()
-    val logCFG by option("--log-cfg").flag()
-    val logCover by option("--log-cover").flag()
-    val logRegs by option("--log-regs").flag()
-    val logAsm by option("--log-asm").flag()
-    val verbose by option("-v", "--verbose").flag()
+    private val outputFile: String? by option("-o", "--output")
+    private val logParsing by option("--log-parsing").flag()
+    private val logAST by option("--log-ast").flag()
+    private val logAnalysis by option("--log-analysis").flag()
+    private val logNameRes by option("--log-names").flag()
+    private val logOverloads by option("--log-overloads").flag()
+    private val logTypes by option("--log-types").flag()
+    private val logVariables by option("--log-variables").flag()
+    private val logCallGraph by option("--log-callgraph").flag()
+    private val logFunctions by option("--log-functions").flag()
+    private val logCFG by option("--log-cfg").flag()
+    private val logCover by option("--log-cover").flag()
+    private val logRegs by option("--log-regs").flag()
+    private val logAsm by option("--log-asm").flag()
+    private val verbose by option("-v", "--verbose").flag()
 
     override fun run() {
         echo("Compiling $file")
@@ -32,7 +38,12 @@ class Main : CliktCommand() {
             CacophonyLogger(
                 verbose || logParsing,
                 verbose || logAST,
-                verbose || logAnalysis,
+                verbose || logAnalysis || logNameRes,
+                verbose || logAnalysis || logOverloads,
+                verbose || logAnalysis || logTypes,
+                verbose || logAnalysis || logVariables,
+                verbose || logAnalysis || logCallGraph,
+                verbose || logAnalysis || logFunctions,
                 verbose || logCFG,
                 verbose || logCover,
                 verbose || logRegs,
