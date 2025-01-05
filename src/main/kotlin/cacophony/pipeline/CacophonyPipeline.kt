@@ -397,13 +397,13 @@ class CacophonyPipeline(
         link(listOf(objFile, Paths.get("libcacophony.c")) + additionalObjectFiles, binFile)
     }
 
-    fun compile(input: Input, output: Path) {
+    fun compile(input: Input, outputDir: Path) {
         compile(
             input,
             emptyList(),
-            Paths.get("${output.fileName}.asm"),
-            Paths.get("${output.fileName}.o"),
-            Paths.get("${output.fileName}.bin"),
+            Paths.get("${outputDir.fileName}", "${outputDir.fileName}.asm"),
+            Paths.get("${outputDir.fileName}", "${outputDir.fileName}.o"),
+            Paths.get("${outputDir.fileName}", "${outputDir.fileName}.bin"),
         )
     }
 }

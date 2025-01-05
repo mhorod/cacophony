@@ -8,11 +8,12 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.io.path.nameWithoutExtension
 
 class Main : CliktCommand() {
     val file by argument()
-    private val outputFile: String? by option("-o", "--output")
     private val logParsing by option("--log-parsing").flag()
     private val logAST by option("--log-ast").flag()
     private val logAnalysis by option("--log-analysis").flag()
@@ -27,12 +28,17 @@ class Main : CliktCommand() {
     private val logRegs by option("--log-regs").flag()
     private val logAsm by option("--log-asm").flag()
     private val verbose by option("-v", "--verbose").flag()
+    private val saveToFiles by option("-s", "--save").flag()
 
     override fun run() {
         echo("Compiling $file")
 
         val input = FileInput(file)
-        val output = Paths.get(outputFile ?: file)
+        val outputDir = Paths.get(Paths.get(file).nameWithoutExtension)
+        if (!Files.exists(outputDir))
+            Files.createDirectory(Paths.get(outputDir.nameWithoutExtension))
+        if (!Files.isDirectory(outputDir))
+            throw IllegalArgumentException("Path '$outputDir' already exists and is not a directory")
         val diagnostics = CacophonyDiagnostics(input)
         val logger =
             CacophonyLogger(
@@ -48,10 +54,11 @@ class Main : CliktCommand() {
                 verbose || logCover,
                 verbose || logRegs,
                 verbose || logAsm,
+                if (saveToFiles) outputDir else null,
             )
 
         try {
-            CacophonyPipeline(diagnostics, logger).compile(input, output)
+            CacophonyPipeline(diagnostics, logger).compile(input, outputDir)
         } catch (t: CompileException) {
             echo(diagnostics.extractErrors().joinToString("\n"))
         }

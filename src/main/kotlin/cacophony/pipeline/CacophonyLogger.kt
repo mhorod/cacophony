@@ -23,12 +23,12 @@ import cacophony.semantic.types.TypeCheckingResult
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.TreePrinter
+import java.io.File
 import java.nio.file.Path
 
 class CacophonyLogger(
     private val logParsing: Boolean,
     private val logAST: Boolean,
-    // private val logAnalysis: Boolean,
     private val logNameRes: Boolean,
     private val logOverloads: Boolean,
     private val logTypes: Boolean,
@@ -39,7 +39,22 @@ class CacophonyLogger(
     private val logCover: Boolean,
     private val logRegs: Boolean,
     private val logAsm: Boolean,
+    private val logDirectory: Path?,
 ) : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbol> {
+    private fun logMaybeSave(header: String, content: String?) {
+        val escape = "\u001B"
+        val bold = "$escape[1m"
+        val endBold = "$escape[22m"
+        println("\n${bold}$header:$endBold")
+        println(content)
+        if (logDirectory != null && content != null) {
+            val filename = header.lowercase().replace(" ", "_") + ".log"
+            File(logDirectory.toString(), filename).printWriter().use { out ->
+                out.println(content)
+            }
+        }
+    }
+
     override fun logSuccessfulGrammarAnalysis(analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol>) =
         println("Grammar analysis successful :D")
 
@@ -47,9 +62,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulLexing(tokens: List<Token<TokenCategorySpecific>>) {
         if (logParsing) {
-            println("Lexing successful :D")
-            println("Found tokens:")
-            tokens.forEach { println("  $it") }
+            logMaybeSave("Found tokens", tokens.joinToString("\n") { it.toString() })
         }
     }
 
@@ -57,9 +70,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulParsing(parseTree: ParseTree<CacophonyGrammarSymbol>) {
         if (logParsing) {
-            println("Parsing successful :D")
-            println("Parse tree:")
-            println(TreePrinter(StringBuilder()).printTree(parseTree))
+            logMaybeSave("Parse tree", TreePrinter(StringBuilder()).printTree(parseTree))
         }
     }
 
@@ -67,9 +78,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulAstGeneration(ast: AST) {
         if (logAST) {
-            println("AST generation successful :D")
-            println("AST:")
-            println(TreePrinter(StringBuilder()).printTree(ast))
+            logMaybeSave("AST", TreePrinter(StringBuilder()).printTree(ast))
         }
     }
 
@@ -77,9 +86,10 @@ class CacophonyLogger(
 
     override fun logSuccessfulNameResolution(result: NameResolutionResult) {
         if (logNameRes) {
-            println("Name resolution successful :D")
-            println("Resolved names:")
-            result.forEach { println("  ${it.key.identifier} -> ${resolvedNameToString(it.value)}") }
+            logMaybeSave(
+                "Resolved names",
+                result.entries.joinToString("\n") { "${it.key.identifier} -> ${resolvedNameToString(it.value)}" },
+            )
         }
     }
 
@@ -94,9 +104,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulOverloadResolution(result: ResolvedVariables) {
         if (logOverloads) {
-            println("Overload resolution successful :D")
-            println("Resolved variables:")
-            result.forEach { println("  ${it.key.identifier} -> ${it.value}") }
+            logMaybeSave("Resolved variables", result.entries.joinToString("\n") { "${it.key.identifier} -> ${it.value}" })
         }
     }
 
@@ -104,9 +112,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulTypeChecking(result: TypeCheckingResult) {
         if (logTypes) {
-            println("Type checking successful :D")
-            println("Types:")
-            result.expressionTypes.forEach { println("  ${it.key} : ${it.value}") }
+            logMaybeSave("Types", result.expressionTypes.entries.joinToString("\n") { "${it.key} : ${it.value}" })
         }
     }
 
@@ -114,29 +120,29 @@ class CacophonyLogger(
 
     override fun logSuccessfulVariableCreation(variableMap: VariablesMap) {
         if (logVariables) {
-            println("Variable creation successful :D")
-            println("  Definition variables:")
-            variableMap.definitions.forEach { (definition, variable) ->
-                println("    $definition -> ${variableToString(variable)}")
-            }
-
-            println("  Assignables' variables:")
-            variableMap.lvalues.forEach { (assignable, variable) ->
-                println("    $assignable -> ${variableToString(variable)}")
-            }
+            logMaybeSave(
+                "Definition variables",
+                variableMap.definitions.entries.joinToString("\n") { "${it.key} -> ${variableToString(it.value)}" },
+            )
+            logMaybeSave(
+                "Assignables variables",
+                variableMap.definitions.entries.joinToString("\n") {
+                    "${it.key} -> ${variableToString(it.value)}"
+                },
+            )
         }
     }
 
     override fun logSuccessfulCallGraphGeneration(callGraph: CallGraph) {
         if (logCallGraph) {
-            println("Call graph generation successful :D")
-            println("Calls:")
+            val content = StringBuilder()
             callGraph.forEach { (caller, callees) ->
-                println("  $caller (${caller.identifier}/${caller.arguments.size}) calls:")
+                content.appendLine("$caller (${caller.identifier}/${caller.arguments.size}) calls:")
                 callees.forEach { callee ->
-                    println("    $callee (${callee.identifier}/${callee.arguments.size})")
+                    content.appendLine("  $callee (${callee.identifier}/${callee.arguments.size})")
                 }
             }
+            logMaybeSave("Calls", content.lines().joinToString("\n"))
         }
     }
 
@@ -144,11 +150,13 @@ class CacophonyLogger(
 
     override fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult) {
         if (logFunctions) {
-            println("Function analysis successful :D")
+            val content = StringBuilder()
             result.forEach { (function, analysis) ->
-                println("  $function (${function.identifier}/${function.arguments.size}) at static depth ${analysis.staticDepth}:")
-                println("    Parent link: ${analysis.parentLink}")
-                println("    Used variables: ${analysis.variables.size}")
+                content.appendLine(
+                    "$function (${function.identifier}/${function.arguments.size}) at static depth ${analysis.staticDepth}:",
+                )
+                content.appendLine("    Parent link: ${analysis.parentLink}")
+                content.appendLine("    Used variables: ${analysis.variables.size}")
                 analysis.variables.forEach { variable ->
                     val usage =
                         when (variable.useType) {
@@ -159,11 +167,13 @@ class CacophonyLogger(
                         }
                     val from =
                         "${variable.definedIn} (${variable.definedIn.identifier}/${variable.definedIn.arguments.size})"
-                    println("      [$usage] $variable ($variable) from $from")
+                    content.appendLine("      [$usage] $variable ($variable) from $from")
                 }
-                println("    Variables used in nested functions: ${analysis.variablesUsedInNestedFunctions.size}")
-                analysis.variablesUsedInNestedFunctions.forEach { println("      $it") }
+                content.appendLine("    Variables used in nested functions: ${analysis.variablesUsedInNestedFunctions.size}")
+                analysis.variablesUsedInNestedFunctions.forEach { content.appendLine("      $it") }
             }
+
+            logMaybeSave("Function analysis", content.lines().joinToString("\n"))
         }
     }
 
@@ -171,27 +181,27 @@ class CacophonyLogger(
 
     override fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>) {
         if (logCFG) {
-            println("Control flow graph generation successful :D")
-            println(programCfgToGraphviz(cfg))
+            logMaybeSave("CFG", programCfgToGraphviz(cfg))
         }
     }
 
-    private fun logCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>) {
+    private fun logCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>): String {
+        val content = StringBuilder()
         covering.forEach { (function, blocks) ->
-            println("  $function (${function.identifier}/${function.arguments.size})")
+            content.appendLine("  $function (${function.identifier}/${function.arguments.size})")
             blocks.forEach { block ->
-                println("   ${block.label()}")
+                content.appendLine("   ${block.label()}")
                 block.instructions().forEach { instruction ->
-                    println("     $instruction")
+                    content.appendLine("     $instruction")
                 }
             }
         }
+        return content.lines().joinToString("\n")
     }
 
     override fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>) {
         if (logCover) {
-            println("Instruction covering successful :D")
-            logCovering(covering)
+            logMaybeSave("Instruction covering", logCovering(covering))
         }
     }
 
@@ -199,38 +209,39 @@ class CacophonyLogger(
         registersInteractions: Map<Definition.FunctionDefinition, RegistersInteraction>,
     ) {
         if (logRegs) {
-            println("Registers interaction generation successful :D")
+            val content = StringBuilder()
             registersInteractions.forEach { (function, registersInteraction) ->
-                println("  Function $function registers interaction: ")
-                println("        Interference:")
+                content.appendLine("Function $function registers interaction: ")
+                content.appendLine("      Interference:")
                 registersInteraction.interference.forEach { (k, v) ->
                     if (v.isNotEmpty())
-                        println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
+                        content.appendLine("        ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
                 }
-
-                println("        Copying:")
+                content.appendLine("      Copying:")
                 registersInteraction.copying.forEach { (k, v) ->
                     if (v.isNotEmpty())
-                        println("          ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
+                        content.appendLine("        ${shortRegisterName(k)} -> ${v.map { shortRegisterName(it) }}")
                 }
             }
+            logMaybeSave("Registers interactions", content.lines().joinToString("\n"))
         }
     }
 
     override fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>) {
         if (logRegs) {
-            println("Register allocation successful :D")
+            val content = StringBuilder()
             allocatedRegisters.forEach { (function, allocation) ->
-                println("  $function (${function.identifier}/${function.arguments.size})")
-                println("Successful registers:")
+                content.appendLine("$function (${function.identifier}/${function.arguments.size})")
+                content.appendLine("Successful registers:")
                 allocation.successful.toSortedMap(compareBy { it.toString() }).forEach { (variable, register) ->
-                    println("  $variable -> $register")
+                    content.appendLine("  $variable -> $register")
                 }
-                println("Spilled registers:")
+                content.appendLine("Spilled registers:")
                 allocation.spills.forEach { spill ->
-                    println("  $spill")
+                    content.appendLine("  $spill")
                 }
             }
+            logMaybeSave("Registers allocation", content.lines().joinToString("\n"))
         }
     }
 
@@ -252,7 +263,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulAsmGeneration(functions: Map<Definition.FunctionDefinition, String>) {
         if (logAsm) {
-            functions.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
+            logMaybeSave("Generated ASM", functions.entries.joinToString("\n") { "${it.key} generates asm:\n${it.value}" })
         }
     }
 
