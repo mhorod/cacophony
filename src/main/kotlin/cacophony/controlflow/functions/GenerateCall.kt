@@ -68,10 +68,17 @@ fun generateCall(
             is Definition.ForeignFunctionDeclaration -> function.type!!.argumentsType
             is Definition.FunctionDefinition -> function.arguments.map { it.type }
         }
-    val arguments =
+
+    var arguments =
         argumentLayouts.zip(argumentTypes).flatMap { (layout, type) ->
             generateSubLayout(layout, translator.translateType(type)!!).flatten()
         }
+
+    // Handle static link
+    if (argumentTypes.size + 1 == argumentLayouts.size) {
+        arguments = arguments + argumentLayouts.last().flatten()
+    }
+
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
     val resultSize = function.returnType.size()
