@@ -750,6 +750,12 @@ class VarUseTypeAnalysisTest {
                         qVariable to VariableUseType.READ,
                         Variable.Heap to VariableUseType.WRITE,
                     ),
+                dereference to
+                    mapOf(
+                        pVariable to VariableUseType.READ_WRITE,
+                        qVariable to VariableUseType.READ,
+                        Variable.Heap to VariableUseType.WRITE,
+                    ),
             ),
         )
     }
@@ -784,6 +790,11 @@ class VarUseTypeAnalysisTest {
         assertThat(result).containsAllEntriesOf(
             mapOf(
                 assignment to
+                    mapOf(
+                        pVariable to VariableUseType.READ,
+                        Variable.Heap to VariableUseType.READ_WRITE,
+                    ),
+                dereference to
                     mapOf(
                         pVariable to VariableUseType.READ,
                         Variable.Heap to VariableUseType.READ_WRITE,
