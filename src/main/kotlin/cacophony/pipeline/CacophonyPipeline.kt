@@ -239,6 +239,7 @@ class CacophonyPipeline(
                 analyzedAst.variablesMap,
                 analyzedAst.types,
                 callGenerator,
+                mapOf(), // TODO(Rafał): populate this
             )
         logger?.logSuccessfulControlFlowGraphGeneration(cfg)
         return cfg

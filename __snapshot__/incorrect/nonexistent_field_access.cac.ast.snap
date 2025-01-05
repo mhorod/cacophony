@@ -46,7 +46,7 @@
               "__class__": "Pair",
               "first": {
                 "__class__": "Location",
-                "value": 8
+                "value": 0
               },
               "second": {
                 "__class__": "Location",

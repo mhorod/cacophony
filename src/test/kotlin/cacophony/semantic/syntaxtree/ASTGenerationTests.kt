@@ -114,7 +114,7 @@ class ASTGenerationTests {
     @Test
     fun `lexer fail causes ast to not generate`() {
         val diagnostics = computeFailDiagnostics("?1")
-        assertThat(diagnostics).isNotEmpty()
+        assertThat(diagnostics).isNotEmpty
     }
 
     @Test
@@ -597,6 +597,33 @@ class ASTGenerationTests {
     }
 
     @Test
+    fun `return statement`() {
+        val actual = computeAST("let f = [x: Int] -> Int => return x")
+        val expected =
+            Definition.FunctionDefinition(
+                anyLocation(),
+                "f",
+                null,
+                listOf(
+                    Definition.FunctionArgument(
+                        anyLocation(),
+                        "x",
+                        basicType("Int"),
+                    ),
+                ),
+                basicType("Int"),
+                Statement.ReturnStatement(
+                    anyLocation(),
+                    VariableUse(
+                        anyLocation(),
+                        "x",
+                    ),
+                ),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
     fun `simple struct`() {
         val actual = computeAST("{x = x}")
         val expected = structDeclaration(structField("x") to variableUse("x"))
@@ -648,27 +675,24 @@ class ASTGenerationTests {
     }
 
     @Test
-    fun `return statement`() {
-        val actual = computeAST("let f = [x: Int] -> Int => return x")
+    fun `field access on function call`() {
+        val actual = computeAST("f[].x")
         val expected =
-            Definition.FunctionDefinition(
-                anyLocation(),
-                "f",
-                null,
-                listOf(
-                    Definition.FunctionArgument(
-                        anyLocation(),
-                        "x",
-                        basicType("Int"),
-                    ),
-                ),
-                basicType("Int"),
-                Statement.ReturnStatement(
-                    anyLocation(),
-                    VariableUse(
-                        anyLocation(),
-                        "x",
-                    ),
+            rvalueFieldRef(
+                call(variableUse("f")),
+                "x",
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `function call on field access`() {
+        val actual = computeAST("s.f[]")
+        val expected =
+            call(
+                lvalueFieldRef(
+                    variableUse("s"),
+                    "f",
                 ),
             )
         assertEquivalentAST(mockWrapInFunction(expected), actual)
