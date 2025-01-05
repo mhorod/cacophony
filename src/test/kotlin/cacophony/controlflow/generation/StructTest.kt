@@ -6,18 +6,6 @@ import cacophony.semantic.syntaxtree.*
 import org.junit.jupiter.api.Test
 
 class StructTest {
-    private fun simpleStruct(int: Int = 7, bool: Boolean = true): Struct =
-        structDeclaration(
-            structField("a") to lit(int),
-            structField("b") to lit(bool),
-        )
-
-    private fun nestedStruct(): Struct =
-        structDeclaration(
-            structField("a") to lit(5),
-            structField("b") to simpleStruct(),
-        )
-
     @Test
     fun `single level struct assignment`() {
         // given
