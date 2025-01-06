@@ -22,7 +22,7 @@ sealed class Variable(
         when (this) {
             is PrimitiveVariable -> listOf(this)
             is StructVariable -> fields.map { (_, field) -> field.getPrimitives() }.flatten()
-            Heap -> emptyList()
+            is Heap -> emptyList()
         }
 
     override fun toString(): String = name

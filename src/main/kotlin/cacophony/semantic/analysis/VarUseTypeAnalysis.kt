@@ -328,9 +328,9 @@ private class VarUseVisitor(
         var current = expr
         while (true) {
             when (current) {
-                is VariableUse -> return null // reached
-                is Dereference -> return current
-                is FieldRef.LValue -> current = current.obj
+                is VariableUse -> return null // reached a plain variable, so there is no Dereference
+                is Dereference -> return current // reached a Dereference, no need to check further
+                is FieldRef.LValue -> current = current.obj // encountered field access, go one step back "through" the dot
             }
         }
     }

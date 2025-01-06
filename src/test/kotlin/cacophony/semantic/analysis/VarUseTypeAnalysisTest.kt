@@ -926,6 +926,42 @@ class VarUseTypeAnalysisTest {
     }
 
     @Test
+    fun `allocation with a nested dereference uses the heap (read-write)`() {
+        // let y = $1;
+        val yDefinition = variableDeclaration("y", alloc(lit(1)))
+        val yVariable = Variable.PrimitiveVariable()
+        // let x = $(@y + 1)
+        val yUse = variableUse("y")
+        val dereference = deref(yUse)
+        val allocation = alloc(block(dereference add lit(1)))
+        val xDefinition = variableDeclaration("x", allocation)
+        val xVariable = Variable.PrimitiveVariable()
+
+        val ast = astOf(yDefinition, xDefinition)
+        val program = program(ast)
+        val variablesMap =
+            createVariablesMap(
+                mapOf(yDefinition to yVariable, xDefinition to xVariable),
+                mapOf(yUse to yVariable, dereference to Variable.Heap),
+            )
+        val result =
+            analyzeVarUseTypes(
+                program,
+                mapOf(programResolvedName(ast), yUse to yDefinition),
+                mapOf(programFunctionAnalysis(ast)),
+                variablesMap,
+            )
+
+        assertThat(result).containsAllEntriesOf(
+            mapOf(
+                yDefinition to mapOf(Variable.Heap to VariableUseType.WRITE),
+                dereference to mapOf(yVariable to VariableUseType.READ, Variable.Heap to VariableUseType.READ),
+                xDefinition to mapOf(yVariable to VariableUseType.READ, Variable.Heap to VariableUseType.READ_WRITE),
+            ),
+        )
+    }
+
+    @Test
     fun `foreign function calls are treated pessimistically`() {
         /*
          * foreign f: [] -> Unit;
