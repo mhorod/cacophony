@@ -20,5 +20,6 @@ class Params {
         val instructionCovering = CacophonyInstructionCovering(CacophonyInstructionMatcher())
         val allGPRs = HardwareRegister.entries.toSet()
         val externalLibs = listOf(Paths.get("libcacophony.c"))
+        val outputParentDir = Paths.get("output")
     }
 }

@@ -1,6 +1,7 @@
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyLogger
 import cacophony.pipeline.CacophonyPipeline
+import cacophony.pipeline.Params
 import cacophony.utils.CompileException
 import cacophony.utils.FileInput
 import com.github.ajalt.clikt.core.CliktCommand
@@ -34,9 +35,13 @@ class Main : CliktCommand() {
         echo("Compiling $file")
 
         val input = FileInput(file)
-        val outputDir = Paths.get(Paths.get(file).nameWithoutExtension)
+        val outputName = Paths.get(file).nameWithoutExtension
+
+        if (!Files.exists(Params.outputParentDir))
+            Files.createDirectory(Params.outputParentDir)
+        val outputDir = Params.outputParentDir.resolve(outputName)
         if (!Files.exists(outputDir))
-            Files.createDirectory(Paths.get(outputDir.nameWithoutExtension))
+            Files.createDirectory(outputDir)
         if (!Files.isDirectory(outputDir))
             throw IllegalArgumentException("Path '$outputDir' already exists and is not a directory")
         val diagnostics = CacophonyDiagnostics(input)
@@ -58,7 +63,7 @@ class Main : CliktCommand() {
             )
 
         try {
-            CacophonyPipeline(diagnostics, logger).compile(input, outputDir)
+            CacophonyPipeline(diagnostics, logger).compile(input, outputName, outputDir)
         } catch (t: CompileException) {
             echo(diagnostics.extractErrors().joinToString("\n"))
         }

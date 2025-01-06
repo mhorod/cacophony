@@ -269,13 +269,13 @@ class CacophonyPipeline(
         } ?: logger?.logSuccessfulLinking(binFile)
     }
 
-    fun compile(input: Input, outputDir: Path) {
+    fun compile(input: Input, outputName: String, outputDir: Path) {
         compileAndLink(
             input,
             Params.externalLibs,
-            Paths.get("${outputDir.fileName}", "${outputDir.fileName}.asm"),
-            Paths.get("${outputDir.fileName}", "${outputDir.fileName}.o"),
-            Paths.get("${outputDir.fileName}", "${outputDir.fileName}.bin"),
+            Paths.get("$outputDir", "$outputName.asm"),
+            Paths.get("$outputDir", "$outputName.o"),
+            Paths.get("$outputDir", "$outputName.bin"),
         )
     }
 }
