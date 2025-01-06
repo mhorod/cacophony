@@ -1,9 +1,9 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
+import cacophony.controlflow.functions.Builtin
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.FunctionHandler
-import cacophony.controlflow.functions.allocStructFunction
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
@@ -148,7 +148,7 @@ internal class CFGGenerator(
         when (mode) {
             is EvalMode.Value ->
                 generateFunctionCall(
-                    allocStructFunction,
+                    Builtin.allocStruct,
                     typeCheckingResult.expressionTypes[expression]!!,
                     mode,
                     listOf(

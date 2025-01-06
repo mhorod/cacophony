@@ -1,5 +1,6 @@
 package cacophony.semantic.syntaxtree
 
+import cacophony.controlflow.functions.Builtin
 import cacophony.diagnostics.ASTDiagnostics
 import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
@@ -389,7 +390,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
     return Empty(range = Pair(Location(0), Location(0)))
 }
 
-private fun wrapInFunction(originalAST: AST): AST {
+private fun wrapInFunctionAndAddPreamble(originalAST: AST): AST {
     val beforeStart = Location(-1)
     val behindEnd = Location(originalAST.range.second.value + 1)
     val program =
@@ -419,15 +420,16 @@ private fun wrapInFunction(originalAST: AST): AST {
         )
     return Block(
         Pair(beforeStart, behindEnd),
-        listOf(
-            program,
-            programCall,
-        ),
+        Builtin.all +
+            listOf(
+                program,
+                programCall,
+            ),
     )
 }
 
 fun generateAST(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): AST {
     val prunedTree = pruneParseTree(parseTree, diagnostics)!!
     val ast = generateASTInternal(prunedTree, diagnostics)
-    return wrapInFunction(ast)
+    return wrapInFunctionAndAddPreamble(ast)
 }

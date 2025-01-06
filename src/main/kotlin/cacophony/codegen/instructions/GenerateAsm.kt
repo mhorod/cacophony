@@ -5,7 +5,6 @@ import cacophony.codegen.instructions.cacophonyInstructions.InstructionTemplates
 import cacophony.codegen.instructions.cacophonyInstructions.Label
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.registers.RegisterAllocation
-import cacophony.controlflow.functions.builtinFunctions
 import cacophony.semantic.syntaxtree.Definition
 
 fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation: RegisterAllocation): String {
@@ -23,7 +22,7 @@ fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation
 fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclaration>, objectOutlines: List<String>): String =
     (
         listOf("SECTION .data") +
-            (foreignFunctions union builtinFunctions).map {
+            foreignFunctions.map {
                 "extern ${it.identifier}"
             } + objectOutlines +
             listOf("global main", "SECTION .text")
