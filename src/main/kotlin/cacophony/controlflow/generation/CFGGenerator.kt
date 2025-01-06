@@ -9,6 +9,7 @@ import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.semantic.types.TypeExpr
 
@@ -143,32 +144,56 @@ internal class CFGGenerator(
             is Statement.WhileStatement -> visitWhileStatement(expression, mode, context)
             is Struct -> visitStruct(expression, mode, context)
             is FieldRef.RValue -> visitFieldRef(expression, mode, context)
-            is Allocation -> visitAllocation(expression, mode)
+            is Allocation -> visitAllocation(expression, mode, context)
             is Dereference -> visitDereference(expression, mode, context)
             is Assignable -> visitAssignable(expression, mode)
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
-    private fun visitAllocation(expression: Allocation, mode: EvalMode): SubCFG =
-        when (mode) {
-            is EvalMode.Value ->
-                generateFunctionCall(
-                    mallocFunction,
-                    typeCheckingResult.expressionTypes[expression]!!,
-                    mode,
-                    listOf(
-                        ensureExtracted(
-                            integer(
-                                typeCheckingResult.expressionTypes[expression.value]!!.size() * REGISTER_SIZE,
+    private fun visitAllocation(expression: Allocation, mode: EvalMode, context: Context): SubCFG {
+        val calcExpression = visit(expression.value, mode, context)
+        return when (mode) {
+            is EvalMode.Value -> {
+                val type = typeCheckingResult.expressionTypes[expression]!!
+                require(type is ReferentialType) // by type checking
+                val call =
+                    generateFunctionCall(
+                        mallocFunction,
+                        type,
+                        mode,
+                        listOf(
+                            ensureExtracted(
+                                SubCFG.Immediate(
+                                    integer(
+                                        type.type.size() * REGISTER_SIZE,
+                                    ),
+                                ),
+                                EvalMode.Value,
                             ),
                         ),
-                    ),
-                )
+                    )
+                require(call.access is SimpleLayout) // by type check
+                val resultLayout = generateLayoutOfHeapObject(call.access.access, type.type)
+                val allocation = call merge assignLayoutWithValue(calcExpression.access, resultLayout, call.access)
+                when (calcExpression) {
+                    is SubCFG.Extracted -> calcExpression merge allocation
+                    is SubCFG.Immediate -> allocation
+                }
+            }
             // do nothing if value is not used
-            else -> SubCFG.Immediate(CFGNode.NoOp)
+            is EvalMode.SideEffect -> {
+                when (calcExpression) {
+                    is SubCFG.Extracted -> {
+                        val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
+                        calcExpression merge SubCFG.Extracted(vertex, vertex, CFGNode.NoOp)
+                    }
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.NoOp)
+                }
+            }
+            is EvalMode.Conditional -> throw IllegalArgumentException("Reference cannot be used as condition")
         }
+    }
 
-    // TODO: check if conditions works for field ref and dereference
     private fun visitDereference(expression: Dereference, mode: EvalMode, context: Context): SubCFG {
         val pointerGeneration = visit(expression.value, EvalMode.Value, context)
         val access = pointerGeneration.access
@@ -276,7 +301,7 @@ internal class CFGGenerator(
         returnType: TypeExpr,
         mode: EvalMode,
         arguments: List<SubCFG.Extracted>,
-    ): SubCFG {
+    ): SubCFG.Extracted {
         val functionHandler =
             when (function) {
                 is Definition.FunctionDefinition -> getFunctionHandler(function)
