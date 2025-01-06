@@ -345,7 +345,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
                 }
             }
-            REFERENCE_LEVEL -> { // very similar to unary operators
+            DEREFERENCE_LEVEL, ALLOCATION_LEVEL -> { // very similar to unary operators
                 assert(childNum == 2)
                 val operatorKind = parseTree.children[0]
                 if (operatorKind is ParseTree.Leaf) {

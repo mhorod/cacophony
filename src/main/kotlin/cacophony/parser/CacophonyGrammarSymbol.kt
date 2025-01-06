@@ -103,8 +103,9 @@ enum class CacophonyGrammarSymbol(
     MULTIPLICATION_LEVEL(null),
     UNARY_LEVEL(null),
     STATEMENT_LEVEL(null),
-    REFERENCE_LEVEL(null),
+    ALLOCATION_LEVEL(null),
     CALL_LEVEL(null),
+    DEREFERENCE_LEVEL(null),
     LITERAL_LEVEL(null),
     ATOM_LEVEL(null),
     ;
