@@ -257,8 +257,6 @@ class LocalCallConventionTest {
                     jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result out"))) }
             }
 
-        cfgFragmentToGraphviz(actualFragment)
-        cfgFragmentToGraphviz(expectedFragment)
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 

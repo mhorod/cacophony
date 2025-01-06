@@ -122,6 +122,8 @@ sealed interface CFGNode {
         override operator fun unaryMinus(): ConstantLazy = ConstantLazy { -value }
     }
 
+    class DataLabel(val dataLabel: String) : Value
+
     sealed interface ArithmeticOperator : Value
 
     sealed interface ArithmeticAssignmentOperator : ArithmeticOperator

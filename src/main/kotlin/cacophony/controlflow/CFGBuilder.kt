@@ -32,6 +32,8 @@ class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
 
     fun readRegister(name: String) = registerUse(virtualRegister(name), false)
 
+    fun dataLabel(name: String) = cacophony.controlflow.dataLabel(name)
+
     infix fun String.does(vertex: CFGVertex) {
         vertices[getLabel(this)] = vertex
     }

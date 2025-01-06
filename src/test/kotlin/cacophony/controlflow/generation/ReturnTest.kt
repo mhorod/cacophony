@@ -40,7 +40,7 @@ class ReturnTest {
             singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("condition") {
-                        cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
+                        writeRegister(virtualRegister("x"), integer(0))
                     }
                 "condition" does
                     conditional("true branch", "return from loop") {
@@ -52,7 +52,7 @@ class ReturnTest {
                     }
                 "return from loop" does
                     jump("bodyExit") {
-                        cacophony.controlflow.writeRegister(getResultRegister(), integer(0))
+                        writeRegister(getResultRegister(), integer(0))
                     }
             }
 
@@ -93,7 +93,7 @@ class ReturnTest {
             singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does
                     jump("loop condition") {
-                        cacophony.controlflow.writeRegister(virtualRegister("x"), integer(0))
+                        writeRegister(virtualRegister("x"), integer(0))
                     }
                 "loop condition" does
                     conditional("increment x", "exitWhile") {
@@ -107,8 +107,8 @@ class ReturnTest {
                     conditional("return from loop", "loop condition") {
                         (readRegister("x") mod integer(5)) eq integer(0)
                     }
-                "exitWhile" does jump("bodyExit") { cacophony.controlflow.writeRegister(getResultRegister(), integer(0)) }
-                "return from loop" does jump("bodyExit") { cacophony.controlflow.writeRegister(getResultRegister(), integer(0)) }
+                "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), integer(0)) }
+                "return from loop" does jump("bodyExit") { writeRegister(getResultRegister(), integer(0)) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
