@@ -39,7 +39,7 @@ internal class OperatorHandler(
                 is EvalMode.SideEffect -> CFGNode.NoOp
                 is EvalMode.Value -> makeOperatorNode(expression, lhsAccess.access, rhsAccess.access)
             }
-        return join(safeLhs, rhsCFG, access)
+        return join(safeLhs, rhsCFG, access, lhsAccess.holdsReference || rhsAccess.holdsReference)
     }
 
     private fun makeOperatorNode(op: OperatorBinary, lhs: CFGNode, rhs: CFGNode): CFGNode =
@@ -63,7 +63,7 @@ internal class OperatorHandler(
     /**
      * Joins `lhs` and `rhs` into one sequence of vertices with the provided `access` as the result value computation
      */
-    private fun join(lhs: SubCFG, rhs: SubCFG, access: CFGNode): SubCFG {
+    private fun join(lhs: SubCFG, rhs: SubCFG, access: CFGNode, holdsReference: Boolean): SubCFG {
         val (entry, exit) =
             when {
                 lhs is SubCFG.Extracted && rhs is SubCFG.Extracted -> {
@@ -75,9 +75,9 @@ internal class OperatorHandler(
                 // and the other one is computed immediately when computing the result
                 lhs is SubCFG.Extracted -> Pair(lhs.entry, lhs.exit)
                 rhs is SubCFG.Extracted -> Pair(rhs.entry, rhs.exit)
-                else -> return SubCFG.Immediate(access)
+                else -> return SubCFG.Immediate(access, holdsReference)
             }
-        return SubCFG.Extracted(entry, exit, access)
+        return SubCFG.Extracted(entry, exit, access, holdsReference)
     }
 
     private fun makeAssignOperatorNode(
@@ -111,11 +111,11 @@ internal class OperatorHandler(
         require(lhsAccess.access is CFGNode.LValue)
         val operatorNode = makeAssignOperatorNode(expression, lhsAccess.access, rhsAccess.access)
         return when (rhs) {
-            is SubCFG.Immediate -> SubCFG.Immediate(operatorNode)
+            is SubCFG.Immediate -> SubCFG.Immediate(operatorNode, lhsAccess.holdsReference)
             is SubCFG.Extracted -> {
                 val assignmentVertex = cfg.addUnconditionalVertex(operatorNode)
                 rhs.exit.connect(assignmentVertex.label)
-                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(SimpleLayout(lhsAccess.access, false), mode))
+                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(SimpleLayout(lhsAccess.access, lhsAccess.holdsReference), mode))
             }
         }
     }
@@ -147,7 +147,7 @@ internal class OperatorHandler(
                     }
                 conditionVertex.connectTrue(mode.trueEntry.label)
                 conditionVertex.connectFalse(mode.falseEntry.label)
-                SubCFG.Extracted(entry, mode.exit, CFGNode.NoOp)
+                SubCFG.Extracted(entry, mode.exit, CFGNode.NoOp, false)
             }
 
             else -> valueCFG
@@ -163,7 +163,7 @@ internal class OperatorHandler(
 
                 val innerMode = EvalMode.Conditional(mode.trueEntry, rhs.entry, mode.exit)
                 val lhs = cfgGenerator.visitExtracted(expression.lhs, innerMode, context)
-                SubCFG.Extracted(lhs.entry, mode.exit, CFGNode.NoOp)
+                SubCFG.Extracted(lhs.entry, mode.exit, CFGNode.NoOp, false)
             }
 
             is EvalMode.Value -> {
@@ -181,7 +181,7 @@ internal class OperatorHandler(
 
                 val innerMode = EvalMode.Conditional(writeTrue, extendedRhs.entry, exit)
                 val lhs = cfgGenerator.visitExtracted(expression.lhs, innerMode, context)
-                SubCFG.Extracted(lhs.entry, exit, access)
+                SubCFG.Extracted(lhs.entry, exit, access, false)
             }
 
             is EvalMode.SideEffect -> {
@@ -193,7 +193,7 @@ internal class OperatorHandler(
 
                 val innerMode = EvalMode.Conditional(exit, rhs.entry, exit)
                 val lhs = cfgGenerator.visitExtracted(expression.lhs, innerMode, context)
-                SubCFG.Extracted(lhs.entry, exit, CFGNode.NoOp)
+                SubCFG.Extracted(lhs.entry, exit, CFGNode.NoOp, false)
             }
         }
     }
@@ -207,7 +207,7 @@ internal class OperatorHandler(
 
                 val innerMode = EvalMode.Conditional(rhs.entry, mode.falseEntry, mode.exit)
                 val lhs = cfgGenerator.visitExtracted(expression.lhs, innerMode, context)
-                SubCFG.Extracted(lhs.entry, mode.exit, CFGNode.NoOp)
+                SubCFG.Extracted(lhs.entry, mode.exit, CFGNode.NoOp, false)
             }
 
             is EvalMode.Value -> {
@@ -225,7 +225,7 @@ internal class OperatorHandler(
 
                 val innerMode = EvalMode.Conditional(extendedRhs.entry, writeFalse, exit)
                 val lhs = cfgGenerator.visitExtracted(expression.lhs, innerMode, context)
-                SubCFG.Extracted(lhs.entry, exit, access)
+                SubCFG.Extracted(lhs.entry, exit, access, false)
             }
 
             is EvalMode.SideEffect -> {
@@ -237,7 +237,7 @@ internal class OperatorHandler(
 
                 val innerMode = EvalMode.Conditional(rhs.entry, exit, exit)
                 val lhs = cfgGenerator.visitExtracted(expression.lhs, innerMode, context)
-                SubCFG.Extracted(lhs.entry, exit, CFGNode.NoOp)
+                SubCFG.Extracted(lhs.entry, exit, CFGNode.NoOp, false)
             }
         }
     }
@@ -252,12 +252,13 @@ internal class OperatorHandler(
                 // by type checking
                 require(expressionAccess is SimpleLayout)
                 when (expressionCFG) {
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionAccess.access))
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.Minus(expressionAccess.access), false)
                     is SubCFG.Extracted ->
                         SubCFG.Extracted(
                             expressionCFG.entry,
                             expressionCFG.exit,
                             CFGNode.Minus(expressionAccess.access),
+                            false,
                         )
                 }
             }
@@ -279,12 +280,13 @@ internal class OperatorHandler(
                 // by type checking
                 require(expressionAccess is SimpleLayout)
                 when (expressionCFG) {
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.LogicalNot(expressionAccess.access))
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.LogicalNot(expressionAccess.access), false)
                     is SubCFG.Extracted ->
                         SubCFG.Extracted(
                             expressionCFG.entry,
                             expressionCFG.exit,
                             CFGNode.LogicalNot(expressionAccess.access),
+                            false,
                         )
                 }
             }
