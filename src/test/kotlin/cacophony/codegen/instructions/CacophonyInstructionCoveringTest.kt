@@ -7,7 +7,6 @@ import cacophony.codegen.patterns.Pattern
 import cacophony.codegen.patterns.ValuePattern
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.ValueLabel
-import cacophony.controlflow.generation.analyzeCFGReferences
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -67,7 +66,6 @@ class CacophonyInstructionCoveringTest {
         every { node2.children() } returns emptyList()
         every { node3.children() } returns listOf(node4)
         every { node4.children() } returns emptyList()
-
 
         val instr1 = mockk<Instruction>()
         val match1 = Match({ _ -> listOf(instr1) }, mapOf(ValueLabel() to node2, ValueLabel() to node3), 1, mockedValuePattern)

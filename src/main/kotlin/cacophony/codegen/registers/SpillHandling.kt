@@ -161,7 +161,6 @@ private fun colorSpills(
     if (!spillsColoring.keys.containsAll(spills)) {
         throw SpillHandlingException("Coloring spills for memory optimization failed.")
     }
-    
     if (mutableMapOf<Int, MutableSet<VirtualRegister>>().apply {
             spillsColoring.forEach { (reg, color) ->
                 getOrPut(color) { mutableSetOf() }.add(reg)

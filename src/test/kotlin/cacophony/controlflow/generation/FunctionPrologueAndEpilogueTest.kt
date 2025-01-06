@@ -65,7 +65,6 @@ class FunctionPrologueAndEpilogueTest {
                 teardownStackFrame("teardown", "exit")
                 "exit" does final { returnNode(1) }
             }
-            
         assertEquivalent(actualCFG, expectedCFG)
     }
 

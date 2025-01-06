@@ -3,12 +3,10 @@ package cacophony.codegen.instructions
 import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.matching.InstructionMatcher
 import cacophony.codegen.instructions.matching.Match
-import cacophony.codegen.patterns.ValuePattern
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.Register
 import cacophony.controlflow.generation.CFGReferenceAnalysis
 import cacophony.controlflow.generation.analyzeCFGReferences
-import cacophony.grammars.produces
 
 class CacophonyInstructionCovering(private val instructionMatcher: InstructionMatcher) : InstructionCovering {
     private fun coverGivenMatch(match: Match, referenceAnalysis: CFGReferenceAnalysis): List<Instruction> {
@@ -35,7 +33,11 @@ class CacophonyInstructionCovering(private val instructionMatcher: InstructionMa
         return coverGivenMatch(bestMatch, referenceAnalysis)
     }
 
-    private fun coverWithInstructionsForValue(node: CFGNode, referenceAnalysis: CFGReferenceAnalysis, register: Register.VirtualRegister): List<Instruction> {
+    private fun coverWithInstructionsForValue(
+        node: CFGNode,
+        referenceAnalysis: CFGReferenceAnalysis,
+        register: Register.VirtualRegister,
+    ): List<Instruction> {
         val matches = instructionMatcher.findMatchesForValue(node, register)
         return coverGivenMatches(node, matches, referenceAnalysis)
     }

@@ -35,7 +35,13 @@ fun generateCallFrom(
                 throw IllegalArgumentException("Wrong result layout")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
-            generateCall(function, functionHandler.getFunctionDeclaration().arguments.map { it.type },arguments + listOf(staticLinkVar), result, callerFunction.getStackSpace())
+            generateCall(
+                function,
+                functionHandler.getFunctionDeclaration().arguments.map { it.type },
+                arguments + listOf(staticLinkVar),
+                result,
+                callerFunction.getStackSpace(),
+            )
         }
     }
 
@@ -112,7 +118,12 @@ fun generateCall(
         val stackResults = results.drop(registerResults.size)
 
         for ((accessInfo, register) in registerResults) {
-            nodes.add(CFGNode.Assignment(accessInfo.access as CFGNode.LValue, CFGNode.RegisterUse(Register.FixedRegister(register), accessInfo.holdsReference)))
+            nodes.add(
+                CFGNode.Assignment(
+                    accessInfo.access as CFGNode.LValue,
+                    CFGNode.RegisterUse(Register.FixedRegister(register), accessInfo.holdsReference),
+                ),
+            )
         }
 
         if (stackResults.isNotEmpty()) {

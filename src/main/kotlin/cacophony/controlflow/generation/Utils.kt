@@ -15,8 +15,13 @@ internal fun noOpOrUnit(mode: EvalMode): Layout = noOpOr(SimpleLayout(CFGNode.UN
 
 fun generateLayoutOfVirtualRegisters(layout: Layout): Layout =
     when (layout) {
-        is SimpleLayout -> SimpleLayout(CFGNode.RegisterUse(Register.VirtualRegister(layout.holdsReference), layout.holdsReference), layout.holdsReference)
-        is StructLayout -> StructLayout(layout.fields.mapValues { (_, subLayout) -> generateLayoutOfVirtualRegisters(subLayout) })
+        is SimpleLayout ->
+            SimpleLayout(
+                CFGNode.RegisterUse(Register.VirtualRegister(layout.holdsReference), layout.holdsReference),
+                layout.holdsReference,
+            )
+        is StructLayout ->
+            StructLayout(layout.fields.mapValues { (_, subLayout) -> generateLayoutOfVirtualRegisters(subLayout) })
     }
 
 fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
