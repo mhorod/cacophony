@@ -26,13 +26,13 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
                     require(variableLayout.access is CFGNode.LValue)
                     val source = valueCFG.access
                     require(source is SimpleLayout)
-                    SubCFG.Immediate(SimpleLayout(CFGNode.Assignment(variableLayout.access, source.access)))
+                    SubCFG.Immediate(SimpleLayout(CFGNode.Assignment(variableLayout.access, source.access), variableLayout.holdsReference))
                 } else {
                     val assignment =
                         cfgGenerator.assignLayoutWithValue(
                             valueCFG.access,
                             variableLayout,
-                            noOpOr(if (propagate) variableLayout else SimpleLayout(CFGNode.UNIT), mode),
+                            noOpOr(if (propagate) variableLayout else SimpleLayout(CFGNode.UNIT, false), mode),
                         )
                     cfgGenerator.ensureExtracted(valueCFG, EvalMode.SideEffect) merge assignment
                 }
@@ -42,7 +42,7 @@ internal class AssignmentHandler(private val cfgGenerator: CFGGenerator) {
                     cfgGenerator.assignLayoutWithValue(
                         valueCFG.access,
                         variableLayout,
-                        noOpOr(if (propagate) variableLayout else SimpleLayout(CFGNode.UNIT), mode),
+                        noOpOr(if (propagate) variableLayout else SimpleLayout(CFGNode.UNIT, false), mode),
                     )
                 valueCFG merge assignment
             }

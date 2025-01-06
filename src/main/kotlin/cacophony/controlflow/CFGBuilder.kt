@@ -26,11 +26,11 @@ class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
 
     fun writeRegister(name: String, node: CFGNode) = writeRegister(virtualRegister(name), node)
 
-    fun writeRegister(register: Register, name: String) = writeRegister(register, registerUse(virtualRegister(name)))
+    fun writeRegister(register: Register, name: String) = writeRegister(register, registerUse(virtualRegister(name), false))
 
-    fun pushRegister(name: String) = pushRegister(virtualRegister(name))
+    fun pushRegister(name: String) = pushRegister(virtualRegister(name), false)
 
-    fun readRegister(name: String) = registerUse(virtualRegister(name))
+    fun readRegister(name: String) = registerUse(virtualRegister(name), false)
 
     infix fun String.does(vertex: CFGVertex) {
         vertices[getLabel(this)] = vertex

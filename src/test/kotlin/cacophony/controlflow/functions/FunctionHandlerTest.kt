@@ -637,6 +637,7 @@ class FunctionHandlerTest {
             verify {
                 generateCall(
                     any(),
+                    any(),
                     match {
                         if (it.size != 1) false
                         else {

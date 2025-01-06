@@ -227,7 +227,7 @@ internal class CFGGenerator(
                     getCurrentFunctionHandler(),
                     function,
                     functionHandler,
-                    argumentVertices.flatMap { it.access.flatten() },
+                    argumentVertices.flatMap { it.access.flatten() }.map { it.access },
                     resultLayout,
                 ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)
@@ -249,7 +249,7 @@ internal class CFGGenerator(
             conditionVertex.connectTrue(mode.trueEntry.label)
             conditionVertex.connectFalse(mode.falseEntry.label)
             SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
-        } else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp))
+        } else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp, false))
     }
 
     private fun visitLiteral(literal: Literal, mode: EvalMode): SubCFG =
@@ -362,7 +362,7 @@ internal class CFGGenerator(
     private fun visitReturnStatement(expression: Statement.ReturnStatement, mode: EvalMode, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
-            assignLayoutWithValue(valueCFG.access, getCurrentFunctionHandler().getResultLayout(), SimpleLayout(CFGNode.NoOp))
+            assignLayoutWithValue(valueCFG.access, getCurrentFunctionHandler().getResultLayout(), SimpleLayout(CFGNode.NoOp, false))
 
         resultAssignment.exit.connect(epilogue.entry.label)
 

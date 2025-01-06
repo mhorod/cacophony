@@ -2,7 +2,7 @@ package cacophony.controlflow
 
 sealed class Register {
     class VirtualRegister(
-        val holdsReference: Boolean = false,
+        var holdsReference: Boolean = false,
     ) : Register() {
         private val myNumber = number++
 

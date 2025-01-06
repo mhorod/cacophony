@@ -115,7 +115,7 @@ internal class OperatorHandler(
             is SubCFG.Extracted -> {
                 val assignmentVertex = cfg.addUnconditionalVertex(operatorNode)
                 rhs.exit.connect(assignmentVertex.label)
-                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(SimpleLayout(lhsAccess.access), mode))
+                SubCFG.Extracted(rhs.entry, assignmentVertex, noOpOr(SimpleLayout(lhsAccess.access, false), mode))
             }
         }
     }
@@ -172,11 +172,11 @@ internal class OperatorHandler(
 
                 val exit = cfg.addUnconditionalVertex(CFGNode.NoOp)
 
-                val access = CFGNode.RegisterUse(Register.VirtualRegister())
+                val access = CFGNode.RegisterUse(Register.VirtualRegister(), false)
                 val writeTrue = cfg.addUnconditionalVertex(CFGNode.Assignment(access, CFGNode.TRUE))
                 writeTrue.connect(exit.label)
 
-                val extendedRhs = cfgGenerator.extendWithAssignment(rhs, SimpleLayout(access), EvalMode.Value)
+                val extendedRhs = cfgGenerator.extendWithAssignment(rhs, SimpleLayout(access, false), EvalMode.Value)
                 extendedRhs.exit.connect(exit.label)
 
                 val innerMode = EvalMode.Conditional(writeTrue, extendedRhs.entry, exit)
@@ -216,11 +216,11 @@ internal class OperatorHandler(
 
                 val exit = cfg.addUnconditionalVertex(CFGNode.NoOp)
 
-                val access = CFGNode.RegisterUse(Register.VirtualRegister())
+                val access = CFGNode.RegisterUse(Register.VirtualRegister(), false)
                 val writeFalse = cfg.addUnconditionalVertex(CFGNode.Assignment(access, CFGNode.FALSE))
                 writeFalse.connect(exit.label)
 
-                val extendedRhs = cfgGenerator.extendWithAssignment(rhs, SimpleLayout(access), EvalMode.Value)
+                val extendedRhs = cfgGenerator.extendWithAssignment(rhs, SimpleLayout(access, false), EvalMode.Value)
                 extendedRhs.exit.connect(exit.label)
 
                 val innerMode = EvalMode.Conditional(extendedRhs.entry, writeFalse, exit)

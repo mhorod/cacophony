@@ -61,7 +61,7 @@ fun adjustLoweredCFGToHandleSpills(
     fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
         instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
-                CFGNode.RegisterUse(reg),
+                CFGNode.RegisterUse(reg, spill.holdsReference),
                 spillsFrameAllocation[spill]!!,
             ),
         )
@@ -70,7 +70,7 @@ fun adjustLoweredCFGToHandleSpills(
         instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
                 spillsFrameAllocation[spill]!!,
-                CFGNode.RegisterUse(reg),
+                CFGNode.RegisterUse(reg, spill.holdsReference),
             ),
         )
 
@@ -161,7 +161,7 @@ private fun colorSpills(
     if (!spillsColoring.keys.containsAll(spills)) {
         throw SpillHandlingException("Coloring spills for memory optimization failed.")
     }
-
+    
     if (mutableMapOf<Int, MutableSet<VirtualRegister>>().apply {
             spillsColoring.forEach { (reg, color) ->
                 getOrPut(color) { mutableSetOf() }.add(reg)

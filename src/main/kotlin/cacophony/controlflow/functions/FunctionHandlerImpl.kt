@@ -44,9 +44,10 @@ class FunctionHandlerImpl(
         registerVariableAllocation(variable, VariableAllocation.OnStack(stackSpace))
         return MemoryAccess(
             CFGNode.Subtraction(
-                RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+                RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false),
                 CFGNode.ConstantKnown(currentStackSpace),
             ),
+            variable.holdsReference,
         )
     }
 
@@ -85,9 +86,9 @@ class FunctionHandlerImpl(
 
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {
-            RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
+            RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false)
         } else {
-            MemoryAccess(traverseStaticLink(depth - 1))
+            MemoryAccess(traverseStaticLink(depth - 1), false)
         }
 
     override fun generateAccessToFramePointer(other: FunctionDefinition): CFGNode =
@@ -103,14 +104,14 @@ class FunctionHandlerImpl(
         // Since staticLink is not property of node itself, but rather of its children,
         // if caller is immediate parent, we have to fetch RBP instead.
         if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
-            RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
+            RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false)
         } else {
             callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
         }
 
     override fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
         if (variable in variableAllocation) { // WARN: hack to handle arguments not used inside function
-            return wrapAllocation(variableAllocation[variable]!!)
+            return wrapAllocation(variableAllocation[variable]!!, variable.holdsReference)
         }
         val analyzedVariable = analyzedFunction.variables.find { it.origin == variable }
         val definedInFunctionHandler =
@@ -128,7 +129,7 @@ class FunctionHandlerImpl(
 
         return when (val variableAllocation = definedInFunctionHandler.getVariableAllocation(variable)) {
             is VariableAllocation.InRegister -> {
-                RegisterUse(variableAllocation.register)
+                RegisterUse(variableAllocation.register, variable.holdsReference)
             }
 
             is VariableAllocation.OnStack -> {
@@ -137,6 +138,7 @@ class FunctionHandlerImpl(
                         generateAccessToFramePointer(definedInDeclaration),
                         CFGNode.ConstantKnown(variableAllocation.offset),
                     ),
+                    variable.holdsReference,
                 )
             }
         }
@@ -188,9 +190,10 @@ class FunctionHandlerImpl(
         return referenceOffsets.map {
             MemoryAccess(
                 CFGNode.Subtraction(
-                    RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+                    RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false),
                     CFGNode.ConstantKnown(it),
                 ),
+                true,
             )
         }.toList()
     }

@@ -13,7 +13,7 @@ internal sealed interface SubCFG {
      * Indicates that no control flow vertex was created during expression translation
      */
     data class Immediate(override val access: Layout) : SubCFG {
-        constructor(access: CFGNode) : this(SimpleLayout(access))
+        constructor(access: CFGNode) : this(SimpleLayout(access, false))
     }
 
     /**
@@ -31,7 +31,7 @@ internal sealed interface SubCFG {
             entry: GeneralCFGVertex,
             exit: GeneralCFGVertex.UnconditionalVertex,
             access: CFGNode,
-        ) : this(entry, exit, SimpleLayout(access))
+        ) : this(entry, exit, SimpleLayout(access, false))
 
         infix fun merge(rhs: Extracted): Extracted {
             exit.connect(rhs.entry.label)

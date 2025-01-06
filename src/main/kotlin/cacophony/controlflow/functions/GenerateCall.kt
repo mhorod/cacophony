@@ -24,7 +24,7 @@ fun generateCallFrom(
             if (result != null && !layoutMatchesType(result, function.type.returnType)) {
                 throw IllegalArgumentException("Wrong result layout")
             }
-            generateCall(function, arguments, result, callerFunction.getStackSpace())
+            generateCall(function, function.type.argumentsType, arguments, result, callerFunction.getStackSpace())
         }
 
         is Definition.FunctionDefinition -> {
@@ -35,7 +35,7 @@ fun generateCallFrom(
                 throw IllegalArgumentException("Wrong result layout")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
-            generateCall(function, arguments + listOf(staticLinkVar), result, callerFunction.getStackSpace())
+            generateCall(function, functionHandler.getFunctionDeclaration().arguments.map { it.type },arguments + listOf(staticLinkVar), result, callerFunction.getStackSpace())
         }
     }
 
@@ -43,14 +43,15 @@ private fun layoutMatchesType(layout: Layout, type: Type): Boolean = layout.matc
 
 fun generateCall(
     function: Definition.FunctionDeclaration,
+    argTypes: List<Type>,
     arguments: List<CFGNode>,
     result: Layout?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
-    val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     // Argument past standard arguments are assumed to not be references to heap (i.e. static link).
-    val argTypes = function.type!!.argumentsType.flatMap { it.flatten() }
     val isReference = argTypes.map { it is BaseType.Referential } + List(arguments.size - argTypes.size) { false }
+
+    val registerArguments = arguments.zip(isReference).zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.zip(isReference).drop(registerArguments.size).map { Pair(it.first, Register.VirtualRegister(it.second)) }
     val resultSize = function.returnType.size()
 
@@ -69,22 +70,22 @@ fun generateCall(
 
     val alignmentShift = CFGNode.ConstantLazy { (callerFunctionStackSize.value + stackShift) % 16 }
 
-    val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))
+    val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP), false)
     nodes.add(CFGNode.SubtractionAssignment(rsp, alignmentShift))
 
     if (stackResultsSize > 0) nodes.add(CFGNode.SubtractionAssignment(rsp, CFGNode.ConstantKnown(8 * stackResultsSize)))
 
     // in what order should we evaluate arguments? gcc uses reversed order
     for ((argument, register) in registerArguments) {
-        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(register)), argument))
+        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(register), argument.second), argument.first))
     }
     for ((argument, register) in stackArguments) {
-        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(register), argument))
+        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(register, register.holdsReference), argument))
     }
 
     // is this indirection necessary?
     for ((_, register) in stackArguments.reversed()) {
-        nodes.add(CFGNode.Push(CFGNode.RegisterUse(register)))
+        nodes.add(CFGNode.Push(CFGNode.RegisterUse(register, register.holdsReference)))
     }
 
     nodes.add(CFGNode.Call(function))
@@ -110,15 +111,15 @@ fun generateCall(
         val registerResults = results.zip(REGISTER_RETURN_ORDER)
         val stackResults = results.drop(registerResults.size)
 
-        for ((access, register) in registerResults) {
-            nodes.add(CFGNode.Assignment(access as CFGNode.LValue, CFGNode.RegisterUse(Register.FixedRegister(register))))
+        for ((accessInfo, register) in registerResults) {
+            nodes.add(CFGNode.Assignment(accessInfo.access as CFGNode.LValue, CFGNode.RegisterUse(Register.FixedRegister(register), accessInfo.holdsReference)))
         }
 
         if (stackResults.isNotEmpty()) {
-            for (access in stackResults.reversed()) {
-                val tmpReg = Register.VirtualRegister()
-                nodes.add(CFGNode.Pop(registerUse(tmpReg)))
-                nodes.add(CFGNode.Assignment(access as CFGNode.LValue, registerUse(tmpReg)))
+            for (accessInfo in stackResults.reversed()) {
+                val tmpReg = Register.VirtualRegister(accessInfo.holdsReference)
+                nodes.add(CFGNode.Pop(registerUse(tmpReg, tmpReg.holdsReference)))
+                nodes.add(CFGNode.Assignment(accessInfo.access as CFGNode.LValue, registerUse(tmpReg, tmpReg.holdsReference)))
             }
             nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value }))
         }

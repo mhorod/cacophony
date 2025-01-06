@@ -56,6 +56,7 @@ class GenerateCallKtTest {
         verify {
             generateCall(
                 any(),
+                any(),
                 match {
                     if (it.size != 1) false
                     else {
@@ -127,6 +128,7 @@ class GenerateCallKtTest {
     private fun getCallNodes(argumentCount: Int, result: Layout?): List<CFGNode> =
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
+            List(argumentCount) { mockk<BaseType>() },
             (1..argumentCount + 1).map { mockk() },
             result,
             CFGNode.ConstantKnown(0),
@@ -257,6 +259,7 @@ class GenerateCallKtTest {
                 function,
                 any(),
                 any(),
+                any(),
                 match { matchStackSpaceToHandler(it, caller) },
             )
         }
@@ -288,6 +291,7 @@ class GenerateCallKtTest {
         val nodes =
             generateCall(
                 funDef,
+                List(argCount) { mockk<BaseType>() },
                 (1..argCount + 1).map { mockk() },
                 null,
                 CFGNode.ConstantKnown(0),

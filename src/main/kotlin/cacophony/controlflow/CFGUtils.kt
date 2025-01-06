@@ -27,9 +27,9 @@ fun returnNode(resultSize: Int) = CFGNode.Return(CFGNode.ConstantKnown(resultSiz
 
 fun integer(value: Int) = CFGNode.ConstantKnown(value)
 
-fun registerUse(register: Register) = CFGNode.RegisterUse(register)
+fun registerUse(register: Register, holdsReference: Boolean = false) = CFGNode.RegisterUse(register, holdsReference)
 
-fun memoryAccess(at: CFGNode) = CFGNode.MemoryAccess(at)
+fun memoryAccess(at: CFGNode, holdsReference: Boolean = false) = CFGNode.MemoryAccess(at, holdsReference)
 
 // arithmetic
 infix fun CFGNode.add(other: CFGNode) = CFGNode.Addition(this, other)
@@ -58,9 +58,9 @@ infix fun CFGNode.LValue.diveq(other: CFGNode) = CFGNode.DivisionAssignment(this
 infix fun CFGNode.LValue.modeq(other: CFGNode) = CFGNode.ModuloAssignment(this, other)
 
 // stack
-fun pushRegister(register: Register) = CFGNode.Push(CFGNode.RegisterUse(register))
+fun pushRegister(register: Register, holdsReference: Boolean) = CFGNode.Push(CFGNode.RegisterUse(register, holdsReference))
 
-fun popRegister(register: Register) = CFGNode.Pop(CFGNode.RegisterUse(register))
+fun popRegister(register: Register, holdsReference: Boolean) = CFGNode.Pop(CFGNode.RegisterUse(register, holdsReference))
 
 fun call(function: Definition.FunctionDeclaration) = CFGNode.Call(function)
 
@@ -79,10 +79,10 @@ infix fun CFGNode.geq(other: CFGNode) = CFGNode.GreaterEqual(this, other)
 
 fun not(node: CFGNode) = CFGNode.LogicalNot(node)
 
-fun writeRegister(register: Register, value: CFGNode) = CFGNode.Assignment(registerUse(register), value)
+fun writeRegister(register: Register, value: CFGNode) = CFGNode.Assignment(registerUse(register, false), value)
 
-fun wrapAllocation(allocation: VariableAllocation): CFGNode.LValue =
+fun wrapAllocation(allocation: VariableAllocation, holdsReference: Boolean): CFGNode.LValue =
     when (allocation) {
-        is VariableAllocation.InRegister -> registerUse(allocation.register)
-        is VariableAllocation.OnStack -> memoryAccess(registerUse(rbp) sub integer(allocation.offset))
+        is VariableAllocation.InRegister -> registerUse(allocation.register, holdsReference)
+        is VariableAllocation.OnStack -> memoryAccess(registerUse(rbp, false) sub integer(allocation.offset), holdsReference)
     }
