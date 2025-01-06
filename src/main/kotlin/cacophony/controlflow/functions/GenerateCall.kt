@@ -5,7 +5,6 @@ import cacophony.controlflow.generation.Layout
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type
-import cacophony.semantic.types.ReferentialType
 
 /**
  * Wrapper for generateCall that additionally fills staticLink to parent function.

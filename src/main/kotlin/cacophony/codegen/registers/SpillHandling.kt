@@ -12,7 +12,6 @@ import cacophony.controlflow.Register.FixedRegister
 import cacophony.controlflow.Register.VirtualRegister
 import cacophony.controlflow.Variable
 import cacophony.controlflow.functions.FunctionHandler
-import cacophony.controlflow.generation.CFG
 import cacophony.graphs.GraphColoring
 
 class SpillHandlingException(reason: String) : Exception(reason)
@@ -168,10 +167,10 @@ private fun colorSpills(
                 getOrPut(color) { mutableSetOf() }.add(reg)
             }
         }.any {
-            it.value.any {reg -> reg.holdsReference} &&
-            it.value.any {reg -> !reg.holdsReference}
+            it.value.any { reg -> reg.holdsReference } &&
+                it.value.any { reg -> !reg.holdsReference }
         }
-        ) {
+    ) {
         throw SpillHandlingException("Same color assigned to register with and without reference")
     }
 
@@ -182,12 +181,13 @@ private fun allocateFrameMemoryForSpills(
     functionHandler: FunctionHandler,
     spillsColoring: Map<VirtualRegister, Int>,
 ): Map<VirtualRegister, CFGNode.LValue> {
-    val colorToFrameMemory = mutableMapOf<Int, CFGNode.LValue>().apply {
-        spillsColoring.forEach { (reg, color) ->
-            if (get(color) == null) {
-                put(color, functionHandler.allocateFrameVariable(Variable.PrimitiveVariable(reg.holdsReference)))
+    val colorToFrameMemory =
+        mutableMapOf<Int, CFGNode.LValue>().apply {
+            spillsColoring.forEach { (reg, color) ->
+                if (get(color) == null) {
+                    put(color, functionHandler.allocateFrameVariable(Variable.PrimitiveVariable(reg.holdsReference)))
+                }
             }
         }
-    }
     return spillsColoring.mapValues { (_, c) -> colorToFrameMemory[c]!! }.toMap()
 }

@@ -28,10 +28,7 @@ data class RegistersInteraction(
  * @throws IllegalArgumentException if
  * - Provided loweredCfgFragment contains an empty block (without any instructions).
  */
-fun analyzeRegistersInteraction(
-    loweredCfgFragment: LoweredCFGFragment,
-    preservedRegisters: List<HardwareRegister>
-): RegistersInteraction =
+fun analyzeRegistersInteraction(loweredCfgFragment: LoweredCFGFragment, preservedRegisters: List<HardwareRegister>): RegistersInteraction =
     RegistersInteractionAnalysis(loweredCfgFragment, preservedRegisters).analyze()
 
 private class RegistersInteractionAnalysis(
@@ -78,7 +75,9 @@ private class RegistersInteractionAnalysis(
                 }.associate { it.first to it.second.toSet() }
 
         allInstructions = nextInstructions.keys
-        allRegisters = allInstructions.flatMap { it.registersRead union it.registersWritten }.toSet() union preservedRegisters.map { Register.FixedRegister(it) }
+        allRegisters = allInstructions.flatMap {
+            it.registersRead union it.registersWritten
+        }.toSet() union preservedRegisters.map { Register.FixedRegister(it) }
     }
 
     private fun calculateLiveness() {
@@ -178,7 +177,7 @@ private class RegistersInteractionAnalysis(
             }
         }
 
-        allRegisters.filter { it is Register.VirtualRegister && it.holdsReference }.forEach {reg ->
+        allRegisters.filter { it is Register.VirtualRegister && it.holdsReference }.forEach { reg ->
             preservedRegisters.forEach { preservedReg ->
                 interference[reg]!!.add(Register.FixedRegister(preservedReg))
                 interference[Register.FixedRegister(preservedReg)]!!.add(reg)
