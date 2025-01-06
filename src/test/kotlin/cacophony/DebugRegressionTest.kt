@@ -1,5 +1,6 @@
 package cacophony
 
+import cacophony.controlflow.functions.SimpleCallGenerator
 import cacophony.utils.StringInput
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -158,7 +159,7 @@ class DebugRegressionTest {
     @Test
     fun `simple function call does not cause spills`() {
         val ast =
-            testPipeline().generateAST(
+            testPipeline().generateAst(
                 StringInput(
                     """                
                     let f = [] -> Bool => true;
@@ -167,7 +168,11 @@ class DebugRegressionTest {
                 ),
             )
 
-        val registersInteractions = testPipeline().analyzeRegistersInteraction(ast)
+        val covering =
+            testPipeline().coverWithInstructions(
+                testPipeline().generateControlFlowGraph(testPipeline().analyzeAst(ast), SimpleCallGenerator()),
+            )
+        val registersInteractions = testPipeline().analyzeRegistersInteraction(covering)
         val allocation = testPipeline().allocateRegisters(registersInteractions)
 
         allocation.values.forEach {

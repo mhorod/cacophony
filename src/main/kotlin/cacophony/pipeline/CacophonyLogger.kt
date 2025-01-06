@@ -55,10 +55,17 @@ class CacophonyLogger(
         }
     }
 
+    private fun printError(message: String) {
+        val escape = "\u001B"
+        val boldRed = "$escape[1;31m"
+        val endBoldRed = "$escape[0m"
+        println("\n${boldRed}$message$endBoldRed")
+    }
+
     override fun logSuccessfulGrammarAnalysis(analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol>) =
         println("Grammar analysis successful :D")
 
-    override fun logFailedGrammarAnalysis() = println("Grammar analysis failed :(")
+    override fun logFailedGrammarAnalysis() = printError("Grammar analysis failed :(")
 
     override fun logSuccessfulLexing(tokens: List<Token<TokenCategorySpecific>>) {
         if (logParsing) {
@@ -66,7 +73,7 @@ class CacophonyLogger(
         }
     }
 
-    override fun logFailedLexing() = println("Lexing failed :(")
+    override fun logFailedLexing() = printError("Lexing failed :(")
 
     override fun logSuccessfulParsing(parseTree: ParseTree<CacophonyGrammarSymbol>) {
         if (logParsing) {
@@ -74,7 +81,7 @@ class CacophonyLogger(
         }
     }
 
-    override fun logFailedParsing() = println("Parsing failed :(")
+    override fun logFailedParsing() = printError("Parsing failed :(")
 
     override fun logSuccessfulAstGeneration(ast: AST) {
         if (logAST) {
@@ -82,7 +89,7 @@ class CacophonyLogger(
         }
     }
 
-    override fun logFailedAstGeneration() = println("AST generation failed :(")
+    override fun logFailedAstGeneration() = printError("AST generation failed :(")
 
     override fun logSuccessfulNameResolution(result: NameResolutionResult) {
         if (logNameRes) {
@@ -100,7 +107,7 @@ class CacophonyLogger(
             is ResolvedName.Function -> "Function ${resolvedName.def.toMap()}"
         }
 
-    override fun logFailedNameResolution() = println("Name resolution failed :(")
+    override fun logFailedNameResolution() = printError("Name resolution failed :(")
 
     override fun logSuccessfulOverloadResolution(result: ResolvedVariables) {
         if (logOverloads) {
@@ -108,7 +115,7 @@ class CacophonyLogger(
         }
     }
 
-    override fun logFailedOverloadResolution() = println("Overload resolution failed :(")
+    override fun logFailedOverloadResolution() = printError("Overload resolution failed :(")
 
     override fun logSuccessfulTypeChecking(result: TypeCheckingResult) {
         if (logTypes) {
@@ -116,7 +123,7 @@ class CacophonyLogger(
         }
     }
 
-    override fun logFailedTypeChecking() = println("Type checking failed :(")
+    override fun logFailedTypeChecking() = printError("Type checking failed :(")
 
     override fun logSuccessfulVariableCreation(variableMap: VariablesMap) {
         if (logVariables) {
@@ -146,7 +153,7 @@ class CacophonyLogger(
         }
     }
 
-    override fun logFailedCallGraphGeneration() = println("Call graph generation failed :(")
+    override fun logFailedCallGraphGeneration() = printError("Call graph generation failed :(")
 
     override fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult) {
         if (logFunctions) {
@@ -177,7 +184,7 @@ class CacophonyLogger(
         }
     }
 
-    override fun logFailedFunctionAnalysis() = println("Function analysis failed :(")
+    override fun logFailedFunctionAnalysis() = printError("Function analysis failed :(")
 
     override fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>) {
         if (logCFG) {
@@ -267,12 +274,18 @@ class CacophonyLogger(
         }
     }
 
+    override fun logSuccessfulPreambleGeneration(preamble: String) {
+        if (logAsm) {
+            logMaybeSave("Generated ASM preamble", preamble)
+        }
+    }
+
     override fun logSuccessfulAssembling(dest: Path) {
         println("Successfully saved compiled object in $dest")
     }
 
     override fun logFailedAssembling(status: Int) {
-        println("nasm failed with exit code: $status")
+        printError("nasm failed with exit code: $status")
     }
 
     override fun logSuccessfulLinking(dest: Path) {
@@ -280,7 +293,7 @@ class CacophonyLogger(
     }
 
     override fun logFailedLinking(status: Int) {
-        println("gcc failed with exit code: $status")
+        printError("gcc failed with exit code: $status")
     }
 
     private fun variableToString(variable: Variable): String =

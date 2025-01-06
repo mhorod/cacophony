@@ -66,10 +66,9 @@ class CacophonyPipeline(
         return x
     }
 
-    // run the full pipeline
-    fun process(input: Input): FunctionAnalysisResult = analyzeFunctions(input)
-
+    // SHARED
     private fun lex(input: Input): List<Token<TokenCategorySpecific>> {
+        println("Inside lex")
         val tokens =
             try {
                 assertEmptyDiagnosticsAfter { lexer.process(input, diagnostics) }
@@ -81,7 +80,9 @@ class CacophonyPipeline(
         return tokens
     }
 
+    // SHARED
     private fun parse(input: Input): ParseTree<CacophonyGrammarSymbol> {
+        println("Inside parse")
         val terminals = lex(input).map { token -> ParseTree.Leaf(CacophonyGrammarSymbol.fromLexerToken(token)) }
         val parseTree =
             try {
@@ -94,7 +95,9 @@ class CacophonyPipeline(
         return parseTree
     }
 
-    fun generateAST(input: Input): AST {
+    // SHARED
+    fun generateAst(input: Input): AST {
+        println("Inside generateAST")
         val parseTree = parse(input)
         val ast =
             try {
@@ -107,7 +110,9 @@ class CacophonyPipeline(
         return ast
     }
 
-    private fun resolveNames(ast: AST): NameResolutionResult {
+    // SHARED
+    fun resolveNames(ast: AST): NameResolutionResult {
+        println("Inside resolveNames")
         val result =
             try {
                 assertEmptyDiagnosticsAfter { resolveNames(ast, diagnostics) }
@@ -119,23 +124,23 @@ class CacophonyPipeline(
         return result
     }
 
-    private fun findForeignFunctions(nr: NameResolutionResult): Set<Definition.ForeignFunctionDeclaration> =
-        nr.values
+    // NOT IN TESTS
+    private fun findForeignFunctions(nr: NameResolutionResult): Set<Definition.ForeignFunctionDeclaration> {
+        println("find Foreign Functions")
+        return nr.values
             .filterIsInstance<ResolvedName.Function>()
             .flatMap {
                 it.def.toMap().values
             }.filterIsInstance<Definition.ForeignFunctionDeclaration>()
             .toSet()
-
-    fun resolveOverloads(ast: AST): ResolvedVariables {
-        val nr = resolveNames(ast)
-        return resolveOverloads(ast, nr)
     }
 
-    private fun resolveOverloads(ast: AST, nr: NameResolutionResult): ResolvedVariables {
+    // SHARED
+    fun resolveOverloads(ast: AST, nr: NameResolutionResult): ResolvedVariables {
+        println("resolve Overloads 2")
         val result =
             try {
-                assertEmptyDiagnosticsAfter { resolveOverloads(ast, diagnostics, nr) }
+                assertEmptyDiagnosticsAfter { resolveOverloads(ast, nr, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedOverloadResolution()
                 throw e
@@ -145,6 +150,7 @@ class CacophonyPipeline(
     }
 
     fun checkTypes(ast: AST, resolvedVariables: ResolvedVariables): TypeCheckingResult {
+        println("check types")
         val types =
             try {
                 assertEmptyDiagnosticsAfter { checkTypes(ast, diagnostics, resolvedVariables) }
@@ -156,13 +162,17 @@ class CacophonyPipeline(
         return types
     }
 
-    private fun createVariables(ast: AST, resolvedVariables: ResolvedVariables, types: TypeCheckingResult): VariablesMap {
+    // SHARED
+    fun createVariables(ast: AST, resolvedVariables: ResolvedVariables, types: TypeCheckingResult): VariablesMap {
+        println("create variables")
         val variableMap = createVariablesMap(ast, resolvedVariables, types)
         logger?.logSuccessfulVariableCreation(variableMap)
         return variableMap
     }
 
-    private fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables): CallGraph {
+    // SHARED
+    fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables): CallGraph {
+        println("generate callGraph")
         val callGraph =
             try {
                 assertEmptyDiagnosticsAfter { generateCallGraph(ast, diagnostics, resolvedVariables) }
@@ -174,27 +184,14 @@ class CacophonyPipeline(
         return callGraph
     }
 
-    private fun analyzeFunctions(input: Input): FunctionAnalysisResult = analyzeFunctions(generateAST(input))
-
-    private fun analyzeFunctions(ast: AST): FunctionAnalysisResult {
-        val resolvedFunctions = resolveOverloads(ast)
-        checkTypes(ast, resolvedFunctions)
-        return analyzeFunctions(ast, resolvedFunctions)
-    }
-
-    fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables): FunctionAnalysisResult {
-        val callGraph = generateCallGraph(ast, resolvedVariables)
-        val types = checkTypes(ast, resolvedVariables)
-        val variablesMap = createVariables(ast, resolvedVariables, types)
-        return analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
-    }
-
-    private fun analyzeFunctions(
+    // SHARED
+    fun analyzeFunctions(
         ast: AST,
         variablesMap: VariablesMap,
         resolvedVariables: ResolvedVariables,
         callGraph: CallGraph,
     ): FunctionAnalysisResult {
+        println("analyze Functions 4")
         val result =
             try {
                 assertEmptyDiagnosticsAfter {
@@ -213,7 +210,9 @@ class CacophonyPipeline(
         return result
     }
 
+    // NOT IN TESTS
     fun analyzeAst(ast: AST): AstAnalysisResult {
+        println("analyze AST")
         val resolvedNames = resolveNames(ast)
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
         val types = checkTypes(ast, resolvedVariables)
@@ -226,11 +225,9 @@ class CacophonyPipeline(
         return AstAnalysisResult(resolvedVariables, types, variablesMap, analyzedExpressions, functionHandlers, foreignFunctions)
     }
 
-    fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
-
-    private fun generateControlFlowGraph(ast: AST): ProgramCFG = generateControlFlowGraph(analyzeAst(ast), SimpleCallGenerator())
-
+    // NOT IN TESTS
     fun generateControlFlowGraph(analyzedAst: AstAnalysisResult, callGenerator: CallGenerator): ProgramCFG {
+        println("gen CFG 2")
         val cfg =
             generateCFG(
                 analyzedAst.resolvedVariables,
@@ -245,35 +242,28 @@ class CacophonyPipeline(
         return cfg
     }
 
-    private fun coverWithInstructions(ast: AST): Map<FunctionDefinition, LoweredCFGFragment> =
-        generateControlFlowGraph(ast).mapValues { (_, cfg) -> linearize(cfg, instructionCovering) }
-
-    private fun coverWithInstructions(cfg: ProgramCFG): Map<FunctionDefinition, LoweredCFGFragment> {
+    // NOT IN TESTS
+    fun coverWithInstructions(cfg: ProgramCFG): Map<FunctionDefinition, LoweredCFGFragment> {
+        println("cover 2")
         val covering = cfg.mapValues { (_, cfg) -> linearize(cfg, instructionCovering) }
         logger?.logSuccessfulInstructionCovering(covering)
         return covering
     }
 
-    fun analyzeRegistersInteraction(ast: AST): Map<FunctionDefinition, RegistersInteraction> =
-        coverWithInstructions(ast).mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG) }
-
-    private fun analyzeRegistersInteraction(
-        covering: Map<FunctionDefinition, LoweredCFGFragment>,
-    ): Map<FunctionDefinition, RegistersInteraction> {
+    // NOT IN TESTS
+    fun analyzeRegistersInteraction(covering: Map<FunctionDefinition, LoweredCFGFragment>): Map<FunctionDefinition, RegistersInteraction> {
+        println("reg interaction 2")
         val registersInteraction = covering.mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG) }
         logger?.logSuccessfulRegistersInteractionGeneration(registersInteraction)
         return registersInteraction
     }
 
-    fun allocateRegisters(ast: AST, allowedRegisters: Set<HardwareRegister> = allGPRs): Map<FunctionDefinition, RegisterAllocation> =
-        analyzeRegistersInteraction(ast).mapValues { (_, registersInteraction) ->
-            allocateRegisters(registersInteraction, allowedRegisters)
-        }
-
+    // NOT IN TESTS
     fun allocateRegisters(
         registersInteractions: Map<FunctionDefinition, RegistersInteraction>,
         allowedRegisters: Set<HardwareRegister> = allGPRs,
     ): Map<FunctionDefinition, RegisterAllocation> {
+        println("allocate regs 2")
         val allocatedRegisters =
             registersInteractions.mapValues { (_, registersInteraction) ->
                 allocateRegisters(registersInteraction, allowedRegisters)
@@ -282,6 +272,7 @@ class CacophonyPipeline(
         return allocatedRegisters
     }
 
+    // NOT IN TESTS
     private fun handleSpills(
         functionHandlers: Map<FunctionDefinition, FunctionHandler>,
         covering: Map<FunctionDefinition, LoweredCFGFragment>,
@@ -290,7 +281,8 @@ class CacophonyPipeline(
     ): Pair<
         Map<FunctionDefinition, LoweredCFGFragment>,
         Map<FunctionDefinition, RegisterAllocation>,
-        > {
+    > {
+        println("Handle spills 1")
         if (registerAllocation.values.all { it.spills.isEmpty() }) {
             return covering to registerAllocation
         }
@@ -334,40 +326,18 @@ class CacophonyPipeline(
         return newCovering to newRegisterAllocation
     }
 
-    private fun generateAsmImpl(ast: AST): Pair<String, Map<FunctionDefinition, String>> {
-        val analyzedAst = analyzeAst(ast)
-        val cfg = generateControlFlowGraph(analyzedAst, SimpleCallGenerator())
-        val covering = coverWithInstructions(cfg)
-        val registersInteractions = analyzeRegistersInteraction(covering)
-        val registerAllocation = allocateRegisters(registersInteractions)
-
-        val (coveringWithSpillsHandled, registerAllocationWithSpillsHandled) =
-            handleSpills(
-                analyzedAst.functionHandlers,
-                covering,
-                registersInteractions,
-                registerAllocation,
-            )
-
-        val asm =
-            coveringWithSpillsHandled.mapValues { (function, loweredCFG) ->
-                run {
-                    val ra = registerAllocationWithSpillsHandled[function] ?: error("No register allocation for function $function")
-                    generateAsm(functionBodyLabel(function), loweredCFG, ra)
-                }
-            }
-        return Pair(generateAsmPreamble(analyzedAst.foreignFunctions), asm)
-    }
-
-    private fun generateAsm(ast: AST): String {
-        val (preamble, functions) = generateAsmImpl(ast)
+    // NOT IN TESTS
+    fun generateAsm(input: Input): String {
+        println("Generate ASM 1")
+        val (preamble, functions) = process(input)
+        logger?.logSuccessfulPreambleGeneration(preamble)
         logger?.logSuccessfulAsmGeneration(functions)
         return (listOf(preamble) + functions.values).joinToString("\n")
     }
 
-    fun generateAsm(input: Input): String = generateAsm(generateAST(input))
-
-    private fun compile(src: Path, dest: Path) {
+    // SHARED WITH IO TESTS
+    private fun assemble(src: Path, dest: Path) {
+        println("assemble")
         val options = listOf("nasm", "-f", "elf64", "-o", dest.toString(), src.toString())
         val nasm = ProcessBuilder(options).inheritIO().start()
         nasm.waitFor().takeIf { it != 0 }?.let { status ->
@@ -376,34 +346,59 @@ class CacophonyPipeline(
         } ?: logger?.logSuccessfulAssembling(dest)
     }
 
-    fun link(sources: List<Path>, dest: Path) {
-        val options = listOf("gcc", "-no-pie", "-z", "noexecstack", "-o", dest.toString()) + sources.map { it.toString() }
-        val gcc = ProcessBuilder(options).inheritIO().start()
-        gcc.waitFor().takeIf { it != 0 }?.let { status ->
-            logger?.logFailedLinking(status)
-            throw RuntimeException("Unable to link compiled code")
-        } ?: logger?.logSuccessfulLinking(dest)
-    }
-
-    fun compile(
+    // SHARED WITH IO TESTS
+    fun compileAndLink(
         input: Input,
         additionalObjectFiles: List<Path>,
         asmFile: Path,
         objFile: Path,
         binFile: Path,
     ) {
+        println("compile and link")
         asmFile.writeText(generateAsm(input))
-        compile(asmFile, objFile)
-        link(listOf(objFile, Paths.get("libcacophony.c")) + additionalObjectFiles, binFile)
+        assemble(asmFile, objFile)
+        val sources = listOf(objFile) + additionalObjectFiles
+        val options = listOf("gcc", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
+        val gcc = ProcessBuilder(options).inheritIO().start()
+        gcc.waitFor().takeIf { it != 0 }?.let { status ->
+            logger?.logFailedLinking(status)
+            throw RuntimeException("Unable to link compiled code")
+        } ?: logger?.logSuccessfulLinking(binFile)
     }
 
+    // NOT IN TESTS
     fun compile(input: Input, outputDir: Path) {
-        compile(
+        println("compile")
+        compileAndLink(
             input,
-            emptyList(),
+            listOf(Paths.get("libcacophony.c")),
             Paths.get("${outputDir.fileName}", "${outputDir.fileName}.asm"),
             Paths.get("${outputDir.fileName}", "${outputDir.fileName}.o"),
             Paths.get("${outputDir.fileName}", "${outputDir.fileName}.bin"),
         )
+    }
+
+    fun process(input: Input): Pair<String, Map<FunctionDefinition, String>> {
+        val ast = generateAst(input)
+        val semantics = analyzeAst(ast)
+        val cfg = generateControlFlowGraph(semantics, SimpleCallGenerator())
+        val covering = coverWithInstructions(cfg)
+        val registersInteractions = analyzeRegistersInteraction(covering)
+        val registerAllocation = allocateRegisters(registersInteractions)
+        val (coveringWithSpillsHandled, registerAllocationWithSpillsHandled) =
+            handleSpills(
+                semantics.functionHandlers,
+                covering,
+                registersInteractions,
+                registerAllocation,
+            )
+        val asm =
+            coveringWithSpillsHandled.mapValues { (function, loweredCFG) ->
+                run {
+                    val ra = registerAllocationWithSpillsHandled[function] ?: error("No register allocation for function $function")
+                    generateAsm(functionBodyLabel(function), loweredCFG, ra)
+                }
+            }
+        return Pair(generateAsmPreamble(semantics.foreignFunctions), asm)
     }
 }
