@@ -6,6 +6,7 @@ fun isSubtype(subtype: TypeExpr, type: TypeExpr): Boolean {
         is BuiltinType -> isSubtypeBuiltin(subtype, type)
         is FunctionType -> isSubtypeFunction(subtype, type)
         is StructType -> isSubtypeStruct(subtype, type)
+        is ReferentialType -> subtype == type
         else -> false
     }
 }

@@ -113,12 +113,28 @@ private class VarUseVisitor(
             is Struct -> visitStruct(expr)
             is FieldRef.LValue -> visitFieldRefLValue(expr)
             is FieldRef.RValue -> visitFieldRefRValue(expr)
-            is Allocation -> TODO()
-            is Dereference -> TODO()
+            is Allocation -> visitAllocation(expr)
+            is Dereference -> visitDereference(expr)
             is LeafExpression -> {
                 useTypeAnalysis[expr] = UseTypesForExpression.empty()
             }
         }
+    }
+
+    private fun visitAllocation(expr: Allocation) {
+        visitExpression(expr.value)
+        useTypeAnalysis[expr] =
+            UseTypesForExpression.merge(
+                useTypeAnalysis[expr.value],
+            )
+    }
+
+    private fun visitDereference(expr: Dereference) {
+        visitExpression(expr.value)
+        useTypeAnalysis[expr] =
+            UseTypesForExpression.merge(
+                useTypeAnalysis[expr.value],
+            )
     }
 
     private fun visitAssignable(expr: Assignable, type: VariableUseType) {
@@ -199,33 +215,31 @@ private class VarUseVisitor(
     private fun visitCompoundAssignment(expr: OperatorBinary) {
         useTypeAnalysis[expr] = UseTypesForExpression.empty()
         visitExpression(expr.rhs)
-        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
-            visitAssignable(expr.lhs as Assignable, VariableUseType.READ_WRITE)
-            useTypeAnalysis[expr] =
-                UseTypesForExpression.merge(
-                    useTypeAnalysis[expr.lhs],
-                    useTypeAnalysis[expr.rhs],
-                )
-        } else {
-            TODO("unimplemented branch for different assignment type")
-//            visitExpression(expr.lhs)
+        when (expr.lhs) {
+            is VariableUse, is FieldRef -> visitAssignable(expr.lhs as Assignable, VariableUseType.READ_WRITE)
+            is Dereference -> visitDereference(expr.lhs)
+            else -> TODO("unimplemented branch for different assignment type")
         }
+        useTypeAnalysis[expr] =
+            UseTypesForExpression.merge(
+                useTypeAnalysis[expr.lhs],
+                useTypeAnalysis[expr.rhs],
+            )
     }
 
     private fun visitAssignment(expr: OperatorBinary.Assignment) {
         useTypeAnalysis[expr] = UseTypesForExpression.empty()
         visitExpression(expr.rhs)
-        if (expr.lhs is VariableUse || expr.lhs is FieldRef) {
-            visitAssignable(expr.lhs as Assignable, VariableUseType.WRITE)
-            useTypeAnalysis[expr] =
-                UseTypesForExpression.merge(
-                    useTypeAnalysis[expr.lhs],
-                    useTypeAnalysis[expr.rhs],
-                )
-        } else {
-            TODO("unimplemented branch for different assignment type")
-//            visitExpression(expr.lhs)
+        when (expr.lhs) {
+            is VariableUse, is FieldRef -> visitAssignable(expr.lhs as Assignable, VariableUseType.WRITE)
+            is Dereference -> visitDereference(expr.lhs)
+            else -> TODO("unimplemented branch for different assignment type")
         }
+        useTypeAnalysis[expr] =
+            UseTypesForExpression.merge(
+                useTypeAnalysis[expr.lhs],
+                useTypeAnalysis[expr.rhs],
+            )
     }
 
     private fun visitUnaryOperator(expr: OperatorUnary) {

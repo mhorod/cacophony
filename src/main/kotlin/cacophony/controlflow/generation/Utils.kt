@@ -1,15 +1,12 @@
 package cacophony.controlflow.generation
 
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.Register
-import cacophony.controlflow.Variable
+import cacophony.controlflow.*
 import cacophony.controlflow.functions.FunctionHandler
-import cacophony.controlflow.registerUse
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 import cacophony.semantic.types.*
 
-internal fun noOpOr(value: Layout, mode: EvalMode): Layout = if (mode is EvalMode.Value) value else SimpleLayout(CFGNode.NoOp)
+internal fun noOpOr(value: Layout, mode: EvalMode): Layout = if (mode !is EvalMode.SideEffect) value else SimpleLayout(CFGNode.NoOp)
 
 internal fun noOpOrUnit(mode: EvalMode): Layout = noOpOr(SimpleLayout(CFGNode.UNIT), mode)
 
@@ -21,21 +18,17 @@ fun generateLayoutOfVirtualRegisters(layout: Layout): Layout =
 
 fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
     when (type) {
-        BuiltinType.BooleanType -> SimpleLayout(registerUse(Register.VirtualRegister()))
-        BuiltinType.IntegerType -> SimpleLayout(registerUse(Register.VirtualRegister()))
-        BuiltinType.UnitType -> SimpleLayout(registerUse(Register.VirtualRegister()))
+        is BuiltinType, is ReferentialType -> SimpleLayout(registerUse(Register.VirtualRegister()))
         is StructType -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
         TypeExpr.VoidType -> StructLayout(emptyMap())
         is FunctionType -> throw IllegalArgumentException("No layout for function types")
-        is ReferentialType -> TODO()
     }
 
 fun generateLayoutOfVirtualRegisters(type: Type): Layout =
     when (type) {
-        is BaseType.Basic -> SimpleLayout(registerUse(Register.VirtualRegister()))
+        is BaseType.Basic, is BaseType.Referential -> SimpleLayout(registerUse(Register.VirtualRegister()))
         is BaseType.Structural -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
         is BaseType.Functional -> throw IllegalArgumentException("No layout for function types")
-        is BaseType.Referential -> TODO()
     }
 
 fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
@@ -54,6 +47,24 @@ fun flattenLayout(layout: Layout): List<CFGNode> =
                 .flatten()
     }
 
-fun generateLayoutOfHeapObject(base: CFGNode, type: TypeExpr): Layout {
-    TODO()
+private fun generateLayoutOfHeapObjectImpl(base: CFGNode, type: TypeExpr, offset: Int): Layout {
+    var offsetInternal = offset
+    return when (type) {
+        is BuiltinType, is ReferentialType -> SimpleLayout(memoryAccess(base add integer(offset * REGISTER_SIZE)))
+        is StructType ->
+            StructLayout(
+                type.fields.entries
+                    .sortedBy { it.key }
+                    .associate { (name, fieldType) ->
+                        val layout = generateLayoutOfHeapObjectImpl(base, fieldType, offsetInternal)
+                        offsetInternal += fieldType.size()
+                        Pair(name, layout)
+                    },
+            )
+
+        is FunctionType -> throw IllegalArgumentException("No layout for function types")
+        is TypeExpr.VoidType -> StructLayout(emptyMap()) // void type on the heap?
+    }
 }
+
+fun generateLayoutOfHeapObject(base: CFGNode, type: TypeExpr): Layout = generateLayoutOfHeapObjectImpl(base, type, 0)

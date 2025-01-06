@@ -17,7 +17,7 @@ sealed interface Assignable : Expression
 sealed interface LeafExpression : Expression, TreeLeaf
 
 sealed interface Type : SyntaxTree {
-    fun size(): Int = 1
+    fun size(): Int
 }
 
 sealed interface NonFunctionalType : Type
@@ -49,6 +49,8 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
     ) : BaseType(range), NonFunctionalType {
         override fun toString() = identifier
 
+        override fun size(): Int = 1
+
         override fun isEquivalent(other: SyntaxTree?): Boolean =
             super<BaseType>.isEquivalent(other) &&
                 other is Basic &&
@@ -61,6 +63,8 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
         val returnType: Type,
     ) : BaseType(range) {
         override fun toString() = "[${argumentsType.joinToString(", ")}] => $returnType"
+
+        override fun size(): Int = throw IllegalArgumentException("Function does not have size")
 
         override fun isEquivalent(other: SyntaxTree?): Boolean =
             super.isEquivalent(other) &&
@@ -82,6 +86,8 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
 
     class Referential(range: Pair<Location, Location>, val type: Type) : BaseType(range), NonFunctionalType {
         override fun toString() = "&$type"
+
+        override fun size(): Int = 1
 
         override fun isEquivalent(other: SyntaxTree?) =
             super<BaseType>.isEquivalent(other) &&

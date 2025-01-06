@@ -1,5 +1,6 @@
 package cacophony.semantic.syntaxtree
 
+import cacophony.controlflow.functions.Builtin
 import cacophony.diagnostics.ASTDiagnostics
 import cacophony.diagnostics.Diagnostics
 import cacophony.grammars.ParseTree
@@ -419,10 +420,11 @@ private fun wrapInFunction(originalAST: AST): AST {
         )
     return Block(
         Pair(beforeStart, behindEnd),
-        listOf(
-            program,
-            programCall,
-        ),
+        Builtin.all +
+            listOf(
+                program,
+                programCall,
+            ),
     )
 }
 

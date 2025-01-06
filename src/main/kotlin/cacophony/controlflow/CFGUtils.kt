@@ -27,6 +27,8 @@ fun returnNode(resultSize: Int) = CFGNode.Return(CFGNode.ConstantKnown(resultSiz
 
 fun integer(value: Int) = CFGNode.ConstantKnown(value)
 
+fun dataLabel(label: String) = CFGNode.DataLabel(label)
+
 fun registerUse(register: Register) = CFGNode.RegisterUse(register)
 
 fun memoryAccess(at: CFGNode) = CFGNode.MemoryAccess(at)

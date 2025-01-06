@@ -1,6 +1,7 @@
 package cacophony.semantic.syntaxtree
 
 import cacophony.*
+import cacophony.controlflow.functions.Builtin
 import cacophony.diagnostics.ASTDiagnostics
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
@@ -79,10 +80,11 @@ class ASTGenerationTests {
             )
         return Block(
             anyLocation(),
-            listOf(
-                program,
-                programCall,
-            ),
+            Builtin.all +
+                listOf(
+                    program,
+                    programCall,
+                ),
         )
     }
 
@@ -92,11 +94,12 @@ class ASTGenerationTests {
     }
 
     private fun getInnerBlock(ast: AST): AST { // unwrap AST
-        return ast.children().first().children().first() as Block
+        val mainFunction = ast.children().filterIsInstance<Definition.FunctionDefinition>().first()
+        return mainFunction.children().first() as Block
     }
 
     private fun computeType(type: String): Type? {
-        val ast = computeAST("let x:$type=()") // that would fail type check, but here we dont care
+        val ast = computeAST("let x:$type=()") // that would fail type check, but here we don't care
         val definition = getInnerBlock(ast).children().first() as Definition.VariableDeclaration
         return definition.type
     }
