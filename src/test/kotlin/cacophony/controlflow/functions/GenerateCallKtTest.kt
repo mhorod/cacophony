@@ -43,7 +43,7 @@ class GenerateCallKtTest {
         return true
     }
 
-    private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: CFGNode) {
+    private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: SimpleLayout) {
         mockkStatic(::generateCall)
         generateCallFrom(
             caller,
@@ -60,7 +60,7 @@ class GenerateCallKtTest {
                     if (it.size != 1) false
                     else {
                         val l = it.first()
-                        l == expectedStaticLink
+                        l is SimpleLayout && l.access == expectedStaticLink.access
                     }
                 },
                 any(),
@@ -89,7 +89,7 @@ class GenerateCallKtTest {
             for (i in 1..chainLength) {
                 val argDeclarations =
                     (1..argumentCount).map {
-                        mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }
+                        Definition.FunctionArgument(mockk(), "x$it", BaseType.Basic(mockk(), "Int"))
                     }
                 functionHandlers.add(
                     0,
@@ -97,7 +97,11 @@ class GenerateCallKtTest {
                         Definition.FunctionDefinition(
                             mockk(),
                             "fun def",
-                            mockk(),
+                            BaseType.Functional(
+                                mockk(),
+                                (0..argumentCount).map { BaseType.Basic(mockk(), "Int") },
+                                BaseType.Basic(mockk(), "Int"),
+                            ),
                             argDeclarations,
                             BaseType.Basic(mockk(), "Int"),
                             mockk(),
@@ -118,7 +122,7 @@ class GenerateCallKtTest {
     private fun getCallNodes(argumentCount: Int, result: Layout?): List<CFGNode> =
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
-            (1..argumentCount + 1).map { mockk() },
+            (1..argumentCount + 1).map { SimpleLayout(mockk()) },
             result,
             CFGNode.ConstantKnown(0),
         )
@@ -209,7 +213,7 @@ class GenerateCallKtTest {
         checkStaticLinkInGenerateCallFrom(
             childHandler,
             parentHandler,
-            CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+            SimpleLayout(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))),
         )
     }
 
@@ -220,7 +224,7 @@ class GenerateCallKtTest {
         checkStaticLinkInGenerateCallFrom(
             childHandler,
             childHandler,
-            CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))),
+            SimpleLayout(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
         )
     }
 
@@ -232,7 +236,7 @@ class GenerateCallKtTest {
         checkStaticLinkInGenerateCallFrom(
             parentHandler,
             childHandler,
-            CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
+            SimpleLayout(CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))))),
         )
     }
 

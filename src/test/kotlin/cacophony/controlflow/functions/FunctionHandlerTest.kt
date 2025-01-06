@@ -6,6 +6,7 @@ import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
 import cacophony.controlflow.VariableAllocation
+import cacophony.controlflow.generation.SimpleLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.AnalyzedVariable
 import cacophony.semantic.analysis.ParentLink
@@ -641,7 +642,8 @@ class FunctionHandlerTest {
                         if (it.size != 1) false
                         else {
                             val l = it.first()
-                            l == CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))
+                            l is SimpleLayout &&
+                                l.access == CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))
                         }
                     },
                     any(),
