@@ -19,10 +19,11 @@ fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation
         .joinToString("\n") { it.toAsm(registerAllocation.successful) }
 }
 
-fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclaration>): String =
+fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclaration>, objectOutlines: List<String>): String =
     (
         listOf("SECTION .data") +
             foreignFunctions.map {
                 "extern ${it.identifier}"
-            } + listOf("global main", "SECTION .text")
+            } + objectOutlines +
+            listOf("global main", "SECTION .text")
     ).joinToString("\n")

@@ -172,7 +172,9 @@ class DebugRegressionTest {
                 ),
             )
 
-        val cfg = testPipeline().generateControlFlowGraph(testPipeline().analyzeAst(ast), SimpleCallGenerator())
+        val semantics = testPipeline().analyzeAst(ast)
+        val objectOutlines = testPipeline().createObjectOutlines(testPipeline().getUsedTypes(semantics.types))
+        val cfg = testPipeline().generateControlFlowGraph(testPipeline().analyzeAst(ast), SimpleCallGenerator(), objectOutlines.locations)
         val covering = cfg.mapValues { (_, cfg) -> linearize(cfg, Params.instructionCovering) }
         val registersInteractions = analyzeRegistersInteraction(covering)
         val allocation = allocateRegisters(registersInteractions, Params.allGPRs)
