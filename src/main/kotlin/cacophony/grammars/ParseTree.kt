@@ -20,7 +20,7 @@ sealed class ParseTree<SymbolT : Enum<SymbolT>>(
 
         override fun hashCode() = token.hashCode()
 
-        override fun toString() = "${token.category} $range"
+        override fun toString() = "${token.category} (${range.first.value}-${range.second.value})"
     }
 
     class Branch<SymbolT : Enum<SymbolT>>(
@@ -37,7 +37,7 @@ sealed class ParseTree<SymbolT : Enum<SymbolT>>(
 
         override fun hashCode() = children.fold(0) { hash, child -> 19 * hash + child.hashCode() }
 
-        override fun toString() = "${production.lhs} $range"
+        override fun toString() = "${production.lhs} (${range.first.value}-${range.second.value})"
 
         override fun children() = children
     }

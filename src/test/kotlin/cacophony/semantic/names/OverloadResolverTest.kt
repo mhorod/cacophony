@@ -34,7 +34,7 @@ class OverloadResolverTest {
         every { overloadSet[0] } returns def
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
-        val resolvedVariables = resolveOverloads(ast, diagnostics, nr)
+        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
 
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(func to def),
@@ -58,7 +58,7 @@ class OverloadResolverTest {
         every { overloadSet[2] } returns def2
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
-        val resolvedVariables = resolveOverloads(ast, diagnostics, nr)
+        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
 
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(func to def1),
@@ -81,7 +81,7 @@ class OverloadResolverTest {
         every { overloadSet[2] } returns def2
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
-        resolveOverloads(ast, diagnostics, nr)
+        resolveOverloads(ast, nr, diagnostics)
         verify(exactly = 1) { diagnostics.report(ORDiagnostics.IdentifierNotFound("f"), any<Pair<Location, Location>>()) }
     }
 
@@ -95,7 +95,7 @@ class OverloadResolverTest {
         val def = mockk<Definition.VariableDeclaration>()
         val nr: NameResolutionResult = mapOf(variable to ResolvedName.Variable(def))
 
-        val resolvedVariables = resolveOverloads(ast, diagnostics, nr)
+        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
 
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(variable to def),
@@ -112,7 +112,7 @@ class OverloadResolverTest {
         val def = mockk<Definition.FunctionArgument>()
         val nr: NameResolutionResult = mapOf(variable to ResolvedName.Argument(def))
 
-        val resolvedVariables = resolveOverloads(ast, diagnostics, nr)
+        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
 
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(variable to def),
@@ -133,7 +133,7 @@ class OverloadResolverTest {
         every { overloadSet[1] } returns def
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
 
-        resolveOverloads(ast, diagnostics, nr)
+        resolveOverloads(ast, nr, diagnostics)
         verify(exactly = 1) { diagnostics.report(ORDiagnostics.FunctionIsNotVariableUse, any<Pair<Location, Location>>()) }
     }
 
@@ -148,7 +148,7 @@ class OverloadResolverTest {
         val def = mockk<Definition.VariableDeclaration>()
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Variable(def))
 
-        resolveOverloads(ast, diagnostics, nr)
+        resolveOverloads(ast, nr, diagnostics)
         verify(exactly = 1) { diagnostics.report(ORDiagnostics.UsingVariableAsFunction("f"), any<Pair<Location, Location>>()) }
     }
 
@@ -163,7 +163,7 @@ class OverloadResolverTest {
         val def = mockk<Definition.FunctionArgument>()
         val nr: NameResolutionResult = mapOf(func to ResolvedName.Argument(def))
 
-        resolveOverloads(ast, diagnostics, nr)
+        resolveOverloads(ast, nr, diagnostics)
         verify(exactly = 1) { diagnostics.report(ORDiagnostics.UsingArgumentAsFunction("f"), any<Pair<Location, Location>>()) }
     }
 
@@ -178,7 +178,7 @@ class OverloadResolverTest {
         val def = mockk<Definition.VariableDeclaration>()
         val nr: NameResolutionResult = mapOf(variable to ResolvedName.Variable(def))
 
-        val resolvedVariables = resolveOverloads(ast, diagnostics, nr)
+        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
 
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(variable to def),
@@ -195,7 +195,7 @@ class OverloadResolverTest {
         val def = mockk<Definition.VariableDeclaration>()
         val nr: NameResolutionResult = mapOf(variable to ResolvedName.Variable(def))
 
-        val resolvedVariables = resolveOverloads(ast, diagnostics, nr)
+        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
 
         assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
             mapOf(variable to def),

@@ -1,22 +1,11 @@
 package cacophony.semantic.analysis
 
-import cacophony.block
+import cacophony.*
 import cacophony.controlflow.Variable
-import cacophony.intArg
-import cacophony.intFunctionDefinition
-import cacophony.intType
-import cacophony.lit
-import cacophony.lvalueFieldRef
-import cacophony.rvalueFieldRef
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.types.BuiltinType
+import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.TypeCheckingResult
-import cacophony.struct
-import cacophony.structType
-import cacophony.structTypeExpr
-import cacophony.typedArg
-import cacophony.variableDeclaration
-import cacophony.variableUse
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.Map.entry
@@ -216,6 +205,39 @@ class VariablesMapCreationTest {
         // then
         assertThat(variables.definitions).isEmpty()
         assertThat(variables.lvalues).isEmpty()
+    }
+
+    @Test
+    fun `all dereferences are mapped to heap`() {
+        // given
+        val pDef = variableDeclaration("p")
+        val pUseStandalone = variableUse("p")
+        val standaloneDeref = deref(pUseStandalone)
+        val pUseInBlock = variableUse("p")
+        val blockDeref = deref(pUseInBlock)
+        // let p; @p; @(1; p)
+        val ast = block(pDef, standaloneDeref, blockDeref)
+
+        val resolvedVariables = mapOf(pUseStandalone to pDef, pUseInBlock to pDef)
+        val pType = ReferentialType(BuiltinType.IntegerType)
+        val types =
+            TypeCheckingResult(
+                mapOf(
+                    pDef to pType,
+                    pUseStandalone to pType,
+                    standaloneDeref to BuiltinType.IntegerType,
+                    pUseInBlock to pType,
+                    blockDeref to BuiltinType.IntegerType,
+                ),
+                mapOf(pDef to ReferentialType(BuiltinType.IntegerType)),
+            )
+
+        // when
+        val variables = createVariablesMap(ast, resolvedVariables, types)
+
+        // then
+        assertThat(variables.definitions).containsKey(pDef)
+        assertThat(variables.lvalues).containsAllEntriesOf(mapOf(standaloneDeref to Variable.Heap, blockDeref to Variable.Heap))
     }
 
     private fun field(variable: Variable?, vararg names: String): Variable {

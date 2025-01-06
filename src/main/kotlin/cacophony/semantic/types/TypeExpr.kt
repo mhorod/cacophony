@@ -56,8 +56,10 @@ class StructType(
     override fun size(): Int = fields.values.sumOf { it.size() }
 }
 
-class ReferentialType(val type: TypeExpr) : TypeExpr("&${type.name}") {
+data class ReferentialType(val type: TypeExpr) : TypeExpr("&${type.name}") {
     override fun size(): Int = 1
+
+    override fun toString(): String = super.toString()
 }
 
 class TypeTranslator(
