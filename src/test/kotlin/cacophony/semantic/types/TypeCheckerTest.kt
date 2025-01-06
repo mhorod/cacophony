@@ -1789,6 +1789,41 @@ class TypeCheckerTest {
         confirmVerified(diagnostics)
     }
 
+    // @()
+    @Test
+    fun `wrong - cannot allocate value of Unit type`() {
+        val allocation = allocation(block())
+        val ast = block(allocation)
+
+        checkTypes(ast, diagnostics, emptyMap())
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.InvalidAllocation("Unit"),
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
+
+    // f = [] -> Int => @return(5)
+    @Test
+    fun `wrong - cannot allocate value of Void type`() {
+        val allocation = allocation(block(returnStatement(lit(5))))
+        val functionDeclaration = typedFunctionDefinition("f", null, listOf(), testInt(), allocation)
+        val ast = block(functionDeclaration)
+
+        checkTypes(ast, diagnostics, emptyMap())
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.InvalidAllocation("Void"),
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
+
     // let a = $5
     // @a
     @Test

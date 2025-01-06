@@ -40,5 +40,5 @@ fun isSubtypeStruct(type: TypeExpr, other: StructType): Boolean {
 
 fun isSubtypeReferential(type: TypeExpr, other: ReferentialType): Boolean {
     if (type !is ReferentialType) return false
-    return isSubtype(type.type, other.type)
+    return type.type == other.type
 }

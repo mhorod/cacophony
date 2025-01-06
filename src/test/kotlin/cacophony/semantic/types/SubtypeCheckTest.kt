@@ -249,7 +249,7 @@ class SubtypeCheckTest {
     }
 
     @Test
-    fun `covariance on reference types`() {
+    fun `subtyping for references is not supported`() {
         val referenceType1 =
             ReferentialType(
                 StructType(
@@ -268,6 +268,6 @@ class SubtypeCheckTest {
                 ),
             )
         assertThat(isSubtype(referenceType1, referenceType2)).isFalse
-        assertThat(isSubtype(referenceType2, referenceType1)).isTrue
+        assertThat(isSubtype(referenceType2, referenceType1)).isFalse
     }
 }

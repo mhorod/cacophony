@@ -56,4 +56,10 @@ class TypeCheckerDiagnostics {
     data object ExpectedReference : DiagnosticMessage {
         override fun getMessage() = "Expected reference type"
     }
+
+    data class InvalidAllocation(
+        val type: String,
+    ) : DiagnosticMessage {
+        override fun getMessage() = "Cannot allocate value of type $type"
+    }
 }
