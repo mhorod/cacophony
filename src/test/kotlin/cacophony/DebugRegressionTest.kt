@@ -4,7 +4,7 @@ import cacophony.codegen.allocateRegisters
 import cacophony.codegen.analyzeRegistersInteraction
 import cacophony.codegen.linearization.linearize
 import cacophony.controlflow.functions.SimpleCallGenerator
-import cacophony.pipeline.CacophonyPipeline
+import cacophony.pipeline.Params
 import cacophony.utils.StringInput
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -173,9 +173,9 @@ class DebugRegressionTest {
             )
 
         val cfg = testPipeline().generateControlFlowGraph(testPipeline().analyzeAst(ast), SimpleCallGenerator())
-        val covering = cfg.mapValues { (_, cfg) -> linearize(cfg, CacophonyPipeline.cachedInstructionCovering) }
+        val covering = cfg.mapValues { (_, cfg) -> linearize(cfg, Params.instructionCovering) }
         val registersInteractions = analyzeRegistersInteraction(covering)
-        val allocation = allocateRegisters(registersInteractions, CacophonyPipeline.allGPRs)
+        val allocation = allocateRegisters(registersInteractions, Params.allGPRs)
 
         allocation.values.forEach {
             assertThat(it.spills).isEmpty()

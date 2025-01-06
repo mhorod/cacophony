@@ -12,12 +12,11 @@ import cacophony.controlflow.Register
 import cacophony.controlflow.functions.FunctionHandler
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.graphs.FirstFitGraphColoring
-import cacophony.pipeline.CacophonyPipeline
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 
 /*
  * returns spill-free covering and register allocation
- * - linearize
+ * - linearize [cfg]
  * - attempt register allocation
  * - if spills occur, handle them
  */
@@ -42,7 +41,9 @@ fun safeLinearize(
         functionHandlers,
         cover,
         registersInteractions,
+        allowedRegisters,
         backupRegs,
+        instructionCovering,
     )
 }
 
@@ -71,13 +72,15 @@ private fun handleSpills(
     functionHandlers: Map<FunctionDefinition, FunctionHandler>,
     covering: Map<FunctionDefinition, LoweredCFGFragment>,
     registersInteractions: Map<FunctionDefinition, RegistersInteraction>,
+    allowedRegisters: Set<HardwareRegister>,
     backupRegs: Set<Register.FixedRegister>,
+    instructionCovering: InstructionCovering,
 ): Pair<
     Map<FunctionDefinition, LoweredCFGFragment>,
     Map<FunctionDefinition, RegisterAllocation>,
     > {
     val newRegisterAllocation =
-        allocateRegisters(registersInteractions, CacophonyPipeline.allGPRs.minus(backupRegs.map { it.hardwareRegister }.toSet()))
+        allocateRegisters(registersInteractions, allowedRegisters.minus(backupRegs.map { it.hardwareRegister }.toSet()))
             .mapValues { (_, value) ->
                 RegisterAllocation(
                     value.successful.plus(backupRegs.associateWith { it.hardwareRegister }),
@@ -94,7 +97,7 @@ private fun handleSpills(
             .map { (functionDeclaration, loweredCfg) ->
                 functionDeclaration to
                     adjustLoweredCFGToHandleSpills(
-                        CacophonyPipeline.cachedInstructionCovering,
+                        instructionCovering,
                         functionHandlers[functionDeclaration]!!,
                         loweredCfg,
                         registersInteractions[functionDeclaration]!!,

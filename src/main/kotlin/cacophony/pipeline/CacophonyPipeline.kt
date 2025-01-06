@@ -4,7 +4,6 @@ import cacophony.codegen.functionBodyLabel
 import cacophony.codegen.instructions.CacophonyInstructionCovering
 import cacophony.codegen.instructions.generateAsm
 import cacophony.codegen.instructions.generateAsmPreamble
-import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.registers.*
 import cacophony.codegen.safeLinearize
@@ -46,22 +45,12 @@ data class AstAnalysisResult(
 class CacophonyPipeline(
     val diagnostics: Diagnostics,
     private val logger: CacophonyLogger? = null,
-    private val lexer: CacophonyLexer = cachedLexer,
-    private val parser: CacophonyParser = cachedParser,
-    private val instructionCovering: CacophonyInstructionCovering = cachedInstructionCovering,
+    private val lexer: CacophonyLexer = Params.lexer,
+    private val parser: CacophonyParser = Params.parser,
+    private val backupRegs: Set<Register.FixedRegister> = Params.backupRegs,
+    private val allowedRegisters: Set<HardwareRegister> = Params.allGPRs,
+    private val instructionCovering: CacophonyInstructionCovering = Params.instructionCovering,
 ) {
-    companion object {
-        private val cachedLexer = CacophonyLexer()
-        private val cachedParser = CacophonyParser()
-        private val cachedBackupRegs =
-            setOf(
-                Register.FixedRegister(HardwareRegister.R10),
-                Register.FixedRegister(HardwareRegister.R11),
-            )
-        val cachedInstructionCovering = CacophonyInstructionCovering(CacophonyInstructionMatcher())
-        val allGPRs = HardwareRegister.entries.toSet()
-    }
-
     private fun <T> assertEmptyDiagnosticsAfter(action: () -> T): T {
         val x = action()
         if (diagnostics.getErrors().isNotEmpty()) {
@@ -175,20 +164,12 @@ class CacophonyPipeline(
         callGraph: CallGraph,
     ): FunctionAnalysisResult {
         val result =
-            try {
-                assertEmptyDiagnosticsAfter {
-                    analyzeFunctions(
-                        ast,
-                        resolvedVariables,
-                        callGraph,
-                        variablesMap,
-                        // TODO: no diagnostics passed?
-                    )
-                }
-            } catch (e: CompileException) {
-                logger?.logFailedFunctionAnalysis()
-                throw e
-            }
+            analyzeFunctions(
+                ast,
+                resolvedVariables,
+                callGraph,
+                variablesMap,
+            )
         logger?.logSuccessfulFunctionAnalysis(result)
         return result
     }
@@ -229,11 +210,11 @@ class CacophonyPipeline(
         return cfg
     }
 
-    fun linearize(
+    private fun linearize(
         cfg: ProgramCFG,
         functionHandlers: Map<FunctionDefinition, FunctionHandler>,
     ): Pair<Map<FunctionDefinition, LoweredCFGFragment>, Map<FunctionDefinition, RegisterAllocation>> {
-        val (covering, registerAllocation) = safeLinearize(cfg, functionHandlers, instructionCovering, allGPRs, cachedBackupRegs)
+        val (covering, registerAllocation) = safeLinearize(cfg, functionHandlers, instructionCovering, allowedRegisters, backupRegs)
         logger?.logSuccessfulInstructionCovering(covering)
         logger?.logSuccessfulRegisterAllocation(registerAllocation)
         return Pair(covering, registerAllocation)
@@ -291,7 +272,7 @@ class CacophonyPipeline(
     fun compile(input: Input, outputDir: Path) {
         compileAndLink(
             input,
-            listOf(Paths.get("libcacophony.c")),
+            Params.externalLibs,
             Paths.get("${outputDir.fileName}", "${outputDir.fileName}.asm"),
             Paths.get("${outputDir.fileName}", "${outputDir.fileName}.o"),
             Paths.get("${outputDir.fileName}", "${outputDir.fileName}.bin"),

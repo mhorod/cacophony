@@ -2,13 +2,13 @@ package cacophony.examples
 
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
+import cacophony.pipeline.Params
 import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatPath
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempFile
 import kotlin.io.path.listDirectoryEntries
@@ -32,7 +32,7 @@ class IOExamplesTest {
         val diagnostics = CacophonyDiagnostics(input)
         val pipeline = CacophonyPipeline(diagnostics, null)
 
-        pipeline.compileAndLink(input, (additionalObjects + Paths.get("libcacophony.c")), asmFile, objFile, binFile)
+        pipeline.compileAndLink(input, (additionalObjects + Params.externalLibs), asmFile, objFile, binFile)
 
         val process =
             ProcessBuilder(binFile.toString())

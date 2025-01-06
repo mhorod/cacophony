@@ -40,7 +40,7 @@ class CacophonyLogger(
     private val logRegs: Boolean,
     private val logAsm: Boolean,
     private val logDirectory: Path?,
-) : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbol> {
+) : Logger {
     private fun logMaybeSave(header: String, content: String?) {
         val escape = "\u001B"
         val bold = "$escape[1m"
@@ -187,8 +187,6 @@ class CacophonyLogger(
             logMaybeSave("Function analysis", content.lines().joinToString("\n"))
         }
     }
-
-    override fun logFailedFunctionAnalysis() = printError("Function analysis failed :(")
 
     override fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>) {
         if (logCFG) {
