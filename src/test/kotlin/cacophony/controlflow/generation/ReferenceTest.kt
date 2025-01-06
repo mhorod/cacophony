@@ -23,7 +23,6 @@ class ReferenceTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
 
         // then
         val virA = Register.VirtualRegister()
@@ -55,7 +54,6 @@ class ReferenceTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
 
         // then
         val virA = Register.VirtualRegister()
@@ -95,7 +93,6 @@ class ReferenceTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
 
         // then
         val virA = Register.VirtualRegister()

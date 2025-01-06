@@ -477,22 +477,17 @@ class StructTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        println(programCfgToGraphviz(actualCFG))
-//        // then
-//        val virA = Register.VirtualRegister()
-//        val virB = Register.VirtualRegister()
-//        val virC = Register.VirtualRegister()
-//        val virD = Register.VirtualRegister()
-//        val virE = Register.VirtualRegister()
-//
-//        val expectedCFG =
-//            singleWrappedFragmentCFG(fDef) {
-//                "bodyEntry" does jump("assign b") { writeRegister(virC, registerUse(virA)) }
-//                "assign b" does jump("assign res") { writeRegister(virD, registerUse(virB)) }
-//                "assign res" does jump("bodyExit") { writeRegister(virE, registerUse(virC)) }
-//            }
-//
-//        assertEquivalent(actualCFG, expectedCFG)
+
+        // then
+        val expectedCFG =
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does conditional("true", "false") { integer(1) neq integer(0) }
+                "true" does jump("assign res") { writeRegister("res", integer(1)) }
+                "false" does jump("assign res") { writeRegister("res", integer(2)) }
+                "assign res" does jump("bodyExit") { writeRegister("ret", readRegister("res")) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
     }
 
     @Test
