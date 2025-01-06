@@ -224,13 +224,13 @@ internal class CFGGenerator(
         else fieldAccess
     }
 
-    private fun extendWithConditional(fieldAccess: SubCFG, mode: EvalMode.Conditional): SubCFG.Extracted {
-        val access = fieldAccess.access
+    private fun extendWithConditional(node: SubCFG, mode: EvalMode.Conditional): SubCFG.Extracted {
+        val access = node.access
         // by type checking
         require(access is SimpleLayout)
         val conditionVertex = cfg.addConditionalVertex(access.access neq integer(0))
-        if (fieldAccess is SubCFG.Extracted) {
-            fieldAccess.exit.connect(conditionVertex.label)
+        if (node is SubCFG.Extracted) {
+            node.exit.connect(conditionVertex.label)
         }
         conditionVertex.connectTrue(mode.trueEntry.label)
         conditionVertex.connectFalse(mode.falseEntry.label)
