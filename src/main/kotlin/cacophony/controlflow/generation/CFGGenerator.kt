@@ -63,6 +63,10 @@ internal class CFGGenerator(
 
     internal fun assignLayoutWithValue(source: Layout, destination: Layout, returnedValue: Layout): SubCFG.Extracted {
         val assignments = makeVerticesForAssignment(source, destination)
+        if (assignments.isEmpty()) {
+            val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
+            return SubCFG.Extracted(vertex, vertex, StructLayout(emptyMap()))
+        }
         val prerequisite =
             assignments
                 .dropLast(1)
@@ -197,7 +201,7 @@ internal class CFGGenerator(
         if (mode is EvalMode.SideEffect) {
             return pointerGeneration
         }
-        val layout = generateLayoutOfHeapObject(access.access, typeCheckingResult.expressionTypes[expression.value]!!)
+        val layout = generateLayoutOfHeapObject(access.access, typeCheckingResult.expressionTypes[expression]!!)
         val dereference =
             when (pointerGeneration) {
                 is SubCFG.Extracted -> {

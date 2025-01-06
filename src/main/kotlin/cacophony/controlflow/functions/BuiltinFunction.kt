@@ -7,7 +7,7 @@ import cacophony.utils.Location
 
 internal fun mockLocation() = Pair(Location(-1), Location(-1))
 
-internal fun builtin(identifier: String, argumentsType: List<Type>, returnType: Type): Definition.FunctionDeclaration =
+internal fun builtin(identifier: String, argumentsType: List<Type>, returnType: Type): Definition.ForeignFunctionDeclaration =
     Definition.ForeignFunctionDeclaration(
         mockLocation(),
         identifier,

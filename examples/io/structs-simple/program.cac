@@ -1,0 +1,18 @@
+foreign write_int: [Int] -> Int;
+
+let h = [] -> {a: Int} => return {b = 8, a = 9};
+
+write_int[(h[]).a];
+
+write_int[h[].a];
+
+let x = {a = 2, b = 3};
+
+write_int[x.a];
+x.a += x.b;
+write_int[x.a];
+
+foreign write_int: [Int] -> Int;
+let x = {a = 2}.a;
+
+write_int[x]
