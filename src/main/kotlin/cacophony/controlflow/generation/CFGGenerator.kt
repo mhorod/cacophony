@@ -60,6 +60,10 @@ internal class CFGGenerator(
 
     internal fun assignLayoutWithValue(source: Layout, destination: Layout, returnedValue: Layout): SubCFG.Extracted {
         val assignments = makeVerticesForAssignment(source, destination)
+        if (assignments.isEmpty()) {
+            val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
+            return SubCFG.Extracted(vertex, vertex, StructLayout(emptyMap()))
+        }
         val prerequisite =
             assignments
                 .dropLast(1)
