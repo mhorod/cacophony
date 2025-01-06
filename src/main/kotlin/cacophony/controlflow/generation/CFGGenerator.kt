@@ -1,9 +1,9 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
+import cacophony.controlflow.functions.Builtin
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.FunctionHandler
-import cacophony.controlflow.functions.mallocFunction
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
@@ -158,17 +158,13 @@ internal class CFGGenerator(
                 require(type is ReferentialType) // by type checking
                 val call =
                     generateFunctionCall(
-                        mallocFunction,
-                        type,
+                        Builtin.allocStruct,
+                        typeCheckingResult.expressionTypes[expression]!!,
                         mode,
                         listOf(
                             ensureExtracted(
-                                SubCFG.Immediate(
-                                    integer(
-                                        type.type.size() * REGISTER_SIZE,
-                                    ),
-                                ),
-                                EvalMode.Value,
+                                SubCFG.Immediate(dataLabel(objectOutlineLocation[type.type]!!)),
+                                mode,
                             ),
                         ),
                     )

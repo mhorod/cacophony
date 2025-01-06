@@ -391,6 +391,7 @@ class CacophonyPipeline(
 
     private fun generateAsm(ast: AST): String {
         val (preamble, functions) = generateAsmImpl(ast)
+        println("asm preamble:\n$preamble")
         functions.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return (listOf(preamble) + functions.values).joinToString("\n")
     }
