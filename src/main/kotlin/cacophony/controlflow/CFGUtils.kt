@@ -33,6 +33,8 @@ fun registerUse(register: Register) = CFGNode.RegisterUse(register)
 
 fun memoryAccess(at: CFGNode) = CFGNode.MemoryAccess(at)
 
+fun dataLabel(label: String) = CFGNode.DataLabel(label)
+
 // arithmetic
 infix fun CFGNode.add(other: CFGNode) = CFGNode.Addition(this, other)
 

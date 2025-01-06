@@ -526,7 +526,7 @@ class FunctionAnalysisTest {
         val argADeclaration = arg("a")
         val argBDeclaration = arg("b")
         val variableA = Variable.PrimitiveVariable()
-        var variableB = Variable.PrimitiveVariable()
+        val variableB = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val varBUse = variableUse("b")
         val funG = unitFunctionDefinition("g", block(varAUse, variableWrite(varBUse)))

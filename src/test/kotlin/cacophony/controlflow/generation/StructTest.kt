@@ -6,18 +6,6 @@ import cacophony.semantic.syntaxtree.*
 import org.junit.jupiter.api.Test
 
 class StructTest {
-    private fun simpleStruct(int: Int = 7, bool: Boolean = true): Struct =
-        structDeclaration(
-            structField("a") to lit(int),
-            structField("b") to lit(bool),
-        )
-
-    private fun nestedStruct(): Struct =
-        structDeclaration(
-            structField("a") to lit(5),
-            structField("b") to simpleStruct(),
-        )
-
     @Test
     fun `single level struct assignment`() {
         // given
@@ -469,6 +457,82 @@ class StructTest {
                 "bodyEntry" does jump("assign b") { writeRegister(virC, registerUse(virA)) }
                 "assign b" does jump("assign res") { writeRegister(virD, registerUse(virB)) }
                 "assign res" does jump("bodyExit") { writeRegister(virE, registerUse(virC)) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    // TODO: write expected
+    @Test
+    fun `condition with immediate`() {
+        // given
+
+        /*
+         * let f = [] -> Int => if {a : 7, b : true}.b then 1 else 2;
+         */
+        val fDef =
+            intFunctionDefinition(
+                "f",
+                emptyList(),
+                ifThenElse(
+                    rvalueFieldRef(simpleStruct(), "b"),
+                    lit(1),
+                    lit(2),
+                ),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+
+        // then
+        val expectedCFG =
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does conditional("true", "false") { integer(1) neq integer(0) }
+                "true" does jump("assign res") { writeRegister("res", integer(1)) }
+                "false" does jump("assign res") { writeRegister("res", integer(2)) }
+                "assign res" does jump("bodyExit") { writeRegister("ret", registerUse("res")) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `condition with variable`() {
+        // given
+
+        /*
+         * let f = [] -> Int => (
+         *  let x = {a : 7, b : true};
+         *  if x.b then 1 else 2
+         * );
+         */
+        val fDef =
+            intFunctionDefinition(
+                "f",
+                emptyList(),
+                block(
+                    variableDeclaration("x", simpleStruct()),
+                    ifThenElse(
+                        rvalueFieldRef(variableUse("x"), "b"),
+                        lit(1),
+                        lit(2),
+                    ),
+                ),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+
+        // then
+
+        val expectedCFG =
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("assign b") { writeRegister("a", integer(7)) }
+                "assign b" does jump("if cond") { writeRegister("b", integer(1)) }
+                "if cond" does conditional("true", "false") { registerUse("b") neq integer(0) }
+                "true" does jump("if exit") { writeRegister("res", integer(1)) }
+                "false" does jump("if exit") { writeRegister("res", integer(2)) }
+                "if exit" does jump("bodyExit") { writeRegister("ret", registerUse("res")) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)

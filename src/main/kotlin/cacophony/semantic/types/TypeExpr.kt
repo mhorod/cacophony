@@ -4,7 +4,7 @@ import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 
-private val builtinTypes = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
+val BUILTIN_TYPES = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
 
 sealed class TypeExpr(
     val name: String,
@@ -18,12 +18,18 @@ sealed class TypeExpr(
 
     override fun hashCode(): Int = name.hashCode()
 
-    object VoidType : TypeExpr("Void")
+    abstract fun size(): Int
+
+    object VoidType : TypeExpr("Void") {
+        override fun size(): Int = 0
+    }
 }
 
 sealed class BuiltinType private constructor(
     name: String,
 ) : TypeExpr(name) {
+    override fun size(): Int = 1
+
     object BooleanType : BuiltinType("Bool")
 
     object IntegerType : BuiltinType("Int")
@@ -34,7 +40,10 @@ sealed class BuiltinType private constructor(
 class FunctionType(
     val args: List<TypeExpr>,
     val result: TypeExpr,
-) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}"))
+) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}")) {
+    // functions do not support size atm
+    override fun size(): Int = -1
+}
 
 class StructType(
     val fields: Map<String, TypeExpr>,
@@ -42,13 +51,21 @@ class StructType(
         fields
             .map { it.key + ": " + it.value.toString() }
             .joinToString(", ", "{", "}"),
-    )
+    ) {
+    override fun size(): Int = fields.values.sumOf { it.size() }
+}
+
+data class ReferentialType(val type: TypeExpr) : TypeExpr("&${type.name}") {
+    override fun size(): Int = 1
+
+    override fun toString(): String = super.toString()
+}
 
 class TypeTranslator(
     diagnostics: Diagnostics,
 ) {
     private val error = ErrorHandler(diagnostics)
-    private val basicTypes: Map<String, TypeExpr> = builtinTypes
+    private val basicTypes: Map<String, TypeExpr> = BUILTIN_TYPES
 
     internal fun translateType(type: Type): TypeExpr? {
         return when (type) {
@@ -75,7 +92,7 @@ class TypeTranslator(
                 StructType(fields)
             }
 
-            is BaseType.Referential -> throw NotImplementedError()
+            is BaseType.Referential -> ReferentialType(translateType(type.type) ?: return null)
         }
     }
 }

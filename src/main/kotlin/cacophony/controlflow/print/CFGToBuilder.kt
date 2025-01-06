@@ -99,4 +99,5 @@ fun cfgNodeToBuilder(tree: CFGNode): String =
         is CFGNode.LessEqual -> "(" + cfgNodeToBuilder(tree.lhs) + " leq " + cfgNodeToBuilder(tree.rhs) + ")"
         is CFGNode.LogicalNot -> "not(${tree.value})"
         is CFGNode.NotEquals -> "(" + cfgNodeToBuilder(tree.lhs) + " neq " + cfgNodeToBuilder(tree.rhs) + ")"
+        is CFGNode.DataLabel -> "CFGNode.DataLabel(${tree.dataLabel})"
     }

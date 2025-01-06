@@ -2,32 +2,9 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
-import cacophony.semantic.syntaxtree.*
 import org.junit.jupiter.api.Test
 
 class StructReturnTest {
-    // {a = 7, b = true}
-    private fun simpleStruct(int: Int = 7, bool: Boolean = true): Struct =
-        structDeclaration(
-            structField("a") to lit(int),
-            structField("b") to lit(bool),
-        )
-
-    private fun simpleType(): BaseType.Structural = structType("a" to intType(), "b" to boolType())
-
-    // {a = 5, b = {a = 7, b = true} }
-    private fun nestedStruct(): Struct =
-        structDeclaration(
-            structField("a") to lit(5),
-            structField("b") to simpleStruct(),
-        )
-
-    private fun nestedType(): BaseType.Structural =
-        structType(
-            "a" to intType(),
-            "b" to simpleType(),
-        )
-
     @Test
     fun `return primitive field`() {
         // given
@@ -292,5 +269,67 @@ class StructReturnTest {
             }
 
         assertFragmentIsEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `return with struct and value`() {
+        /*
+         * let f = [] -> {a:Int,b:Bool} => (
+         *  return {a:7, b:true};
+         *  {a:7, b:true}
+         * );
+         */
+
+        // given
+        val fDef =
+            functionDefinition(
+                "f",
+                emptyList(),
+                block(
+                    returnStatement(simpleStruct()),
+                    simpleStruct(),
+                ),
+                simpleType(),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+
+        // then
+        val expectedCFG =
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("assign res.b") { writeRegister(virtualRegister("res.a"), integer(7)) }
+                "assign res.b" does jump("bodyExit") { writeRegister(virtualRegister("res.b"), integer(1)) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `return with struct`() {
+        /*
+         * let f = [] -> {a:Int,b:Bool} => return {a:7, b:true};
+         */
+
+        // given
+        val fDef =
+            functionDefinition(
+                "f",
+                emptyList(),
+                returnStatement(simpleStruct()),
+                simpleType(),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+
+        // then
+        val expectedCFG =
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does jump("assign res.b") { writeRegister(virtualRegister("res.a"), integer(7)) }
+                "assign res.b" does jump("bodyExit") { writeRegister(virtualRegister("res.b"), integer(1)) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
     }
 }

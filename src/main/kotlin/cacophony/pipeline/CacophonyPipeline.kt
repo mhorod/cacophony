@@ -21,11 +21,14 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyParser
 import cacophony.semantic.analysis.*
 import cacophony.semantic.names.*
+import cacophony.semantic.rtti.ObjectOutlineLocation
+import cacophony.semantic.rtti.ObjectOutlinesCreator
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.generateAST
 import cacophony.semantic.types.TypeCheckingResult
+import cacophony.semantic.types.TypeExpr
 import cacophony.semantic.types.checkTypes
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
@@ -42,6 +45,11 @@ data class AstAnalysisResult(
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
+)
+
+data class ObjectOutlines(
+    val locations: ObjectOutlineLocation,
+    val asm: List<String>,
 )
 
 class CacophonyPipeline(
@@ -226,11 +234,29 @@ class CacophonyPipeline(
         return AstAnalysisResult(resolvedVariables, types, variablesMap, analyzedExpressions, functionHandlers, foreignFunctions)
     }
 
+    fun getUsedTypes(types: TypeCheckingResult): List<TypeExpr> = types.expressionTypes.values + types.definitionTypes.values
+
+    fun createObjectOutlines(usedTypes: List<TypeExpr>): ObjectOutlines {
+        val objectOutlinesCreator = ObjectOutlinesCreator()
+        // all internal structures, like closures, must later be added here
+        objectOutlinesCreator.add(usedTypes)
+        return ObjectOutlines(objectOutlinesCreator.getLocations(), objectOutlinesCreator.getAsm())
+    }
+
     fun generateControlFlowGraph(input: Input): ProgramCFG = generateControlFlowGraph(generateAST(input))
 
-    private fun generateControlFlowGraph(ast: AST): ProgramCFG = generateControlFlowGraph(analyzeAst(ast), SimpleCallGenerator())
+    private fun generateControlFlowGraph(ast: AST): ProgramCFG =
+        generateControlFlowGraph(
+            analyzeAst(ast),
+            SimpleCallGenerator(),
+            createObjectOutlines(getUsedTypes(analyzeAst(ast).types)).locations,
+        )
 
-    fun generateControlFlowGraph(analyzedAst: AstAnalysisResult, callGenerator: CallGenerator): ProgramCFG {
+    fun generateControlFlowGraph(
+        analyzedAst: AstAnalysisResult,
+        callGenerator: CallGenerator,
+        objectOutlineLocation: ObjectOutlineLocation,
+    ): ProgramCFG {
         val cfg =
             generateCFG(
                 analyzedAst.resolvedVariables,
@@ -239,7 +265,7 @@ class CacophonyPipeline(
                 analyzedAst.variablesMap,
                 analyzedAst.types,
                 callGenerator,
-                mapOf(), // TODO(Rafał): populate this
+                objectOutlineLocation,
             )
         logger?.logSuccessfulControlFlowGraphGeneration(cfg)
         return cfg
@@ -336,7 +362,8 @@ class CacophonyPipeline(
 
     private fun generateAsmImpl(ast: AST): Pair<String, Map<FunctionDefinition, String>> {
         val analyzedAst = analyzeAst(ast)
-        val cfg = generateControlFlowGraph(analyzedAst, SimpleCallGenerator())
+        val objectOutlines = createObjectOutlines(getUsedTypes(analyzedAst.types))
+        val cfg = generateControlFlowGraph(analyzedAst, SimpleCallGenerator(), objectOutlines.locations)
         val covering = coverWithInstructions(cfg)
         val registersInteractions = analyzeRegistersInteraction(covering)
         val registerAllocation = allocateRegisters(registersInteractions)
@@ -357,11 +384,12 @@ class CacophonyPipeline(
                 }
             }
         asm.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
-        return Pair(generateAsmPreamble(analyzedAst.foreignFunctions), asm)
+        return Pair(generateAsmPreamble(analyzedAst.foreignFunctions, objectOutlines.asm), asm)
     }
 
     private fun generateAsm(ast: AST): String {
         val (preamble, functions) = generateAsmImpl(ast)
+        println("asm preamble:\n$preamble")
         functions.forEach { (function, asm) -> println("$function generates asm:\n$asm") }
         return (listOf(preamble) + functions.values).joinToString("\n")
     }

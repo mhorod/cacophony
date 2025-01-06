@@ -1,0 +1,11 @@
+foreign write_int: [Int] -> Int;
+
+let int_reference = $2;
+
+let x: Int = @int_reference;
+
+write_int[@int_reference];
+write_int[x];
+@int_reference = 5;
+write_int[@int_reference];
+write_int[x];

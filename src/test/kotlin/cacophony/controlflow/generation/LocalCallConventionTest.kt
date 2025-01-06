@@ -185,13 +185,7 @@ class LocalCallConventionTest {
                 // The argument still on the stack must then be ignored
                 "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(24) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                "forward result" does
-                    jump("bodyExit") {
-                        writeRegister(
-                            getResultRegister(),
-                            registerUse(virtualRegister("result")),
-                        )
-                    }
+                "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
@@ -299,26 +293,14 @@ class LocalCallConventionTest {
                 "bodyEntry" does jump("prepare rsp in") { writeRegister("arg in", integer(1)) }
                 "prepare rsp in" does jump("pass arg in") { registerUse(rsp) subeq integer(8) }
                 // ...and then it is passed to its destination register (according to the call convention)...
-                "pass arg in" does
-                    jump("pass static link in") {
-                        writeRegister(
-                            rdi,
-                            registerUse(virtualRegister("arg in")),
-                        )
-                    }
+                "pass arg in" does jump("pass static link in") { writeRegister(rdi, registerUse(virtualRegister("arg in"))) }
                 "pass static link in" does jump("call in") { writeRegister(rsi, registerUse(rbp)) }
                 "call in" does jump("restore rsp in") { call(calleeDef) }
                 "restore rsp in" does jump("extract result in") { registerUse(rsp) addeq integer(8) }
                 "extract result in" does jump("prepare rsp out") { writeRegister("result in", registerUse(rax)) }
                 "prepare rsp out" does jump("pass arg out") { registerUse(rsp) subeq integer(8) }
                 // ...and then the internal result is passed to its destination register (according to the call convention)
-                "pass arg out" does
-                    jump("pass static link out") {
-                        writeRegister(
-                            rdi,
-                            registerUse(virtualRegister("result in")),
-                        )
-                    }
+                "pass arg out" does jump("pass static link out") { writeRegister(rdi, registerUse(virtualRegister("result in"))) }
                 "pass static link out" does jump("call out") { writeRegister(rsi, registerUse(rbp)) }
                 "call out" does jump("restore rsp out") { call(calleeDef) }
                 "restore rsp out" does jump("extract result out") { registerUse(rsp) addeq integer(8) }
@@ -355,6 +337,7 @@ class LocalCallConventionTest {
                         writeRegister(getResultRegister(), integer(1) add registerUse(virtualRegister("result")))
                     }
             }
+
         assertEquivalent(actualCFG, expectedCFG)
     }
 }
