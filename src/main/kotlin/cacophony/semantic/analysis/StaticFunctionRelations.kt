@@ -178,12 +178,6 @@ private class StaticFunctionsRelationsVisitor(
         visitExpression(expr.rhs)
     }
 
-    private fun visitVariableReadWrite(expr: VariableUse) {
-        functionStack.lastOrNull()?.let {
-            relations[it]?.usedVariables?.add(UsedVariable(variablesMap.lvalues[expr]!!, VariableUseType.READ_WRITE))
-        }
-    }
-
     private fun visitUnaryOperator(expr: OperatorUnary) = visitExpression(expr.expression)
 
     private fun visitReturnStatement(expr: Statement.ReturnStatement) = visitExpression(expr.value)

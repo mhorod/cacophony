@@ -76,7 +76,10 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
 
             is Struct -> expression.fields.values.forEach { visit(it) }
             is Allocation -> visit(expression.value)
-            is Dereference -> visit(expression.value)
+            is Dereference -> {
+                visit(expression.value)
+                lvalues[expression] = Variable.Heap
+            }
             is LeafExpression -> {
                 /* do nothing */
             }
@@ -142,7 +145,7 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
 
             is Struct -> expression.fields.values.forEach { visit(it) }
 
-            is Allocation -> {}
+            is Allocation -> visit(expression.value)
             is Dereference -> visit(expression.value)
 
             is LeafExpression -> {
