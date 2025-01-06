@@ -1,0 +1,14 @@
+let s = {x=1};
+
+let struct_ref: &{x:Int} = $s;
+let int_ref: &Int = $s.x; # field access has higher priority than allocation
+
+let t: {x:Int} = @struct_ref;
+@struct_ref = {x=2};
+
+let x: Int = @struct_ref.x; # dereference has higher priority than field access
+@struct_ref.x = 3;
+
+let s1 = {r=$4};
+let y: Int = @(s1.r);
+@(s1.r)=$5;
