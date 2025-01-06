@@ -41,7 +41,6 @@ class ExamplesTest {
             val nameResolutionResult = pipeline.resolveNames(result.ast!!)
             result.resolvedVariables = pipeline.resolveOverloads(result.ast!!, nameResolutionResult)
             result.types = pipeline.checkTypes(result.ast!!, result.resolvedVariables!!)
-            // result.analysisResult = pipeline.analyzeFunctions(result.ast!!, result.resolvedVariables!!)
             val callGraph = pipeline.generateCallGraph(result.ast!!, result.resolvedVariables!!)
             val variablesMap = pipeline.createVariables(result.ast!!, result.resolvedVariables!!, result.types!!)
             result.analysisResult = pipeline.analyzeFunctions(result.ast!!, variablesMap, result.resolvedVariables!!, callGraph)

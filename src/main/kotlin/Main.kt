@@ -11,6 +11,8 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.nameWithoutExtension
 
 class Main : CliktCommand() {
@@ -30,7 +32,9 @@ class Main : CliktCommand() {
     private val logAsm by option("--log-asm").flag()
     private val verbose by option("-v", "--verbose").flag()
     private val saveToFiles by option("-s", "--save").flag()
+    private val clearPrevious by option("-c", "--clear").flag()
 
+    @OptIn(ExperimentalPathApi::class)
     override fun run() {
         echo("Compiling $file")
 
@@ -40,6 +44,8 @@ class Main : CliktCommand() {
         if (!Files.exists(Params.outputParentDir))
             Files.createDirectory(Params.outputParentDir)
         val outputDir = Params.outputParentDir.resolve(outputName)
+        if (Files.exists(outputDir) && clearPrevious)
+            outputDir.deleteRecursively()
         if (!Files.exists(outputDir))
             Files.createDirectory(outputDir)
         if (!Files.isDirectory(outputDir))

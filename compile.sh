@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./gradlew run --args="$1"
+./gradlew run --args="$*"
