@@ -42,7 +42,7 @@ fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
     when (variable) {
         is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable))
         is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(handler, subfield) })
-        Variable.Heap -> error("Unreachable")
+        is Variable.Heap -> throw IllegalArgumentException("`Heap` is a special marker `Variable` and has no layout")
     }
 
 fun flattenLayout(layout: Layout): List<CFGNode> =

@@ -202,9 +202,13 @@ private class VarUseVisitor(
             } else {
                 VariableUseType.WRITE
             }
-        check(expr.lhs is Assignable) {
-            "A cosmic ray must have hit a bit in the RAM because `expr.lhs !is `Assignable` but this should not be possible"
-        }
+        /*
+         * This verification should always pass in practice because the only constructor for `LValueOperator` takes an `Assignable`
+         * and forwards it to the constructor of `OperatorBinary` as `Expression`. However, the Kotlin compiler does not perform such
+         * in-depth static analysis.
+         * If the verification happens to fail, it suggests a misuse of reflection / mocking.
+         */
+        require(expr.lhs is Assignable) { "The provided `expr` is ill-formed, `expr.lhs` should be `Assignable`" }
         visitAssignable(expr.lhs, lhsUseType)
         visitExpression(expr.rhs)
         useTypeAnalysis[expr] = merge(useTypeAnalysis[expr.lhs], useTypeAnalysis[expr.rhs])

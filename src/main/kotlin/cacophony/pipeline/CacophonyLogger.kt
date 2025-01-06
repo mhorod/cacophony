@@ -229,7 +229,7 @@ class CacophonyLogger : Logger<Int, TokenCategorySpecific, CacophonyGrammarSymbo
                 "$variable".split("$").last() + " { " +
                     variable.fields.entries.joinToString(", ") { (k, v) -> "$k -> ${variableToString(v)}" } + " }"
 
-            Variable.Heap -> variable.toString()
+            is Variable.Heap -> variable.toString()
         }
 
     private fun shortRegisterName(register: Register?) =
