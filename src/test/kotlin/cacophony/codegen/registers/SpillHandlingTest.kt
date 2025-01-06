@@ -8,7 +8,6 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.functions.FunctionHandler
-import cacophony.controlflow.generation.CFG
 import cacophony.graphs.GraphColoring
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -701,7 +700,7 @@ class SpillHandlingTest {
                     spilledWithRefA to emptySet(),
                     spilledWithRefB to emptySet(),
                     spilledWithNoRefA to setOf(spilledWithNoRefB),
-                    spilledWithNoRefB to setOf(spilledWithNoRefA)
+                    spilledWithNoRefB to setOf(spilledWithNoRefA),
                 ),
                 mapOf(),
             )

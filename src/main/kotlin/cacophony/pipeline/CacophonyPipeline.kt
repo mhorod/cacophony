@@ -220,11 +220,12 @@ class CacophonyPipeline(
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
-        val functionHandlers = generateFunctionHandlers(
-            analyzedFunctions,
-            SystemVAMD64CallConvention,
-            variablesMap,
-        )
+        val functionHandlers =
+            generateFunctionHandlers(
+                analyzedFunctions,
+                SystemVAMD64CallConvention,
+                variablesMap,
+            )
         val foreignFunctions = findForeignFunctions(resolvedNames)
         return AstAnalysisResult(resolvedVariables, types, variablesMap, analyzedExpressions, functionHandlers, foreignFunctions)
     }
@@ -258,12 +259,17 @@ class CacophonyPipeline(
     }
 
     fun analyzeRegistersInteraction(ast: AST): Map<FunctionDefinition, RegistersInteraction> =
-        coverWithInstructions(ast).mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG, SystemVAMD64CallConvention.preservedRegisters()) }
+        coverWithInstructions(ast).mapValues { (_, loweredCFG) ->
+            analyzeRegistersInteraction(loweredCFG, SystemVAMD64CallConvention.preservedRegisters())
+        }
 
     private fun analyzeRegistersInteraction(
         covering: Map<FunctionDefinition, LoweredCFGFragment>,
     ): Map<FunctionDefinition, RegistersInteraction> {
-        val registersInteraction = covering.mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG, SystemVAMD64CallConvention.preservedRegisters()) }
+        val registersInteraction =
+            covering.mapValues { (_, loweredCFG) ->
+                analyzeRegistersInteraction(loweredCFG, SystemVAMD64CallConvention.preservedRegisters())
+            }
         logger?.logSuccessfulRegistersInteractionGeneration(registersInteraction)
         return registersInteraction
     }

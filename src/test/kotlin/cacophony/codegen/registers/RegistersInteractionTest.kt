@@ -112,13 +112,14 @@ class RegistersInteractionTest {
         val preservedHardwareReg = HardwareRegister.R12
         val preservedReg = Register.FixedRegister(preservedHardwareReg)
 
-        val block = mockBlock(
-            listOf(
-                mockInstruction(setOf(refReg), emptySet()),
-                mockInstruction(setOf(nonRefReg), emptySet()),
-            ),
-            setOf(),
-        )
+        val block =
+            mockBlock(
+                listOf(
+                    mockInstruction(setOf(refReg), emptySet()),
+                    mockInstruction(setOf(nonRefReg), emptySet()),
+                ),
+                setOf(),
+            )
 
         every { block.predecessors() } returns emptySet()
 

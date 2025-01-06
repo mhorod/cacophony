@@ -87,11 +87,12 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
                 other is Structural &&
                 areEquivalentTypes(fields, other.fields)
 
-        override fun flatten(): List<Type> = fields.entries
-            .sortedBy { it.key }
-            .map { it.value }
-            .flatMap { it.flatten() }
-            .toList()
+        override fun flatten(): List<Type> =
+            fields.entries
+                .sortedBy { it.key }
+                .map { it.value }
+                .flatMap { it.flatten() }
+                .toList()
     }
 
     class Referential(range: Pair<Location, Location>, val type: Type) : BaseType(range), NonFunctionalType {

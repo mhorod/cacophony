@@ -13,7 +13,6 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.types.ReferentialType
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -93,7 +92,14 @@ class GenerateCallKtTest {
                         mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }
                     }
                 val type = mockk<BaseType.Functional>()
-                every { type.argumentsType } returns List(argumentCount) { mockk<BaseType.Basic>().also { every { it.flatten() } returns listOf(it) } }
+                every {
+                    type.argumentsType
+                } returns
+                    List(argumentCount) {
+                        mockk<BaseType.Basic>().also {
+                            every { it.flatten() } returns listOf(it)
+                        }
+                    }
                 functionHandlers.add(
                     0,
                     makeDefaultHandler(
@@ -269,21 +275,23 @@ class GenerateCallKtTest {
         val refType = mockk<BaseType.Referential>().also { every { it.flatten() } returns listOf(it) }
         every { type.argumentsType } returns List(argCount - 1) { basicType } + listOf(refType)
 
-        val funDef = Definition.FunctionDefinition(
-            mockk(),
-            "fun def",
-            type,
-            argDeclarations,
-            BaseType.Basic(mockk(), "Int"),
-            mockk(),
-        )
+        val funDef =
+            Definition.FunctionDefinition(
+                mockk(),
+                "fun def",
+                type,
+                argDeclarations,
+                BaseType.Basic(mockk(), "Int"),
+                mockk(),
+            )
 
-        val nodes = generateCall(
-            funDef,
-            (1..argCount + 1).map { mockk() },
-            null,
-            CFGNode.ConstantKnown(0),
-        ).filterIsInstance<CFGNode.Assignment>().drop(REGISTER_ARGUMENT_ORDER.size).take(3)
+        val nodes =
+            generateCall(
+                funDef,
+                (1..argCount + 1).map { mockk() },
+                null,
+                CFGNode.ConstantKnown(0),
+            ).filterIsInstance<CFGNode.Assignment>().drop(REGISTER_ARGUMENT_ORDER.size).take(3)
 
         for (i in 0..2) {
             val register = (nodes[i].destination as CFGNode.RegisterUse).register
