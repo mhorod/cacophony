@@ -17,7 +17,7 @@ class ReferenceTest {
                 "f",
                 listOf(typedArg("x", referenceType(intType()))),
                 block(
-                    dereference(variableUse("x")),
+                    deref(variableUse("x")),
                 ),
             )
 
@@ -49,7 +49,7 @@ class ReferenceTest {
                 "f",
                 listOf(typedArg("x", referenceType(intType())), typedArg("y", referenceType(intType()))),
                 block(
-                    dereference(variableUse("x")) add dereference(variableUse("y")),
+                    deref(variableUse("x")) add deref(variableUse("y")),
                 ),
             )
 
@@ -88,7 +88,7 @@ class ReferenceTest {
                 "f",
                 listOf(typedArg("x", referenceType(intType())), typedArg("y", referenceType(intType()))),
                 block(
-                    dereference(variableUse("x")) assign lit(2),
+                    deref(variableUse("x")) assign lit(2),
                     empty(),
                 ),
             )
@@ -122,8 +122,8 @@ class ReferenceTest {
                 "f",
                 listOf(typedArg("x", referenceType(boolType()))),
                 whileLoop(
-                    dereference(variableUse("x")),
-                    dereference(variableUse("x")) assign lit(false),
+                    deref(variableUse("x")),
+                    deref(variableUse("x")) assign lit(false),
                 ),
             )
 

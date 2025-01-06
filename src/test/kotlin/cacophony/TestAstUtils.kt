@@ -218,6 +218,6 @@ fun structTypeExpr(vararg fields: Pair<String, TypeExpr>) = StructType(fields.to
 
 fun referenceType(type: Type) = BaseType.Referential(mockRange(), type)
 
-fun dereference(value: Expression) = Dereference(mockRange(), value)
+fun deref(value: Expression) = Dereference(mockRange(), value)
 
-fun allocation(value: Expression) = Allocation(mockRange(), value)
+fun alloc(value: Expression) = Allocation(mockRange(), value)
