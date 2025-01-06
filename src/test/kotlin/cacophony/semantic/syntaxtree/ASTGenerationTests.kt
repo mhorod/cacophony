@@ -1,6 +1,7 @@
 package cacophony.semantic.syntaxtree
 
 import cacophony.*
+import cacophony.controlflow.functions.Builtin
 import cacophony.diagnostics.ASTDiagnostics
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
@@ -79,16 +80,28 @@ class ASTGenerationTests {
             )
         return Block(
             anyLocation(),
-            listOf(
-                program,
-                programCall,
-            ),
+            Builtin.all +
+                listOf(
+                    program,
+                    programCall,
+                ),
         )
     }
 
     private fun computeAST(content: String): AST {
         val (ast, _, exc) = computeASTAndDiagnostics(content)
         return ast ?: throw exc!!
+    }
+
+    private fun getInnerBlock(ast: AST): AST { // unwrap AST
+        val mainFunction = ast.children().filterIsInstance<Definition.FunctionDefinition>().first()
+        return mainFunction.children().first() as Block
+    }
+
+    private fun computeType(type: String): Type? {
+        val ast = computeAST("let x:$type=()") // that would fail type check, but here we don't care
+        val definition = getInnerBlock(ast).children().first() as Definition.VariableDeclaration
+        return definition.type
     }
 
     private fun computeFailDiagnostics(content: String): List<String> {
@@ -715,5 +728,107 @@ class ASTGenerationTests {
                 basicType("Int"),
             )
         assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `simple allocation`() {
+        val actual = computeAST("$2")
+        val expected =
+            Allocation(
+                anyLocation(),
+                literal(2),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `simple dereference`() {
+        val actual = computeAST("@x")
+        val expected =
+            Dereference(
+                anyLocation(),
+                variableUse("x"),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `dereference assignment`() {
+        val actual = computeAST("@x=2")
+        val expected =
+            OperatorBinary.Assignment(
+                anyLocation(),
+                Dereference(
+                    anyLocation(),
+                    variableUse("x"),
+                ),
+                literal(2),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `allocation of struct field`() {
+        val actual = computeAST("\$x.a")
+        val expected =
+            Allocation(
+                anyLocation(),
+                lvalueFieldRef(
+                    variableUse("x"),
+                    "a",
+                ),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `field of dereference`() {
+        val actual = computeAST("@x.a")
+        val expected =
+            lvalueFieldRef(
+                Dereference(
+                    anyLocation(),
+                    variableUse("x"),
+                ),
+                "a",
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `compute basic type`() {
+        val actual = computeType("Type")
+        val expected =
+            BaseType.Basic(
+                anyLocation(),
+                "Type",
+            )
+        assertThat(areEquivalentTypes(expected, actual))
+    }
+
+    @Test
+    fun `compute functional type`() {
+        val actual = computeType("[Type1]->Type2")
+        val expected =
+            BaseType.Functional(
+                anyLocation(),
+                listOf(BaseType.Basic(anyLocation(), "Type1")),
+                BaseType.Basic(anyLocation(), "Type2"),
+            )
+        assertThat(areEquivalentTypes(expected, actual))
+    }
+
+    @Test
+    fun `compute structural type`() {
+        val actual = computeType("{x:Type1, y:Type2}")
+        val expected =
+            BaseType.Structural(
+                anyLocation(),
+                mapOf(
+                    "x" to BaseType.Basic(anyLocation(), "Type1"),
+                    "y" to BaseType.Basic(anyLocation(), "Type2"),
+                ),
+            )
+        assertThat(areEquivalentTypes(expected, actual))
     }
 }

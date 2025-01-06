@@ -15,6 +15,7 @@ import cacophony.controlflow.mul
 import cacophony.controlflow.neq
 import cacophony.controlflow.not
 import cacophony.controlflow.sub
+import cacophony.semantic.syntaxtree.Assignable
 import cacophony.semantic.syntaxtree.Expression
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.argumentSet
@@ -23,6 +24,7 @@ typealias MakeUnaryExpression = (Expression) -> Expression
 typealias MakeUnaryNode = (CFGNode) -> CFGNode
 typealias MakeBinaryExpression = (Expression, Expression) -> Expression
 typealias MakeBinaryNode = (CFGNode, CFGNode) -> CFGNode
+typealias MakeAssignmentExpression = (Assignable, Expression) -> Expression
 
 class TestOperators {
     companion object {
@@ -33,18 +35,23 @@ class TestOperators {
         private val notNode: MakeUnaryNode = { child -> not(child) }
 
         val add: MakeBinaryExpression = { lhs, rhs -> lhs add rhs }
+        private val addeq: MakeAssignmentExpression = { lhs, rhs -> lhs addeq rhs }
         private val addNode: MakeBinaryNode = { lhs, rhs -> lhs add rhs }
 
         private val sub: MakeBinaryExpression = { lhs, rhs -> lhs sub rhs }
+        private val subeq: MakeAssignmentExpression = { lhs, rhs -> lhs subeq rhs }
         private val subNode: MakeBinaryNode = { lhs, rhs -> lhs sub rhs }
 
         private val mul: MakeBinaryExpression = { lhs, rhs -> lhs mul rhs }
+        private val muleq: MakeAssignmentExpression = { lhs, rhs -> lhs muleq rhs }
         private val mulNode: MakeBinaryNode = { lhs, rhs -> lhs mul rhs }
 
         val div: MakeBinaryExpression = { lhs, rhs -> lhs div rhs }
+        private val diveq: MakeAssignmentExpression = { lhs, rhs -> lhs diveq rhs }
         private val divNode: MakeBinaryNode = { lhs, rhs -> lhs div rhs }
 
         private val mod: MakeBinaryExpression = { lhs, rhs -> lhs mod rhs }
+        private val modeq: MakeAssignmentExpression = { lhs, rhs -> lhs modeq rhs }
         private val modNode: MakeBinaryNode = { lhs, rhs -> lhs mod rhs }
 
         private val eq: MakeBinaryExpression = { lhs, rhs -> lhs eq rhs }
@@ -71,19 +78,24 @@ class TestOperators {
                 argumentSet("not", not, notNode),
             )
 
-        fun binaryExpressions(): List<Arguments> =
+        fun binaryExpressions(): List<Arguments> = arithmeticOperators() + logicalOperators()
+
+        fun arithmeticOperators(): List<Arguments> =
             listOf(
                 argumentSet("add", add, addNode),
                 argumentSet("sub", sub, subNode),
                 argumentSet("mul", mul, mulNode),
                 argumentSet("div", div, divNode),
                 argumentSet("mod", mod, modNode),
-                argumentSet("eq", eq, eqNode),
-                argumentSet("neq", neq, neqNode),
-                argumentSet("lt", lt, ltNode),
-                argumentSet("leq", leq, leqNode),
-                argumentSet("gt", gt, gtNode),
-                argumentSet("geq", geq, geqNode),
+            )
+
+        fun arithmeticAssignmentOperators(): List<Arguments> =
+            listOf(
+                argumentSet("addeq", addeq),
+                argumentSet("subeq", subeq),
+                argumentSet("muleq", muleq),
+                argumentSet("diveq", diveq),
+                argumentSet("modeq", modeq),
             )
 
         fun logicalOperators(): List<Arguments> =

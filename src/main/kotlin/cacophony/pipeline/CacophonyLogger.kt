@@ -6,7 +6,7 @@ import cacophony.codegen.registers.RegistersInteraction
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.Register
 import cacophony.controlflow.Variable
-import cacophony.controlflow.programCfgToGraphviz
+import cacophony.controlflow.print.programCfgToGraphviz
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
@@ -304,6 +304,8 @@ class CacophonyLogger(
             is Variable.StructVariable ->
                 "$variable".split("$").last() + " { " +
                     variable.fields.entries.joinToString(", ") { (k, v) -> "$k -> ${variableToString(v)}" } + " }"
+
+            is Variable.Heap -> variable.toString()
         }
 
     private fun shortRegisterName(register: Register?) =

@@ -32,6 +32,10 @@ class InstructionBuilder(val slotFill: SlotFill) {
         instructions.add(MovMemReg(memory, source))
     }
 
+    fun mov(destination: Register, dataLabel: String) {
+        instructions.add(MovRegLabel(destination, dataLabel))
+    }
+
     fun add(destination: Register, source: Register) {
         instructions.add(AddRegReg(destination, source))
     }

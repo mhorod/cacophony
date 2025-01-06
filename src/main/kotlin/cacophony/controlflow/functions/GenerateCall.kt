@@ -27,7 +27,7 @@ fun generateCallFrom(
         }
 
         is Definition.FunctionDefinition -> {
-            if (function.arguments.size != arguments.size) {
+            if (function.arguments.sumOf { it.type.size() } != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
             if (result != null && !layoutMatchesType(result, function.returnType)) {

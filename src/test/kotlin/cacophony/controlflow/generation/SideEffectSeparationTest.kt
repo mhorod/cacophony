@@ -55,7 +55,7 @@ class SideEffectSeparationTest {
                         writeRegister(
                             "y",
                             makeNode(
-                                readRegister("lhs"),
+                                registerUse("lhs"),
                                 (writeRegister("x", integer(20))),
                             ),
                         )
@@ -97,14 +97,14 @@ class SideEffectSeparationTest {
                     }
                 "compute lhs" does
                     jump("add") {
-                        writeRegister("lhs", readRegister("x"))
+                        writeRegister("lhs", registerUse("x"))
                     }
                 "add" does
                     jump("empty") {
                         writeRegister(
                             "y",
                             makeNode(
-                                readRegister("lhs"),
+                                registerUse("lhs"),
                                 (writeRegister("x", integer(20))),
                             ),
                         )
@@ -153,8 +153,8 @@ class SideEffectSeparationTest {
                         writeRegister(
                             "y",
                             makeNode(
-                                readRegister("lhs"),
-                                readRegister("x"),
+                                registerUse("lhs"),
+                                registerUse("x"),
                             ),
                         )
                     }

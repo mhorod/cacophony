@@ -15,6 +15,7 @@ val valuePatterns =
     listOf(
         ConstantPattern,
         RegisterUsePattern,
+        DataLabelPattern,
         // arithmetic
         AdditionPattern,
         ConstantSubtractionPattern,
@@ -63,6 +64,15 @@ object RegisterUsePattern : ValuePattern {
     override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
         instructions(fill) {
             mov(destination, reg(label))
+        }
+}
+
+object DataLabelPattern : ValuePattern {
+    override val tree = CFGNode.NodeSlot(NodeLabel(), CFGNode.DataLabel::class)
+
+    override fun makeInstance(fill: SlotFill, destination: Register): List<Instruction> =
+        instructions(fill) {
+            mov(destination, node(tree).dataLabel)
         }
 }
 

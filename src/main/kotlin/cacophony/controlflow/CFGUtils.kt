@@ -27,9 +27,13 @@ fun returnNode(resultSize: Int) = CFGNode.Return(CFGNode.ConstantKnown(resultSiz
 
 fun integer(value: Int) = CFGNode.ConstantKnown(value)
 
+fun writeRegister(register: Register, value: CFGNode) = CFGNode.Assignment(registerUse(register), value)
+
 fun registerUse(register: Register) = CFGNode.RegisterUse(register)
 
 fun memoryAccess(at: CFGNode) = CFGNode.MemoryAccess(at)
+
+fun dataLabel(label: String) = CFGNode.DataLabel(label)
 
 // arithmetic
 infix fun CFGNode.add(other: CFGNode) = CFGNode.Addition(this, other)
@@ -78,8 +82,6 @@ infix fun CFGNode.gt(other: CFGNode) = CFGNode.Greater(this, other)
 infix fun CFGNode.geq(other: CFGNode) = CFGNode.GreaterEqual(this, other)
 
 fun not(node: CFGNode) = CFGNode.LogicalNot(node)
-
-fun writeRegister(register: Register, value: CFGNode) = CFGNode.Assignment(registerUse(register), value)
 
 fun wrapAllocation(allocation: VariableAllocation): CFGNode.LValue =
     when (allocation) {

@@ -28,7 +28,13 @@ class LocalCallConventionTest {
                 "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(8) }
                 // The called function returned something, and we are using it as a value - we need to extract it from rax
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                "forward result" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
@@ -102,7 +108,13 @@ class LocalCallConventionTest {
                 "call" does jump("restore rsp") { call(calleeDef) }
                 "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(8) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                "forward result" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
@@ -145,11 +157,28 @@ class LocalCallConventionTest {
                 "pass arg3" does jump("pass arg4") { writeRegister(rdx, registerUse(virtualRegister("arg3"))) }
                 "pass arg4" does jump("pass arg5") { writeRegister(rcx, registerUse(virtualRegister("arg4"))) }
                 "pass arg5" does jump("pass arg6") { writeRegister(r8, registerUse(virtualRegister("arg5"))) }
-                "pass arg6" does jump("prepare arg7 for push") { writeRegister(r9, registerUse(virtualRegister("arg6"))) }
+                "pass arg6" does
+                    jump("prepare arg7 for push") {
+                        writeRegister(
+                            r9,
+                            registerUse(virtualRegister("arg6")),
+                        )
+                    }
                 // ...or via the stack
                 "prepare arg7 for push" does
-                    jump("prepare static link for push") { writeRegister("temp arg7", registerUse(virtualRegister("arg7"))) }
-                "prepare static link for push" does jump("push static link") { writeRegister("temp static link", registerUse(rbp)) }
+                    jump("prepare static link for push") {
+                        writeRegister(
+                            "temp arg7",
+                            registerUse(virtualRegister("arg7")),
+                        )
+                    }
+                "prepare static link for push" does
+                    jump("push static link") {
+                        writeRegister(
+                            "temp static link",
+                            registerUse(rbp),
+                        )
+                    }
                 "push static link" does jump("push arg7") { pushRegister("temp static link") }
                 "push arg7" does jump("call") { pushRegister("temp arg7") }
                 "call" does jump("restore rsp") { call(calleeDef) }
@@ -200,13 +229,30 @@ class LocalCallConventionTest {
                 "pass arg3" does jump("pass arg4") { writeRegister(rdx, registerUse(virtualRegister("arg3"))) }
                 "pass arg4" does jump("pass arg5") { writeRegister(rcx, registerUse(virtualRegister("arg4"))) }
                 "pass arg5" does jump("pass arg6") { writeRegister(r8, registerUse(virtualRegister("arg5"))) }
-                "pass arg6" does jump("prepare arg7 for push") { writeRegister(r9, registerUse(virtualRegister("arg6"))) }
+                "pass arg6" does
+                    jump("prepare arg7 for push") {
+                        writeRegister(
+                            r9,
+                            registerUse(virtualRegister("arg6")),
+                        )
+                    }
                 // ...or via the stack
                 "prepare arg7 for push" does
                     jump("prepare arg8 for push") { writeRegister("temp arg7", registerUse(virtualRegister("arg7"))) }
                 "prepare arg8 for push" does
-                    jump("prepare static link for push") { writeRegister("temp arg8", registerUse(virtualRegister("arg8"))) }
-                "prepare static link for push" does jump("push static link") { writeRegister("temp static link", registerUse(rbp)) }
+                    jump("prepare static link for push") {
+                        writeRegister(
+                            "temp arg8",
+                            registerUse(virtualRegister("arg8")),
+                        )
+                    }
+                "prepare static link for push" does
+                    jump("push static link") {
+                        writeRegister(
+                            "temp static link",
+                            registerUse(rbp),
+                        )
+                    }
                 "push static link" does jump("push arg8") { pushRegister("temp static link") }
                 "push arg8" does jump("push arg7") { pushRegister("temp arg8") }
                 "push arg7" does jump("call") { pushRegister("temp arg7") }
@@ -214,7 +260,13 @@ class LocalCallConventionTest {
                 // The argument still on the stack must then be ignored
                 "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(24) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                "forward result" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
@@ -256,9 +308,6 @@ class LocalCallConventionTest {
                 "forward result out" does
                     jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result out"))) }
             }
-
-        cfgFragmentToGraphviz(actualFragment)
-        cfgFragmentToGraphviz(expectedFragment)
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 
