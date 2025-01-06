@@ -8,7 +8,7 @@ import kotlin.collections.mutableMapOf
 
 typealias CallGraph = Map<Definition.FunctionDefinition, Set<Definition.FunctionDefinition>>
 
-fun generateCallGraph(ast: AST, diagnostics: Diagnostics, resolvedVariables: ResolvedVariables): CallGraph =
+fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables, diagnostics: Diagnostics): CallGraph =
     CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null)
 
 private class CallGraphProvider(

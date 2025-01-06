@@ -140,6 +140,10 @@ class CacophonyLogger(
         }
     }
 
+    override fun logFailedVariableCreation() {
+        printError("Variable creation failed :(")
+    }
+
     override fun logSuccessfulCallGraphGeneration(callGraph: CallGraph) {
         if (logCallGraph) {
             val content = StringBuilder()

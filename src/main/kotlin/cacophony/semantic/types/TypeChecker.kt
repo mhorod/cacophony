@@ -6,7 +6,7 @@ import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 
 // Result contains every variable that could be properly typed
-fun checkTypes(ast: AST, diagnostics: Diagnostics, resolvedVariables: ResolvedVariables): TypeCheckingResult {
+fun checkTypes(ast: AST, resolvedVariables: ResolvedVariables, diagnostics: Diagnostics): TypeCheckingResult {
     val typer = Typer(diagnostics, resolvedVariables)
     typer.typeExpression(ast)
     return TypeCheckingResult(typer.result, typer.typedVariables)
