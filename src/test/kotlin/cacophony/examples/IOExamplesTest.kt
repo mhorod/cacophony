@@ -1,8 +1,8 @@
 package cacophony.examples
 
 import cacophony.diagnostics.CacophonyDiagnostics
-import cacophony.pipeline.CacophonyLogger
 import cacophony.pipeline.CacophonyPipeline
+import cacophony.pipeline.Params
 import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatPath
@@ -30,9 +30,9 @@ class IOExamplesTest {
 
         val input = FileInput(programPath.toString())
         val diagnostics = CacophonyDiagnostics(input)
-        val pipeline = CacophonyPipeline(diagnostics, CacophonyLogger())
+        val pipeline = CacophonyPipeline(diagnostics, null)
 
-        pipeline.compile(input, additionalObjects, asmFile, objFile, binFile)
+        pipeline.compileAndLink(input, (additionalObjects + Params.externalLibs), asmFile, objFile, binFile)
 
         val process =
             ProcessBuilder(binFile.toString())

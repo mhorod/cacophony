@@ -7,24 +7,26 @@ import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.Register
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
+import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.semantic.analysis.*
 import cacophony.semantic.names.*
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.token.Token
+import cacophony.token.TokenCategorySpecific
 import java.nio.file.Path
 
-interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymbol>> {
-    fun logSuccessfulLexing(tokens: List<Token<TokenT>>)
+interface Logger {
+    fun logSuccessfulLexing(tokens: List<Token<TokenCategorySpecific>>)
 
     fun logFailedLexing()
 
-    fun logSuccessfulGrammarAnalysis(analyzedGrammar: AnalyzedGrammar<StateT, GrammarSymbol>)
+    fun logSuccessfulGrammarAnalysis(analyzedGrammar: AnalyzedGrammar<Int, CacophonyGrammarSymbol>)
 
     fun logFailedGrammarAnalysis()
 
-    fun logSuccessfulParsing(parseTree: ParseTree<GrammarSymbol>)
+    fun logSuccessfulParsing(parseTree: ParseTree<CacophonyGrammarSymbol>)
 
     fun logFailedParsing()
 
@@ -50,8 +52,6 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
 
     fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult)
 
-    fun logFailedFunctionAnalysis()
-
     fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>)
 
     fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>)
@@ -64,6 +64,8 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
 
     fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>)
 
+    fun logSuccessfulAsmGeneration(functions: Map<Definition.FunctionDefinition, String>)
+
     fun logSuccessfulAssembling(dest: Path)
 
     fun logFailedAssembling(status: Int)
@@ -73,4 +75,8 @@ interface Logger<StateT, TokenT : Enum<TokenT>, GrammarSymbol : Enum<GrammarSymb
     fun logFailedLinking(status: Int)
 
     fun logSuccessfulVariableCreation(variableMap: VariablesMap)
+
+    fun logFailedVariableCreation()
+
+    fun logSuccessfulPreambleGeneration(preamble: String)
 }
