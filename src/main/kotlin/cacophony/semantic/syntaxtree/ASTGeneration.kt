@@ -346,7 +346,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     throw IllegalArgumentException("Expected the operator symbol, got: $operatorKind")
                 }
             }
-            REFERENCE_LEVEL -> { // very similar to unary operators
+            DEREFERENCE_LEVEL, ALLOCATION_LEVEL -> { // very similar to unary operators
                 assert(childNum == 2)
                 val operatorKind = parseTree.children[0]
                 if (operatorKind is ParseTree.Leaf) {
@@ -390,7 +390,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
     return Empty(range = Pair(Location(0), Location(0)))
 }
 
-private fun wrapInFunctionAndAddPreamble(originalAST: AST): AST {
+private fun wrapInFunction(originalAST: AST): AST {
     val beforeStart = Location(-1)
     val behindEnd = Location(originalAST.range.second.value + 1)
     val program =
@@ -431,5 +431,5 @@ private fun wrapInFunctionAndAddPreamble(originalAST: AST): AST {
 fun generateAST(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): AST {
     val prunedTree = pruneParseTree(parseTree, diagnostics)!!
     val ast = generateASTInternal(prunedTree, diagnostics)
-    return wrapInFunctionAndAddPreamble(ast)
+    return wrapInFunction(ast)
 }

@@ -397,7 +397,7 @@ class CacophonyPipeline(
     fun generateAsm(input: Input): String = generateAsm(generateAST(input))
 
     private fun compile(src: Path, dest: Path) {
-        val options = listOf("nasm", "-f", "elf64", "-o", dest.toString(), src.toString())
+        val options = listOf("wsl", "nasm", "-f", "elf64", "-o", dest.toString(), src.toString())
         val nasm = ProcessBuilder(options).inheritIO().start()
         nasm.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedAssembling(status)
@@ -406,7 +406,7 @@ class CacophonyPipeline(
     }
 
     fun link(sources: List<Path>, dest: Path) {
-        val options = listOf("gcc", "-no-pie", "-z", "noexecstack", "-o", dest.toString()) + sources.map { it.toString() }
+        val options = listOf("wsl", "gcc", "-no-pie", "-z", "noexecstack", "-o", dest.toString()) + sources.map { it.toString() }
         val gcc = ProcessBuilder(options).inheritIO().start()
         gcc.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedLinking(status)

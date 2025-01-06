@@ -298,25 +298,29 @@ class CacophonyGrammar {
                         ),
                     STATEMENT_LEVEL produces
                         (
-                            atomic(REFERENCE_LEVEL) or
+                            atomic(ALLOCATION_LEVEL) or
                                 atomic(RETURN_STATEMENT) or
                                 atomic(WHILE_CLAUSE) or
                                 atomic(IF_CLAUSE)
                         ),
-                    REFERENCE_LEVEL produces
+                    ALLOCATION_LEVEL produces
                         (
                             atomic(CALL_LEVEL) or
-                                (atomic(DOLLAR) concat atomic(REFERENCE_LEVEL)) or
-                                (atomic(AT) concat atomic(REFERENCE_LEVEL))
+                                (atomic(DOLLAR) concat atomic(ALLOCATION_LEVEL))
                         ),
                     CALL_LEVEL produces
                         (
-                            atomic(LITERAL_LEVEL) concat
+                            atomic(DEREFERENCE_LEVEL) concat
                                 (
                                     atomic(FUNCTION_CALL) or
                                         (atomic(PERIOD) concat atomic(VARIABLE_IDENTIFIER))
                                 ).star()
 
+                        ),
+                    DEREFERENCE_LEVEL produces
+                        (
+                            atomic(LITERAL_LEVEL) or
+                                (atomic(AT) concat atomic(DEREFERENCE_LEVEL))
                         ),
                     LITERAL_LEVEL produces
                         (

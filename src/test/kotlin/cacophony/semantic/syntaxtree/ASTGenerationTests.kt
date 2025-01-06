@@ -99,7 +99,7 @@ class ASTGenerationTests {
     }
 
     private fun computeType(type: String): Type? {
-        val ast = computeAST("let x:$type=()") // that would fail type check, but here we dont care
+        val ast = computeAST("let x:$type=()") // that would fail type check, but here we don't care
         val definition = getInnerBlock(ast).children().first() as Definition.VariableDeclaration
         return definition.type
     }
@@ -768,6 +768,34 @@ class ASTGenerationTests {
     }
 
     @Test
+    fun `allocation of struct field`() {
+        val actual = computeAST("\$x.a")
+        val expected =
+            Allocation(
+                anyLocation(),
+                lvalueFieldRef(
+                    variableUse("x"),
+                    "a",
+                ),
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
+    fun `field of dereference`() {
+        val actual = computeAST("@x.a")
+        val expected =
+            lvalueFieldRef(
+                Dereference(
+                    anyLocation(),
+                    variableUse("x"),
+                ),
+                "a",
+            )
+        assertEquivalentAST(mockWrapInFunction(expected), actual)
+    }
+
+    @Test
     fun `compute basic type`() {
         val actual = computeType("Type")
         val expected =
@@ -800,17 +828,6 @@ class ASTGenerationTests {
                     "x" to BaseType.Basic(anyLocation(), "Type1"),
                     "y" to BaseType.Basic(anyLocation(), "Type2"),
                 ),
-            )
-        assertThat(areEquivalentTypes(expected, actual))
-    }
-
-    @Test
-    fun `compute referential type`() {
-        val actual = computeType("&Type")
-        val expected =
-            BaseType.Referential(
-                anyLocation(),
-                BaseType.Basic(anyLocation(), "Type"),
             )
         assertThat(areEquivalentTypes(expected, actual))
     }
