@@ -27,8 +27,7 @@ class PrologueEpilogueHandler(
         for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
             nodes.add(registerUse(destination, false) assign registerUse(Register.FixedRegister(source), false))
         }
-
-//        val isReference = argTypes.map { it is BaseType.Referential } + List(arguments.size - argTypes.size) { false }
+        
         val isReference = handler.getFunctionDeclaration().arguments.map { it.type is BaseType.Referential } + listOf(false)
         // Defined function arguments
         for ((ind, destination) in flattenedArguments.zip(isReference).withIndex()) {

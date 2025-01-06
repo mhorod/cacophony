@@ -130,8 +130,8 @@ class RegistersInteractionTest {
         assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(refReg, nonRefReg, preservedReg)
         assertThat(registersInteraction.interference).containsExactlyInAnyOrderEntriesOf(
             mapOf(
-                refReg to setOf(preservedReg),
-                nonRefReg to emptySet(),
+                refReg to setOf(preservedReg, nonRefReg),
+                nonRefReg to setOf(refReg),
                 preservedReg to setOf(refReg),
             ),
         )

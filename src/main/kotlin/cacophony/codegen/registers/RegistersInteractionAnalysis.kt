@@ -182,6 +182,10 @@ private class RegistersInteractionAnalysis(
                 interference[reg]!!.add(Register.FixedRegister(preservedReg))
                 interference[Register.FixedRegister(preservedReg)]!!.add(reg)
             }
+            allRegisters.filter { it is Register.VirtualRegister && !it.holdsReference }.forEach { reg2 ->
+                interference[reg]!!.add(reg2)
+                interference[reg2]!!.add(reg)
+            }
         }
 
         interference = getSymmetricClosure(interference.toMap()).mapValues { it.value.toMutableSet() }.toMutableMap()

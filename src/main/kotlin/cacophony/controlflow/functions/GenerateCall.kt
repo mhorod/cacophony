@@ -54,8 +54,8 @@ fun generateCall(
     result: Layout?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
-    // Argument past standard arguments are assumed to not be references to heap (i.e. static link).
-    val isReference = argTypes.map { it is BaseType.Referential } + List(arguments.size - argTypes.size) { false }
+    // One additional value for static link.
+    val isReference = argTypes.map { it is BaseType.Referential } + listOf(false)
 
     val registerArguments = arguments.zip(isReference).zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.zip(isReference).drop(registerArguments.size).map { Pair(it.first, Register.VirtualRegister(it.second)) }
