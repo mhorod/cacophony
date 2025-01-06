@@ -71,8 +71,7 @@ fun cfgNodeToBuilder(tree: CFGNode): String =
             "registerUse($register)"
         }
         is CFGNode.Comment -> "CFGNode.Comment(\"${tree.comment}\")"
-        is CFGNode.ConstantKnown -> "CFGNode.ConstantKnown(${tree.value})"
-        is CFGNode.ConstantLazy -> "constantLazy"
+        is CFGNode.Constant -> "CFGNode.ConstantKnown(${tree.value})"
         is CFGNode.Function -> "function"
         is CFGNode.FunctionSlot -> "functionSlot"
         CFGNode.NoOp -> "CFGNode.NoOp"
