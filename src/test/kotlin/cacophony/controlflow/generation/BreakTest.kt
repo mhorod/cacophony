@@ -44,11 +44,11 @@ class BreakTest {
                     }
                 "condition" does
                     conditional("true branch", "exitWhile") {
-                        readRegister("x") lt integer(10)
+                        registerUse("x") lt integer(10)
                     }
                 "true branch" does
                     jump("condition") {
-                        readRegister("x") addeq integer(1)
+                        registerUse("x") addeq integer(1)
                     }
                 "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
@@ -94,15 +94,15 @@ class BreakTest {
                     }
                 "loop condition" does
                     conditional("increment x", "exitWhile") {
-                        readRegister("x") lt integer(10)
+                        registerUse("x") lt integer(10)
                     }
                 "increment x" does
                     jump("check x mod 5") {
-                        readRegister("x") addeq integer(1)
+                        registerUse("x") addeq integer(1)
                     }
                 "check x mod 5" does
                     conditional("exitWhile", "loop condition") {
-                        (readRegister("x") mod integer(5)) eq integer(0)
+                        (registerUse("x") mod integer(5)) eq integer(0)
                     }
                 "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }
@@ -175,7 +175,7 @@ class BreakTest {
                     }
                 "condition" does
                     conditional("exitWhile", "exitWhile") {
-                        readRegister("x") eq integer(2)
+                        registerUse("x") eq integer(2)
                     }
                 "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }

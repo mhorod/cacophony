@@ -130,8 +130,8 @@ class ReferenceTest {
         // then
         val expectedCFG =
             singleWrappedFragmentCFG(fDef) {
-                "bodyEntry" does conditional("body", "while exit") { memoryAccess(readRegister("@x") add integer(0)) neq integer(0) }
-                "body" does jump("bodyEntry") { memoryAccess(readRegister("@x") add integer(0)) assign integer(0) }
+                "bodyEntry" does conditional("body", "while exit") { memoryAccess(registerUse("@x") add integer(0)) neq integer(0) }
+                "body" does jump("bodyEntry") { memoryAccess(registerUse("@x") add integer(0)) assign integer(0) }
                 "while exit" does jump("bodyExit") { writeRegister("res", integer(42)) }
             }
 
