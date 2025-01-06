@@ -33,4 +33,7 @@ interface FunctionHandler {
     fun generateEpilogue(): List<CFGNode>
 
     fun getResultLayout(): Layout
+
+    // Returns access to all references on stack, currently not used and may change return type.
+    fun getReferenceAccesses(): List<CFGNode.LValue>
 }

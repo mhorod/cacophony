@@ -8,8 +8,7 @@ import cacophony.codegen.instructions.matching.CacophonyInstructionMatcher
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.linearization.linearize
 import cacophony.codegen.registers.*
-import cacophony.controlflow.HardwareRegister
-import cacophony.controlflow.Register
+import cacophony.controlflow.*
 import cacophony.controlflow.functions.*
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.controlflow.generation.generateCFG
@@ -221,7 +220,11 @@ class CacophonyPipeline(
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
-        val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention, variablesMap)
+        val functionHandlers = generateFunctionHandlers(
+            analyzedFunctions,
+            SystemVAMD64CallConvention,
+            variablesMap,
+        )
         val foreignFunctions = findForeignFunctions(resolvedNames)
         return AstAnalysisResult(resolvedVariables, types, variablesMap, analyzedExpressions, functionHandlers, foreignFunctions)
     }
@@ -255,12 +258,12 @@ class CacophonyPipeline(
     }
 
     fun analyzeRegistersInteraction(ast: AST): Map<FunctionDefinition, RegistersInteraction> =
-        coverWithInstructions(ast).mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG) }
+        coverWithInstructions(ast).mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG, SystemVAMD64CallConvention.preservedRegisters()) }
 
     private fun analyzeRegistersInteraction(
         covering: Map<FunctionDefinition, LoweredCFGFragment>,
     ): Map<FunctionDefinition, RegistersInteraction> {
-        val registersInteraction = covering.mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG) }
+        val registersInteraction = covering.mapValues { (_, loweredCFG) -> analyzeRegistersInteraction(loweredCFG, SystemVAMD64CallConvention.preservedRegisters()) }
         logger?.logSuccessfulRegistersInteractionGeneration(registersInteraction)
         return registersInteraction
     }

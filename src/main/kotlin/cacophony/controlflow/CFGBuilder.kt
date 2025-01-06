@@ -21,6 +21,7 @@ class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
     fun conditional(trueDestination: String, falseDestination: String, condition: () -> CFGNode): CFGVertex =
         CFGVertex.Conditional(condition(), getLabel(trueDestination), getLabel(falseDestination))
 
+    // These functions are only used in tests, as I value my sanity I won't care about references there.
     fun virtualRegister(name: String): Register = registers.getOrPut(name) { Register.VirtualRegister() }
 
     fun writeRegister(name: String, node: CFGNode) = writeRegister(virtualRegister(name), node)

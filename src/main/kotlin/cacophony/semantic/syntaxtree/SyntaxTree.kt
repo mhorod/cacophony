@@ -18,6 +18,8 @@ sealed interface LeafExpression : Expression, TreeLeaf
 
 sealed interface Type : SyntaxTree {
     fun size(): Int = 1
+
+    fun flatten(): List<Type> = emptyList()
 }
 
 sealed interface NonFunctionalType : Type
@@ -43,6 +45,8 @@ fun <T> areEquivalentExpressions(lhs: Map<T, Expression>, rhs: Map<T, Expression
 sealed class BaseType(override val range: Pair<Location, Location>) : Type {
     override fun toString(): String = "${this::class.simpleName}@${Integer.toHexString(hashCode())}"
 
+    override fun flatten(): List<Type> = listOf(this)
+
     class Basic(
         range: Pair<Location, Location>,
         val identifier: String,
@@ -53,6 +57,8 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
             super<BaseType>.isEquivalent(other) &&
                 other is Basic &&
                 identifier == other.identifier
+
+        override fun flatten(): List<Type> = listOf(this)
     }
 
     class Functional(
@@ -67,6 +73,8 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
                 other is Functional &&
                 areEquivalentTypes(argumentsType, other.argumentsType) &&
                 areEquivalentTypes(returnType, other.returnType)
+
+        override fun flatten(): List<Type> = listOf(this)
     }
 
     class Structural(range: Pair<Location, Location>, val fields: Map<String, Type>) : BaseType(range), NonFunctionalType {
@@ -78,6 +86,12 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
             super<BaseType>.isEquivalent(other) &&
                 other is Structural &&
                 areEquivalentTypes(fields, other.fields)
+
+        override fun flatten(): List<Type> = fields.entries
+            .sortedBy { it.key }
+            .map { it.value }
+            .flatMap { it.flatten() }
+            .toList()
     }
 
     class Referential(range: Pair<Location, Location>, val type: Type) : BaseType(range), NonFunctionalType {
@@ -87,6 +101,8 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
             super<BaseType>.isEquivalent(other) &&
                 other is Referential &&
                 areEquivalentTypes(type, other.type)
+
+        override fun flatten(): List<Type> = listOf(this)
     }
 }
 

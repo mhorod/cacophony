@@ -22,10 +22,18 @@ class FunctionHandlerImpl(
     private var stackSpace = 0
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
 
+    // Initially variables may be allocated in virtualRegisters, only after spill handling we know
+    // if they're truly on stack or in registers.
+    // Every virtualRegister knows if it holds reference, therefore we care only about references on stack here.
+    private val referenceOffsets = ArrayList<Int>()
+
     // This does not perform any checks and may override previous allocation.
     // Holes in the stack may be also created if stack variables are directly allocated with this method.
     override fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation) {
         if (allocation is VariableAllocation.OnStack) {
+            if (variable.holdsReference) {
+                referenceOffsets.add(allocation.offset)
+            }
             stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
         }
         variableAllocation[variable] = allocation
@@ -175,6 +183,17 @@ class FunctionHandlerImpl(
     override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()
 
     override fun generateEpilogue(): List<CFGNode> = prologueEpilogueHandler.generateEpilogue()
+
+    override fun getReferenceAccesses(): List<CFGNode.LValue> {
+        return referenceOffsets.map {
+            MemoryAccess(
+                CFGNode.Subtraction(
+                    RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+                    CFGNode.ConstantKnown(it),
+                ),
+            )
+        }.toList()
+    }
 
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     // Static link is created even if parent doesn't exist.

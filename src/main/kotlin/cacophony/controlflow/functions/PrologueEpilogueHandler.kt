@@ -10,6 +10,7 @@ class PrologueEpilogueHandler(
     private val flattenedArguments: List<CFGNode>,
     private val resultAccess: Layout,
 ) {
+    // Preserved registers cannot contain references
     private val spaceForPreservedRegisters: List<Register.VirtualRegister> =
         callConvention.preservedRegisters().map {
             Register.VirtualRegister()

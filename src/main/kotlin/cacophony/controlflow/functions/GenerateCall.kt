@@ -2,8 +2,10 @@ package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
+import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type
+import cacophony.semantic.types.ReferentialType
 
 /**
  * Wrapper for generateCall that additionally fills staticLink to parent function.
@@ -47,7 +49,10 @@ fun generateCall(
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
-    val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
+    // Argument past standard arguments are assumed to not be references to heap (i.e. static link).
+    val argTypes = function.type!!.argumentsType.flatMap { it.flatten() }
+    val isReference = argTypes.map { it is BaseType.Referential } + List(arguments.size - argTypes.size) { false }
+    val stackArguments = arguments.zip(isReference).drop(registerArguments.size).map { Pair(it.first, Register.VirtualRegister(it.second)) }
     val resultSize = function.returnType.size()
 
     val stackResultsSize = (resultSize - REGISTER_RETURN_ORDER.size).let { if (it > 0) it else 0 }

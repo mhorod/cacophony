@@ -4,6 +4,7 @@ import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.linearization.BasicBlock
 import cacophony.codegen.linearization.LoweredCFGFragment
+import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.graphs.getSymmetricClosure
 
@@ -27,11 +28,15 @@ data class RegistersInteraction(
  * @throws IllegalArgumentException if
  * - Provided loweredCfgFragment contains an empty block (without any instructions).
  */
-fun analyzeRegistersInteraction(loweredCfgFragment: LoweredCFGFragment): RegistersInteraction =
-    RegistersInteractionAnalysis(loweredCfgFragment).analyze()
+fun analyzeRegistersInteraction(
+    loweredCfgFragment: LoweredCFGFragment,
+    preservedRegisters: List<HardwareRegister>
+): RegistersInteraction =
+    RegistersInteractionAnalysis(loweredCfgFragment, preservedRegisters).analyze()
 
 private class RegistersInteractionAnalysis(
     private val loweredCfgFragment: LoweredCFGFragment,
+    private val preservedRegisters: List<HardwareRegister>,
 ) {
     private var allInstructions: Set<InstructionRef> = emptySet()
     private var allRegisters: Set<Register> = emptySet()
@@ -40,7 +45,7 @@ private class RegistersInteractionAnalysis(
     private var liveOut: Map<InstructionRef, MutableSet<Register>> = emptyMap()
 
     private var copying: MutableMap<Register, Set<Register>> = mutableMapOf()
-    private var interference: MutableMap<Register, Set<Register>> = mutableMapOf()
+    private var interference: MutableMap<Register, MutableSet<Register>> = mutableMapOf()
 
     private class InstructionRef(val ins: Instruction) {
         val registersRead: Set<Register>
@@ -73,7 +78,7 @@ private class RegistersInteractionAnalysis(
                 }.associate { it.first to it.second.toSet() }
 
         allInstructions = nextInstructions.keys
-        allRegisters = allInstructions.flatMap { it.registersRead union it.registersWritten }.toSet()
+        allRegisters = allInstructions.flatMap { it.registersRead union it.registersWritten }.toSet() union preservedRegisters.map { Register.FixedRegister(it) }
     }
 
     private fun calculateLiveness() {
@@ -164,16 +169,23 @@ private class RegistersInteractionAnalysis(
                             !copying[a]!!.contains(b) && !copying[b]!!.contains(a)
                         }
                 }.groupBy { it.first }
-                .mapValues { (_, v) -> v.map { it.second }.toSet() }
+                .mapValues { (_, v) -> v.map { it.second }.toMutableSet() }
                 .toMutableMap()
-
-        interference = getSymmetricClosure(interference.toMap()).toMutableMap()
 
         allRegisters.forEach {
             if (!interference.containsKey(it)) {
-                interference[it] = setOf()
+                interference[it] = mutableSetOf()
             }
         }
+
+        allRegisters.filter { it is Register.VirtualRegister && it.holdsReference }.forEach {reg ->
+            preservedRegisters.forEach { preservedReg ->
+                interference[reg]!!.add(Register.FixedRegister(preservedReg))
+                interference[Register.FixedRegister(preservedReg)]!!.add(reg)
+            }
+        }
+
+        interference = getSymmetricClosure(interference.toMap()).mapValues { it.value.toMutableSet() }.toMutableMap()
     }
 
     fun analyze(): RegistersInteraction {

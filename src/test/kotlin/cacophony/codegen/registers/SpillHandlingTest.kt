@@ -3,10 +3,12 @@ package cacophony.codegen.registers
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
 import cacophony.codegen.linearization.BasicBlock
+import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.generation.CFG
 import cacophony.graphs.GraphColoring
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -624,5 +626,109 @@ class SpillHandlingTest {
         assertThat(setOf(val1, val2, val3)).containsExactly(spillSlot1, spillSlot2)
 
         verify(exactly = 2) { functionHandler.allocateFrameVariable(any()) }
+    }
+
+    @Test
+    fun `throws if references and non-references share color`() {
+        // given
+        val spareRegA = Register.FixedRegister(HardwareRegister.RAX)
+        val spareRegB = Register.FixedRegister(HardwareRegister.RBX)
+        val spilledRegA = Register.VirtualRegister(true)
+        val spilledRegB = Register.VirtualRegister(false)
+
+        val functionHandler = mockk<FunctionHandler>()
+        val instructionCovering = mockk<InstructionCovering>()
+        val loweredCFGFragment = mockk<LoweredCFGFragment>()
+
+        val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledRegA, spilledRegB))
+
+        val registersInteraction =
+            RegistersInteraction(
+                setOf(spilledRegA, spilledRegB, spareRegA, spareRegB),
+                mapOf(
+                    spilledRegA to emptySet(),
+                    spilledRegB to emptySet(),
+                ),
+                mapOf(),
+            )
+
+        val graphColoring = mockk<GraphColoring<Register.VirtualRegister, Int>>()
+        every {
+            graphColoring.doColor(
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        }.returns(mapOf(spilledRegA to 0, spilledRegB to 0))
+
+        // when & then
+        assertThrows<SpillHandlingException> {
+            adjustLoweredCFGToHandleSpills(
+                instructionCovering,
+                functionHandler,
+                loweredCFGFragment,
+                registersInteraction,
+                registerAllocation,
+                setOf(spareRegA, spareRegB),
+                graphColoring,
+            )
+        }
+    }
+
+    @Test
+    fun `properly allocates spills in functionHandler`() {
+        // given
+        val spareRegA = Register.FixedRegister(HardwareRegister.RAX)
+        val spareRegB = Register.FixedRegister(HardwareRegister.RBX)
+        val spilledWithRefA = Register.VirtualRegister(true)
+        val spilledWithRefB = Register.VirtualRegister(true)
+        val spilledWithNoRefA = Register.VirtualRegister(false)
+        val spilledWithNoRefB = Register.VirtualRegister(false)
+
+        val functionHandler = mockk<FunctionHandler>()
+        every { functionHandler.allocateFrameVariable(any()) } returns mockk<CFGNode.LValue>()
+
+        val instructionCovering = mockk<InstructionCovering>()
+        val loweredCFGFragment = listOf(mockBlock(emptyList()))
+
+        val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledWithRefA, spilledWithRefB, spilledWithNoRefA, spilledWithNoRefB))
+
+        val registersInteraction =
+            RegistersInteraction(
+                setOf(spilledWithRefA, spilledWithRefB, spilledWithNoRefA, spilledWithNoRefB, spareRegA, spareRegB),
+                mapOf(
+                    spilledWithRefA to emptySet(),
+                    spilledWithRefB to emptySet(),
+                    spilledWithNoRefA to setOf(spilledWithNoRefB),
+                    spilledWithNoRefB to setOf(spilledWithNoRefA)
+                ),
+                mapOf(),
+            )
+
+        val graphColoring = mockk<GraphColoring<Register.VirtualRegister, Int>>()
+        every {
+            graphColoring.doColor(
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        }.returns(mapOf(spilledWithRefA to 0, spilledWithRefB to 0, spilledWithNoRefA to 1, spilledWithNoRefB to 2))
+
+        // when
+        adjustLoweredCFGToHandleSpills(
+            instructionCovering,
+            functionHandler,
+            loweredCFGFragment,
+            registersInteraction,
+            registerAllocation,
+            setOf(spareRegA, spareRegB),
+            graphColoring,
+        )
+
+        // then
+        verify(exactly = 1) { functionHandler.allocateFrameVariable(match { it.holdsReference }) }
+        verify(exactly = 2) { functionHandler.allocateFrameVariable(match { !it.holdsReference }) }
     }
 }
