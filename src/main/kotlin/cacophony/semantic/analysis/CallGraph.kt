@@ -59,6 +59,7 @@ private class CallGraphProvider(
             is FieldRef -> generateDirectCallGraph(node.struct(), currentFn)
 
             is Allocation -> generateDirectCallGraph(node.value, currentFn)
+
             is Dereference -> generateDirectCallGraph(node.value, currentFn)
 
             is LeafExpression -> mutableMapOf() // don't use else branch to prevent this from breaking when SyntaxTree is changed

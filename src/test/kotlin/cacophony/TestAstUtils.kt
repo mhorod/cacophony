@@ -225,3 +225,5 @@ infix fun Expression.dotConst(field: String): Expression = rvalueFieldRef(this, 
 fun alloc(expr: Expression) = Allocation(mockRange(), expr)
 
 fun deref(expr: Expression) = Dereference(mockRange(), expr)
+
+fun referenceType(type: Type) = BaseType.Referential(mockRange(), type)

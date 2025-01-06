@@ -21,6 +21,7 @@ enum class CacophonyGrammarSymbol(
     SEMICOLON(null),
     COMMA(null),
     PERIOD(null),
+    AMPERSAND(null),
 
     // keywords
     KEYWORD_LET(null),
@@ -54,6 +55,8 @@ enum class CacophonyGrammarSymbol(
     OPERATOR_LOGICAL_OR(OperatorBinary.LogicalOr::class),
     OPERATOR_LOGICAL_AND(OperatorBinary.LogicalAnd::class),
     OPERATOR_LOGICAL_NOT(OperatorUnary.Negation::class),
+    AT(Dereference::class),
+    DOLLAR(Allocation::class),
 
     // literals
     INT_LITERAL(Literal.IntLiteral::class),
@@ -79,6 +82,7 @@ enum class CacophonyGrammarSymbol(
     TYPE(Type::class),
     FUNCTION_TYPE(BaseType.Functional::class),
     STRUCT_TYPE(BaseType.Structural::class),
+    REFERENCE_TYPE(BaseType.Referential::class),
     ASSIGNMENT(OperatorBinary::class),
     UNARY(OperatorUnary::class),
 
@@ -89,7 +93,6 @@ enum class CacophonyGrammarSymbol(
     NON_EXISTENT_SYMBOL(null),
 
     // levels
-    STATEMENT_LEVEL(null),
     SEMICOLON_LEVEL(null),
     DECLARATION_LEVEL(null),
     ASSIGNMENT_LEVEL(null),
@@ -99,13 +102,16 @@ enum class CacophonyGrammarSymbol(
     ADDITION_LEVEL(null),
     MULTIPLICATION_LEVEL(null),
     UNARY_LEVEL(null),
+    STATEMENT_LEVEL(null),
+    ALLOCATION_LEVEL(null),
     CALL_LEVEL(null),
+    DEREFERENCE_LEVEL(null),
     LITERAL_LEVEL(null),
     ATOM_LEVEL(null),
     ;
 
     companion object {
         fun fromLexerToken(lexerToken: Token<TokenCategorySpecific>): Token<CacophonyGrammarSymbol> =
-            Token(CacophonyGrammarSymbol.valueOf(lexerToken.category.name), lexerToken.context, lexerToken.rangeFrom, lexerToken.rangeTo)
+            Token(valueOf(lexerToken.category.name), lexerToken.context, lexerToken.rangeFrom, lexerToken.rangeTo)
     }
 }

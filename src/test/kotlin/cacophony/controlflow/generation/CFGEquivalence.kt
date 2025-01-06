@@ -289,6 +289,11 @@ private class FragmentEquivalenceVisitor {
                 visit(actual.lhs, expected.lhs)
                 visit(actual.rhs, expected.rhs)
             }
+
+            is CFGNode.DataLabel -> {
+                assertThat(actual).isInstanceOf(CFGNode.DataLabel::class.java)
+                check(actual is CFGNode.DataLabel)
+            }
         }
     }
 

@@ -9,6 +9,7 @@ import cacophony.controlflow.Variable
 import cacophony.controlflow.generation.Layout
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
+import cacophony.mockRange
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.BaseType
@@ -89,7 +90,13 @@ class GenerateCallKtTest {
             for (i in 1..chainLength) {
                 val argDeclarations =
                     (1..argumentCount).map {
-                        mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }
+                        mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }.also {
+                            every { it.type } returns
+                                BaseType.Basic(
+                                    mockRange(),
+                                    "Int",
+                                )
+                        }
                     }
                 functionHandlers.add(
                     0,
