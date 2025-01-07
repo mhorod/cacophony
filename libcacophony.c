@@ -42,3 +42,10 @@ long long get_mem(long long * ptr) {
 void put_mem(long long * ptr, long long val) {
     *ptr = val;
 }
+
+long long ** alloc_struct(long long * outline) {
+    long long size = 8 * (1 + *outline);
+    long long **ptr = malloc(size);
+    ptr[0] = outline;
+    return ptr + 1;
+}

@@ -247,4 +247,27 @@ class SubtypeCheckTest {
         assertThat(isSubtype(structType1, structType2)).isFalse
         assertThat(isSubtype(structType2, structType1)).isTrue
     }
+
+    @Test
+    fun `subtyping for references is not supported`() {
+        val referenceType1 =
+            ReferentialType(
+                StructType(
+                    mapOf(
+                        "x" to BuiltinType.IntegerType,
+                    ),
+                ),
+            )
+        val referenceType2 =
+            ReferentialType(
+                StructType(
+                    mapOf(
+                        "x" to BuiltinType.IntegerType,
+                        "y" to BuiltinType.IntegerType,
+                    ),
+                ),
+            )
+        assertThat(isSubtype(referenceType1, referenceType2)).isFalse
+        assertThat(isSubtype(referenceType2, referenceType1)).isFalse
+    }
 }

@@ -28,7 +28,13 @@ class LocalCallConventionTest {
                 "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(8) }
                 // The called function returned something, and we are using it as a value - we need to extract it from rax
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                "forward result" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
@@ -102,7 +108,13 @@ class LocalCallConventionTest {
                 "call" does jump("restore rsp") { call(calleeDef) }
                 "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(8) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                "forward result" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
@@ -141,8 +153,19 @@ class LocalCallConventionTest {
                 "prepare rsp" does jump("prepare arg7 for push") { registerUse(rsp) subeq integer(8) }
                 // ...and then tey are passed via stack
                 "prepare arg7 for push" does
-                    jump("prepare static link for push") { writeRegister("temp arg7", registerUse(virtualRegister("arg7"))) }
-                "prepare static link for push" does jump("pass arg1") { writeRegister("temp static link", registerUse(rbp)) }
+                    jump("prepare static link for push") {
+                        writeRegister(
+                            "temp arg7",
+                            registerUse(virtualRegister("arg7")),
+                        )
+                    }
+                "prepare static link for push" does
+                    jump("pass arg1") {
+                        writeRegister(
+                            "temp static link",
+                            registerUse(rbp),
+                        )
+                    }
                 // ...or via their respective registers
                 "pass arg1" does jump("pass arg2") { writeRegister(rdi, registerUse(virtualRegister("arg1"))) }
                 "pass arg2" does jump("pass arg3") { writeRegister(rsi, registerUse(virtualRegister("arg2"))) }
@@ -214,7 +237,13 @@ class LocalCallConventionTest {
                 // The argument still on the stack must then be ignored
                 "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(24) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
-                "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
+                "forward result" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse(virtualRegister("result")),
+                        )
+                    }
             }
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
@@ -256,9 +285,6 @@ class LocalCallConventionTest {
                 "forward result out" does
                     jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result out"))) }
             }
-
-        cfgFragmentToGraphviz(actualFragment)
-        cfgFragmentToGraphviz(expectedFragment)
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
 

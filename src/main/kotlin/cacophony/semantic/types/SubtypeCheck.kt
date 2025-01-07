@@ -1,37 +1,44 @@
 package cacophony.semantic.types
 
-fun isSubtype(subtype: TypeExpr, type: TypeExpr): Boolean {
-    if (subtype == TypeExpr.VoidType) return true
-    return when (type) {
-        is BuiltinType -> isSubtypeBuiltin(subtype, type)
-        is FunctionType -> isSubtypeFunction(subtype, type)
-        is StructType -> isSubtypeStruct(subtype, type)
+// Returns true iff type <: other (type is a subtype of other).
+fun isSubtype(type: TypeExpr, other: TypeExpr): Boolean {
+    if (type == TypeExpr.VoidType) return true
+    return when (other) {
+        is BuiltinType -> isSubtypeBuiltin(type, other)
+        is FunctionType -> isSubtypeFunction(type, other)
+        is StructType -> isSubtypeStruct(type, other)
+        is ReferentialType -> isSubtypeReferential(type, other)
         else -> false
     }
 }
 
-fun isSubtypeBuiltin(subtype: TypeExpr, builtinType: BuiltinType): Boolean {
-    return when (builtinType) {
-        is BuiltinType.IntegerType -> subtype is BuiltinType.IntegerType
-        is BuiltinType.BooleanType -> subtype is BuiltinType.BooleanType
-        is BuiltinType.UnitType -> subtype is BuiltinType.UnitType
+fun isSubtypeBuiltin(type: TypeExpr, other: BuiltinType): Boolean {
+    return when (other) {
+        is BuiltinType.IntegerType -> type is BuiltinType.IntegerType
+        is BuiltinType.BooleanType -> type is BuiltinType.BooleanType
+        is BuiltinType.UnitType -> type is BuiltinType.UnitType
     }
 }
 
-fun isSubtypeFunction(subtype: TypeExpr, functionType: FunctionType): Boolean {
-    if (subtype !is FunctionType) return false
-    if (!isSubtype(subtype.result, functionType.result)) return false
-    val functionArgs = functionType.args
-    val subtypeArgs = subtype.args
-    if (subtypeArgs.size != functionArgs.size) return false
-    return subtypeArgs.zip(functionArgs).all { (argSubtype, argFunction) ->
+fun isSubtypeFunction(type: TypeExpr, other: FunctionType): Boolean {
+    if (type !is FunctionType) return false
+    if (!isSubtype(type.result, other.result)) return false
+    val functionArgs = other.args
+    val typeArgs = type.args
+    if (typeArgs.size != functionArgs.size) return false
+    return typeArgs.zip(functionArgs).all { (argSubtype, argFunction) ->
         isSubtype(argFunction, argSubtype) // contravariance
     }
 }
 
-fun isSubtypeStruct(subtype: TypeExpr, structType: StructType): Boolean {
-    if (subtype !is StructType) return false
-    return structType.fields.all { (identifier, type) ->
-        isSubtype((subtype.fields[identifier] ?: return false), type)
+fun isSubtypeStruct(type: TypeExpr, other: StructType): Boolean {
+    if (type !is StructType) return false
+    return other.fields.all { (identifier, fieldType) ->
+        isSubtype((type.fields[identifier] ?: return false), fieldType)
     }
+}
+
+fun isSubtypeReferential(type: TypeExpr, other: ReferentialType): Boolean {
+    if (type !is ReferentialType) return false
+    return type.type == other.type
 }

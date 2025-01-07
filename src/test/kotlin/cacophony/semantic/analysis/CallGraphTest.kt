@@ -40,7 +40,7 @@ class CallGraphTest {
         val ast = block(fDef, gDef)
         val resolvedVariables = mapOf(fUse to fDef)
 
-        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+        assertThat(generateCallGraph(ast, resolvedVariables, diagnostics)).isEqualTo(
             mapOf(
                 gDef to setOf(fDef),
             ),
@@ -72,7 +72,7 @@ class CallGraphTest {
             block(fDef, gDef)
         val resolvedVariables = mapOf(fUse to fDef)
 
-        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+        assertThat(generateCallGraph(ast, resolvedVariables, diagnostics)).isEqualTo(
             mapOf(
                 gDef to setOf(fDef),
             ),
@@ -92,7 +92,7 @@ class CallGraphTest {
         val ast = block(fDef)
         val resolvedVariables = mapOf(fUse to fDef)
 
-        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+        assertThat(generateCallGraph(ast, resolvedVariables, diagnostics)).isEqualTo(
             mapOf(
                 fDef to setOf(fDef),
             ),
@@ -121,7 +121,7 @@ class CallGraphTest {
         val ast = block(fDef, hDef)
         val resolvedVariables = mapOf(fUseInG to fDef, fUseInH to fDef, gUse to gDef)
 
-        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+        assertThat(generateCallGraph(ast, resolvedVariables, diagnostics)).isEqualTo(
             mapOf(
                 fDef to setOf(gDef),
                 gDef to setOf(fDef),
@@ -153,7 +153,7 @@ class CallGraphTest {
         val ast = block(fDef)
         val resolvedVariables = mapOf(fUse to fDef, gUse to gDef)
 
-        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+        assertThat(generateCallGraph(ast, resolvedVariables, diagnostics)).isEqualTo(
             mapOf(fDef to setOf(fDef)),
         )
     }
@@ -173,7 +173,7 @@ class CallGraphTest {
         val ast = block(fDef)
         val resolvedVariables = mapOf(fUse to fDef, gUse to gDef)
 
-        assertThat(generateCallGraph(ast, diagnostics, resolvedVariables)).isEqualTo(
+        assertThat(generateCallGraph(ast, resolvedVariables, diagnostics)).isEqualTo(
             mapOf(gDef to setOf(fDef), fDef to setOf(gDef)),
         )
     }

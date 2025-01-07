@@ -52,4 +52,14 @@ class TypeCheckerDiagnostics {
     data object BreakOutsideWhile : DiagnosticMessage {
         override fun getMessage() = "Break outside while loop body"
     }
+
+    data object ExpectedReference : DiagnosticMessage {
+        override fun getMessage() = "Expected reference type"
+    }
+
+    data class InvalidAllocation(
+        val type: String,
+    ) : DiagnosticMessage {
+        override fun getMessage() = "Cannot allocate value of type $type"
+    }
 }

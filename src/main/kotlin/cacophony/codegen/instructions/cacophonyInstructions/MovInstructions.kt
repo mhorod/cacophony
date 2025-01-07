@@ -106,3 +106,15 @@ data class MovzxReg64Reg8(val lhs: Register, val rhs: RegisterByte) : Instructio
             RegisterByte(rhs.register.substitute(map)),
         )
 }
+
+data class MovRegLabel(val lhs: Register, val dataLabel: String) : Instruction {
+    override val registersRead: Set<Register> = setOf()
+    override val registersWritten: Set<Register> = setOf(lhs)
+
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        val lhsHardwareReg = hardwareRegisterMapping[lhs]
+        return "mov $lhsHardwareReg, $dataLabel"
+    }
+
+    override fun substituteRegisters(map: Map<Register, Register>): Instruction = MovRegLabel(lhs.substitute(map), dataLabel)
+}

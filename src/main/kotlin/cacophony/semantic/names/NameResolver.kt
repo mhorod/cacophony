@@ -1,5 +1,6 @@
 package cacophony.semantic.names
 
+import cacophony.controlflow.functions.Builtin
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.syntaxtree.*
@@ -183,6 +184,10 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
 
             is ForeignFunctionDeclaration -> {
                 symbolsTable.define(node.identifier, node)
+                // TODO: Unfortunately, we do not use alloc_func as VariableUse anywhere, but we need it in the preamble
+                if (node === Builtin.allocStruct) {
+                    resolution[VariableUse(node.range, node.identifier)] = symbolsTable.find(node.identifier)!!
+                }
             }
 
             is FunctionArgument -> {
@@ -229,8 +234,9 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
                 traverseAst(node.struct(), false)
             }
 
-            is Allocation -> throw NotImplementedError()
-            is Dereference -> throw NotImplementedError()
+            is Allocation -> traverseAst(node.value, true)
+
+            is Dereference -> traverseAst(node.value, true)
 
             is LeafExpression -> {}
         }

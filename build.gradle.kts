@@ -24,6 +24,7 @@ repositories {
 }
 
 dependencies {
+    implementation("com.github.ajalt.clikt:clikt:5.0.2")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testImplementation(platform("org.junit:junit-bom:5.11.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")

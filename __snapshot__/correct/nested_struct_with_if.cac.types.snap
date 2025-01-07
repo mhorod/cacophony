@@ -1,0 +1,224 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d-1), Location(value\u003d-1))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d8), Location(value\u003d9))": {
+    "__class__": "StructType",
+    "fields": {
+      "__class__": "EmptyMap"
+    },
+    "name": "{}"
+  },
+  "(Location(value\u003d0), Location(value\u003d9))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d57), Location(value\u003d58))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d75), Location(value\u003d78))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d47), Location(value\u003d82))": {
+    "__class__": "StructType",
+    "fields": {
+      "__class__": "LinkedHashMap",
+      "b": {
+        "__class__": "IntegerType",
+        "name": "Int"
+      },
+      "a": {
+        "__class__": "BooleanType",
+        "name": "Bool"
+      }
+    },
+    "name": "{b: Int, a: Bool}"
+  },
+  "(Location(value\u003d108), Location(value\u003d108))": {
+    "__class__": "StructType",
+    "fields": {
+      "__class__": "EmptyMap"
+    },
+    "name": "{}"
+  },
+  "(Location(value\u003d115), Location(value\u003d116))": {
+    "__class__": "StructType",
+    "fields": {
+      "__class__": "EmptyMap"
+    },
+    "name": "{}"
+  },
+  "(Location(value\u003d98), Location(value\u003d101))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d95), Location(value\u003d116))": {
+    "__class__": "StructType",
+    "fields": {
+      "__class__": "EmptyMap"
+    },
+    "name": "{}"
+  },
+  "(Location(value\u003d20), Location(value\u003d118))": {
+    "__class__": "StructType",
+    "fields": {
+      "__class__": "LinkedHashMap",
+      "x": {
+        "__class__": "StructType",
+        "fields": {
+          "__class__": "LinkedHashMap",
+          "a": {
+            "__class__": "BooleanType",
+            "name": "Bool"
+          },
+          "b": {
+            "__class__": "IntegerType",
+            "name": "Int"
+          }
+        },
+        "name": "{a: Bool, b: Int}"
+      },
+      "a": {
+        "__class__": "StructType",
+        "fields": {
+          "__class__": "EmptyMap"
+        },
+        "name": "{}"
+      }
+    },
+    "name": "{x: {a: Bool, b: Int}, a: {}}"
+  },
+  "(Location(value\u003d12), Location(value\u003d118))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d131), Location(value\u003d162))": {
+    "__class__": "StructType",
+    "fields": {
+      "__class__": "LinkedHashMap",
+      "x": {
+        "__class__": "StructType",
+        "fields": {
+          "__class__": "LinkedHashMap",
+          "b": {
+            "__class__": "IntegerType",
+            "name": "Int"
+          },
+          "a": {
+            "__class__": "BooleanType",
+            "name": "Bool"
+          }
+        },
+        "name": "{b: Int, a: Bool}"
+      },
+      "a": {
+        "__class__": "StructType",
+        "fields": {
+          "__class__": "EmptyMap"
+        },
+        "name": "{}"
+      }
+    },
+    "name": "{x: {b: Int, a: Bool}, a: {}}"
+  },
+  "(Location(value\u003d176), Location(value\u003d180))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d122), Location(value\u003d180))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d186), Location(value\u003d186))": {
+    "__class__": "StructType",
+    "fields": {
+      "__class__": "LinkedHashMap",
+      "x": {
+        "__class__": "StructType",
+        "fields": {
+          "__class__": "LinkedHashMap",
+          "a": {
+            "__class__": "BooleanType",
+            "name": "Bool"
+          },
+          "b": {
+            "__class__": "IntegerType",
+            "name": "Int"
+          }
+        },
+        "name": "{a: Bool, b: Int}"
+      },
+      "a": {
+        "__class__": "StructType",
+        "fields": {
+          "__class__": "EmptyMap"
+        },
+        "name": "{}"
+      }
+    },
+    "name": "{x: {a: Bool, b: Int}, a: {}}"
+  },
+  "(Location(value\u003d184), Location(value\u003d184))": {
+    "__class__": "FunctionType",
+    "args": [
+      {
+        "__class__": "StructType",
+        "fields": {
+          "__class__": "LinkedHashMap",
+          "x": {
+            "__class__": "StructType",
+            "fields": {
+              "__class__": "LinkedHashMap",
+              "b": {
+                "__class__": "IntegerType",
+                "name": "Int"
+              },
+              "a": {
+                "__class__": "BooleanType",
+                "name": "Bool"
+              }
+            },
+            "name": "{b: Int, a: Bool}"
+          },
+          "a": {
+            "__class__": "StructType",
+            "fields": {
+              "__class__": "EmptyMap"
+            },
+            "name": "{}"
+          }
+        },
+        "name": "{x: {b: Int, a: Bool}, a: {}}"
+      }
+    ],
+    "result": {
+      "__class__": "BooleanType",
+      "name": "Bool"
+    },
+    "name": "[{x: {b: Int, a: Bool}, a: {}}] -\u003e Bool"
+  },
+  "(Location(value\u003d184), Location(value\u003d187))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d0), Location(value\u003d187))": {
+    "__class__": "BooleanType",
+    "name": "Bool"
+  },
+  "(Location(value\u003d188), Location(value\u003d188))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d0), Location(value\u003d188))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d-1), Location(value\u003d188))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  }
+}

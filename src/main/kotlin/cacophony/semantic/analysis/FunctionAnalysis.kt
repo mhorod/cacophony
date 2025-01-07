@@ -135,6 +135,7 @@ private fun getAllNestedVariables(v: Variable): List<Variable> =
         }
 
         is Variable.PrimitiveVariable -> listOf(v)
+        is Variable.Heap -> listOf(v)
     }
 
 private fun getVariableFunctions(

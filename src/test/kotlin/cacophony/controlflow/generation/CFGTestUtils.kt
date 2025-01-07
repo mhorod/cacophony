@@ -1,21 +1,23 @@
 package cacophony.controlflow.generation
 
+import cacophony.*
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.SimpleCallGenerator
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.testPipeline
+import cacophony.semantic.syntaxtree.Struct
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 
 object MockFunctionParts {
-    val prologue: CFGNode = mockk("prologue")
-    val epilogue: CFGNode = mockk("epilogue")
+    val prologue: CFGNode = CFGNode.Comment("prologue")
+    val epilogue: CFGNode = CFGNode.Comment("epilogue")
 }
 
-fun generateSimplifiedCFG(
+internal fun generateSimplifiedCFG(
     ast: AST,
     realPrologue: Boolean = false,
     realEpilogue: Boolean = false,
@@ -44,19 +46,19 @@ fun generateSimplifiedCFG(
             }
             generator
         }
-    return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator)
+    return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator, mockk())
 }
 
 fun singleFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
     cfg { fragment(definition, body) }
 
-fun standaloneCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+internal fun standaloneCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
     singleFragmentCFG(definition, body)[definition]!!
 
-fun singleWrappedFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
+internal fun singleWrappedFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
     cfg { wrappedCFGFragment(definition, body) }
 
-fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit) =
+internal fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit) =
     fragment(definition) {
         "entry" does jump("bodyEntry") { MockFunctionParts.prologue }
         body()
@@ -64,5 +66,27 @@ fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, bod
         "exit" does final { returnNode(definition.returnType.size()) }
     }
 
-fun standaloneWrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+internal fun standaloneWrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
     singleWrappedFragmentCFG(definition, body)[definition]!!
+
+// {a = 7, b = true}
+fun simpleStruct(int: Int = 7, bool: Boolean = true): Struct =
+    structDeclaration(
+        structField("a") to lit(int),
+        structField("b") to lit(bool),
+    )
+
+fun simpleType(): BaseType.Structural = structType("a" to intType(), "b" to boolType())
+
+// {a = 5, b = {a = 7, b = true} }
+fun nestedStruct(): Struct =
+    structDeclaration(
+        structField("a") to lit(5),
+        structField("b") to simpleStruct(),
+    )
+
+fun nestedType(): BaseType.Structural =
+    structType(
+        "a" to intType(),
+        "b" to simpleType(),
+    )

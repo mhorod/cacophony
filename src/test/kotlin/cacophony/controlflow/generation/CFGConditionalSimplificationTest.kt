@@ -400,7 +400,13 @@ class CFGConditionalSimplificationTest {
         val expectedCFG =
             singleWrappedFragmentCFG(actualCFG.keys.first()) {
                 "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(12)) }
-                "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse("result"),
+                        )
+                    }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -430,7 +436,13 @@ class CFGConditionalSimplificationTest {
         val expectedCFG =
             singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(20)) }
-                "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse("result"),
+                        )
+                    }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -468,7 +480,13 @@ class CFGConditionalSimplificationTest {
         val expectedCFG =
             singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("write result to rax") { writeRegister("result", integer(11)) }
-                "write result to rax" does jump("bodyExit") { writeRegister(getResultRegister(), readRegister("result")) }
+                "write result to rax" does
+                    jump("bodyExit") {
+                        writeRegister(
+                            getResultRegister(),
+                            registerUse("result"),
+                        )
+                    }
             }
 
         assertEquivalent(actualCFG, expectedCFG)

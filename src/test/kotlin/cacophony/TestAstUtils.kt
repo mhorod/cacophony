@@ -117,6 +117,8 @@ fun typedVariableDeclaration(identifier: String, type: NonFunctionalType?, value
 
 fun variableDeclaration(identifier: String, value: Expression) = typedVariableDeclaration(identifier, null, value)
 
+fun variableDeclaration(identifier: String) = variableDeclaration(identifier, empty())
+
 fun variableUse(identifier: String) = VariableUse(mockRange(), identifier)
 
 fun variableWrite(variableUse: VariableUse) =
@@ -132,6 +134,10 @@ fun variableWrite(variableUse: VariableUse, value: Expression) =
         variableUse,
         value,
     )
+
+fun allocation(value: Expression) = Allocation(mockRange(), value)
+
+fun dereference(value: Expression) = Dereference(mockRange(), value)
 
 fun block(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 
@@ -214,4 +220,16 @@ fun functionalType(argTypes: List<Type>, resType: Type) = BaseType.Functional(mo
 
 fun structType(vararg fields: Pair<String, Type>) = BaseType.Structural(mockRange(), fields.toMap())
 
+fun referentialType(type: Type) = BaseType.Referential(mockRange(), type)
+
 fun structTypeExpr(vararg fields: Pair<String, TypeExpr>) = StructType(fields.toMap())
+
+infix fun Assignable.dot(field: String): Assignable = lvalueFieldRef(this, field)
+
+infix fun Expression.dotConst(field: String): Expression = rvalueFieldRef(this, field)
+
+fun alloc(expr: Expression) = Allocation(mockRange(), expr)
+
+fun deref(expr: Expression) = Dereference(mockRange(), expr)
+
+fun referenceType(type: Type) = BaseType.Referential(mockRange(), type)

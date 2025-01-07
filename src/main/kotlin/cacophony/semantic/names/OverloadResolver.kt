@@ -6,7 +6,7 @@ import cacophony.semantic.syntaxtree.*
 
 typealias ResolvedVariables = Map<VariableUse, Definition>
 
-fun resolveOverloads(ast: AST, diagnostics: Diagnostics, nr: NameResolutionResult): ResolvedVariables {
+fun resolveOverloads(ast: AST, nr: NameResolutionResult, diagnostics: Diagnostics): ResolvedVariables {
     val resolvedVariables = mutableMapOf<VariableUse, Definition>()
 
     fun resolveOverloadsRec(expr: Expression) {
@@ -80,8 +80,9 @@ fun resolveOverloads(ast: AST, diagnostics: Diagnostics, nr: NameResolutionResul
                 resolveOverloadsRec(expr.rhs)
             }
 
-            is Allocation -> throw NotImplementedError()
-            is Dereference -> throw NotImplementedError()
+            is Allocation -> resolveOverloadsRec(expr.value)
+
+            is Dereference -> resolveOverloadsRec(expr.value)
 
             is LeafExpression -> {} // don't use else branch to prevent this from breaking when SyntaxTree is changed
         }

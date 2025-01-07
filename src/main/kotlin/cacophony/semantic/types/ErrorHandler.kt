@@ -47,4 +47,12 @@ internal class ErrorHandler(
     fun breakOutsideWhile(range: Pair<Location, Location>) {
         diagnostics.report(TypeCheckerDiagnostics.BreakOutsideWhile, range)
     }
+
+    fun expectedReferentialType(range: Pair<Location, Location>) {
+        diagnostics.report(TypeCheckerDiagnostics.ExpectedReference, range)
+    }
+
+    fun invalidAllocation(range: Pair<Location, Location>, type: TypeExpr) {
+        diagnostics.report(TypeCheckerDiagnostics.InvalidAllocation(type.toString()), range)
+    }
 }
