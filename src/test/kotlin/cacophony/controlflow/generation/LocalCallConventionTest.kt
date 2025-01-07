@@ -150,21 +150,8 @@ class LocalCallConventionTest {
                 "prepare arg5" does jump("prepare arg6") { writeRegister("arg5", integer(5)) }
                 "prepare arg6" does jump("prepare arg7") { writeRegister("arg6", integer(6)) }
                 "prepare arg7" does jump("prepare rsp") { writeRegister("arg7", integer(7)) }
-                "prepare rsp" does jump("pass arg1") { registerUse(rsp) subeq integer(8) }
-                // ...and then they are passed to their destination registers...
-                "pass arg1" does jump("pass arg2") { writeRegister(rdi, registerUse(virtualRegister("arg1"))) }
-                "pass arg2" does jump("pass arg3") { writeRegister(rsi, registerUse(virtualRegister("arg2"))) }
-                "pass arg3" does jump("pass arg4") { writeRegister(rdx, registerUse(virtualRegister("arg3"))) }
-                "pass arg4" does jump("pass arg5") { writeRegister(rcx, registerUse(virtualRegister("arg4"))) }
-                "pass arg5" does jump("pass arg6") { writeRegister(r8, registerUse(virtualRegister("arg5"))) }
-                "pass arg6" does
-                    jump("prepare arg7 for push") {
-                        writeRegister(
-                            r9,
-                            registerUse(virtualRegister("arg6")),
-                        )
-                    }
-                // ...or via the stack
+                "prepare rsp" does jump("prepare arg7 for push") { registerUse(rsp) subeq integer(8) }
+                // ...and then they are passed via stack
                 "prepare arg7 for push" does
                     jump("prepare static link for push") {
                         writeRegister(
@@ -173,12 +160,19 @@ class LocalCallConventionTest {
                         )
                     }
                 "prepare static link for push" does
-                    jump("push static link") {
+                    jump("pass arg1") {
                         writeRegister(
                             "temp static link",
                             registerUse(rbp),
                         )
                     }
+                // ...or via their respective registers
+                "pass arg1" does jump("pass arg2") { writeRegister(rdi, registerUse(virtualRegister("arg1"))) }
+                "pass arg2" does jump("pass arg3") { writeRegister(rsi, registerUse(virtualRegister("arg2"))) }
+                "pass arg3" does jump("pass arg4") { writeRegister(rdx, registerUse(virtualRegister("arg3"))) }
+                "pass arg4" does jump("pass arg5") { writeRegister(rcx, registerUse(virtualRegister("arg4"))) }
+                "pass arg5" does jump("pass arg6") { writeRegister(r8, registerUse(virtualRegister("arg5"))) }
+                "pass arg6" does jump("push static link") { writeRegister(r9, registerUse(virtualRegister("arg6"))) }
                 "push static link" does jump("push arg7") { pushRegister("temp static link") }
                 "push arg7" does jump("call") { pushRegister("temp arg7") }
                 "call" does jump("restore rsp") { call(calleeDef) }
@@ -222,37 +216,20 @@ class LocalCallConventionTest {
                 "prepare arg6" does jump("prepare arg7") { writeRegister("arg6", integer(6)) }
                 "prepare arg7" does jump("prepare arg8") { writeRegister("arg7", integer(7)) }
                 "prepare arg8" does jump("prepare rsp") { writeRegister("arg8", integer(8)) }
-                "prepare rsp" does jump("pass arg1") { registerUse(rsp) subeq integer(0) }
+                "prepare rsp" does jump("prepare arg7 for push") { registerUse(rsp) subeq integer(0) }
                 // ...and then they are passed to their destination registers...
+                "prepare arg7 for push" does
+                    jump("prepare arg8 for push") { writeRegister("temp arg7", registerUse(virtualRegister("arg7"))) }
+                "prepare arg8 for push" does
+                    jump("prepare static link for push") { writeRegister("temp arg8", registerUse(virtualRegister("arg8"))) }
+                "prepare static link for push" does jump("pass arg1") { writeRegister("temp static link", registerUse(rbp)) }
                 "pass arg1" does jump("pass arg2") { writeRegister(rdi, registerUse(virtualRegister("arg1"))) }
                 "pass arg2" does jump("pass arg3") { writeRegister(rsi, registerUse(virtualRegister("arg2"))) }
                 "pass arg3" does jump("pass arg4") { writeRegister(rdx, registerUse(virtualRegister("arg3"))) }
                 "pass arg4" does jump("pass arg5") { writeRegister(rcx, registerUse(virtualRegister("arg4"))) }
                 "pass arg5" does jump("pass arg6") { writeRegister(r8, registerUse(virtualRegister("arg5"))) }
-                "pass arg6" does
-                    jump("prepare arg7 for push") {
-                        writeRegister(
-                            r9,
-                            registerUse(virtualRegister("arg6")),
-                        )
-                    }
+                "pass arg6" does jump("push static link") { writeRegister(r9, registerUse(virtualRegister("arg6"))) }
                 // ...or via the stack
-                "prepare arg7 for push" does
-                    jump("prepare arg8 for push") { writeRegister("temp arg7", registerUse(virtualRegister("arg7"))) }
-                "prepare arg8 for push" does
-                    jump("prepare static link for push") {
-                        writeRegister(
-                            "temp arg8",
-                            registerUse(virtualRegister("arg8")),
-                        )
-                    }
-                "prepare static link for push" does
-                    jump("push static link") {
-                        writeRegister(
-                            "temp static link",
-                            registerUse(rbp),
-                        )
-                    }
                 "push static link" does jump("push arg8") { pushRegister("temp static link") }
                 "push arg8" does jump("push arg7") { pushRegister("temp arg8") }
                 "push arg7" does jump("call") { pushRegister("temp arg7") }

@@ -128,14 +128,24 @@ fun makeAnalyzedVariable(usedVariable: UsedVariable, variableFunctions: Map<Vari
     )
 }
 
+private fun getAllNestedVariables(v: Variable): List<Variable> =
+    when (v) {
+        is Variable.StructVariable -> {
+            listOf(v) + v.fields.values.flatMap { getAllNestedVariables(it) }
+        }
+
+        is Variable.PrimitiveVariable -> listOf(v)
+        is Variable.Heap -> listOf(v)
+    }
+
 private fun getVariableFunctions(
     relations: StaticFunctionRelationsMap,
     variablesMap: VariablesMap,
 ): Map<Variable, Definition.FunctionDefinition> =
     relations
         .flatMap { (function, _) ->
-            function.arguments.map { argument ->
-                variablesMap.definitions[argument]!! to function
+            function.arguments.flatMap { argument ->
+                getAllNestedVariables(variablesMap.definitions[argument]!!).map { it to function }
             }
         }.toMap() +
         relations

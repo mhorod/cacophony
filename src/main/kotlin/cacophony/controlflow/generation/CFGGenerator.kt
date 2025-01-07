@@ -320,7 +320,7 @@ internal class CFGGenerator(
                     getCurrentFunctionHandler(),
                     function,
                     functionHandler,
-                    arguments.flatMap { it.access.flatten() },
+                    arguments.map { it.access },
                     resultLayout,
                 ).map { ensureExtracted(it) }
                 .reduce(SubCFG.Extracted::merge)

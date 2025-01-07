@@ -32,6 +32,8 @@ let f = [] -> Unit => (
     );
 );
 
+f[];
+
 # a.x = 1 + 10 * k - 2 * 10
 # a.y = k
 write_int[a.x];
