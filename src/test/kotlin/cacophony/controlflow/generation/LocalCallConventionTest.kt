@@ -151,7 +151,7 @@ class LocalCallConventionTest {
                 "prepare arg6" does jump("prepare arg7") { writeRegister("arg6", integer(6)) }
                 "prepare arg7" does jump("prepare rsp") { writeRegister("arg7", integer(7)) }
                 "prepare rsp" does jump("prepare arg7 for push") { registerUse(rsp) subeq integer(8) }
-                // ...and then tey are passed via stack
+                // ...and then they are passed via stack
                 "prepare arg7 for push" does
                     jump("prepare static link for push") {
                         writeRegister(
