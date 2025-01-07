@@ -1735,4 +1735,132 @@ class TypeCheckerTest {
         }
         confirmVerified(diagnostics)
     }
+
+    // let a = $5
+    @Test
+    fun `ok - allocation has referential type`() {
+        val allocation = allocation(lit(5))
+        val decl = variableDeclaration("a", allocation)
+        val ast = block(decl)
+
+        val result = checkTypes(ast, emptyMap(), diagnostics)
+
+        assertTypeEquals(
+            ReferentialType(BuiltinType.IntegerType),
+            result.expressionTypes[allocation],
+        )
+
+        verify { diagnostics wasNot called }
+    }
+
+    // let a: Int = $5
+    @Test
+    fun `error - assignment of allocation result to non-referential type`() {
+        val allocation = allocation(lit(5))
+        val decl = typedVariableDeclaration("a", testInt(), allocation)
+        val ast = block(decl)
+
+        checkTypes(ast, emptyMap(), diagnostics)
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("Int", "&Int"),
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
+
+    // let a: &Bool = $5
+    @Test
+    fun `error - assignment of allocation result to wrong referential type`() {
+        val allocation = allocation(lit(5))
+        val decl = typedVariableDeclaration("a", referentialType(testBoolean()), allocation)
+        val ast = block(decl)
+
+        checkTypes(ast, emptyMap(), diagnostics)
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TypeMismatch("&Bool", "&Int"),
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
+
+    // @()
+    @Test
+    fun `wrong - cannot allocate value of Unit type`() {
+        val allocation = allocation(block())
+        val ast = block(allocation)
+
+        checkTypes(ast, emptyMap(), diagnostics)
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.InvalidAllocation("Unit"),
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
+
+    // f = [] -> Int => @return(5)
+    @Test
+    fun `wrong - cannot allocate value of Void type`() {
+        val allocation = allocation(block(returnStatement(lit(5))))
+        val functionDeclaration = typedFunctionDefinition("f", null, listOf(), testInt(), allocation)
+        val ast = block(functionDeclaration)
+
+        checkTypes(ast, emptyMap(), diagnostics)
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.InvalidAllocation("Void"),
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
+
+    // let a = $5
+    // @a
+    @Test
+    fun `ok - dereference`() {
+        val allocation = allocation(lit(5))
+        val decl = variableDeclaration("a", allocation)
+        val varUse = variableUse("a")
+        val dereference = dereference(varUse)
+        val ast = block(decl, dereference)
+
+        val result = checkTypes(ast, mapOf(varUse to decl), diagnostics)
+
+        assertTypeEquals(
+            BuiltinType.IntegerType,
+            result.expressionTypes[dereference],
+        )
+
+        verify { diagnostics wasNot called }
+    }
+
+    // let a = 5
+    // @a
+    @Test
+    fun `wrong - non-referential type expression is dereferenced`() {
+        val decl = variableDeclaration("a", lit(5))
+        val varUse = variableUse("a")
+        val dereference = dereference(varUse)
+        val ast = block(decl, dereference)
+
+        checkTypes(ast, mapOf(varUse to decl), diagnostics)
+
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.ExpectedReference,
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
+    }
 }

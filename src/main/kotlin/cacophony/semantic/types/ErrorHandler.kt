@@ -51,4 +51,8 @@ internal class ErrorHandler(
     fun expectedReferentialType(range: Pair<Location, Location>) {
         diagnostics.report(TypeCheckerDiagnostics.ExpectedReference, range)
     }
+
+    fun invalidAllocation(range: Pair<Location, Location>, type: TypeExpr) {
+        diagnostics.report(TypeCheckerDiagnostics.InvalidAllocation(type.toString()), range)
+    }
 }

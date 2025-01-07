@@ -270,8 +270,15 @@ private class Typer(
 
                 is Allocation -> {
                     val valueType = typeExpression(expression.value) ?: return null
+
+                    if (NON_ALLOCATABLE_TYPES.contains(valueType)) {
+                        error.invalidAllocation(expression.range, valueType)
+                        return null
+                    }
+
                     ReferentialType(valueType)
                 }
+
                 is Dereference -> {
                     val referenceType = typeExpression(expression.value) ?: return null
                     if (referenceType !is ReferentialType) {
