@@ -41,7 +41,7 @@ abstract class StackCallConvention(
             } else {
                 // TODO: why does it need to be +4 instead of +3?
                 VariableAllocation.OnStack(
-                    -REGISTER_SIZE * (index - registerReturnOrder.size + argumentCount - registerArgumentOrder.size + 4),
+                    -REGISTER_SIZE * (index - registerReturnOrder.size + argumentCount - registerArgumentOrder.size + 3),
                 )
             }
         }
