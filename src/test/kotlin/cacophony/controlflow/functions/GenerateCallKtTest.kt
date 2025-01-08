@@ -45,7 +45,6 @@ class GenerateCallKtTest {
     }
 
     private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: SimpleLayout) {
-    private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: SimpleLayout) {
         mockkStatic(::generateCall)
         generateCallFrom(
             caller,
@@ -62,7 +61,6 @@ class GenerateCallKtTest {
                     if (it.size != 1) false
                     else {
                         val l = it.first()
-                        l is SimpleLayout && l.access == expectedStaticLink.access
                         l is SimpleLayout && l.access == expectedStaticLink.access
                     }
                 },
