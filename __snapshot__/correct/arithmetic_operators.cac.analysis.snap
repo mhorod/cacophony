@@ -1520,7 +1520,8 @@
       {
         "__class__": "AnalyzedVariable",
         "origin": {
-          "__class__": "PrimitiveVariable"
+          "__class__": "PrimitiveVariable",
+          "holdsReference": false
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -3041,7 +3042,8 @@
       {
         "__class__": "AnalyzedVariable",
         "origin": {
-          "__class__": "PrimitiveVariable"
+          "__class__": "PrimitiveVariable",
+          "holdsReference": false
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -4562,7 +4564,8 @@
       {
         "__class__": "AnalyzedVariable",
         "origin": {
-          "__class__": "PrimitiveVariable"
+          "__class__": "PrimitiveVariable",
+          "holdsReference": false
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -6083,7 +6086,8 @@
       {
         "__class__": "AnalyzedVariable",
         "origin": {
-          "__class__": "PrimitiveVariable"
+          "__class__": "PrimitiveVariable",
+          "holdsReference": false
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -7604,7 +7608,8 @@
       {
         "__class__": "AnalyzedVariable",
         "origin": {
-          "__class__": "PrimitiveVariable"
+          "__class__": "PrimitiveVariable",
+          "holdsReference": false
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -9125,7 +9130,8 @@
       {
         "__class__": "AnalyzedVariable",
         "origin": {
-          "__class__": "PrimitiveVariable"
+          "__class__": "PrimitiveVariable",
+          "holdsReference": false
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
