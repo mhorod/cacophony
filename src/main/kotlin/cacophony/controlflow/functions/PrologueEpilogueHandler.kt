@@ -27,7 +27,11 @@ class PrologueEpilogueHandler(
         for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
             nodes.add(registerUse(destination, false) assign registerUse(Register.FixedRegister(source), false))
         }
-        val isReference = handler.getFunctionDeclaration().arguments.flatMap { it.type.flatten() }.map { it is BaseType.Referential } + listOf(false)
+        val isReference = handler.getFunctionDeclaration().arguments.flatMap {
+            it.type.flatten()
+        }.map {
+            it is BaseType.Referential
+        } + listOf(false)
         // Defined function arguments
         for ((ind, destination) in flattenedArguments.zip(isReference).withIndex()) {
             require(destination.first is CFGNode.LValue)
