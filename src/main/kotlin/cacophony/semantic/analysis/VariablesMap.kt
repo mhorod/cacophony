@@ -17,6 +17,7 @@ import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.Struct
 import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.StructType
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.semantic.types.TypeExpr
@@ -170,6 +171,6 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
     private fun createVariable(type: TypeExpr): Variable =
         when (type) {
             is StructType -> Variable.StructVariable(type.fields.mapValues { createVariable(it.value) })
-            else -> Variable.PrimitiveVariable()
+            else -> Variable.PrimitiveVariable(type is ReferentialType)
         }
 }

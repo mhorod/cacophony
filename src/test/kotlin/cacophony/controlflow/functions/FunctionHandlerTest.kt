@@ -250,14 +250,14 @@ class FunctionHandlerTest {
         val handler = makeDefaultHandler(funDef, analyzedFunction)
         assertEquals(8, handler.getStackSpace().value)
 
-        var primVariable = mockk<Variable.PrimitiveVariable>()
+        var primVariable = Variable.PrimitiveVariable()
         handler.allocateFrameVariable(primVariable)
 
         var allocation = handler.getVariableAllocation(primVariable)
         require(allocation is VariableAllocation.OnStack)
         assertEquals(8, allocation.offset)
 
-        primVariable = mockk<Variable.PrimitiveVariable>()
+        primVariable = Variable.PrimitiveVariable()
         handler.allocateFrameVariable(primVariable)
 
         allocation = handler.getVariableAllocation(primVariable)
@@ -279,13 +279,13 @@ class FunctionHandlerTest {
         val handler = makeDefaultHandler(funDef, analyzedFunction)
         assertEquals(8, handler.getStackSpace().value)
 
-        handler.allocateFrameVariable(mockk<Variable.PrimitiveVariable>())
+        handler.allocateFrameVariable(Variable.PrimitiveVariable())
         assertEquals(16, handler.getStackSpace().value)
 
-        handler.registerVariableAllocation(mockk<Variable.PrimitiveVariable>(), VariableAllocation.OnStack(32))
+        handler.registerVariableAllocation(Variable.PrimitiveVariable(), VariableAllocation.OnStack(32))
         assertEquals(40, handler.getStackSpace().value)
 
-        handler.allocateFrameVariable(mockk<Variable.PrimitiveVariable>())
+        handler.allocateFrameVariable(Variable.PrimitiveVariable())
         assertEquals(48, handler.getStackSpace().value)
     }
 

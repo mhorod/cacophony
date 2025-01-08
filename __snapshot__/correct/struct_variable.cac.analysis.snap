@@ -674,7 +674,8 @@
               }
             },
             "a": {
-              "__class__": "PrimitiveVariable"
+              "__class__": "PrimitiveVariable",
+              "holdsReference": false
             }
           }
         },
@@ -1341,7 +1342,8 @@
       {
         "__class__": "AnalyzedVariable",
         "origin": {
-          "__class__": "PrimitiveVariable"
+          "__class__": "PrimitiveVariable",
+          "holdsReference": false
         },
         "definedIn": {
           "__class__": "FunctionDefinition",
@@ -1676,7 +1678,8 @@
           "fields": {
             "__class__": "LinkedHashMap",
             "a": {
-              "__class__": "PrimitiveVariable"
+              "__class__": "PrimitiveVariable",
+              "holdsReference": false
             }
           }
         },
@@ -2009,7 +2012,8 @@
       {
         "__class__": "AnalyzedVariable",
         "origin": {
-          "__class__": "PrimitiveVariable"
+          "__class__": "PrimitiveVariable",
+          "holdsReference": false
         },
         "definedIn": {
           "__class__": "FunctionDefinition",

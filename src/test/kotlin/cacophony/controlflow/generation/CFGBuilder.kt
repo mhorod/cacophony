@@ -1,10 +1,6 @@
 package cacophony.controlflow.generation
 
-import cacophony.controlflow.CFGFragment
-import cacophony.controlflow.CFGLabel
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.CFGVertex
-import cacophony.controlflow.Register
+import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.Definition
 
 class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
@@ -25,16 +21,17 @@ class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
     fun conditional(trueDestination: String, falseDestination: String, condition: () -> CFGNode): CFGVertex =
         CFGVertex.Conditional(condition(), getLabel(trueDestination), getLabel(falseDestination))
 
+    // These functions are only used in tests, as I value my sanity I won't care about references there.
     fun virtualRegister(name: String): Register = registers.getOrPut(name) { Register.VirtualRegister() }
 
     fun writeRegister(name: String, node: CFGNode) = cacophony.controlflow.writeRegister(virtualRegister(name), node)
 
     fun writeRegister(register: Register, name: String) =
-        cacophony.controlflow.writeRegister(register, cacophony.controlflow.registerUse(virtualRegister(name)))
+        cacophony.controlflow.writeRegister(register, registerUse(virtualRegister(name), false))
 
-    fun pushRegister(name: String) = cacophony.controlflow.pushRegister(virtualRegister(name))
+    fun pushRegister(name: String) = pushRegister(virtualRegister(name), false)
 
-    fun registerUse(name: String) = cacophony.controlflow.registerUse(virtualRegister(name))
+    fun registerUse(name: String) = cacophony.controlflow.registerUse(virtualRegister(name), false)
 
     fun dataLabel(name: String) = cacophony.controlflow.dataLabel(name)
 

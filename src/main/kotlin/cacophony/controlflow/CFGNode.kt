@@ -85,6 +85,7 @@ sealed interface CFGNode {
 
     data class RegisterUse(
         val register: Register,
+        val holdsReference: Boolean = false,
     ) : Value,
         RegisterRef {
         @OptIn(ExperimentalStdlibApi::class)
@@ -97,6 +98,7 @@ sealed interface CFGNode {
 
     data class MemoryAccess(
         val destination: CFGNode,
+        val holdsReference: Boolean = false,
     ) : Value, LValue {
         override fun children(): List<CFGNode> = listOf(destination)
     }

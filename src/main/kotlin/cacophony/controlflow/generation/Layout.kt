@@ -4,14 +4,16 @@ import cacophony.controlflow.CFGNode
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 
+data class LayoutAccessInfo(val access: CFGNode, val holdsReference: Boolean)
+
 sealed class Layout {
-    abstract fun flatten(): List<CFGNode>
+    abstract fun flatten(): List<LayoutAccessInfo>
 
     abstract fun matchesType(type: Type): Boolean
 }
 
-class SimpleLayout(val access: CFGNode) : Layout() {
-    override fun flatten(): List<CFGNode> = listOf(access)
+class SimpleLayout(val access: CFGNode, val holdsReference: Boolean = false) : Layout() {
+    override fun flatten(): List<LayoutAccessInfo> = listOf(LayoutAccessInfo(access, holdsReference))
 
     override fun matchesType(type: Type): Boolean =
         when (type) {
@@ -21,7 +23,7 @@ class SimpleLayout(val access: CFGNode) : Layout() {
 }
 
 class StructLayout(val fields: Map<String, Layout>) : Layout() {
-    override fun flatten(): List<CFGNode> =
+    override fun flatten(): List<LayoutAccessInfo> =
         fields.entries
             .sortedBy { it.key }
             .map { it.value }

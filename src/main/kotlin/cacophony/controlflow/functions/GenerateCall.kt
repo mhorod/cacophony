@@ -80,7 +80,8 @@ fun generateCall(
     }
 
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
-    val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister()) }
+    val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister(it.holdsReference)) }
+
     val resultSize = function.returnType.size()
 
     val stackResultsSize = (resultSize - REGISTER_RETURN_ORDER.size).let { if (it > 0) it else 0 }
@@ -98,23 +99,23 @@ fun generateCall(
 
     val alignmentShift = CFGNode.ConstantLazy { (callerFunctionStackSize.value + stackShift) % 16 }
 
-    val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP))
+    val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP), false)
     nodes.add(CFGNode.SubtractionAssignment(rsp, alignmentShift))
 
     if (stackResultsSize > 0) nodes.add(CFGNode.SubtractionAssignment(rsp, CFGNode.ConstantKnown(8 * stackResultsSize)))
 
-    for ((argument, register) in stackArguments) {
-        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(register), argument))
+    for ((accessInfo, register) in stackArguments) {
+        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(register, register.holdsReference), accessInfo.access))
     }
 
     // in what order should we evaluate arguments? gcc uses reversed order
-    for ((argument, register) in registerArguments) {
-        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(register)), argument))
+    for ((accessInfo, register) in registerArguments) {
+        nodes.add(CFGNode.Assignment(CFGNode.RegisterUse(Register.FixedRegister(register), accessInfo.holdsReference), accessInfo.access))
     }
 
     // is this indirection necessary?
     for ((_, register) in stackArguments.reversed()) {
-        nodes.add(CFGNode.Push(CFGNode.RegisterUse(register)))
+        nodes.add(CFGNode.Push(CFGNode.RegisterUse(register, register.holdsReference)))
     }
 
     nodes.add(CFGNode.Call(function))
@@ -140,15 +141,20 @@ fun generateCall(
         val registerResults = results.zip(REGISTER_RETURN_ORDER)
         val stackResults = results.drop(registerResults.size)
 
-        for ((access, register) in registerResults) {
-            nodes.add(CFGNode.Assignment(access as CFGNode.LValue, CFGNode.RegisterUse(Register.FixedRegister(register))))
+        for ((accessInfo, register) in registerResults) {
+            nodes.add(
+                CFGNode.Assignment(
+                    accessInfo.access as CFGNode.LValue,
+                    CFGNode.RegisterUse(Register.FixedRegister(register), accessInfo.holdsReference),
+                ),
+            )
         }
 
         if (stackResults.isNotEmpty()) {
-            for (access in stackResults) {
-                val tmpReg = Register.VirtualRegister()
-                nodes.add(CFGNode.Pop(registerUse(tmpReg)))
-                nodes.add(CFGNode.Assignment(access as CFGNode.LValue, registerUse(tmpReg)))
+            for (accessInfo in stackResults) {
+                val tmpReg = Register.VirtualRegister(accessInfo.holdsReference)
+                nodes.add(CFGNode.Pop(registerUse(tmpReg, tmpReg.holdsReference)))
+                nodes.add(CFGNode.Assignment(accessInfo.access as CFGNode.LValue, registerUse(tmpReg, tmpReg.holdsReference)))
             }
             nodes.add(CFGNode.AdditionAssignment(rsp, CFGNode.ConstantLazy { alignmentShift.value }))
         }

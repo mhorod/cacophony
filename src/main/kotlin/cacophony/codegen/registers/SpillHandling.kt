@@ -61,7 +61,7 @@ fun adjustLoweredCFGToHandleSpills(
     fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
         instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
-                CFGNode.RegisterUse(reg),
+                CFGNode.RegisterUse(reg, spill.holdsReference),
                 spillsFrameAllocation[spill]!!,
             ),
         )
@@ -70,7 +70,7 @@ fun adjustLoweredCFGToHandleSpills(
         instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
             CFGNode.Assignment(
                 spillsFrameAllocation[spill]!!,
-                CFGNode.RegisterUse(reg),
+                CFGNode.RegisterUse(reg, spill.holdsReference),
             ),
         )
 
@@ -161,6 +161,17 @@ private fun colorSpills(
     if (!spillsColoring.keys.containsAll(spills)) {
         throw SpillHandlingException("Coloring spills for memory optimization failed.")
     }
+    if (mutableMapOf<Int, MutableSet<VirtualRegister>>().apply {
+            spillsColoring.forEach { (reg, color) ->
+                getOrPut(color) { mutableSetOf() }.add(reg)
+            }
+        }.any {
+            it.value.any { reg -> reg.holdsReference } &&
+                it.value.any { reg -> !reg.holdsReference }
+        }
+    ) {
+        throw SpillHandlingException("Same color assigned to register with and without reference")
+    }
 
     return spillsColoring
 }
@@ -170,8 +181,12 @@ private fun allocateFrameMemoryForSpills(
     spillsColoring: Map<VirtualRegister, Int>,
 ): Map<VirtualRegister, CFGNode.LValue> {
     val colorToFrameMemory =
-        spillsColoring.values.toSet().associateWith {
-            functionHandler.allocateFrameVariable(Variable.PrimitiveVariable())
+        mutableMapOf<Int, CFGNode.LValue>().apply {
+            spillsColoring.forEach { (reg, color) ->
+                if (get(color) == null) {
+                    put(color, functionHandler.allocateFrameVariable(Variable.PrimitiveVariable(reg.holdsReference)))
+                }
+            }
         }
     return spillsColoring.mapValues { (_, c) -> colorToFrameMemory[c]!! }.toMap()
 }

@@ -22,10 +22,18 @@ class FunctionHandlerImpl(
     private var stackSpace = 0
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
 
+    // Initially variables may be allocated in virtualRegisters, only after spill handling we know
+    // if they're truly on stack or in registers.
+    // Every virtualRegister knows if it holds reference, therefore we care only about references on stack here.
+    private val referenceOffsets = ArrayList<Int>()
+
     // This does not perform any checks and may override previous allocation.
     // Holes in the stack may be also created if stack variables are directly allocated with this method.
     override fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation) {
         if (allocation is VariableAllocation.OnStack) {
+            if (variable.holdsReference) {
+                referenceOffsets.add(allocation.offset)
+            }
             stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
         }
         variableAllocation[variable] = allocation
@@ -36,9 +44,10 @@ class FunctionHandlerImpl(
         registerVariableAllocation(variable, VariableAllocation.OnStack(stackSpace))
         return MemoryAccess(
             CFGNode.Subtraction(
-                RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+                RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false),
                 CFGNode.ConstantKnown(currentStackSpace),
             ),
+            variable.holdsReference,
         )
     }
 
@@ -77,9 +86,9 @@ class FunctionHandlerImpl(
 
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {
-            RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
+            RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false)
         } else {
-            MemoryAccess(traverseStaticLink(depth - 1))
+            MemoryAccess(traverseStaticLink(depth - 1), false)
         }
 
     override fun generateAccessToFramePointer(other: FunctionDefinition): CFGNode =
@@ -95,14 +104,14 @@ class FunctionHandlerImpl(
         // Since staticLink is not property of node itself, but rather of its children,
         // if caller is immediate parent, we have to fetch RBP instead.
         if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
-            RegisterUse(Register.FixedRegister(HardwareRegister.RBP))
+            RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false)
         } else {
             callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
         }
 
     override fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
         if (variable in variableAllocation) { // WARN: hack to handle arguments not used inside function
-            return wrapAllocation(variableAllocation[variable]!!)
+            return wrapAllocation(variableAllocation[variable]!!, variable.holdsReference)
         }
         val analyzedVariable = analyzedFunction.variables.find { it.origin == variable }
         val definedInFunctionHandler =
@@ -120,7 +129,7 @@ class FunctionHandlerImpl(
 
         return when (val variableAllocation = definedInFunctionHandler.getVariableAllocation(variable)) {
             is VariableAllocation.InRegister -> {
-                RegisterUse(variableAllocation.register)
+                RegisterUse(variableAllocation.register, variable.holdsReference)
             }
 
             is VariableAllocation.OnStack -> {
@@ -129,6 +138,7 @@ class FunctionHandlerImpl(
                         generateAccessToFramePointer(definedInDeclaration),
                         CFGNode.ConstantKnown(variableAllocation.offset),
                     ),
+                    variable.holdsReference,
                 )
             }
         }
@@ -175,6 +185,18 @@ class FunctionHandlerImpl(
     override fun generatePrologue(): List<CFGNode> = prologueEpilogueHandler.generatePrologue()
 
     override fun generateEpilogue(): List<CFGNode> = prologueEpilogueHandler.generateEpilogue()
+
+    override fun getReferenceAccesses(): List<CFGNode.LValue> {
+        return referenceOffsets.map {
+            MemoryAccess(
+                CFGNode.Subtraction(
+                    RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false),
+                    CFGNode.ConstantKnown(it),
+                ),
+                true,
+            )
+        }.toList()
+    }
 
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     // Static link is created even if parent doesn't exist.

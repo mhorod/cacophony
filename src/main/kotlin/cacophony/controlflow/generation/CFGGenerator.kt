@@ -70,7 +70,7 @@ internal class CFGGenerator(
         val prerequisite =
             assignments
                 .dropLast(1)
-                .map { SubCFG.Extracted(it, it, CFGNode.NoOp) }
+                .map { SubCFG.Extracted(it, it, CFGNode.NoOp, false) }
                 .reduceOrNull(SubCFG.Extracted::merge)
         val lastAssignment = assignments.last()
         val last = SubCFG.Extracted(lastAssignment, lastAssignment, returnedValue)
@@ -118,7 +118,8 @@ internal class CFGGenerator(
                 }
         }
 
-    private fun ensureExtracted(node: CFGNode): SubCFG.Extracted = ensureExtracted(SubCFG.Immediate(node), EvalMode.SideEffect)
+    private fun ensureExtracted(node: CFGNode, holdsReference: Boolean): SubCFG.Extracted =
+        ensureExtracted(SubCFG.Immediate(node, holdsReference), EvalMode.SideEffect)
 
     /**
      * Convert the expression into SubCFG extracted to a separate vertex
@@ -167,7 +168,7 @@ internal class CFGGenerator(
                         mode,
                         listOf(
                             ensureExtracted(
-                                SubCFG.Immediate(dataLabel(objectOutlineLocation[type.type]!!)),
+                                SubCFG.Immediate(dataLabel(objectOutlineLocation[type.type]!!), false),
                                 mode,
                             ),
                         ),
@@ -185,9 +186,9 @@ internal class CFGGenerator(
                 when (calcExpression) {
                     is SubCFG.Extracted -> {
                         val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
-                        calcExpression merge SubCFG.Extracted(vertex, vertex, CFGNode.NoOp)
+                        calcExpression merge SubCFG.Extracted(vertex, vertex, CFGNode.NoOp, false)
                     }
-                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.NoOp)
+                    is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.NoOp, false)
                 }
             }
             is EvalMode.Conditional -> throw IllegalArgumentException("Reference cannot be used as condition")
@@ -234,7 +235,7 @@ internal class CFGGenerator(
         }
         conditionVertex.connectTrue(mode.trueEntry.label)
         conditionVertex.connectFalse(mode.falseEntry.label)
-        return SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp)
+        return SubCFG.Extracted(conditionVertex, mode.exit, CFGNode.NoOp, false)
     }
 
     private fun visitStruct(expression: Struct, mode: EvalMode, context: Context): SubCFG {
@@ -314,6 +315,7 @@ internal class CFGGenerator(
                 else -> generateLayoutOfVirtualRegisters(returnType)
             }
 
+        // It may hold reference, but I believe it won't be used anywhere else
         val callSequence =
             callGenerator
                 .generateCallFrom(
@@ -322,9 +324,8 @@ internal class CFGGenerator(
                     functionHandler,
                     arguments.map { it.access },
                     resultLayout,
-                ).map { ensureExtracted(it) }
+                ).map { ensureExtracted(it, false) }
                 .reduce(SubCFG.Extracted::merge)
-
         val entry =
             if (arguments.isNotEmpty()) {
                 val extractedArguments = arguments.reduce(SubCFG.Extracted::merge)
@@ -335,7 +336,7 @@ internal class CFGGenerator(
             }
 
         return if (mode is EvalMode.Conditional) extendWithConditional(callSequence, mode)
-        else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp))
+        else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp, false))
     }
 
     private fun visitLiteral(literal: Literal, mode: EvalMode): SubCFG =
@@ -346,15 +347,16 @@ internal class CFGGenerator(
                         is Literal.BoolLiteral -> if (literal.value) CFGNode.TRUE else CFGNode.FALSE
                         is Literal.IntLiteral -> CFGNode.ConstantKnown(literal.value)
                     },
+                    false,
                 )
 
-            is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
+            is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp, false)
 
             is EvalMode.Conditional -> {
                 check(literal is Literal.BoolLiteral) { "Non-boolean literal cannot be used as a condition" }
 
                 val target = if (literal.value) mode.trueEntry else mode.falseEntry
-                SubCFG.Extracted(target, mode.exit, CFGNode.NoOp)
+                SubCFG.Extracted(target, mode.exit, CFGNode.NoOp, false)
             }
         }
 
@@ -418,7 +420,7 @@ internal class CFGGenerator(
         val trueCFG = extendWithAssignment(visit(expression.doExpression, mode, context), resultValueLayout, mode)
         val falseCFG =
             extendWithAssignment(
-                expression.elseExpression?.let { visit(it, mode, context) } ?: SubCFG.Immediate(CFGNode.NoOp),
+                expression.elseExpression?.let { visit(it, mode, context) } ?: SubCFG.Immediate(CFGNode.NoOp, false),
                 resultValueLayout,
                 mode,
             )
@@ -460,14 +462,14 @@ internal class CFGGenerator(
         } else {
             expression.elseExpression?.let {
                 visit(it, mode, context)
-            } ?: SubCFG.Immediate(CFGNode.NoOp)
+            } ?: SubCFG.Immediate(CFGNode.NoOp, false)
         }
     }
 
     private fun visitReturnStatement(expression: Statement.ReturnStatement, mode: EvalMode, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
-            assignLayoutWithValue(valueCFG.access, getCurrentFunctionHandler().getResultLayout(), SimpleLayout(CFGNode.NoOp))
+            assignLayoutWithValue(valueCFG.access, getCurrentFunctionHandler().getResultLayout(), SimpleLayout(CFGNode.NoOp, false))
 
         resultAssignment.exit.connect(epilogue.entry.label)
 
@@ -482,7 +484,7 @@ internal class CFGGenerator(
                 }
                 is SubCFG.Immediate -> resultAssignment.entry
             }
-        return SubCFG.Extracted(entry, artificialExit, CFGNode.NoOp)
+        return SubCFG.Extracted(entry, artificialExit, CFGNode.NoOp, false)
     }
 
     private fun visitWhileStatement(expression: Statement.WhileStatement, mode: EvalMode, context: Context): SubCFG {
@@ -505,7 +507,7 @@ internal class CFGGenerator(
         // This means there's no real exit from the break statement, so we introduce an unreachable one
         //  that can be connected to expressions following the break statement
         val artificialExit = if (mode is EvalMode.Conditional) mode.exit else cfg.addUnconditionalVertex(CFGNode.NoOp)
-        return SubCFG.Extracted(vertex, artificialExit, CFGNode.NoOp)
+        return SubCFG.Extracted(vertex, artificialExit, CFGNode.NoOp, false)
     }
 
     private fun visitAssignable(expression: Assignable, mode: EvalMode): SubCFG {
@@ -513,7 +515,7 @@ internal class CFGGenerator(
         val variableAccess = getVariableLayout(getCurrentFunctionHandler(), variable)
         return when (mode) {
             is EvalMode.Value -> SubCFG.Immediate(variableAccess)
-            is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp)
+            is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp, false)
             is EvalMode.Conditional -> extendWithConditional(SubCFG.Immediate(variableAccess), mode)
         }
     }

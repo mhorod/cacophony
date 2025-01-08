@@ -3,6 +3,7 @@ package cacophony.codegen.registers
 import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.linearization.BasicBlock
+import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import io.mockk.every
 import io.mockk.mockk
@@ -80,7 +81,7 @@ class RegistersInteractionTest {
         every { block1.predecessors() } returns setOf()
 
         // when
-        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3, block4))
+        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3, block4), emptyList())
 
         // then
         assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(regA, regB, regC, regD)
@@ -98,6 +99,40 @@ class RegistersInteractionTest {
                 regB to setOf(),
                 regC to setOf(),
                 regD to setOf(),
+            ),
+        )
+    }
+
+    @Test
+    fun `calculates interference between non-references and references`() {
+        // given
+        val refReg = Register.VirtualRegister(true)
+        val nonRefReg = Register.VirtualRegister(false)
+
+        val preservedHardwareReg = HardwareRegister.R12
+        val preservedReg = Register.FixedRegister(preservedHardwareReg)
+
+        val block =
+            mockBlock(
+                listOf(
+                    mockInstruction(setOf(refReg), emptySet()),
+                    mockInstruction(setOf(nonRefReg), emptySet()),
+                ),
+                setOf(),
+            )
+
+        every { block.predecessors() } returns emptySet()
+
+        // when
+        val registersInteraction = analyzeRegistersInteraction(listOf(block), listOf(preservedHardwareReg))
+
+        // then
+        assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(refReg, nonRefReg, preservedReg)
+        assertThat(registersInteraction.interference).containsExactlyInAnyOrderEntriesOf(
+            mapOf(
+                refReg to setOf(preservedReg, nonRefReg),
+                nonRefReg to setOf(refReg),
+                preservedReg to setOf(refReg),
             ),
         )
     }
@@ -131,7 +166,7 @@ class RegistersInteractionTest {
         every { block1.predecessors() } returns setOf()
 
         // when
-        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3))
+        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3), emptyList())
 
         // then
         assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(regA, regB)
@@ -178,7 +213,7 @@ class RegistersInteractionTest {
         every { block1.predecessors() } returns setOf()
 
         // when
-        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3))
+        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3), emptyList())
 
         // then
         assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(regA, regB)
@@ -231,7 +266,7 @@ class RegistersInteractionTest {
         every { block1.predecessors() } returns setOf()
 
         // when
-        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3, block4))
+        val registersInteraction = analyzeRegistersInteraction(listOf(block1, block2, block3, block4), emptyList())
 
         // then
         assertThat(registersInteraction.allRegisters).containsExactlyInAnyOrder(regA, regB)
@@ -259,7 +294,7 @@ class RegistersInteractionTest {
 
         // when & then
         assertThrows<IllegalArgumentException> {
-            analyzeRegistersInteraction(lCfgFragment)
+            analyzeRegistersInteraction(lCfgFragment, emptyList())
         }
     }
 }

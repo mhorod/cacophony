@@ -65,7 +65,6 @@ class FunctionPrologueAndEpilogueTest {
                 teardownStackFrame("teardown", "exit")
                 "exit" does final { returnNode(1) }
             }
-
         assertEquivalent(actualCFG, expectedCFG)
     }
 
@@ -199,12 +198,12 @@ private fun CFGFragmentBuilder.restorePreservedRegisters(localEntry: String, loc
 }
 
 private fun CFGFragmentBuilder.setupStackFrame(localEntry: String, localExit: String, allocatedSpace: Int = 0) {
-    localEntry does jump("setup rbp") { pushRegister(rbp) }
+    localEntry does jump("setup rbp") { pushRegister(rbp, false) }
     "setup rbp" does jump("setup rsp") { registerUse(rbp) assign (registerUse(rsp) sub integer(8)) }
     "setup rsp" does jump(localExit) { registerUse(rsp) subeq integer(8 + allocatedSpace) }
 }
 
 private fun CFGFragmentBuilder.teardownStackFrame(localEntry: String, localExit: String) {
     localEntry does jump("teardown rbp") { writeRegister(rsp, registerUse(rbp) add integer(8)) }
-    "teardown rbp" does jump(localExit) { popRegister(rbp) }
+    "teardown rbp" does jump(localExit) { popRegister(rbp, false) }
 }

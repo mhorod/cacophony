@@ -31,7 +31,7 @@ fun functionDefinition(identifier: String, args: List<Definition.FunctionArgumen
     Definition.FunctionDefinition(
         mockRange(),
         identifier,
-        null,
+        BaseType.Functional(mockk(), args.map { it.type }, returnType),
         args,
         returnType,
         body,

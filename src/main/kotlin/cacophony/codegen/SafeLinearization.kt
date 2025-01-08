@@ -10,6 +10,7 @@ import cacophony.codegen.registers.analyzeRegistersInteraction
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.SystemVAMD64CallConvention
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.graphs.FirstFitGraphColoring
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
@@ -52,6 +53,7 @@ fun analyzeRegistersInteraction(covering: Map<FunctionDefinition, LoweredCFGFrag
         covering.mapValues { (_, loweredCFG) ->
             analyzeRegistersInteraction(
                 loweredCFG,
+                SystemVAMD64CallConvention.preservedRegisters(),
             )
         }
     return registersInteraction

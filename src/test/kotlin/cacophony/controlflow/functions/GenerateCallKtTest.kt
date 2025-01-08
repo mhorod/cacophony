@@ -99,17 +99,22 @@ class GenerateCallKtTest {
                         }
                         Definition.FunctionArgument(mockk(), "x$it", BaseType.Basic(mockk(), "Int"))
                     }
+                val type = mockk<BaseType.Functional>()
+                every {
+                    type.argumentsType
+                } returns
+                    List(argumentCount) {
+                        mockk<BaseType.Basic>().also {
+                            every { it.flatten() } returns listOf(it)
+                        }
+                    }
                 functionHandlers.add(
                     0,
                     makeDefaultHandler(
                         Definition.FunctionDefinition(
                             mockk(),
                             "fun def",
-                            BaseType.Functional(
-                                mockk(),
-                                (0..argumentCount).map { BaseType.Basic(mockk(), "Int") },
-                                BaseType.Basic(mockk(), "Int"),
-                            ),
+                            type,
                             argDeclarations,
                             BaseType.Basic(mockk(), "Int"),
                             mockk(),
@@ -264,5 +269,52 @@ class GenerateCallKtTest {
             )
         }
         unmockkStatic(::generateCall)
+    }
+
+    @Test
+    fun `properly passes reference info for stack arguments`() {
+        val argCount = REGISTER_ARGUMENT_ORDER.size + 2
+        val type = mockk<BaseType.Functional>()
+        val baseType = mockk<BaseType.Basic>().also { every { it.flatten() } returns listOf(it) }
+        val refType = mockk<BaseType.Referential>().also { every { it.flatten() } returns listOf(it) }
+        every { type.argumentsType } returns List(argCount - 1) { baseType } + listOf(refType)
+
+        val argDeclarations =
+            (1..argCount).map { i ->
+                mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }.also {
+                    every { it.type } returns
+                        if (i < argCount) BaseType.Basic(
+                            mockRange(),
+                            "Int",
+                        ) else BaseType.Referential(
+                            mockRange(),
+                            mockk<BaseType.Basic>(),
+                        )
+                }
+                Definition.FunctionArgument(mockk(), "x$i", BaseType.Basic(mockk(), "Int"))
+            }
+
+        val funDef =
+            Definition.FunctionDefinition(
+                mockk(),
+                "fun def",
+                type,
+                argDeclarations,
+                BaseType.Basic(mockk(), "Int"),
+                mockk(),
+            )
+
+        val nodes =
+            generateCall(
+                funDef,
+                (1..argCount + 1).map { SimpleLayout(mockk()) },
+                null,
+                CFGNode.ConstantKnown(0),
+            ).filterIsInstance<CFGNode.Assignment>().drop(REGISTER_ARGUMENT_ORDER.size).take(3)
+
+        for (i in 0..2) {
+            val register = (nodes[i].destination as CFGNode.RegisterUse).register
+            assertThat(register is Register.VirtualRegister && register.holdsReference == (i == 0))
+        }
     }
 }

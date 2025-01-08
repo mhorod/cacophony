@@ -8,8 +8,8 @@ sealed class Variable(
         var index = 0
     }
 
-    class PrimitiveVariable(name: String) : Variable(name) {
-        constructor() : this("pv${index++}")
+    class PrimitiveVariable(name: String, val holdsReference: Boolean = false) : Variable(name) {
+        constructor(holdsReference: Boolean = false) : this("pv${index++}", holdsReference)
     }
 
     class StructVariable(val fields: Map<String, Variable>, name: String) : Variable(name) {
