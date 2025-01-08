@@ -6,8 +6,14 @@ import cacophony.controlflow.generation.SimpleLayout
 import cacophony.controlflow.generation.generateSubLayout
 import cacophony.diagnostics.DiagnosticMessage
 import cacophony.diagnostics.Diagnostics
+import cacophony.controlflow.generation.SimpleLayout
+import cacophony.controlflow.generation.generateSubLayout
+import cacophony.diagnostics.DiagnosticMessage
+import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type
+import cacophony.semantic.types.TypeTranslator
+import cacophony.utils.Location
 import cacophony.semantic.types.TypeTranslator
 import cacophony.utils.Location
 
@@ -18,6 +24,7 @@ fun generateCallFrom(
     callerFunction: FunctionHandler,
     function: Definition.FunctionDeclaration,
     functionHandler: FunctionHandler?,
+    arguments: List<Layout>,
     arguments: List<Layout>,
     result: Layout?,
 ): List<CFGNode> =
@@ -34,12 +41,14 @@ fun generateCallFrom(
 
         is Definition.FunctionDefinition -> {
             if (function.arguments.size != arguments.size) {
+            if (function.arguments.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
             if (result != null && !layoutMatchesType(result, function.returnType)) {
                 throw IllegalArgumentException("Wrong result layout")
             }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
+            generateCall(function, arguments + listOf(SimpleLayout(staticLinkVar)), result, callerFunction.getStackSpace())
             generateCall(function, arguments + listOf(SimpleLayout(staticLinkVar)), result, callerFunction.getStackSpace())
         }
     }
@@ -49,9 +58,37 @@ private fun layoutMatchesType(layout: Layout, type: Type): Boolean = layout.matc
 fun generateCall(
     function: Definition.FunctionDeclaration,
     argumentLayouts: List<Layout>,
+    argumentLayouts: List<Layout>,
     result: Layout?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
+    val translator =
+        TypeTranslator(
+            object : Diagnostics {
+                override fun report(message: DiagnosticMessage, range: Pair<Location, Location>): Unit =
+                    throw IllegalArgumentException("Invalid type $message")
+
+                override fun fatal(): Throwable = throw IllegalArgumentException("Invalid type")
+
+                override fun getErrors(): List<String> = listOf()
+            },
+        )
+    val argumentTypes =
+        when (function) {
+            is Definition.ForeignFunctionDeclaration -> function.type!!.argumentsType
+            is Definition.FunctionDefinition -> function.arguments.map { it.type }
+        }
+
+    var arguments =
+        argumentLayouts.zip(argumentTypes).flatMap { (layout, type) ->
+            generateSubLayout(layout, translator.translateType(type)!!).flatten()
+        }
+
+    // Handle static link
+    if (argumentTypes.size + 1 == argumentLayouts.size) {
+        arguments = arguments + argumentLayouts.last().flatten()
+    }
+
     val translator =
         TypeTranslator(
             object : Diagnostics {
@@ -169,6 +206,7 @@ interface CallGenerator {
         function: Definition.FunctionDeclaration,
         functionHandler: FunctionHandler?,
         arguments: List<Layout>,
+        arguments: List<Layout>,
         result: Layout?,
     ): List<CFGNode>
 }
@@ -178,6 +216,7 @@ class SimpleCallGenerator : CallGenerator {
         callerFunction: FunctionHandler,
         function: Definition.FunctionDeclaration,
         functionHandler: FunctionHandler?,
+        arguments: List<Layout>,
         arguments: List<Layout>,
         result: Layout?,
     ): List<CFGNode> = cacophony.controlflow.functions.generateCallFrom(callerFunction, function, functionHandler, arguments, result)
