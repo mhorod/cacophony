@@ -53,7 +53,7 @@ fun analyzeRegistersInteraction(covering: Map<FunctionDefinition, LoweredCFGFrag
         covering.mapValues { (_, loweredCFG) ->
             analyzeRegistersInteraction(
                 loweredCFG,
-                SystemVAMD64CallConvention.preservedRegisters()
+                SystemVAMD64CallConvention.preservedRegisters(),
             )
         }
     return registersInteraction

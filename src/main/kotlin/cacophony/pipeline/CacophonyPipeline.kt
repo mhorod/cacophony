@@ -6,7 +6,6 @@ import cacophony.codegen.instructions.generateAsm
 import cacophony.codegen.instructions.generateAsmPreamble
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.codegen.registers.*
-import cacophony.controlflow.*
 import cacophony.codegen.safeLinearize
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register

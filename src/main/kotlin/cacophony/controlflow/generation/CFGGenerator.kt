@@ -347,7 +347,7 @@ internal class CFGGenerator(
                         is Literal.BoolLiteral -> if (literal.value) CFGNode.TRUE else CFGNode.FALSE
                         is Literal.IntLiteral -> CFGNode.ConstantKnown(literal.value)
                     },
-                    false
+                    false,
                 )
 
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp, false)

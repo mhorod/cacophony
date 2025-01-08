@@ -2,8 +2,6 @@ package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
-import cacophony.controlflow.generation.LayoutAccessInfo
-import cacophony.semantic.syntaxtree.BaseType
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.controlflow.generation.generateSubLayout
 import cacophony.diagnostics.DiagnosticMessage
