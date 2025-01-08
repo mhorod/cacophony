@@ -14,7 +14,6 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.types.ReferentialType
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -281,7 +280,7 @@ class GenerateCallKtTest {
         every { type.argumentsType } returns List(argCount - 1) { baseType } + listOf(refType)
 
         val argDeclarations =
-            (1..argCount).map {i ->
+            (1..argCount).map { i ->
                 mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }.also {
                     every { it.type } returns
                         if (i < argCount) BaseType.Basic(

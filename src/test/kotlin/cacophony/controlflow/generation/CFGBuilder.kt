@@ -26,8 +26,8 @@ class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
 
     fun writeRegister(name: String, node: CFGNode) = cacophony.controlflow.writeRegister(virtualRegister(name), node)
 
-    fun writeRegister(register: Register, name: String) = cacophony.controlflow.
-        writeRegister(register, registerUse(virtualRegister(name), false))
+    fun writeRegister(register: Register, name: String) =
+        cacophony.controlflow.writeRegister(register, registerUse(virtualRegister(name), false))
 
     fun pushRegister(name: String) = pushRegister(virtualRegister(name), false)
 
