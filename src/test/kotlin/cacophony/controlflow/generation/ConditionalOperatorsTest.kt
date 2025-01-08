@@ -50,7 +50,7 @@ class ConditionalOperatorsTest {
                     }
                 "write result to rax" does
                     jump("bodyExit") {
-                        writeRegister(getResultRegister(), readRegister("result"))
+                        writeRegister(getResultRegister(), registerUse("result"))
                     }
             }
 
@@ -89,7 +89,7 @@ class ConditionalOperatorsTest {
                     }
                 "condition" does
                     conditional("true", "false") {
-                        makeNode(readRegister("x"), integer(2))
+                        makeNode(registerUse("x"), integer(2))
                     }
                 "true" does
                     jump("write result to rax") {
@@ -101,7 +101,7 @@ class ConditionalOperatorsTest {
                     }
                 "write result to rax" does
                     jump("bodyExit") {
-                        writeRegister(getResultRegister(), readRegister("result"))
+                        writeRegister(getResultRegister(), registerUse("result"))
                     }
             }
 
@@ -140,7 +140,7 @@ class ConditionalOperatorsTest {
                     }
                 "condition" does
                     conditional("true", "false") {
-                        makeNode(integer(2), readRegister("x"))
+                        makeNode(integer(2), registerUse("x"))
                     }
                 "true" does
                     jump("write result to rax") {
@@ -152,7 +152,7 @@ class ConditionalOperatorsTest {
                     }
                 "write result to rax" does
                     jump("bodyExit") {
-                        writeRegister(getResultRegister(), readRegister("result"))
+                        writeRegister(getResultRegister(), registerUse("result"))
                     }
             }
 
@@ -195,7 +195,7 @@ class ConditionalOperatorsTest {
                     }
                 "condition" does
                     conditional("true", "false") {
-                        makeNode(readRegister("x"), readRegister("y"))
+                        makeNode(registerUse("x"), registerUse("y"))
                     }
                 "true" does
                     jump("write result to rax") {
@@ -207,7 +207,7 @@ class ConditionalOperatorsTest {
                     }
                 "write result to rax" does
                     jump("bodyExit") {
-                        writeRegister(getResultRegister(), readRegister("result"))
+                        writeRegister(getResultRegister(), registerUse("result"))
                     }
             }
 

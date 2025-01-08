@@ -5,6 +5,7 @@ import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 
 val BUILTIN_TYPES = BuiltinType::class.sealedSubclasses.associate { it.objectInstance!!.name to it.objectInstance!! }
+val NON_ALLOCATABLE_TYPES = listOf(TypeExpr.VoidType, BuiltinType.UnitType)
 
 sealed class TypeExpr(
     val name: String,

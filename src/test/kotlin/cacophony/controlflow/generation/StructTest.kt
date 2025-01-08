@@ -137,7 +137,13 @@ class StructTest {
             singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("assign b") { writeRegister(virA, integer(7)) }
                 "assign b" does jump("+=") { writeRegister(virB, integer(1)) }
-                "+=" does jump("assign res") { CFGNode.AdditionAssignment(registerUse(virA), registerUse(virA)) }
+                "+=" does
+                    jump("assign res") {
+                        CFGNode.AdditionAssignment(
+                            registerUse(virA),
+                            registerUse(virA),
+                        )
+                    }
                 "assign res" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virA)) }
             }
 
@@ -484,7 +490,7 @@ class StructTest {
                 "bodyEntry" does conditional("true", "false") { integer(1) neq integer(0) }
                 "true" does jump("assign res") { writeRegister("res", integer(1)) }
                 "false" does jump("assign res") { writeRegister("res", integer(2)) }
-                "assign res" does jump("bodyExit") { writeRegister("ret", readRegister("res")) }
+                "assign res" does jump("bodyExit") { writeRegister("ret", registerUse("res")) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)
@@ -523,10 +529,10 @@ class StructTest {
             singleWrappedFragmentCFG(fDef) {
                 "bodyEntry" does jump("assign b") { writeRegister("a", integer(7)) }
                 "assign b" does jump("if cond") { writeRegister("b", integer(1)) }
-                "if cond" does conditional("true", "false") { readRegister("b") neq integer(0) }
+                "if cond" does conditional("true", "false") { registerUse("b") neq integer(0) }
                 "true" does jump("if exit") { writeRegister("res", integer(1)) }
                 "false" does jump("if exit") { writeRegister("res", integer(2)) }
-                "if exit" does jump("bodyExit") { writeRegister("ret", readRegister("res")) }
+                "if exit" does jump("bodyExit") { writeRegister("ret", registerUse("res")) }
             }
 
         assertEquivalent(actualCFG, expectedCFG)

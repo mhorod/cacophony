@@ -14,6 +14,7 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.types.ReferentialType
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -44,7 +45,7 @@ class GenerateCallKtTest {
         return true
     }
 
-    private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: CFGNode) {
+    private fun checkStaticLinkInGenerateCallFrom(callee: FunctionHandler, caller: FunctionHandler, expectedStaticLink: SimpleLayout) {
         mockkStatic(::generateCall)
         generateCallFrom(
             caller,
@@ -57,12 +58,11 @@ class GenerateCallKtTest {
         verify {
             generateCall(
                 any(),
-                any(),
                 match {
                     if (it.size != 1) false
                     else {
                         val l = it.first()
-                        l == expectedStaticLink
+                        l is SimpleLayout && l.access == expectedStaticLink.access
                     }
                 },
                 any(),
@@ -98,6 +98,7 @@ class GenerateCallKtTest {
                                     "Int",
                                 )
                         }
+                        Definition.FunctionArgument(mockk(), "x$it", BaseType.Basic(mockk(), "Int"))
                     }
                 val type = mockk<BaseType.Functional>()
                 every {
@@ -135,8 +136,7 @@ class GenerateCallKtTest {
     private fun getCallNodes(argumentCount: Int, result: Layout?): List<CFGNode> =
         generateCall(
             mockFunDeclarationAndFunHandler(argumentCount).getFunctionDeclaration(),
-            List(argumentCount) { mockk<BaseType>() },
-            (1..argumentCount + 1).map { mockk() },
+            (1..argumentCount + 1).map { SimpleLayout(mockk()) },
             result,
             CFGNode.ConstantKnown(0),
         )
@@ -227,7 +227,7 @@ class GenerateCallKtTest {
         checkStaticLinkInGenerateCallFrom(
             childHandler,
             parentHandler,
-            CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
+            SimpleLayout(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))),
         )
     }
 
@@ -238,7 +238,7 @@ class GenerateCallKtTest {
         checkStaticLinkInGenerateCallFrom(
             childHandler,
             childHandler,
-            CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))),
+            SimpleLayout(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
         )
     }
 
@@ -250,7 +250,7 @@ class GenerateCallKtTest {
         checkStaticLinkInGenerateCallFrom(
             parentHandler,
             childHandler,
-            CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
+            SimpleLayout(CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))))),
         )
     }
 
@@ -266,7 +266,6 @@ class GenerateCallKtTest {
                 function,
                 any(),
                 any(),
-                any(),
                 match { matchStackSpaceToHandler(it, caller) },
             )
         }
@@ -276,14 +275,25 @@ class GenerateCallKtTest {
     @Test
     fun `properly passes reference info for stack arguments`() {
         val argCount = REGISTER_ARGUMENT_ORDER.size + 2
-        val argDeclarations =
-            (1..argCount).map {
-                mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }
-            }
         val type = mockk<BaseType.Functional>()
-        val basicType = mockk<BaseType.Basic>().also { every { it.flatten() } returns listOf(it) }
+        val baseType = mockk<BaseType.Basic>().also { every { it.flatten() } returns listOf(it) }
         val refType = mockk<BaseType.Referential>().also { every { it.flatten() } returns listOf(it) }
-        every { type.argumentsType } returns List(argCount - 1) { basicType } + listOf(refType)
+        every { type.argumentsType } returns List(argCount - 1) { baseType } + listOf(refType)
+
+        val argDeclarations =
+            (1..argCount).map {i ->
+                mockk<Definition.FunctionArgument>().also { every { it.identifier } returns "x" }.also {
+                    every { it.type } returns
+                        if (i < argCount) BaseType.Basic(
+                            mockRange(),
+                            "Int",
+                        ) else BaseType.Referential(
+                            mockRange(),
+                            mockk<BaseType.Basic>(),
+                        )
+                }
+                Definition.FunctionArgument(mockk(), "x$i", BaseType.Basic(mockk(), "Int"))
+            }
 
         val funDef =
             Definition.FunctionDefinition(
@@ -298,8 +308,7 @@ class GenerateCallKtTest {
         val nodes =
             generateCall(
                 funDef,
-                List(argCount) { mockk<BaseType>() },
-                (1..argCount + 1).map { mockk() },
+                (1..argCount + 1).map { SimpleLayout(mockk()) },
                 null,
                 CFGNode.ConstantKnown(0),
             ).filterIsInstance<CFGNode.Assignment>().drop(REGISTER_ARGUMENT_ORDER.size).take(3)

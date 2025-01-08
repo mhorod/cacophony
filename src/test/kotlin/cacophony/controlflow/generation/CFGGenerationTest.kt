@@ -109,11 +109,11 @@ class CFGGenerationTest {
                     }
                 "condition" does
                     conditional("body", "exitWhile") {
-                        readRegister("x") lt integer(10)
+                        registerUse("x") lt integer(10)
                     }
                 "body" does
                     jump("condition") {
-                        readRegister("x") addeq integer(1)
+                        registerUse("x") addeq integer(1)
                     }
                 "exitWhile" does jump("bodyExit") { writeRegister(getResultRegister(), unit) }
             }

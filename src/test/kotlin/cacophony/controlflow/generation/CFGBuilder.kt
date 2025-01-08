@@ -1,6 +1,6 @@
-package cacophony.controlflow
+package cacophony.controlflow.generation
 
-import cacophony.controlflow.generation.ProgramCFG
+import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.Definition
 
 class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
@@ -24,13 +24,14 @@ class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
     // These functions are only used in tests, as I value my sanity I won't care about references there.
     fun virtualRegister(name: String): Register = registers.getOrPut(name) { Register.VirtualRegister() }
 
-    fun writeRegister(name: String, node: CFGNode) = writeRegister(virtualRegister(name), node)
+    fun writeRegister(name: String, node: CFGNode) = cacophony.controlflow.writeRegister(virtualRegister(name), node)
 
-    fun writeRegister(register: Register, name: String) = writeRegister(register, registerUse(virtualRegister(name), false))
+    fun writeRegister(register: Register, name: String) = cacophony.controlflow.
+        writeRegister(register, registerUse(virtualRegister(name), false))
 
     fun pushRegister(name: String) = pushRegister(virtualRegister(name), false)
 
-    fun readRegister(name: String) = registerUse(virtualRegister(name), false)
+    fun registerUse(name: String) = cacophony.controlflow.registerUse(virtualRegister(name), false)
 
     fun dataLabel(name: String) = cacophony.controlflow.dataLabel(name)
 

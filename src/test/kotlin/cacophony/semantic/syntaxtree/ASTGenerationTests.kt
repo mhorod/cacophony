@@ -43,7 +43,7 @@ class ASTGenerationTests {
         val input = StringInput(content)
         val diagnostics = CacophonyDiagnostics(input)
         return try {
-            Triple(CacophonyPipeline(diagnostics).generateAST(input), diagnostics.getErrors(), null)
+            Triple(CacophonyPipeline(diagnostics).generateAst(input), diagnostics.getErrors(), null)
         } catch (t: CompileException) {
             Triple(null, diagnostics.getErrors(), t)
         }

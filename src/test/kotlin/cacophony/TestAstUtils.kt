@@ -135,6 +135,10 @@ fun variableWrite(variableUse: VariableUse, value: Expression) =
         value,
     )
 
+fun allocation(value: Expression) = Allocation(mockRange(), value)
+
+fun dereference(value: Expression) = Dereference(mockRange(), value)
+
 fun block(vararg expressions: Expression) = Block(mockRange(), expressions.toList())
 
 fun call(function: Expression, vararg arguments: Expression) = FunctionCall(mockRange(), function, arguments.toList())
@@ -215,6 +219,8 @@ fun basicType(identifier: String) = BaseType.Basic(mockRange(), identifier)
 fun functionalType(argTypes: List<Type>, resType: Type) = BaseType.Functional(mockRange(), argTypes.toList(), resType)
 
 fun structType(vararg fields: Pair<String, Type>) = BaseType.Structural(mockRange(), fields.toMap())
+
+fun referentialType(type: Type) = BaseType.Referential(mockRange(), type)
 
 fun structTypeExpr(vararg fields: Pair<String, TypeExpr>) = StructType(fields.toMap())
 

@@ -13,11 +13,11 @@ import io.mockk.mockk
 import io.mockk.spyk
 
 object MockFunctionParts {
-    val prologue: CFGNode = mockk("prologue")
-    val epilogue: CFGNode = mockk("epilogue")
+    val prologue: CFGNode = CFGNode.Comment("prologue")
+    val epilogue: CFGNode = CFGNode.Comment("epilogue")
 }
 
-fun generateSimplifiedCFG(
+internal fun generateSimplifiedCFG(
     ast: AST,
     realPrologue: Boolean = false,
     realEpilogue: Boolean = false,
@@ -52,13 +52,13 @@ fun generateSimplifiedCFG(
 fun singleFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
     cfg { fragment(definition, body) }
 
-fun standaloneCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+internal fun standaloneCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
     singleFragmentCFG(definition, body)[definition]!!
 
-fun singleWrappedFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
+internal fun singleWrappedFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
     cfg { wrappedCFGFragment(definition, body) }
 
-fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit) =
+internal fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit) =
     fragment(definition) {
         "entry" does jump("bodyEntry") { MockFunctionParts.prologue }
         body()
@@ -66,7 +66,7 @@ fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, bod
         "exit" does final { returnNode(definition.returnType.size()) }
     }
 
-fun standaloneWrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+internal fun standaloneWrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
     singleWrappedFragmentCFG(definition, body)[definition]!!
 
 // {a = 7, b = true}

@@ -52,7 +52,8 @@ class PrologueEpilogueHandler(
         )
 
     private fun getReturnLocation(index: Int): VariableAllocation =
-        callConvention.returnAllocation(index, handler.getFunctionDeclaration().arguments.sumOf { it.type.size() })
+        // + 1 argument for static link
+        callConvention.returnAllocation(index, handler.getFunctionDeclaration().arguments.sumOf { it.type.size() } + 1)
 
     fun generateEpilogue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
