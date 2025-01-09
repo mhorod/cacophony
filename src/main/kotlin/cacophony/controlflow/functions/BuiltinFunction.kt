@@ -18,7 +18,7 @@ internal fun builtin(identifier: String, argumentsType: List<Type>, returnType: 
 private val intType = BaseType.Basic(mockLocation(), "Int")
 
 object Builtin {
-    val allocStruct = builtin("alloc_struct", listOf(intType), intType)
+    val allocStruct = builtin("alloc_struct", listOf(intType, intType), intType)
 
     val all = listOf(allocStruct)
 }

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+/* ########### Standard Foreign Functions ########### */
+
 void write_int(long long x) {
     printf("%lld\n", x);
 }
@@ -43,9 +45,28 @@ void put_mem(long long * ptr, long long val) {
     *ptr = val;
 }
 
-long long ** alloc_struct(long long * outline) {
+/* ########### Garbage Collection and Allocation ########### */
+
+#ifndef GC_WAIT
+#define GC_WAIT 10
+#endif
+
+static void run_gc(long long *) {}
+
+static void alloc_memory(long long * outline) {
     long long size = 8 * (1 + *outline);
     long long **ptr = malloc(size);
     ptr[0] = outline;
     return ptr + 1;
+}
+
+/* ########### Cacophony Built-ins ########### */
+
+long long ** alloc_struct(long long * outline, long long * rbp) {
+    static int invocation_nr = 0;
+    if(++invocation_nr == GC_WAIT) {
+        invocation_nr = 0;
+        run_gc(rbp);
+    }
+    return alloc_memory(outline);
 }

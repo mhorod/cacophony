@@ -34,6 +34,6 @@ interface FunctionHandler {
 
     fun getResultLayout(): Layout
 
-    // Returns access to all references on stack, currently not used and may change return type.
-    fun getReferenceAccesses(): List<CFGNode.LValue>
+    // Returns offsets from RBP to all references on stack, TODO: currently not used and may change return type.
+    fun getReferenceAccesses(): List<Int>
 }
