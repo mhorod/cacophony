@@ -53,10 +53,10 @@ void put_mem(long long * ptr, long long val) {
 
 static void run_gc(long long *) {}
 
-static void alloc_memory(long long * outline) {
+static long long ** alloc_memory(long long * outline) {
     long long size = 8 * (1 + *outline);
     long long **ptr = malloc(size);
-    ptr[0] = outline;
+    *ptr = outline;
     return ptr + 1;
 }
 
