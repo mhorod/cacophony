@@ -26,7 +26,7 @@ class IOExamplesTest {
         val asmFile = createTempFile().apply { toFile().deleteOnExit() }
         val objFile = createTempFile().apply { toFile().deleteOnExit() }
         val binFile = createTempFile().apply { toFile().deleteOnExit() }
-        val additionalObjects = path.listDirectoryEntries("*.c").toList()
+        val additionalObjects = path.listDirectoryEntries("*.cpp").toList()
 
         val input = FileInput(programPath.toString())
         val diagnostics = CacophonyDiagnostics(input)
