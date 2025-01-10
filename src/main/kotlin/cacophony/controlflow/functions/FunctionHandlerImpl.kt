@@ -186,17 +186,7 @@ class FunctionHandlerImpl(
 
     override fun generateEpilogue(): List<CFGNode> = prologueEpilogueHandler.generateEpilogue()
 
-    override fun getReferenceAccesses(): List<CFGNode.LValue> {
-        return referenceOffsets.map {
-            MemoryAccess(
-                CFGNode.Subtraction(
-                    RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false),
-                    CFGNode.ConstantKnown(it),
-                ),
-                true,
-            )
-        }.toList()
-    }
+    override fun getReferenceAccesses(): List<Int> = referenceOffsets
 
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     // Static link is created even if parent doesn't exist.

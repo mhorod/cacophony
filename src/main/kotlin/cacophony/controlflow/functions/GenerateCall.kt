@@ -90,6 +90,7 @@ fun generateCall(
 
     // At the moment of calling the `function`, the RSP is divisible by 16,
     // The return value make it congruent to 8, and then oldRSP push makes it divisible by 16 again. (look at prologue generation)
+    // TODO: update this comment after new prologue generation
     //
     // Then `callerFunctionStackSize.value` bytes on the stack are allocated by the `function`.
     // Finally, here we are going to increase the stack size to store all the stack arguments

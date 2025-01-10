@@ -20,6 +20,21 @@
                 "value": -1
               }
             }
+          },
+          {
+            "__class__": "Basic",
+            "identifier": "Int",
+            "range": {
+              "__class__": "Pair",
+              "first": {
+                "__class__": "Location",
+                "value": -1
+              },
+              "second": {
+                "__class__": "Location",
+                "value": -1
+              }
+            }
           }
         ],
         "returnType": {

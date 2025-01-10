@@ -171,6 +171,10 @@ internal class CFGGenerator(
                                 SubCFG.Immediate(dataLabel(objectOutlineLocation[type.type]!!), false),
                                 mode,
                             ),
+                            ensureExtracted(
+                                SubCFG.Immediate(registerUse(rbp, false), false),
+                                mode,
+                            ),
                         ),
                     )
                 require(call.access is SimpleLayout) // by type check
