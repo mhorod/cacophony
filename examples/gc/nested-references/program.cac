@@ -1,0 +1,15 @@
+let struct_64 = {
+    a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8
+};
+
+let nested_ref = $$$$$$$$$$struct_64;
+
+let i = 0;
+
+while i < 1000 do (
+    nested_ref=$$$$$$$$$$struct_64; # reassigning of pointer should free the memory at its subfields
+    @@@nested_ref=$$$$$$$struct_64;
+    @@@@@@nested_ref=$$$$struct_64;
+    @@@@@@@@@nested_ref=$struct_64;
+    i=i+1;
+);
