@@ -1,9 +1,5 @@
 package cacophony.examples
 
-import cacophony.diagnostics.CacophonyDiagnostics
-import cacophony.pipeline.CacophonyPipeline
-import cacophony.pipeline.Params
-import cacophony.utils.FileInput
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatPath
 import org.junit.jupiter.params.ParameterizedTest
@@ -22,17 +18,7 @@ class IOExamplesTest {
         val expectedOutputPath = path.resolve("output.txt")
         val actualOutputPath = createTempFile().apply { toFile().deleteOnExit() }
 
-        val programPath = path.resolve("program.cac")
-        val asmFile = createTempFile().apply { toFile().deleteOnExit() }
-        val objFile = createTempFile().apply { toFile().deleteOnExit() }
-        val binFile = createTempFile().apply { toFile().deleteOnExit() }
-        val additionalObjects = path.listDirectoryEntries("*.c").toList()
-
-        val input = FileInput(programPath.toString())
-        val diagnostics = CacophonyDiagnostics(input)
-        val pipeline = CacophonyPipeline(diagnostics, null)
-
-        pipeline.compileAndLink(input, (additionalObjects + Params.externalLibs), asmFile, objFile, binFile)
+        val binFile = createBinary(path, "program.cac")
 
         val process =
             ProcessBuilder(binFile.toString())
