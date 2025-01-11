@@ -11,4 +11,4 @@ let x: Int = @struct_ref.x; # dereference has higher priority than field access
 
 let s1 = {r=$4};
 let y: Int = @(s1.r);
-@(s1.r)=$5;
+@(s1.r)=5;
