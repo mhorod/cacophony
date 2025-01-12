@@ -312,12 +312,12 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                     arguments =
                         unparsedArguments.map { constructFunctionArgument(it, diagnostics) } // non-empty function argument list
                 }
-               LambdaExpression(
-                   range,
-                   arguments,
-                   constructType(returnType, diagnostics),
-                   generateASTInternal(body, diagnostics)
-               )
+                LambdaExpression(
+                    range,
+                    arguments,
+                    constructType(returnType, diagnostics),
+                    generateASTInternal(body, diagnostics),
+                )
             }
 
             RETURN_STATEMENT -> {

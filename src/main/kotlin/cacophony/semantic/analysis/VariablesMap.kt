@@ -11,6 +11,7 @@ import cacophony.semantic.syntaxtree.Dereference
 import cacophony.semantic.syntaxtree.Expression
 import cacophony.semantic.syntaxtree.FieldRef
 import cacophony.semantic.syntaxtree.FunctionCall
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.syntaxtree.LeafExpression
 import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
@@ -74,6 +75,8 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
                 visit(expression.testExpression)
                 visit(expression.doExpression)
             }
+
+            is LambdaExpression -> visit(expression.body)
 
             is Struct -> expression.fields.values.forEach { visit(it) }
             is Allocation -> visit(expression.value)
@@ -143,6 +146,8 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
                 visit(expression.testExpression)
                 visit(expression.doExpression)
             }
+
+            is LambdaExpression -> visit(expression.body)
 
             is Struct -> expression.fields.values.forEach { visit(it) }
 
