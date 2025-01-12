@@ -1,0 +1,10 @@
+let f = [a: Int] -> Unit => (
+    let x = $a;
+    if (@x % 2) == 1 then (@x = @x + 1;);
+);
+
+let i : Int = 0;
+while (i < 1000000) do (
+    f[i];
+    i = i + 1;
+);
