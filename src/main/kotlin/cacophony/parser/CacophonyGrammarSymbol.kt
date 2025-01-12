@@ -76,7 +76,7 @@ enum class CacophonyGrammarSymbol(
     DECLARATION_TYPED(Definition::class),
     DECLARATION_UNTYPED(Definition::class),
     VARIABLE_DECLARATION(Definition.VariableDeclaration::class),
-    FUNCTION_DECLARATION(Definition.FunctionDefinition::class),
+    LAMBDA_EXPRESSION(Definition.FunctionDefinition::class),
     FOREIGN_DECLARATION(Definition.ForeignFunctionDeclaration::class),
     FUNCTION_ARGUMENT(Definition.FunctionArgument::class),
     TYPE(Type::class),

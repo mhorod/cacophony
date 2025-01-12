@@ -1,0 +1,6 @@
+# this is not a function definition, because the lambda is wrapped in a block
+let f = ([x: Int] -> Int => x);
+let f = ([x: Int, y: Int] -> Int => x + y);
+
+# invalid call, second f shadows the first one
+f[1]

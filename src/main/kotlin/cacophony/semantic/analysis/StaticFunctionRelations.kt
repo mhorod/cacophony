@@ -104,6 +104,7 @@ private class StaticFunctionsRelationsVisitor(
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
+            is LambdaExpression -> visitExpression(expr.body)
             is Statement.ReturnStatement -> visitReturnStatement(expr)
             is OperatorUnary -> visitUnaryOperator(expr)
             is OperatorBinary -> visitBinaryOperator(expr)
