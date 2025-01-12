@@ -40,4 +40,4 @@ let allocateAndCopy = [depth: Int, ptr: &{
     )
 );
 
-allocateAndCopy[1000, $struct_64];
+allocateAndCopy[100000, $struct_64];
