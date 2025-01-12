@@ -6,7 +6,11 @@ import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 typealias StackFrameOutlineLocation = Map<FunctionDefinition, String>
 
 fun generateStackFrameOutline(handler: FunctionHandler): String {
-    val frameSize = handler.getStackSpace().value
+    val frameSize =
+        handler.getStackSpace().value.let {
+            require(it % 8 == 0)
+            it / 8
+        }
     val label = getStackFrameLocation(handler.getFunctionDeclaration())
 
     return Array(frameSize) { false }.let { stackOutline ->

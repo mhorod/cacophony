@@ -39,7 +39,7 @@ class StackFrameOutlineTest {
 
     @Test
     fun `small stack no refs`() {
-        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 1 }
+        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 8 }
         every { functionHandler.getReferenceAccesses() } returns emptyList()
 
         val outline = generateStackFrameOutline(functionHandler)
@@ -49,7 +49,7 @@ class StackFrameOutlineTest {
 
     @Test
     fun `small stack with refs`() {
-        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 1 }
+        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 8 }
         every { functionHandler.getReferenceAccesses() } returns listOf(0)
 
         val outline = generateStackFrameOutline(functionHandler)
@@ -59,7 +59,7 @@ class StackFrameOutlineTest {
 
     @Test
     fun `large stack with no refs`() {
-        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 132 }
+        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 8 * 132 }
         every { functionHandler.getReferenceAccesses() } returns emptyList()
 
         val outline = generateStackFrameOutline(functionHandler)
@@ -69,7 +69,7 @@ class StackFrameOutlineTest {
 
     @Test
     fun `large stack with refs`() {
-        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 116 }
+        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 8 * 116 }
         every { functionHandler.getReferenceAccesses() } returns listOf(0, 8 * 1, 8 * 100, 8 * 115)
 
         val outline = generateStackFrameOutline(functionHandler)
@@ -79,7 +79,7 @@ class StackFrameOutlineTest {
 
     @Test
     fun `throws on negative offset`() {
-        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 116 }
+        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 8 * 116 }
         every { functionHandler.getReferenceAccesses() } returns listOf(0, -1, 100, 115)
 
         assertThatThrownBy { generateStackFrameOutline(functionHandler) }
@@ -87,8 +87,16 @@ class StackFrameOutlineTest {
 
     @Test
     fun `throws on misaligned offset`() {
-        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 116 }
+        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 8 * 116 }
         every { functionHandler.getReferenceAccesses() } returns listOf(0, 1, 100, 115)
+
+        assertThatThrownBy { generateStackFrameOutline(functionHandler) }
+    }
+
+    @Test
+    fun `throws on misaligned stack size`() {
+        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 7 }
+        every { functionHandler.getReferenceAccesses() } returns listOf()
 
         assertThatThrownBy { generateStackFrameOutline(functionHandler) }
     }
