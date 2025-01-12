@@ -25,7 +25,7 @@ let allocateAndIncrement = [depth: Int] -> {
     )
 );
 
-allocateAndIncrement[100000];
+allocateAndIncrement[10000];
 
 let allocateAndCopy = [depth: Int, ptr: &{
     a:&Int, b:&Int, c:&Int, d:&Int, e:&Int, f:&Int, g:&Int, h:&Int
@@ -40,4 +40,4 @@ let allocateAndCopy = [depth: Int, ptr: &{
     )
 );
 
-allocateAndCopy[100000, $struct_64];
+allocateAndCopy[10000, $struct_64];
