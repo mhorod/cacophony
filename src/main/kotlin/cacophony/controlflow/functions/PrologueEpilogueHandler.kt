@@ -2,6 +2,7 @@ package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
+import cacophony.semantic.rtti.getStackFrameLocation
 import cacophony.semantic.syntaxtree.BaseType
 
 class PrologueEpilogueHandler(
@@ -20,6 +21,8 @@ class PrologueEpilogueHandler(
     fun generatePrologue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
         nodes.add(pushRegister(rbp, false))
+        nodes.add(registerUse(rsp) subeq integer(REGISTER_SIZE))
+        nodes.add(pushLabel(getStackFrameLocation(handler.getFunctionDeclaration())))
         nodes.add(registerUse(rbp, false) assign (registerUse(rsp, false) sub CFGNode.ConstantKnown(REGISTER_SIZE)))
         nodes.add(registerUse(rsp, false) subeq stackSpace)
 
@@ -28,11 +31,12 @@ class PrologueEpilogueHandler(
             nodes.add(registerUse(destination, false) assign registerUse(Register.FixedRegister(source), false))
         }
         val isReference =
-            handler.getFunctionDeclaration().arguments.flatMap {
-                it.type.flatten()
-            }.map {
-                it is BaseType.Referential
-            } + listOf(false)
+            handler
+                .getFunctionDeclaration()
+                .arguments
+                .flatMap { it.type.flatten() }
+                .map { it is BaseType.Referential } + listOf(false)
+
         // Defined function arguments
         for ((ind, destination) in flattenedArguments.zip(isReference).withIndex()) {
             require(destination.first is CFGNode.LValue)
@@ -73,7 +77,7 @@ class PrologueEpilogueHandler(
         )
 
         // Restoring RSP
-        nodes.add(registerUse(rsp, false) assign (registerUse(rbp, false) add CFGNode.ConstantKnown(REGISTER_SIZE)))
+        nodes.add(registerUse(rsp, false) assign (registerUse(rbp, false) add CFGNode.ConstantKnown(3 * REGISTER_SIZE)))
 
         // Restoring RBP
         nodes.add(popRegister(rbp, false))

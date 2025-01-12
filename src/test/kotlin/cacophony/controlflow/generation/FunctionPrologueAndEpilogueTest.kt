@@ -106,11 +106,11 @@ class FunctionPrologueAndEpilogueTest {
                 "store 5th argument" does jump("store 6th argument") { writeRegister("5th arg", registerUse(r9)) }
                 "store 6th argument" does
                     jump("store static link") {
-                        writeRegister("6th arg", memoryAccess(registerUse(rbp) sub integer(-24)))
+                        writeRegister("6th arg", memoryAccess(registerUse(rbp) sub integer(-40)))
                     }
                 "store static link" does
                     jump("store result") {
-                        memoryAccess(registerUse(rbp) sub integer(0)) assign memoryAccess(registerUse(rbp) sub integer(-32))
+                        memoryAccess(registerUse(rbp) sub integer(0)) assign memoryAccess(registerUse(rbp) sub integer(-48))
                     }
                 "store result" does jump("restore preserved") { writeRegister("result", integer(83)) }
                 restorePreservedRegisters("restore preserved", "move result to rax")
@@ -198,12 +198,14 @@ private fun CFGFragmentBuilder.restorePreservedRegisters(localEntry: String, loc
 }
 
 private fun CFGFragmentBuilder.setupStackFrame(localEntry: String, localExit: String, allocatedSpace: Int = 0) {
-    localEntry does jump("setup rbp") { pushRegister(rbp, false) }
+    localEntry does jump("padding") { pushRegister(rbp, false) }
+    "padding" does jump("save outline") { registerUse(rsp) subeq integer(8) }
+    "save outline" does jump("setup rbp") { pushLabel("outline_label") }
     "setup rbp" does jump("setup rsp") { registerUse(rbp) assign (registerUse(rsp) sub integer(8)) }
     "setup rsp" does jump(localExit) { registerUse(rsp) subeq integer(8 + allocatedSpace) }
 }
 
 private fun CFGFragmentBuilder.teardownStackFrame(localEntry: String, localExit: String) {
-    localEntry does jump("teardown rbp") { writeRegister(rsp, registerUse(rbp) add integer(8)) }
+    localEntry does jump("teardown rbp") { writeRegister(rsp, registerUse(rbp) add integer(24)) }
     "teardown rbp" does jump(localExit) { popRegister(rbp, false) }
 }
