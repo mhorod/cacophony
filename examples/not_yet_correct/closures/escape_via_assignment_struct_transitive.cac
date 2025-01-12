@@ -1,0 +1,8 @@
+let s = {h = () -> Int => 5, y = 10}
+
+let f = [] -> () => (
+    let x = 10;
+    let g = [] -> Int = x;
+    let k = {h = g, y = 15};
+    s = k;
+)

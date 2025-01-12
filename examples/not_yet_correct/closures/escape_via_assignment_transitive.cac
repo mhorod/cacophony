@@ -1,0 +1,8 @@
+let h = [] -> Int => 5;
+
+let f = [] -> () => (
+    let x = 10;
+    let g = [] -> Int = x;
+    let k = g;
+    h = k;
+)
