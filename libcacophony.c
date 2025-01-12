@@ -45,6 +45,16 @@ void put_mem(long long * ptr, long long val) {
     *ptr = val;
 }
 
+// returns integer from [l, r]
+int randint(long long l, long long r) {
+	long long a = rand();
+	return (a % (r - l + 1) + l);
+}
+
+void cassert(long long b) {
+	if (b == 0) exit(1);
+}
+
 /* ########### Garbage Collection and Allocation ########### */
 
 #ifndef GC_WAIT
