@@ -39,6 +39,7 @@ val valuePatterns =
         DivisionAssignmentRegisterValuePattern,
         ModuloAssignmentRegisterValuePattern,
         AssignmentValuePattern,
+        MemoryAssignmentValuePattern,
         // access
         MemoryAccessByRegisterPattern,
         MemoryAccessByValuePattern,
@@ -295,5 +296,15 @@ object AssignmentValuePattern : ValuePattern, RegisterAssignmentTemplate() {
         instructions(fill) {
             mov(reg(lhsRegisterLabel), reg(rhsLabel))
             mov(destination, reg(lhsRegisterLabel))
+        }
+}
+
+object MemoryAssignmentValuePattern : ValuePattern, MemoryAssignmentTemplate() {
+    override val tree = lhsSlot assign rhsSlot
+
+    override fun makeInstance(fill: SlotFill, destination: Register) =
+        instructions(fill) {
+            mov(destination, reg(rhsLabel))
+            mov(mem(reg(lhsLabel)), destination)
         }
 }
