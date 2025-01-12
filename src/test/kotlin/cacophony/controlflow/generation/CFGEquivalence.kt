@@ -294,6 +294,8 @@ private class FragmentEquivalenceVisitor {
                 assertThat(actual).isInstanceOf(CFGNode.DataLabel::class.java)
                 check(actual is CFGNode.DataLabel)
             }
+
+            is CFGNode.CleanReferencesInOutline -> assertThat(actual).isSameAs(CFGNode.CleanReferencesInOutline)
         }
     }
 

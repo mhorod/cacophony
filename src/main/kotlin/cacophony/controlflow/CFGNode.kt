@@ -60,6 +60,10 @@ sealed interface CFGNode {
         override fun children() = listOf(resultSize)
     }
 
+    data object CleanReferencesInOutline : CFGNode {
+        override fun toString(): String = "clean refs"
+    }
+
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess
     data class Push(
         val value: CFGNode,

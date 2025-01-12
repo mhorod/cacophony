@@ -125,6 +125,19 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
+// Call that reads its arguments but preserves all registers
+data class SafeCall(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
+    override val registersRead: Set<Register> = setOf(
+        Register.FixedRegister(HardwareRegister.RSP),
+        Register.FixedRegister(HardwareRegister.RBP),
+        Register.FixedRegister(HardwareRegister.RDI),
+    )
+
+    override val registersWritten: Set<Register> = emptySet()
+
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String = "call ${label.name}"
+}
+
 // Utility class to make asm a bit more readable.
 data class Comment(private val comment: String) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = emptySet()

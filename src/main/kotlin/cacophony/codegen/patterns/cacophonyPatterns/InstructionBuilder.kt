@@ -157,6 +157,10 @@ class InstructionBuilder(val slotFill: SlotFill) {
         )
     }
 
+    fun safeCall(label: BlockLabel) {
+        instructions.add(SafeCall(label))
+    }
+
     fun comment(comment: String) {
         instructions.add(Comment(comment))
     }

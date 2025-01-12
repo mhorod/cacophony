@@ -26,6 +26,11 @@ class PrologueEpilogueHandler(
         nodes.add(registerUse(rbp, false) assign registerUse(rsp, false))
         nodes.add(registerUse(rsp, false) subeq stackSpace)
 
+        nodes.add(pushRegister(rdi, false))
+        nodes.add(registerUse(rdi, false) assign CFGNode.DataLabel("dummy_outline"))
+        nodes.add(CFGNode.CleanReferencesInOutline)
+        nodes.add(popRegister(rdi, false))
+
         // Preserved registers don't hold references
         for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
             nodes.add(registerUse(destination, false) assign registerUse(Register.FixedRegister(source), false))
