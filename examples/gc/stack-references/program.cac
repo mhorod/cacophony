@@ -41,13 +41,13 @@ while i < 10000 do (
     i = i+1;
 );
 
-@ptr0;
-@ptr1;
-@ptr2;
-@ptr3;
-@ptr4;
-@ptr5;
-@ptr6;
-@ptr7;
-@ptr8;
-@ptr9;
+struct_32 = @ptr0;
+struct_32 = @ptr1;
+struct_32 = @ptr2;
+struct_32 = @ptr3;
+struct_32 = @ptr4;
+struct_32 = @ptr5;
+struct_32 = @ptr6;
+struct_32 = @ptr7;
+struct_32 = @ptr8;
+struct_32 = @ptr9;
