@@ -19,7 +19,7 @@ class StackFrameOutlineTest {
     @BeforeEach
     fun setUp() {
         every { functionHandler.getFunctionDeclaration() } returns functionDefinition
-        every { functionDefinition.label } returns "f"
+        every { functionDefinition.getLabel() } returns "f"
     }
 
     @AfterEach
@@ -70,7 +70,7 @@ class StackFrameOutlineTest {
     @Test
     fun `large stack with refs`() {
         every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 116 }
-        every { functionHandler.getReferenceAccesses() } returns listOf(0, 1, 100, 115)
+        every { functionHandler.getReferenceAccesses() } returns listOf(0, 8 * 1, 8 * 100, 8 * 115)
 
         val outline = generateStackFrameOutline(functionHandler)
 
@@ -81,6 +81,14 @@ class StackFrameOutlineTest {
     fun `throws on negative offset`() {
         every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 116 }
         every { functionHandler.getReferenceAccesses() } returns listOf(0, -1, 100, 115)
+
+        assertThatThrownBy { generateStackFrameOutline(functionHandler) }
+    }
+
+    @Test
+    fun `throws on misaligned offset`() {
+        every { functionHandler.getStackSpace() } returns CFGNode.ConstantLazy { 116 }
+        every { functionHandler.getReferenceAccesses() } returns listOf(0, 1, 100, 115)
 
         assertThatThrownBy { generateStackFrameOutline(functionHandler) }
     }

@@ -168,7 +168,7 @@ sealed class Definition(
         val type: BaseType.Functional?,
         val returnType: Type,
     ) : Definition(range, identifier) {
-        abstract val label: String
+        abstract fun getLabel(): String
 
         override fun isEquivalent(other: SyntaxTree?): Boolean =
             super.isEquivalent(other) &&
@@ -183,7 +183,7 @@ sealed class Definition(
         type: BaseType.Functional,
         returnType: Type,
     ) : FunctionDeclaration(range, identifier, type, returnType), LeafExpression {
-        override val label = identifier
+        override fun getLabel() = identifier
 
         override fun toString() = "foreign $identifier: $type "
 
@@ -202,7 +202,7 @@ sealed class Definition(
         returnType: Type,
         val body: Expression,
     ) : FunctionDeclaration(range, identifier, type, returnType) {
-        override val label =
+        override fun getLabel() =
             when (identifier) {
                 MAIN_FUNCTION_IDENTIFIER -> "main"
                 else -> "${identifier}_${arguments.size}_${hashCode().toULong()}"

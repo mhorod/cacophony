@@ -12,10 +12,11 @@ fun generateStackFrameOutline(handler: FunctionHandler): String {
     return Array(frameSize) { false }.let { stackOutline ->
         handler.getReferenceAccesses().forEach {
             require(it >= 0)
-            stackOutline[it] = true
+            require(it % 8 == 0)
+            stackOutline[it / 8] = true
         }
         toAsm(label, stackOutline.toList())
     }
 }
 
-fun getStackFrameLocation(fn: FunctionDefinition) = "frame_${fn.label}"
+fun getStackFrameLocation(fn: FunctionDefinition) = "frame_${fn.getLabel()}"
