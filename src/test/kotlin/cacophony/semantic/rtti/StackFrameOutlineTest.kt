@@ -19,6 +19,7 @@ class StackFrameOutlineTest {
     @BeforeEach
     fun setUp() {
         every { functionHandler.getFunctionDeclaration() } returns functionDefinition
+        every { functionDefinition.label } returns "f"
     }
 
     @AfterEach
@@ -33,7 +34,7 @@ class StackFrameOutlineTest {
 
         val outline = generateStackFrameOutline(functionHandler)
 
-        assertThat(outline).isEqualTo("frame_${functionDefinition.hashCode()}: dq 0")
+        assertThat(outline).isEqualTo("frame_f: dq 0")
     }
 
     @Test
@@ -43,7 +44,7 @@ class StackFrameOutlineTest {
 
         val outline = generateStackFrameOutline(functionHandler)
 
-        assertThat(outline).isEqualTo("frame_${functionDefinition.hashCode()}: dq 1, 0")
+        assertThat(outline).isEqualTo("frame_f: dq 1, 0")
     }
 
     @Test
@@ -53,7 +54,7 @@ class StackFrameOutlineTest {
 
         val outline = generateStackFrameOutline(functionHandler)
 
-        assertThat(outline).isEqualTo("frame_${functionDefinition.hashCode()}: dq 1, 1")
+        assertThat(outline).isEqualTo("frame_f: dq 1, 1")
     }
 
     @Test
@@ -63,7 +64,7 @@ class StackFrameOutlineTest {
 
         val outline = generateStackFrameOutline(functionHandler)
 
-        assertThat(outline).isEqualTo("frame_${functionDefinition.hashCode()}: dq 132, 0, 0, 0")
+        assertThat(outline).isEqualTo("frame_f: dq 132, 0, 0, 0")
     }
 
     @Test
@@ -73,7 +74,7 @@ class StackFrameOutlineTest {
 
         val outline = generateStackFrameOutline(functionHandler)
 
-        assertThat(outline).isEqualTo("frame_${functionDefinition.hashCode()}: dq 116, 3, 2251868533161984")
+        assertThat(outline).isEqualTo("frame_f: dq 116, 3, ${(1UL shl (100 - 64)) or (1UL shl (115 - 64))}")
     }
 
     @Test

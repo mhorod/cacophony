@@ -18,4 +18,4 @@ fun generateStackFrameOutline(handler: FunctionHandler): String {
     }
 }
 
-fun getStackFrameLocation(fn: FunctionDefinition) = "frame_${fn.hashCode().toULong()}"
+fun getStackFrameLocation(fn: FunctionDefinition) = "frame_${fn.label}"
