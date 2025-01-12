@@ -14,6 +14,21 @@ interface CallConvention {
     fun preservedRegisters(): List<HardwareRegister>
 }
 
+// Stack content        direction
+// [ret0]                       |
+// [ret1]                       |
+// [ret2]                       |
+// ...                          |
+// [arg0]                       |
+// [arg1]                       |
+// [arg2]                       |
+// ...                          |
+// [arg-1]                      |
+// [ret address]                |
+// padding                      |
+// [outline address]            |
+// [old rbp] <- current rbp     |
+// [static link]                V
 abstract class StackCallConvention(
     private val registerArgumentOrder: List<HardwareRegister>,
     private val registerReturnOrder: List<HardwareRegister>,
@@ -22,14 +37,7 @@ abstract class StackCallConvention(
         if (index < registerArgumentOrder.size) {
             VariableAllocation.InRegister(Register.FixedRegister(registerArgumentOrder[index]))
         } else {
-            // Stack is
-            // [arg2]
-            // [arg1]
-            // [arg0] + 24
-            // [ret address] + 16
-            // [old rbp] + 8
-            // [static link] <- curr rbp
-            VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerArgumentOrder.size + 3))
+            VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerArgumentOrder.size + 4))
         }
 
     override fun returnAllocation(index: Int, argumentCount: Int): VariableAllocation =
@@ -37,11 +45,10 @@ abstract class StackCallConvention(
             VariableAllocation.InRegister(Register.FixedRegister(registerReturnOrder[index]))
         } else {
             if (argumentCount <= registerArgumentOrder.size) {
-                VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerReturnOrder.size + 3))
+                VariableAllocation.OnStack(-REGISTER_SIZE * (index - registerReturnOrder.size + 4))
             } else {
-                // TODO: why does it need to be +4 instead of +3?
                 VariableAllocation.OnStack(
-                    -REGISTER_SIZE * (index - registerReturnOrder.size + argumentCount - registerArgumentOrder.size + 3),
+                    -REGISTER_SIZE * (index - registerReturnOrder.size + argumentCount - registerArgumentOrder.size + 4),
                 )
             }
         }
