@@ -5,4 +5,4 @@ while i < 1000000 do (
     i=i+1;
 );
 
-@ref; # check if reachable memory was not freed
+i = @ref; # check if reachable memory was not freed

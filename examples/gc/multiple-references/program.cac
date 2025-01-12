@@ -28,8 +28,8 @@ while i < 1000 do (     # we are counting number of references to each segment o
     i = i+1;
 );
 
-@ptr1;
-@ptr2;
-@ptr3;
-@ptr4;
-@ptr5;
+struct_128 = @ptr1;
+struct_128 = @ptr2;
+struct_128 = @ptr3;
+struct_128 = @ptr4;
+struct_128 = @ptr5;
