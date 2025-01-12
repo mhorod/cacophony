@@ -112,6 +112,11 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
         return definitions
     }
 
+    fun visitLambdaExpression(arguments: List<Definition.FunctionArgument>, body: Expression) {
+        arguments.forEach { visitFunctionArgument(it) }
+        visit(body)
+    }
+
     fun visit(expression: Expression) {
         when (expression) {
             is FieldRef.LValue -> visit(expression.obj)
@@ -120,10 +125,7 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
             is Block -> expression.expressions.forEach { visit(it) }
             is Definition.FunctionArgument -> visitFunctionArgument(expression)
 
-            is Definition.FunctionDefinition -> {
-                expression.arguments.forEach { visit(it) }
-                visit(expression.body)
-            }
+            is Definition.FunctionDefinition -> visitLambdaExpression(expression.arguments, expression.body)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression)
 
             is FunctionCall -> expression.arguments.forEach { visit(it) }
@@ -147,7 +149,7 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
                 visit(expression.doExpression)
             }
 
-            is LambdaExpression -> visit(expression.body)
+            is LambdaExpression -> visitLambdaExpression(expression.arguments, expression.body)
 
             is Struct -> expression.fields.values.forEach { visit(it) }
 

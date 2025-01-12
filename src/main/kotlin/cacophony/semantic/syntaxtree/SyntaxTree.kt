@@ -137,6 +137,12 @@ class VariableUse(
             identifier == other.identifier
 }
 
+sealed interface FunctionalExpression {
+    val arguments: List<Expression>
+    val returnType: Type
+    val body: Expression
+}
+
 sealed class Definition(
     range: Pair<Location, Location>,
     val identifier: String,
@@ -194,10 +200,11 @@ sealed class Definition(
         range: Pair<Location, Location>,
         identifier: String,
         type: BaseType.Functional?,
-        val arguments: List<FunctionArgument>,
+        override val arguments: List<FunctionArgument>,
         returnType: Type,
-        val body: Expression,
-    ) : FunctionDeclaration(range, identifier, type, returnType) {
+        override val body: Expression,
+    ) : FunctionDeclaration(range, identifier, type, returnType),
+        FunctionalExpression {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} = [${arguments.joinToString(", ")}] -> $returnType"
 
         override fun children() = listOf(body)
@@ -227,10 +234,11 @@ sealed class Definition(
 
 class LambdaExpression(
     range: Pair<Location, Location>,
-    val arguments: List<Definition.FunctionArgument>,
-    val returnType: Type,
-    val body: Expression,
-) : BaseExpression(range) {
+    override val arguments: List<Definition.FunctionArgument>,
+    override val returnType: Type,
+    override val body: Expression,
+) : BaseExpression(range),
+    FunctionalExpression {
     override fun toString() = "[${arguments.joinToString(", ")}] -> $returnType"
 
     override fun children() = arguments + listOf(body)
