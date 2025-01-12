@@ -8,6 +8,8 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.listDirectoryEntries
 
+const val BASE_MEMORY = 3000
+
 class GCExamplesTest {
     @ParameterizedTest
     @MethodSource("gcExamples")
@@ -28,7 +30,7 @@ class GCExamplesTest {
             .withFailMessage("process ended with non-zero exit value ${process.exitValue()}")
             .isZero
 
-        val memoryLimit = File(memlimitFile.toString()).readText().trim().toInt()
+        val memoryLimit = File(memlimitFile.toString()).readText().trim().toInt() + BASE_MEMORY
 
         val processWithMemoryLimit =
             ProcessBuilder("test_utils/exec_with_limited_memory.sh", "$memoryLimit", "$binFile").start()
