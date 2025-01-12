@@ -1,0 +1,8 @@
+# io test
+
+foreign write_int: [Int] -> Int;
+
+let takesLambda = [f: [Int] -> Int] -> Int => f[0];
+let f = [x: Int] -> Int => x + 1;
+
+write_int[takesLambda[f]]; # should output 1
