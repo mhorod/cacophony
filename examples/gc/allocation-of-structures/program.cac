@@ -9,7 +9,7 @@ let struct_512 = {
 
 let i = 0;
 let ref = $struct_512;
-while i < 1000 do (
+while i < 100000 do (
     ref = $struct_512;
     @ref;
     i=i+1;

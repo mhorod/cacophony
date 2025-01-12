@@ -1,4 +1,4 @@
-# 1000 nested function calls (in 2 variants), each of which allocates 128B on the heap
+# 100000 nested function calls (in 2 variants), each of which allocates 128B on the heap
 # each call uses info allocated on a child call
 
 let struct_64 = {
@@ -25,7 +25,7 @@ let allocateAndIncrement = [depth: Int] -> {
     )
 );
 
-allocateAndIncrement[1000];
+allocateAndIncrement[100000];
 
 let allocateAndCopy = [depth: Int, ptr: &{
     a:&Int, b:&Int, c:&Int, d:&Int, e:&Int, f:&Int, g:&Int, h:&Int
