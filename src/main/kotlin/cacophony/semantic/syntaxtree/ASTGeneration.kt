@@ -240,7 +240,7 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                             declarationPosition = 1
                         }
                         var declarationKind = declaration.children[declarationPosition]
-                        if (getGrammarSymbol(declarationKind) == FUNCTION_DECLARATION) {
+                        if (getGrammarSymbol(declarationKind) == LAMBDA_EXPRESSION) {
                             declarationKind = declarationKind as ParseTree.Branch
                             val branchesNum = declarationKind.children.size
                             val returnType = declarationKind.children[branchesNum - 2]
@@ -300,6 +300,24 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                 val doExpression = generateASTInternal(parseTree.children[1], diagnostics)
                 val elseExpression = (if (childNum > 2) generateASTInternal(parseTree.children[2], diagnostics) else null)
                 Statement.IfElseStatement(range, testExpression, doExpression, elseExpression)
+            }
+
+            LAMBDA_EXPRESSION -> {
+                val branchesNum = parseTree.children.size
+                val returnType = parseTree.children[branchesNum - 2]
+                val body = parseTree.children[branchesNum - 1]
+                var arguments: List<Definition.FunctionArgument> = listOf()
+                if (branchesNum >= 3) {
+                    val unparsedArguments = parseTree.children.subList(0, branchesNum - 2)
+                    arguments =
+                        unparsedArguments.map { constructFunctionArgument(it, diagnostics) } // non-empty function argument list
+                }
+               LambdaExpression(
+                   range,
+                   arguments,
+                   constructType(returnType, diagnostics),
+                   generateASTInternal(body, diagnostics)
+               )
             }
 
             RETURN_STATEMENT -> {

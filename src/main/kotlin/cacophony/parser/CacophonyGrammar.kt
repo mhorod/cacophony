@@ -86,7 +86,7 @@ class CacophonyGrammar {
                                 concat (
                                     atomic(
                                         VARIABLE_DECLARATION,
-                                    ) or atomic(FUNCTION_DECLARATION)
+                                    ) or atomic(LAMBDA_EXPRESSION)
                                 )
                         ),
                     DECLARATION_UNTYPED produces
@@ -94,7 +94,7 @@ class CacophonyGrammar {
                             atomic(OPERATOR_ASSIGNMENT) concat (
                                 atomic(
                                     VARIABLE_DECLARATION,
-                                ) or atomic(FUNCTION_DECLARATION)
+                                ) or atomic(LAMBDA_EXPRESSION)
                             )
 
                         ),
@@ -102,7 +102,7 @@ class CacophonyGrammar {
                         (
                             atomic(DECLARATION_LEVEL)
                         ),
-                    FUNCTION_DECLARATION produces
+                    LAMBDA_EXPRESSION produces
                         (
                             atomic(LEFT_BRACKET)
                                 concat
@@ -301,7 +301,8 @@ class CacophonyGrammar {
                             atomic(ALLOCATION_LEVEL) or
                                 atomic(RETURN_STATEMENT) or
                                 atomic(WHILE_CLAUSE) or
-                                atomic(IF_CLAUSE)
+                                atomic(IF_CLAUSE) or
+                                atomic(LAMBDA_EXPRESSION)
                         ),
                     ALLOCATION_LEVEL produces
                         (

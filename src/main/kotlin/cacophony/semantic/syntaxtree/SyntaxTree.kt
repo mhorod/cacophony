@@ -225,6 +225,24 @@ sealed class Definition(
     }
 }
 
+class LambdaExpression(
+    range: Pair<Location, Location>,
+    val arguments: List<Definition.FunctionArgument>,
+    val returnType: Type,
+    val body: Expression,
+) : BaseExpression(range) {
+    override fun toString() = "[${arguments.joinToString(", ")}] -> $returnType"
+
+    override fun children() = arguments + listOf(body)
+
+    override fun isEquivalent(other: SyntaxTree?): Boolean =
+        super.isEquivalent(other) &&
+            other is LambdaExpression &&
+            areEquivalentExpressions(arguments, other.arguments) &&
+            areEquivalentTypes(returnType, other.returnType) &&
+            areEquivalentExpressions(body, other.body)
+}
+
 class FunctionCall(
     range: Pair<Location, Location>,
     val function: Expression,
