@@ -83,20 +83,11 @@ class CacophonyGrammar {
                                 concat
                                 atomic(TYPE)
                                 concat atomic(OPERATOR_ASSIGNMENT)
-                                concat (
-                                    atomic(
-                                        VARIABLE_DECLARATION,
-                                    ) or atomic(LAMBDA_EXPRESSION)
-                                )
+                                concat atomic(VARIABLE_DECLARATION)
                         ),
                     DECLARATION_UNTYPED produces
                         (
-                            atomic(OPERATOR_ASSIGNMENT) concat (
-                                atomic(
-                                    VARIABLE_DECLARATION,
-                                ) or atomic(LAMBDA_EXPRESSION)
-                            )
-
+                            atomic(OPERATOR_ASSIGNMENT) concat atomic(VARIABLE_DECLARATION)
                         ),
                     VARIABLE_DECLARATION produces
                         (
