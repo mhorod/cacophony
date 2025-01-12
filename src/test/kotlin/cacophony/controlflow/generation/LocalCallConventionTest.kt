@@ -22,10 +22,10 @@ class LocalCallConventionTest {
         // then
         val expectedFragment =
             standaloneWrappedCFGFragment(callerDef) {
-                "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(8) }
+                "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(0) }
                 "pass static link" does jump("call") { writeRegister(rdi, registerUse(rbp)) }
                 "call" does jump("restore rsp") { call(calleeDef) }
-                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(8) }
+                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(0) }
                 // The called function returned something, and we are using it as a value - we need to extract it from rax
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
                 "forward result" does
@@ -64,10 +64,10 @@ class LocalCallConventionTest {
         // then
         val expectedFragment =
             standaloneWrappedCFGFragment(callerDef) {
-                "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(8) }
+                "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(0) }
                 "pass static link" does jump("call") { writeRegister(rdi, registerUse(rbp)) }
                 "call" does jump("restore rsp") { call(calleeDef) }
-                "restore rsp" does jump("write block result to rax") { registerUse(rsp) addeq integer(8) }
+                "restore rsp" does jump("write block result to rax") { registerUse(rsp) addeq integer(0) }
                 // The called function returned something, but we don't care - we only wanted it for side effects
                 // We don't extract anything - instead, we prepare our own block result and move it to getResultRegister()
                 "write block result to rax" does
@@ -101,12 +101,12 @@ class LocalCallConventionTest {
             standaloneWrappedCFGFragment(callerDef) {
                 // The argument is prepared in a temporary register...
                 "bodyEntry" does jump("adjust rsp") { writeRegister("arg", integer(1)) }
-                "adjust rsp" does jump("pass arg") { registerUse(rsp) subeq integer(8) }
+                "adjust rsp" does jump("pass arg") { registerUse(rsp) subeq integer(0) }
                 // ...and then it is passed to its destination register (according to the call convention)
                 "pass arg" does jump("pass static link") { writeRegister(rdi, registerUse(virtualRegister("arg"))) }
                 "pass static link" does jump("call") { writeRegister(rsi, registerUse(rbp)) }
                 "call" does jump("restore rsp") { call(calleeDef) }
-                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(8) }
+                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(0) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
                 "forward result" does
                     jump("bodyExit") {
@@ -150,7 +150,7 @@ class LocalCallConventionTest {
                 "prepare arg5" does jump("prepare arg6") { writeRegister("arg5", integer(5)) }
                 "prepare arg6" does jump("prepare arg7") { writeRegister("arg6", integer(6)) }
                 "prepare arg7" does jump("prepare rsp") { writeRegister("arg7", integer(7)) }
-                "prepare rsp" does jump("prepare arg7 for push") { registerUse(rsp) subeq integer(8) }
+                "prepare rsp" does jump("prepare arg7 for push") { registerUse(rsp) subeq integer(0) }
                 // ...and then they are passed via stack
                 "prepare arg7 for push" does
                     jump("prepare static link for push") {
@@ -177,7 +177,7 @@ class LocalCallConventionTest {
                 "push arg7" does jump("call") { pushRegister("temp arg7") }
                 "call" does jump("restore rsp") { call(calleeDef) }
                 // The argument still on the stack must then be ignored
-                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(24) }
+                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(16) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
                 "forward result" does jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result"))) }
             }
@@ -216,7 +216,7 @@ class LocalCallConventionTest {
                 "prepare arg6" does jump("prepare arg7") { writeRegister("arg6", integer(6)) }
                 "prepare arg7" does jump("prepare arg8") { writeRegister("arg7", integer(7)) }
                 "prepare arg8" does jump("prepare rsp") { writeRegister("arg8", integer(8)) }
-                "prepare rsp" does jump("prepare arg7 for push") { registerUse(rsp) subeq integer(0) }
+                "prepare rsp" does jump("prepare arg7 for push") { registerUse(rsp) subeq integer(8) }
                 // ...and then they are passed to their destination registers...
                 "prepare arg7 for push" does
                     jump("prepare arg8 for push") { writeRegister("temp arg7", registerUse(virtualRegister("arg7"))) }
@@ -235,7 +235,7 @@ class LocalCallConventionTest {
                 "push arg7" does jump("call") { pushRegister("temp arg7") }
                 "call" does jump("restore rsp") { call(calleeDef) }
                 // The argument still on the stack must then be ignored
-                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(24) }
+                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(32) }
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
                 "forward result" does
                     jump("bodyExit") {
@@ -268,19 +268,19 @@ class LocalCallConventionTest {
             standaloneWrappedCFGFragment(callerDef) {
                 // The argument is prepared in a temporary register...
                 "bodyEntry" does jump("prepare rsp in") { writeRegister("arg in", integer(1)) }
-                "prepare rsp in" does jump("pass arg in") { registerUse(rsp) subeq integer(8) }
+                "prepare rsp in" does jump("pass arg in") { registerUse(rsp) subeq integer(0) }
                 // ...and then it is passed to its destination register (according to the call convention)...
                 "pass arg in" does jump("pass static link in") { writeRegister(rdi, registerUse(virtualRegister("arg in"))) }
                 "pass static link in" does jump("call in") { writeRegister(rsi, registerUse(rbp)) }
                 "call in" does jump("restore rsp in") { call(calleeDef) }
-                "restore rsp in" does jump("extract result in") { registerUse(rsp) addeq integer(8) }
+                "restore rsp in" does jump("extract result in") { registerUse(rsp) addeq integer(0) }
                 "extract result in" does jump("prepare rsp out") { writeRegister("result in", registerUse(rax)) }
-                "prepare rsp out" does jump("pass arg out") { registerUse(rsp) subeq integer(8) }
+                "prepare rsp out" does jump("pass arg out") { registerUse(rsp) subeq integer(0) }
                 // ...and then the internal result is passed to its destination register (according to the call convention)
                 "pass arg out" does jump("pass static link out") { writeRegister(rdi, registerUse(virtualRegister("result in"))) }
                 "pass static link out" does jump("call out") { writeRegister(rsi, registerUse(rbp)) }
                 "call out" does jump("restore rsp out") { call(calleeDef) }
-                "restore rsp out" does jump("extract result out") { registerUse(rsp) addeq integer(8) }
+                "restore rsp out" does jump("extract result out") { registerUse(rsp) addeq integer(0) }
                 "extract result out" does jump("forward result out") { writeRegister("result out", registerUse(rax)) }
                 "forward result out" does
                     jump("bodyExit") { writeRegister(getResultRegister(), registerUse(virtualRegister("result out"))) }
@@ -303,10 +303,10 @@ class LocalCallConventionTest {
         // then
         val expectedCFG =
             singleWrappedFragmentCFG(fDef) {
-                "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(8) }
+                "bodyEntry" does jump("pass static link") { registerUse(rsp) subeq integer(0) }
                 "pass static link" does jump("call") { writeRegister(rdi, registerUse(rbp)) }
                 "call" does jump("restore rsp") { call(fDef) }
-                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(8) }
+                "restore rsp" does jump("extract result") { registerUse(rsp) addeq integer(0) }
                 // The called function returned something, and we are using it as a value - we need to extract it from rax
                 "extract result" does jump("forward result") { writeRegister("result", registerUse(rax)) }
                 "forward result" does
