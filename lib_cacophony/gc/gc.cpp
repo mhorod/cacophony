@@ -10,6 +10,10 @@
 #define MEMORY_BLOCK_SIZE (1 << 12)
 #endif
 
+static ll getObjectSize(ll *outline) {
+    return 8 * (1 + *outline);
+}
+
 void memoryManager::createNewPage(int size) {
     assert(size % sizeof(ll*) == 0);
     ll *ptr = static_cast<ll*>(malloc(size));
@@ -61,7 +65,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects
         
     };
     for (auto &page : pages_to_process) {
-        bool is_page_untouched = true;
+        bool is_page_untouched = false; // TODO: change after debugging is finished
         traversePage(page, [&](ll* ptr) {
             if (alive_objects.find(ptr) == alive_objects.end())
                 is_page_untouched = false;
@@ -100,7 +104,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects
             if (alive_objects.find(ptr) == alive_objects.end()) 
                 return;
             ll *outline = reinterpret_cast<ll*>(*(ptr - 1));
-            int size = *outline + 1;
+            int size = getObjectSize(outline);
             memoryPage *last_page = nullptr;
             if (!allocated_pages.empty())
                 last_page = &allocated_pages.back();
@@ -114,7 +118,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects
                 }
             }
             translation_map[ptr] = last_page->ptr + last_page->occupied / sizeof(ll*) + 1;
-            std::memcpy(last_page->ptr + last_page->occupied / sizeof(ll*), ptr - 1, size / sizeof(ll*));
+            std::memcpy(last_page->ptr + last_page->occupied / sizeof(ll*), ptr - 1, size);
             last_page->occupied += size;
         });
         if (free_page == nullptr) 
@@ -207,10 +211,6 @@ std::set<ll*> objectTraversal::getAliveReferences(ll *rbp) {
         std::cerr << std::endl;
     }
     return alive_objects;
-}
-
-static ll getObjectSize(ll *outline) {
-    return 8 * (1 + *outline);
 }
 
 static void runGc(ll *rbp) {
