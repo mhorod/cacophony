@@ -40,3 +40,9 @@ class StructLayout(val fields: Map<String, Layout>) : Layout() {
             else -> false
         }
 }
+
+class VoidLayout : Layout() {
+    override fun flatten(): List<LayoutAccessInfo> = emptyList()
+
+    override fun matchesType(type: Type): Boolean = true
+}
