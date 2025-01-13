@@ -73,7 +73,7 @@ class FunctionHandlerImpl(
             regVar.forEach {
                 registerVariableAllocation(
                     it,
-                    VariableAllocation.InRegister(Register.VirtualRegister()),
+                    VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),
                 )
             }
 

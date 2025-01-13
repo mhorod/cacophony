@@ -34,6 +34,6 @@ interface FunctionHandler {
 
     fun getResultLayout(): Layout
 
-    // Returns offsets from RBP to all references on stack, TODO: currently not used and may change return type.
+    // Returns offsets from RBP to all references on stack
     fun getReferenceAccesses(): List<Int>
 }
