@@ -2,8 +2,6 @@
 #include "gcimpl.h"
 
 #include <cstring>
-#include <functional>
-
 #include <cassert>
 
 #ifndef MEMORY_BLOCK_SIZE
@@ -17,7 +15,6 @@ static ll getObjectSize(ll *outline) {
 void memoryManager::createNewPage(int size) {
     assert(size % sizeof(ll*) == 0);
     ll *ptr = static_cast<ll*>(malloc(size));
-    std::memset(ptr, 0, size);
     auto page = memoryPage{size, 0, ptr};
     allocated_pages.push_back(page);
 }
@@ -197,7 +194,7 @@ void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
 void objectTraversal::remapReferences(ll *rbp, std::unordered_map<ll*, ll*> mapping) {
     clear();
     remap_refs = true;
-    reference_mapping = mapping;
+    reference_mapping = std::move(mapping);
     traverseObjects(rbp, true);
 }
 
@@ -218,7 +215,7 @@ static void runGc(ll *rbp) {
     objectTraversal object_traversal;
     std::set<ll*> alive_objects = object_traversal.getAliveReferences(rbp);
     std::unordered_map<ll*, ll*> reference_mapping = memory_manager.cleanup(alive_objects); 
-    object_traversal.remapReferences(rbp, reference_mapping);
+    object_traversal.remapReferences(rbp, std::move(reference_mapping));
 }
 
 static ll** allocMemory(ll *outline) {

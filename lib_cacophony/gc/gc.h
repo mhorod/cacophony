@@ -84,7 +84,7 @@ asm(
  */
 
 #ifndef GC_WAIT
-#define GC_WAIT 1
+#define GC_WAIT 1 // TODO: adjust after testing is finished
 #endif
 
 static void clean_references(long long ** object_ptr) {
