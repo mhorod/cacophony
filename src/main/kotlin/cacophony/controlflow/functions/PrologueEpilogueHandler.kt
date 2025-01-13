@@ -1,5 +1,6 @@
 package cacophony.controlflow.functions
 
+import cacophony.codegen.BlockLabel
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
 import cacophony.semantic.rtti.getStackFrameLocation
@@ -25,6 +26,8 @@ class PrologueEpilogueHandler(
         nodes.add(pushRegister(rbp, false))
         nodes.add(registerUse(rbp, false) assign registerUse(rsp, false))
         nodes.add(registerUse(rsp, false) subeq stackSpace)
+
+        nodes.add(CFGNode.RawCall(BlockLabel.cleanReferences))
 
         // Preserved registers don't hold references
         for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
