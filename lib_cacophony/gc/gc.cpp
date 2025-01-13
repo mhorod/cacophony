@@ -1,8 +1,9 @@
 #include "gc.h"
 #include "gcimpl.h"
 
-#include <set>
+#include <cstring>
 #include <functional>
+#include <set>
 
 #include <cassert>
 
@@ -24,8 +25,10 @@ ll* memoryManager::allocateMemory(int size) {
         createNewPage(size);
         return allocated_pages.back().ptr;
     } else {
-        auto last_page = &allocated_pages.back();
-        if (last_page->size - last_page->occupied < size) {
+        memoryPage *last_page = nullptr;
+        if (!allocated_pages.empty())
+            last_page = &allocated_pages.back();
+        if (last_page == nullptr || last_page->size - last_page->occupied < size) {
             createNewPage(MEMORY_BLOCK_SIZE);
             last_page = &allocated_pages.back();
         }
@@ -39,11 +42,13 @@ ll* memoryManager::allocateMemory(int size) {
                 std::swap(allocated_pages.back(), allocated_pages[previous_page_index]);
             }
         }
-        return last_page->ptr;
+        return result;
     }
 }
 
 std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_objects) {
+    std::unordered_map<ll*, ll*> translation_map;
+
     std::vector<memoryPage> pages_to_process;
     std::swap(pages_to_process, allocated_pages);
 
@@ -99,8 +104,10 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
                 return;
             ll *outline = reinterpret_cast<ll*>(*(ptr-1));
             int size = *outline + 1;
-            auto last_page = &allocated_pages.back();
-            if (last_page->size - last_page->occupied < size) {
+            memoryPage *last_page = nullptr;
+            if (!allocated_pages.empty())
+                last_page = &allocated_pages.back();
+            if (last_page == nullptr || last_page->size - last_page->occupied < size) {
                 if (free_page != nullptr) {
                     last_page = free_page;
                     free_page = nullptr;
@@ -109,6 +116,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
                     last_page = &allocated_pages.back();
                 }
             }
+            translation_map[last_page->ptr + last_page->occupied / sizeof(ll*)] = ptr - 1;
             std::memcpy(last_page->ptr + last_page->occupied / sizeof(ll*), ptr - 1, size / sizeof(ll*));
             last_page->occupied += size;
         });
@@ -120,6 +128,8 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
     if (free_page != nullptr)
         free(free_page->ptr);
     // Last page can be empty, but we don't free it, as it may be useful in next cleanup to have clean page to copy into.
+
+    return translation_map;
 }
 
 void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
