@@ -127,8 +127,7 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
 
 /**
  * A raw call to a function which does not create a separate stack frame.
- * It can be used for jumping to a reusable piece of code, almost as if it was inlined at the call site, and the returning.
- * One argument can be passed in RDI.
+ * It can be used for jumping to a reusable piece of code, almost as if it was inlined at the call site, and then returning.
  *
  * The destination block must handle the stack just like a function would, e.g. it should assume that at the beginning, the top of the
  * stack holds the return address.
@@ -142,9 +141,8 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
 data class RawCall(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> =
         setOf(
-            Register.FixedRegister(HardwareRegister.RDI),
             Register.FixedRegister(HardwareRegister.RSP),
-            Register.FixedRegister(HardwareRegister.RSP),
+            Register.FixedRegister(HardwareRegister.RBP),
         )
 
     override val registersWritten: Set<Register> = emptySet()
