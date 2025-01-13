@@ -24,6 +24,6 @@ fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclarat
         listOf("SECTION .data") +
             foreignFunctions.map {
                 "extern ${it.identifier}"
-            } + listOf("extern clean_refs") + objectOutlines + listOf("dummy_outline: dq 0") +
+            } + listOf("extern clean_refs") + objectOutlines +
             listOf("global main", "SECTION .text")
     ).joinToString("\n")

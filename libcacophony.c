@@ -60,9 +60,11 @@ asm(
 
 "test %rdx, %rsi                            \n" //     if(outline.blocks[i / 64] & (1 << (i % 64)))
 "jz .if_end                                 \n" //     {
-"neg %rax                                   \n" //
-"movq $0, 0(%rbp, %rax, 8)                  \n" //         stack[i] = 0
-"neg %rax                                   \n" //
+
+"neg %rax                                   \n" //         # rax is negated because the offsets from rbp are negative
+"movq $0, -8(%rbp, %rax, 8)                 \n" //         stack[i] = 0
+"neg %rax                                   \n" //         # rax is negated back
+
 ".if_end:                                   \n" //     }
 
 "inc %rax                                   \n" //     i++
@@ -98,32 +100,29 @@ void put_mem(long long * ptr, long long val) {
 
 /* ########### Garbage Collection and Allocation ########### */
 
+/*
+ * The memory associated with an allocated object looks as follows:
+ *
+ *      ----- increasing addresses at object site ----->
+ *      [8-byte pointer to outline] [8 bytes of object data] [8 bytes of object data] ...
+ *                |                 ^
+ *                |                 |
+ *                |                 the 8 byte pointer returned from `alloc_object` points here
+ *                |
+ *                V
+ *                [S: 8-byte size of object data] [A: 0th 8-byte block of outline] [B: 1st 8-byte block of outline] ...
+ *                ----- increasing addresses at outline site ----->
+ *
+ * In the outline:
+ * - the size of object data is understood as the number of 8-byte blocks (i.e. Int or reference has size 1).
+ * - A, B, ... are ceil(size / 64) blocks of outline after the size block S - they contain info if a field in the struct
+ *   is a pointer.
+ * Therefore, to check if the i-th field in flattened structure is a pointer, check:
+ *   block number i / 64 on bit position i % 64.
+ */
+
 #ifndef GC_WAIT
 #define GC_WAIT 10
-#endif
-
-#ifndef OUTLINE_PTR_OFFSET_FROM_OBJECT
-#define OUTLINE_PTR_OFFSET_FROM_OBJECT (-1)
-#endif
-
-#ifndef DATA_OFFSET_FROM_OBJECT
-#define DATA_OFFSET_FROM_OBJECT 0
-#endif
-
-#ifndef SIZE_OFFSET_FROM_OUTLINE
-#define SIZE_OFFSET_FROM_OUTLINE 0
-#endif
-
-#ifndef BLOCK_OFFSET_FROM_OUTLINE
-#define BLOCK_OFFSET_FROM_OUTLINE 1
-#endif
-
-#ifndef BLOCK_SIZE_IN_BITS
-#define BLOCK_SIZE_IN_BITS 64
-#endif
-
-#ifndef NULL_REFERENCE
-#define NULL_REFERENCE 0
 #endif
 
 static void run_gc(long long *) {}
@@ -132,19 +131,19 @@ static long long ** alloc_object(long long * outline_ptr) {
     long long size = 8 * (1 + *outline_ptr);
     long long ** allocated_memory_ptr = malloc(size);
     *allocated_memory_ptr = outline_ptr;
-    return allocated_memory_ptr - OUTLINE_PTR_OFFSET_FROM_OBJECT;
+    return allocated_memory_ptr + 1;
 }
 
 static void clean_references(long long ** object_ptr) {
-    long long * outline_ptr = *(object_ptr + OUTLINE_PTR_OFFSET_FROM_OBJECT);
-    long long struct_size = *(outline_ptr + SIZE_OFFSET_FROM_OUTLINE);
-    long long ** fields = object_ptr + DATA_OFFSET_FROM_OBJECT;
-    long long * blocks = outline_ptr + BLOCK_OFFSET_FROM_OUTLINE;
+    long long * outline_ptr = *(object_ptr - 1);
+    long long struct_size = *outline_ptr;
+    long long ** fields = object_ptr;
+    long long * blocks = outline_ptr + 1;
     for(long long i = 0; i < struct_size; i++) {
-        long long field_block = i / BLOCK_SIZE_IN_BITS;
-        long long field_bit = 1LL << (i % BLOCK_SIZE_IN_BITS);
+        long long field_block = i / 64;
+        long long field_bit = 1LL << (i % 64);
         if(blocks[field_block] & field_bit)
-            fields[i] = NULL_REFERENCE;
+            fields[i] = 0;
     }
 }
 

@@ -149,16 +149,11 @@ class InstructionBuilder(val slotFill: SlotFill) {
     }
 
     fun call(label: FunctionLabel) {
-        instructions.add(
-            Call(
-                slotFill.functionFill.getValue(label).function
-                    ?: error("Creating function body label of a pattern node"),
-            ),
-        )
+        instructions.add(Call(slotFill.functionFill.getValue(label).function))
     }
 
-    fun safeCall(label: BlockLabel) {
-        instructions.add(SafeCall(label))
+    fun rawCall(label: BlockLabel) {
+        instructions.add(RawCall(label))
     }
 
     fun comment(comment: String) {

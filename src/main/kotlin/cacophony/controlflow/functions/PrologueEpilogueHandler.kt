@@ -1,5 +1,6 @@
 package cacophony.controlflow.functions
 
+import cacophony.codegen.BlockLabel
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
 import cacophony.semantic.rtti.getStackFrameLocation
@@ -27,8 +28,8 @@ class PrologueEpilogueHandler(
         nodes.add(registerUse(rsp, false) subeq stackSpace)
 
         nodes.add(pushRegister(rdi, false))
-        nodes.add(registerUse(rdi, false) assign CFGNode.DataLabel("dummy_outline"))
-        nodes.add(CFGNode.CleanReferencesInOutline)
+        nodes.add(registerUse(rdi) assign memoryAccess(registerUse(rbp) add integer(REGISTER_SIZE)))
+        nodes.add(CFGNode.RawCall(BlockLabel("clean_refs")))
         nodes.add(popRegister(rdi, false))
 
         // Preserved registers don't hold references

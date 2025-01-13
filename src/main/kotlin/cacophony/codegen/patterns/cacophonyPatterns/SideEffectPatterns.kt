@@ -1,6 +1,5 @@
 package cacophony.codegen.patterns.cacophonyPatterns
 
-import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.patterns.NoTemporaryRegistersPattern
 import cacophony.codegen.patterns.SideEffectPattern
@@ -26,11 +25,11 @@ val sideEffectPatterns =
         ModuloAssignmentRegisterPattern,
         ModuloAssignmentMemoryPattern,
         CallPattern,
+        RawCallPattern,
         ReturnPattern,
         PushPattern,
         PushRegPattern,
         PopPattern,
-        CleanReferenceInOutlinePattern,
         // assignments
         RegisterAssignmentPattern,
         RegisterToMemoryWithAddedDisplacementAssignmentPattern,
@@ -211,12 +210,12 @@ object CallPattern : NoTemporaryRegistersPattern {
         }
 }
 
-object CleanReferenceInOutlinePattern : NoTemporaryRegistersPattern {
-    override val tree = CFGNode.CleanReferencesInOutline
+object RawCallPattern : NoTemporaryRegistersPattern {
+    override val tree = CFGNode.NodeSlot(NodeLabel(), CFGNode.RawCall::class)
 
     override fun makeInstance(fill: SlotFill): List<Instruction> =
         instructions(fill) {
-            safeCall(BlockLabel("clean_refs"))
+            rawCall(node(tree).label)
         }
 }
 

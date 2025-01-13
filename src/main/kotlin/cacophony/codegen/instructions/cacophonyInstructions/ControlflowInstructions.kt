@@ -125,12 +125,25 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
     override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
 }
 
-// Call that reads its arguments but preserves all registers
-data class SafeCall(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
+/**
+ * A raw call to a function which does not create a separate stack frame.
+ * It can be used for jumping to a reusable piece of code, almost as if it was inlined at the call site, and the returning.
+ * One argument can be passed in RDI.
+ *
+ * The destination block must handle the stack just like a function would, e.g. it should assume that at the beginning, the top of the
+ * stack holds the return address.
+ *
+ * IMPORTANT: Values of all GPRs immediately after returning from the call MUST be the same as their values right before the call!
+ * If this assumption is not satisfied, VERY BAD things will happen. This is because the instruction declares that it does not write any
+ * registers so that it can act as an opaque step.
+ *
+ * @param label The label to call
+ */
+data class RawCall(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead: Set<Register> = setOf(
-        Register.FixedRegister(HardwareRegister.RSP),
-        Register.FixedRegister(HardwareRegister.RBP),
         Register.FixedRegister(HardwareRegister.RDI),
+        Register.FixedRegister(HardwareRegister.RSP),
+        Register.FixedRegister(HardwareRegister.RSP),
     )
 
     override val registersWritten: Set<Register> = emptySet()
