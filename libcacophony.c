@@ -38,9 +38,12 @@ asm(
 "clean_refs:                                \n"
 
 "push %rax                                  \n" // # preserve registers used as local variables
+"push %rdi                                  \n" //
 "push %rsi                                  \n" //
 "push %rdx                                  \n" //
 "push %rcx                                  \n" //
+
+"mov 8(%rbp), %rdi                          \n" // outline := <outline address from stack>
 
 "mov $1, %rax                               \n" // i := 1
 
@@ -76,6 +79,7 @@ asm(
 "pop %rcx                                   \n" // # restore registers used as local variables as if they never changed
 "pop %rdx                                   \n" //
 "pop %rsi                                   \n" //
+"pop %rdi                                   \n" //
 "pop %rax                                   \n" //
 
 "ret                                        \n" // return

@@ -23,7 +23,7 @@ class FunctionPrologueAndEpilogueTest {
         val expectedCFG =
             singleFragmentCFG(fDef) {
                 setupStackFrame("entry", "clean references")
-                cleanReferences("clean references", "save preserved")
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store static link")
                 "store static link" does
                     jump("store result") {
@@ -55,7 +55,7 @@ class FunctionPrologueAndEpilogueTest {
         val expectedCFG =
             singleFragmentCFG(fDef) {
                 setupStackFrame("entry", "clean references")
-                cleanReferences("clean references", "save preserved")
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store argument")
                 "store argument" does jump("store static link") { writeRegister("0th arg", registerUse(rdi)) }
                 "store static link" does
@@ -100,7 +100,7 @@ class FunctionPrologueAndEpilogueTest {
         val expectedCFG =
             singleFragmentCFG(fDef) {
                 setupStackFrame("entry", "clean references")
-                cleanReferences("clean references", "save preserved")
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store 0th argument")
                 "store 0th argument" does jump("store 1st argument") { writeRegister("0th arg", registerUse(rdi)) }
                 "store 1st argument" does jump("store 2nd argument") { writeRegister("1st arg", registerUse(rsi)) }
@@ -157,7 +157,7 @@ class FunctionPrologueAndEpilogueTest {
         val expectedFragment =
             standaloneCFGFragment(fDef) {
                 setupStackFrame("entry", "clean references", allocatedSpace = 8)
-                cleanReferences("clean references", "save preserved")
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store argument")
                 "store argument" does
                     jump("store static link") {
@@ -208,16 +208,6 @@ private fun CFGFragmentBuilder.setupStackFrame(localEntry: String, localExit: St
     "save rbp" does jump("setup rbp") { pushRegister(rbp, false) }
     "setup rbp" does jump("setup rsp") { registerUse(rbp) assign registerUse(rsp) }
     "setup rsp" does jump(localExit) { registerUse(rsp) subeq integer(16 + allocatedSpace) }
-}
-
-private fun CFGFragmentBuilder.cleanReferences(localEntry: String, localExit: String) {
-    localEntry does jump("load outline ptr") { pushRegister(rdi, false) }
-    "load outline ptr" does
-        jump("raw call clean_refs") {
-            registerUse(rdi) assign memoryAccess(registerUse(rbp) add integer(8))
-        }
-    "raw call clean_refs" does jump("restore rdi") { CFGNode.RawCall(BlockLabel("clean_refs")) }
-    "restore rdi" does jump(localExit) { popRegister(rdi, false) }
 }
 
 private fun CFGFragmentBuilder.teardownStackFrame(localEntry: String, localExit: String) {

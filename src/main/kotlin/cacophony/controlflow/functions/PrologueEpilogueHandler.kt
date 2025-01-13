@@ -27,10 +27,7 @@ class PrologueEpilogueHandler(
         nodes.add(registerUse(rbp, false) assign registerUse(rsp, false))
         nodes.add(registerUse(rsp, false) subeq stackSpace)
 
-        nodes.add(pushRegister(rdi, false))
-        nodes.add(registerUse(rdi) assign memoryAccess(registerUse(rbp) add integer(REGISTER_SIZE)))
         nodes.add(CFGNode.RawCall(BlockLabel.cleanReferences))
-        nodes.add(popRegister(rdi, false))
 
         // Preserved registers don't hold references
         for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
