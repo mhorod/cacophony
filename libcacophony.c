@@ -114,9 +114,9 @@ void put_mem(long long * ptr, long long val) {
  *                ----- increasing addresses at outline site ----->
  *
  * In the outline:
- * - the size of object data is understood as the number of 8-byte blocks (i.e. Int or reference has size 1).
+ * - the size of object data is understood as the number of 8-byte blocks (i.e. Int or reference has size 1)
  * - A, B, ... are ceil(size / 64) blocks of outline after the size block S - they contain info if a field in the struct
- *   is a pointer.
+ *   is a pointer
  * Therefore, to check if the i-th field in flattened structure is a pointer, check:
  *   block number i / 64 on bit position i % 64.
  */

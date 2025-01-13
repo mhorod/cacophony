@@ -22,8 +22,8 @@ fun generateAsm(func: BlockLabel, blocks: LoweredCFGFragment, registerAllocation
 fun generateAsmPreamble(foreignFunctions: Set<Definition.ForeignFunctionDeclaration>, objectOutlines: List<String>): String =
     (
         listOf("SECTION .data") +
-            foreignFunctions.map {
-                "extern ${it.identifier}"
-            } + listOf("extern clean_refs") + objectOutlines +
+            foreignFunctions.map { "extern ${it.identifier}" } +
+            BlockLabel.builtins.map { "extern ${it.name}" } +
+            objectOutlines +
             listOf("global main", "SECTION .text")
     ).joinToString("\n")

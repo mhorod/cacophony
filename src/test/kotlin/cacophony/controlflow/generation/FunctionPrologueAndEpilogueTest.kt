@@ -212,9 +212,10 @@ private fun CFGFragmentBuilder.setupStackFrame(localEntry: String, localExit: St
 
 private fun CFGFragmentBuilder.cleanReferences(localEntry: String, localExit: String) {
     localEntry does jump("load outline ptr") { pushRegister(rdi, false) }
-    "load outline ptr" does jump("raw call clean_refs") {
-        registerUse(rdi) assign memoryAccess(registerUse(rbp) add integer(8))
-    }
+    "load outline ptr" does
+        jump("raw call clean_refs") {
+            registerUse(rdi) assign memoryAccess(registerUse(rbp) add integer(8))
+        }
     "raw call clean_refs" does jump("restore rdi") { CFGNode.RawCall(BlockLabel("clean_refs")) }
     "restore rdi" does jump(localExit) { popRegister(rdi, false) }
 }

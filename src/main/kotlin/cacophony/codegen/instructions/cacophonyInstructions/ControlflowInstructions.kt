@@ -140,11 +140,12 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
  * @param label The label to call
  */
 data class RawCall(val label: BlockLabel) : InstructionTemplates.FixedRegistersInstruction() {
-    override val registersRead: Set<Register> = setOf(
-        Register.FixedRegister(HardwareRegister.RDI),
-        Register.FixedRegister(HardwareRegister.RSP),
-        Register.FixedRegister(HardwareRegister.RSP),
-    )
+    override val registersRead: Set<Register> =
+        setOf(
+            Register.FixedRegister(HardwareRegister.RDI),
+            Register.FixedRegister(HardwareRegister.RSP),
+            Register.FixedRegister(HardwareRegister.RSP),
+        )
 
     override val registersWritten: Set<Register> = emptySet()
 

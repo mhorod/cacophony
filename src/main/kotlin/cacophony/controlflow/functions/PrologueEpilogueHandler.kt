@@ -29,7 +29,7 @@ class PrologueEpilogueHandler(
 
         nodes.add(pushRegister(rdi, false))
         nodes.add(registerUse(rdi) assign memoryAccess(registerUse(rbp) add integer(REGISTER_SIZE)))
-        nodes.add(CFGNode.RawCall(BlockLabel("clean_refs")))
+        nodes.add(CFGNode.RawCall(BlockLabel.cleanReferences))
         nodes.add(popRegister(rdi, false))
 
         // Preserved registers don't hold references
