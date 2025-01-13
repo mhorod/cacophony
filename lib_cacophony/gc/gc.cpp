@@ -58,7 +58,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
     auto traverse_pages = [&](memoryPage page, std::function<void(ll*)> handler) {
         for (auto it = page.ptr + 1; it < page.ptr + page.occupied / sizeof(ll*); ) {
             handler(it);
-            ll *outline = reinterpret_cast<ll*>(*(it-1));
+            ll *outline = reinterpret_cast<ll*>(*(it - 1));
             it += (*outline + 1);
         }
         
@@ -102,7 +102,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
         traverse_pages(page, [&](ll* ptr) {
             if (alive_objects_set.find(ptr) == alive_objects_set.end()) 
                 return;
-            ll *outline = reinterpret_cast<ll*>(*(ptr-1));
+            ll *outline = reinterpret_cast<ll*>(*(ptr - 1));
             int size = *outline + 1;
             memoryPage *last_page = nullptr;
             if (!allocated_pages.empty())

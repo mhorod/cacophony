@@ -17,8 +17,6 @@ extern "C" {
         }
         return allocMemory(outline);
     }
-
-    void initialize_gc(ll *stack_bottom);
 }
 
 #endif /* GC_LIB_H */
