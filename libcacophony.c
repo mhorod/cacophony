@@ -42,12 +42,12 @@ asm(
 "push %rdx                                  \n" //
 "push %rcx                                  \n" //
 
-"xor %rax, %rax                             \n" // i := 0
+"mov $1, %rax                               \n" // i := 1
 
 ".loop_begin:                               \n" // while(true) {
 
-"cmp (%rdi), %rax                           \n" //     if(i == outline.struct_size)
-"je .loop_end                               \n" //         break
+"cmp (%rdi), %rax                           \n" //     if(i >= outline.struct_size)
+"jae .loop_end                              \n" //         break
 
 "mov %rax, %rsi                             \n" //     tmp0 = i
 "shr $6, %rsi                               \n" //     tmp0 = i / 64
@@ -62,7 +62,7 @@ asm(
 "jz .if_end                                 \n" //     {
 
 "neg %rax                                   \n" //         # rax is negated because the offsets from rbp are negative
-"movq $0, -8(%rbp, %rax, 8)                 \n" //         stack[i] = 0
+"movq $0, 0(%rbp, %rax, 8)                  \n" //         stack[i] = 0
 "neg %rax                                   \n" //         # rax is negated back
 
 ".if_end:                                   \n" //     }
