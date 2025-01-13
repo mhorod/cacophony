@@ -17,8 +17,8 @@ class SimpleLayout(val access: CFGNode, val holdsReference: Boolean = false) : L
 
     override fun matchesType(type: Type): Boolean =
         when (type) {
-            is BaseType.Basic -> true
-            else -> false
+            is BaseType.Basic, is BaseType.Referential -> true
+            is BaseType.Functional, is BaseType.Structural -> false
         }
 }
 
