@@ -4,6 +4,9 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.types.FunctionType
+import cacophony.semantic.types.TypeCheckingResult
+import cacophony.semantic.types.TypeExpr
 import kotlin.math.min
 
 typealias EscapeAnalysisResult = Set<Variable>
@@ -13,6 +16,7 @@ fun escapeAnalysis(
     resolvedVariables: ResolvedVariables,
     functionAnalysis: FunctionAnalysisResult,
     variablesMap: VariablesMap,
+    definitionTypes: Map<Definition, TypeExpr>
 ): EscapeAnalysisResult {
     val baseVisitor = BaseEscapeAnalysisVisitor(resolvedVariables, variablesMap)
     baseVisitor.visit(ast)
@@ -21,13 +25,21 @@ fun escapeAnalysis(
     val usageDepth = mutableMapOf<Variable, Int>()
     val definitionDepth = mutableMapOf<Variable, Int>()
 
-    // Initialize usageDepth and definitionDepth for each variable to static depth of function declaring it.
+    // Find all escaping closures, these are exactly variables of function type with usageDepth smaller than definitionDepth.
+    val variableToDefinition = variablesMap.definitions.map { (variable, def) -> def to variable }.toMap()
+
+    // Initialize usageDepth and definitionDepth for each non-global variable to static depth of function declaring it.
     functionAnalysis.forEach { (_, analysis) ->
         analysis.declaredVariables().forEach {
             definitionDepth[it.origin] = analysis.staticDepth
             usageDepth[it.origin] = analysis.staticDepth
         }
     }
+
+    // Initialize usageDepth and definitionDepth for global variables.
+    variableToDefinition.keys
+        .filter { !usageDepth.containsKey(it) }
+        .forEach { usageDepth[it] = -1; definitionDepth[it] = -1 }
 
     // Update usageDepth for variables in return statements.
     baseResult.returnVariables.forEach { (function, returnedVariables) ->
@@ -53,22 +65,19 @@ fun escapeAnalysis(
         }
     }
 
-    // Find all escaping closures, these are exactly variables of function type with usageDepth smaller than definitionDepth.
-    val variableToDefinition = variablesMap.definitions.map { (variable, def) -> def to variable }.toMap()
-
     val escapingClosures: Set<Variable> =
         usageDepth.keys
-            .filter { variableToDefinition[it]!! is FunctionDefinition }
+            .filter { definitionTypes[variableToDefinition[it]!!] is FunctionType }
             .filter { usageDepth[it]!! < definitionDepth[it]!! }
             .toSet()
 
     // The result are all escaping closures and variables they reference but not own.
     return escapingClosures union
         escapingClosures.flatMap { closureVar ->
-            val analyzedClosure = functionAnalysis[variableToDefinition[closureVar]!!]!!
-            analyzedClosure.variables
-                .filter { !analyzedClosure.declaredVariables().contains(it) }
-                .map { it.origin }
+            val analyzedClosure = functionAnalysis[variableToDefinition[closureVar]!!]
+            analyzedClosure?.variables
+                ?.filter { !analyzedClosure.declaredVariables().contains(it) }
+                ?.map { it.origin } ?: emptyList()
         }.toSet()
 }
 
@@ -153,7 +162,7 @@ private class BaseEscapeAnalysisVisitor(
             is FunctionDefinition -> {
                 functionStack.add(expr)
 
-                val lastBodyExpression = if (expr.body is Block) expr.body.expressions.lastOrNull() else expr
+                val lastBodyExpression = if (expr.body is Block) expr.body.expressions.lastOrNull() else expr.body
 
                 if (expr.body is Block) {
                     expr.body.expressions.forEach { if (it !== lastBodyExpression) visitExpression(it) }
