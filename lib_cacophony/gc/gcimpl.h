@@ -14,8 +14,6 @@ typedef unsigned long long ull;
 
 const bool LOG_GC = true;
 
-ll* stack_bottom; // TODO
-
 struct memoryPage {
     int size;
     int occupied;

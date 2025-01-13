@@ -138,13 +138,8 @@ void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
     }
     if(!is_stack_frame) markVisited(object);
 
-    ll *outline = object - 1;
+    ll *outline = reinterpret_cast<ll*>(*(object - 1));
     std::vector<ll> offsets = offsetsFromOutline(outline);
-    if(object == stack_bottom) {
-        // we are at the last stack frame, so we don't want to go lower
-        assert(offsets.size() > 0 && offsets[0] == 0);
-        offsets.erase(offsets.begin());
-    }
     if(LOG_GC) {
         std::cerr << "reference offsets:";
         for(int offset: offsets) std::cerr << " " << offset;

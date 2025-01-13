@@ -4,7 +4,7 @@
 #include "gcimpl.h"
 
 #ifndef GC_WAIT
-#define GC_WAIT 10
+#define GC_WAIT 1
 #endif
 
 /* ########### Cacophony Built-ins ########### */
