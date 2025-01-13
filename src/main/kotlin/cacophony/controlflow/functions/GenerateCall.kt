@@ -36,6 +36,9 @@ fun generateCallFrom(
             if (function.arguments.size != arguments.size) {
                 throw IllegalArgumentException("Wrong argument count")
             }
+            if (result != null && !layoutMatchesType(result, function.returnType)) {
+                throw IllegalArgumentException("Wrong result layout")
+            }
             val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
             generateCall(function, arguments + listOf(SimpleLayout(staticLinkVar)), result, callerFunction.getStackSpace())
         }
