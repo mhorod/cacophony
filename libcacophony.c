@@ -46,10 +46,10 @@ void put_mem(long long * ptr, long long val) {
 }
 
 /* ########### Randomness for test purposes ########### */
-unsigned long long rand_seed = 17;
-unsigned long long rand_multiplier = 16807;
-unsigned long long rand_mod = 2147483647;
-unsigned long long rand_() {
+static unsigned long long rand_seed = 17;
+const unsigned long long rand_multiplier = 16807;
+const unsigned long long rand_mod = 2147483647;
+static unsigned long long rand_() {
     return rand_seed = ((rand_seed * rand_multiplier) % rand_mod);
 }
 

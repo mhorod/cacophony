@@ -49,27 +49,12 @@ class ObjectOutlinesCreator {
             is TypeExpr.VoidType -> emptyList()
         }
 
-    private fun toIsPointerMaskChunks(type: TypeExpr): List<ULong> {
-        val isPointerList = toIsPointerList(type)
-        assert(isPointerList.size == type.size())
-
-        val numberOfChunks = (isPointerList.size + ULong.SIZE_BITS - 1) / ULong.SIZE_BITS
-        val chunks = Array(numberOfChunks) { 0UL }
-        for ((index, isPointer) in isPointerList.withIndex()) {
-            if (isPointer) {
-                chunks[index / ULong.SIZE_BITS] += 1UL shl (index % ULong.SIZE_BITS)
-            }
-        }
-        return chunks.toList()
-    }
-
     fun add(type: TypeExpr) {
         if (locations.containsKey(type)) return
         if (type is FunctionType) return // functional types not supported for now
 
         val label = "outline_${typeToLabel(type)}"
-        val outline = listOf(type.size().toULong()) + toIsPointerMaskChunks(type)
-        val asmEntry = "$label: dq ${outline.joinToString(", ")}"
+        val asmEntry = toAsm(label, toIsPointerList(type))
 
         locations[type] = label
         asmDataSectionEntries.add(asmEntry)

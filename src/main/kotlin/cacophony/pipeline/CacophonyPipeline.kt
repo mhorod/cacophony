@@ -21,6 +21,7 @@ import cacophony.semantic.analysis.*
 import cacophony.semantic.names.*
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlinesCreator
+import cacophony.semantic.rtti.generateStackFrameOutline
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
@@ -212,6 +213,9 @@ class CacophonyPipeline(
         return ObjectOutlines(objectOutlinesCreator.getLocations(), objectOutlinesCreator.getAsm())
     }
 
+    fun generateStackFrameOutlines(functionHandlers: Collection<FunctionHandler>): List<String> =
+        functionHandlers.map { generateStackFrameOutline(it) }
+
     fun generateControlFlowGraph(
         analyzedAst: AstAnalysisResult,
         callGenerator: CallGenerator,
@@ -254,7 +258,8 @@ class CacophonyPipeline(
                     generateAsm(functionBodyLabel(function), loweredCFG, ra)
                 }
             }
-        return Pair(generateAsmPreamble(semantics.foreignFunctions, objectOutlines.asm), asm)
+        val stackFrameOutlines = generateStackFrameOutlines(semantics.functionHandlers.values)
+        return Pair(generateAsmPreamble(semantics.foreignFunctions, stackFrameOutlines + objectOutlines.asm), asm)
     }
 
     private fun assemble(src: Path, dest: Path) {

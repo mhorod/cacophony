@@ -237,7 +237,7 @@ class GenerateCallKtTest {
         checkStaticLinkInGenerateCallFrom(
             childHandler,
             childHandler,
-            SimpleLayout(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))),
+            SimpleLayout(memoryAccess(registerUse(rbp) sub integer(8))),
         )
     }
 
@@ -249,7 +249,7 @@ class GenerateCallKtTest {
         checkStaticLinkInGenerateCallFrom(
             parentHandler,
             childHandler,
-            SimpleLayout(CFGNode.MemoryAccess(CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP))))),
+            SimpleLayout(memoryAccess(memoryAccess(registerUse(rbp) sub integer(8)) sub integer(8))),
         )
     }
 
