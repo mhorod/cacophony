@@ -4,9 +4,6 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
-import cacophony.semantic.types.FunctionType
-import cacophony.semantic.types.TypeCheckingResult
-import cacophony.semantic.types.TypeExpr
 import kotlin.math.min
 
 typealias EscapeAnalysisResult = Set<Variable>
@@ -16,7 +13,6 @@ fun escapeAnalysis(
     resolvedVariables: ResolvedVariables,
     functionAnalysis: FunctionAnalysisResult,
     variablesMap: VariablesMap,
-    definitionTypes: Map<Definition, TypeExpr>
 ): EscapeAnalysisResult {
     val baseVisitor = BaseEscapeAnalysisVisitor(resolvedVariables, variablesMap)
     baseVisitor.visit(ast)
@@ -39,16 +35,19 @@ fun escapeAnalysis(
     // Initialize usageDepth and definitionDepth for global variables.
     variableToDefinition.keys
         .filter { !usageDepth.containsKey(it) }
-        .forEach { usageDepth[it] = -1; definitionDepth[it] = -1 }
+        .forEach {
+            usageDepth[it] = -1
+            definitionDepth[it] = -1
+        }
 
     // Update usageDepth for variables in return statements.
-    baseResult.returnVariables.forEach { (function, returnedVariables) ->
+    baseResult.returnVariables.forEach { (returnDepth, returnedVariables) ->
         returnedVariables.forEach {
-            usageDepth[it] = min(usageDepth[it]!!, functionAnalysis[function]!!.staticDepth - 1)
+            usageDepth[it] = min(usageDepth[it]!!, returnDepth - 1)
         }
     }
 
-    // Iterate updating usageDepth using assignments until fixed point is obtained.
+    // Iterate updating usageDepth using assignments and relation of variables used by functions until fixed point is obtained.
     var fixedPointObtained = false
 
     while (!fixedPointObtained) {
@@ -63,22 +62,24 @@ fun escapeAnalysis(
                 }
             }
         }
+
+        functionAnalysis
+            .filter { (function, _) -> variablesMap.definitions.containsKey(function) }
+            .forEach { (function, analysis) ->
+                analysis.variables
+                    .filter { !analysis.declaredVariables().contains(it) }
+                    .forEach {
+                        val functionUsageDepth = usageDepth[variablesMap.definitions[function]!!]!!
+                        if (usageDepth[it.origin]!! > functionUsageDepth) {
+                            fixedPointObtained = false
+                            usageDepth[it.origin] = functionUsageDepth
+                        }
+                    }
+            }
     }
 
-    val escapingClosures: Set<Variable> =
-        usageDepth.keys
-            .filter { definitionTypes[variableToDefinition[it]!!] is FunctionType }
-            .filter { usageDepth[it]!! < definitionDepth[it]!! }
-            .toSet()
-
-    // The result are all escaping closures and variables they reference but not own.
-    return escapingClosures union
-        escapingClosures.flatMap { closureVar ->
-            val analyzedClosure = functionAnalysis[variableToDefinition[closureVar]!!]
-            analyzedClosure?.variables
-                ?.filter { !analyzedClosure.declaredVariables().contains(it) }
-                ?.map { it.origin } ?: emptyList()
-        }.toSet()
+    // The result are all variables with usageDepth smaller than definitionDepth
+    return usageDepth.keys.filter { usageDepth[it]!! < definitionDepth[it]!! }.toSet()
 }
 
 /**
@@ -87,22 +88,25 @@ fun escapeAnalysis(
  */
 private data class BaseEscapeAnalysisResult(
     val assignmentVariables: List<Pair<Set<Variable>, Set<Variable>>>,
-    val returnVariables: Map<FunctionDefinition, Set<Variable>>,
+    val returnVariables: Map<Int, Set<Variable>>,
 )
 
 private class BaseEscapeAnalysisVisitor(
     val resolvedVariables: ResolvedVariables,
     val variablesMap: VariablesMap,
 ) {
-    private val functionStack = ArrayDeque<FunctionDefinition>()
+    private var currentStaticDepth = -1
     private val assignmentLhsStack = ArrayDeque<MutableSet<Variable>>()
     private val assignmentRhsStack = ArrayDeque<MutableSet<Variable>>()
     private val returnStack = ArrayDeque<MutableSet<Variable>>()
 
     private val assignmentVariables = mutableListOf<Pair<Set<Variable>, Set<Variable>>>()
-    private val returnVariables = mutableMapOf<FunctionDefinition, MutableSet<Variable>>()
+    private val returnVariables = mutableMapOf<Int, MutableSet<Variable>>()
 
-    fun visit(ast: AST) = visitExpression(ast)
+    fun visit(ast: AST) {
+        currentStaticDepth = -1
+        visitExpression(ast)
+    }
 
     fun getResult(): BaseEscapeAnalysisResult = BaseEscapeAnalysisResult(assignmentVariables, returnVariables)
 
@@ -114,6 +118,7 @@ private class BaseEscapeAnalysisVisitor(
             is FieldRef.LValue -> visitExpression(expr.obj)
             is FieldRef.RValue -> visitExpression(expr.obj)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
+            is LambdaExpression -> visitFunctionBody(expr.body)
             is FunctionDefinition -> visitFunctionDeclaration(expr)
             is FunctionCall -> {
                 visitExpression(expr.function)
@@ -148,30 +153,34 @@ private class BaseEscapeAnalysisVisitor(
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]!!
 
-        val variable = variablesMap.definitions.getValue(definition)
+        val variable = variablesMap.definitions[definition]
 
-        // Add Variable to all currently open LHS/RSH of assignments and return statements.
-        assignmentLhsStack.forEach { it.add(variable) }
-        assignmentRhsStack.forEach { it.add(variable) }
-        returnStack.forEach { it.add(variable) }
+        if (variable != null) {
+            // Add Variable to all currently open LHS/RSH of assignments and return statements.
+            assignmentLhsStack.forEach { it.add(variable) }
+            assignmentRhsStack.forEach { it.add(variable) }
+            returnStack.forEach { it.add(variable) }
+        }
+    }
+
+    private fun visitFunctionBody(expr: Expression) {
+        currentStaticDepth += 1
+
+        val lastBodyExpression = if (expr is Block) expr.expressions.lastOrNull() else expr
+
+        if (expr is Block) {
+            expr.expressions.forEach { if (it !== lastBodyExpression) visitExpression(it) }
+        }
+
+        if (lastBodyExpression != null) visitReturnedExpression(lastBodyExpression)
+
+        currentStaticDepth -= 1
     }
 
     private fun visitFunctionDeclaration(expr: Definition.FunctionDeclaration) {
         when (expr) {
             is Definition.ForeignFunctionDeclaration -> return
-            is FunctionDefinition -> {
-                functionStack.add(expr)
-
-                val lastBodyExpression = if (expr.body is Block) expr.body.expressions.lastOrNull() else expr.body
-
-                if (expr.body is Block) {
-                    expr.body.expressions.forEach { if (it !== lastBodyExpression) visitExpression(it) }
-                }
-
-                if (lastBodyExpression != null) visitReturnedExpression(lastBodyExpression)
-
-                functionStack.removeLast()
-            }
+            is FunctionDefinition -> visitFunctionBody(expr.body)
         }
     }
 
@@ -179,8 +188,8 @@ private class BaseEscapeAnalysisVisitor(
         returnStack.add(mutableSetOf())
         visitExpression(expr)
 
-        if (returnStack.last().isNotEmpty() && functionStack.isNotEmpty()) {
-            returnVariables.getOrPut(functionStack.last()) { mutableSetOf() }.addAll(returnStack.last())
+        if (returnStack.last().isNotEmpty()) {
+            returnVariables.getOrPut(currentStaticDepth) { mutableSetOf() }.addAll(returnStack.last())
         }
 
         returnStack.removeLast()
@@ -199,7 +208,7 @@ private class BaseEscapeAnalysisVisitor(
         val lhs = assignmentLhsStack.last().toSet()
         assignmentLhsStack.removeLast()
 
-        if (rhs.isNotEmpty() && lhs.isNotEmpty() && functionStack.isNotEmpty()) {
+        if (rhs.isNotEmpty() && lhs.isNotEmpty()) {
             assignmentVariables.add(lhs to rhs)
         }
     }
@@ -214,7 +223,7 @@ private class BaseEscapeAnalysisVisitor(
 
         val lhs = setOf(variablesMap.definitions[expr]!!)
 
-        if (rhs.isNotEmpty() && functionStack.isNotEmpty()) {
+        if (rhs.isNotEmpty()) {
             assignmentVariables.add(lhs to rhs)
         }
     }

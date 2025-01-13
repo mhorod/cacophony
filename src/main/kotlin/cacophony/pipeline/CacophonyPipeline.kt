@@ -44,6 +44,7 @@ data class AstAnalysisResult(
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
+    val escapeAnalysisResult: EscapeAnalysisResult,
 )
 
 data class ObjectOutlines(
@@ -201,7 +202,16 @@ class CacophonyPipeline(
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention, variablesMap)
         val foreignFunctions = filterForeignFunctions(resolvedNames)
-        return AstAnalysisResult(resolvedVariables, types, variablesMap, analyzedExpressions, functionHandlers, foreignFunctions)
+        val escapeAnalysis = escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap)
+        return AstAnalysisResult(
+            resolvedVariables,
+            types,
+            variablesMap,
+            analyzedExpressions,
+            functionHandlers,
+            foreignFunctions,
+            escapeAnalysis,
+        )
     }
 
     fun getUsedTypes(types: TypeCheckingResult): List<TypeExpr> = types.expressionTypes.values + types.definitionTypes.values
