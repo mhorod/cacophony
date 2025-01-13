@@ -182,4 +182,31 @@ class BreakTest {
 
         assertEquivalent(actualCFG, expectedCFG)
     }
+
+    @Test
+    fun `assignment of break`() {
+        // given
+        val fDef =
+            unitFunctionDefinition(
+                "f",
+                whileLoop(
+                    lit(true),
+                    block(
+                        variableDeclaration("x", breakStatement()),
+                    ),
+                ),
+            )
+
+        // when
+        val actualCFG = generateSimplifiedCFG(fDef)
+
+        // then
+        val expectedCFG =
+            singleWrappedFragmentCFG(fDef) {
+                "bodyEntry" does
+                    jump("bodyExit") { writeRegister(virtualRegister("x"), unit) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
 }
