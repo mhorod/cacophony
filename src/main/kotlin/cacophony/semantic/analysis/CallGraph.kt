@@ -38,6 +38,8 @@ private class CallGraphProvider(
                     generateDirectCallGraph(node.doExpression, currentFn),
                 )
 
+            is LambdaExpression -> generateDirectCallGraph(node.body, currentFn)
+
             is Statement.ReturnStatement -> generateDirectCallGraph(node.value, currentFn)
             is OperatorUnary -> generateDirectCallGraph(node.expression, currentFn)
             is OperatorBinary ->

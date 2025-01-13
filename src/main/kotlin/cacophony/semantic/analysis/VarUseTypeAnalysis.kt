@@ -111,6 +111,7 @@ private class VarUseVisitor(
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
+            is LambdaExpression -> visitLambdaExpression(expr)
             is Statement.ReturnStatement -> visitReturnStatement(expr)
             is OperatorUnary -> visitUnaryOperator(expr)
             is OperatorBinary -> visitBinaryOperator(expr)
@@ -238,6 +239,11 @@ private class VarUseVisitor(
                 useTypeAnalysis[expr.testExpression],
                 useTypeAnalysis[expr.doExpression],
             )
+    }
+
+    private fun visitLambdaExpression(expr: LambdaExpression) {
+        visitExpression(expr.body)
+        useTypeAnalysis[expr] = merge(useTypeAnalysis[expr.body])
     }
 
     private fun visitIfElseStatement(expr: Statement.IfElseStatement) {
