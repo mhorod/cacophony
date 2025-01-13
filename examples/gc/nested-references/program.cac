@@ -1,0 +1,17 @@
+let struct_32 = {
+    a=1, b=2, c=3, d=4
+};
+
+let nested_ref = $$$$$$$$$$struct_32;
+
+let i = 0;
+
+while i < 1000000 do (
+    nested_ref=$$$$$$$$$$struct_32; # reassigning of pointer should free the memory at its subfields
+    @@@nested_ref=$$$$$$$struct_32;
+    @@@@@@nested_ref=$$$$struct_32;
+    @@@@@@@@@nested_ref=$struct_32;
+    i=i+1;
+);
+
+struct_32 = @@@@@@@@@@nested_ref;

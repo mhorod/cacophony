@@ -60,6 +60,24 @@ asm(
 "ret                                        \n" // return
 );
 
+/* ########### Randomness for test purposes ########### */
+static unsigned long long rand_seed = 17;
+const unsigned long long rand_multiplier = 16807;
+const unsigned long long rand_mod = 2147483647;
+static unsigned long long rand_() {
+    return rand_seed = ((rand_seed * rand_multiplier) % rand_mod);
+}
+
+// returns integer from [l, r]
+long long randint(long long l, long long r) {
+	unsigned long long a = rand_();
+	return (a % (r - l + 1) + l);
+}
+
+void cassert(long long b) {
+	if (b == 0) exit(1);
+}
+
 /* ########### Garbage Collection and Allocation ########### */
 
 /*

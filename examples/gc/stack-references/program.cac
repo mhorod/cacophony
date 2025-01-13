@@ -1,0 +1,53 @@
+let struct_16 = {
+    a=1, b=2
+};
+
+# when there are many pointers, some of them must be on stack
+let ptr0 = $struct_16;
+let ptr1 = $struct_16;
+let ptr2 = $struct_16;
+let ptr3 = $struct_16;
+let ptr4 = $struct_16;
+let ptr5 = $struct_16;
+let ptr6 = $struct_16;
+let ptr7 = $struct_16;
+let ptr8 = $struct_16;
+let ptr9 = $struct_16;
+
+let i = 0;
+
+while i < 1000000 do (
+    ptr0 = $struct_16;
+    ptr1 = $struct_16;
+    ptr2 = $struct_16;
+    ptr3 = $struct_16;
+    ptr4 = $struct_16;
+    ptr5 = $struct_16;
+    ptr6 = $struct_16;
+    ptr7 = $struct_16;
+    ptr8 = $struct_16;
+    ptr9 = $struct_16;
+    # and also some temporary pointers
+    let temp0 = $struct_16;
+    let temp1 = $struct_16;
+    let temp2 = $struct_16;
+    let temp3 = $struct_16;
+    let temp4 = $struct_16;
+    let temp5 = $struct_16;
+    let temp6 = $struct_16;
+    let temp7 = $struct_16;
+    let temp8 = $struct_16;
+    let temp9 = $struct_16;
+    i = i+1;
+);
+
+struct_16 = @ptr0;
+struct_16 = @ptr1;
+struct_16 = @ptr2;
+struct_16 = @ptr3;
+struct_16 = @ptr4;
+struct_16 = @ptr5;
+struct_16 = @ptr6;
+struct_16 = @ptr7;
+struct_16 = @ptr8;
+struct_16 = @ptr9;

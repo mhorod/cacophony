@@ -1,0 +1,17 @@
+# 100000 nested function calls, each of which allocates 128B on the heap
+
+let struct_128 = {
+    a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8,
+    i=9, j=10, k=11, l=12, m=13, n=14, o=15, p=16
+};
+
+let allocateRecursively = [depth: Int] -> Int => (
+    if (depth == 0) then return 0
+    else (
+        let newPtr = $struct_128;
+        @newPtr;
+        return allocateRecursively[depth - 1] + 1;
+    );
+);
+
+allocateRecursively[100000];
