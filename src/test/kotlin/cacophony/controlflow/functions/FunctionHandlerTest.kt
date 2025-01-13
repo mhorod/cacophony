@@ -1,11 +1,7 @@
 package cacophony.controlflow.functions
 
 import cacophony.*
-import cacophony.controlflow.CFGNode
-import cacophony.controlflow.HardwareRegister
-import cacophony.controlflow.Register
-import cacophony.controlflow.Variable
-import cacophony.controlflow.VariableAllocation
+import cacophony.controlflow.*
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.AnalyzedVariable
@@ -54,7 +50,7 @@ class FunctionHandlerTest {
 
         val allocation = handler.getVariableAllocation(handler.getStaticLink())
         require(allocation is VariableAllocation.OnStack)
-        assertThat(allocation.offset).isEqualTo(0)
+        assertThat(allocation.offset).isEqualTo(8)
     }
 
     @Test
@@ -98,7 +94,7 @@ class FunctionHandlerTest {
         val allocation = handler.getVariableAllocation(variable)
         // check
         require(allocation is VariableAllocation.OnStack)
-        assertEquals(8, allocation.offset)
+        assertEquals(16, allocation.offset)
     }
 
     @Test
@@ -135,9 +131,9 @@ class FunctionHandlerTest {
         require(allocation1 is VariableAllocation.OnStack)
         require(allocation2 is VariableAllocation.InRegister)
         require(allocation3 is VariableAllocation.OnStack)
-        assertEquals(8, allocation1.offset)
+        assertEquals(16, allocation1.offset)
         assert(allocation2.register is Register.VirtualRegister)
-        assertEquals(16, allocation3.offset)
+        assertEquals(24, allocation3.offset)
     }
 
     @Test
@@ -231,8 +227,8 @@ class FunctionHandlerTest {
                 ),
             )
         // check
-        assertEquals(8, noArgFunctionHandler.getStackSpace().value)
-        assertEquals(16, unaryFunctionHandler.getStackSpace().value)
+        assertEquals(16, noArgFunctionHandler.getStackSpace().value)
+        assertEquals(24, unaryFunctionHandler.getStackSpace().value)
     }
 
     @Test
@@ -248,21 +244,21 @@ class FunctionHandlerTest {
         every { analyzedFunction.declaredVariables() } returns emptyList()
 
         val handler = makeDefaultHandler(funDef, analyzedFunction)
-        assertEquals(8, handler.getStackSpace().value)
+        assertEquals(16, handler.getStackSpace().value)
 
         var primVariable = Variable.PrimitiveVariable()
         handler.allocateFrameVariable(primVariable)
 
         var allocation = handler.getVariableAllocation(primVariable)
         require(allocation is VariableAllocation.OnStack)
-        assertEquals(8, allocation.offset)
+        assertEquals(16, allocation.offset)
 
         primVariable = Variable.PrimitiveVariable()
         handler.allocateFrameVariable(primVariable)
 
         allocation = handler.getVariableAllocation(primVariable)
         require(allocation is VariableAllocation.OnStack)
-        assertEquals(16, allocation.offset)
+        assertEquals(24, allocation.offset)
     }
 
     @Test
@@ -277,10 +273,10 @@ class FunctionHandlerTest {
         every { analyzedFunction.declaredVariables() } returns emptyList()
 
         val handler = makeDefaultHandler(funDef, analyzedFunction)
-        assertEquals(8, handler.getStackSpace().value)
+        assertEquals(16, handler.getStackSpace().value)
 
         handler.allocateFrameVariable(Variable.PrimitiveVariable())
-        assertEquals(16, handler.getStackSpace().value)
+        assertEquals(24, handler.getStackSpace().value)
 
         handler.registerVariableAllocation(Variable.PrimitiveVariable(), VariableAllocation.OnStack(32))
         assertEquals(40, handler.getStackSpace().value)
@@ -463,16 +459,13 @@ class FunctionHandlerTest {
 
             // then
             assertThat(xAccess).isEqualTo(
-                CFGNode.MemoryAccess(
-                    // [[[rbp]] - 24]
-                    CFGNode.Subtraction(
-                        CFGNode.MemoryAccess(
-                            CFGNode.MemoryAccess(
-                                CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
-                            ),
-                        ),
-                        CFGNode.ConstantKnown(24),
-                    ),
+                // [[[rbp - 8] - 8] - 24]
+                memoryAccess(
+                    memoryAccess(
+                        memoryAccess(
+                            registerUse(rbp) sub integer(8),
+                        ) sub integer(8),
+                    ) sub integer(24),
                 ),
             )
         }
@@ -505,13 +498,8 @@ class FunctionHandlerTest {
 
             // then
             assertThat(staticLinkAccess).isEqualTo(
-                CFGNode.MemoryAccess(
-                    // [rbp - 0]
-                    CFGNode.Subtraction(
-                        CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
-                        CFGNode.ConstantKnown(0),
-                    ),
-                ),
+                // [rbp - 8]
+                memoryAccess(registerUse(rbp) sub integer(8)),
             )
         }
 
@@ -562,15 +550,8 @@ class FunctionHandlerTest {
 
             // then
             assertThat(staticLinkAccess).isEqualTo(
-                CFGNode.MemoryAccess(
-                    // [[rbp] - 0]
-                    CFGNode.Subtraction(
-                        CFGNode.MemoryAccess(
-                            CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)),
-                        ),
-                        CFGNode.ConstantKnown(0),
-                    ),
-                ),
+                // [[rbp - 8] - 8]
+                memoryAccess(memoryAccess(registerUse(rbp) sub integer(8)) sub integer(8)),
             )
         }
 
@@ -643,7 +624,7 @@ class FunctionHandlerTest {
                         else {
                             val l = it.first()
                             l is SimpleLayout &&
-                                l.access == CFGNode.MemoryAccess(CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RBP)))
+                                l.access == memoryAccess(registerUse(rbp) sub integer(8))
                         }
                     },
                     any(),

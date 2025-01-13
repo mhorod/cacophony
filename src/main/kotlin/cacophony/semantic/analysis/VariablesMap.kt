@@ -11,6 +11,7 @@ import cacophony.semantic.syntaxtree.Dereference
 import cacophony.semantic.syntaxtree.Expression
 import cacophony.semantic.syntaxtree.FieldRef
 import cacophony.semantic.syntaxtree.FunctionCall
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.syntaxtree.LeafExpression
 import cacophony.semantic.syntaxtree.OperatorBinary
 import cacophony.semantic.syntaxtree.OperatorUnary
@@ -75,6 +76,8 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
                 visit(expression.doExpression)
             }
 
+            is LambdaExpression -> visit(expression.body)
+
             is Struct -> expression.fields.values.forEach { visit(it) }
             is Allocation -> visit(expression.value)
             is Dereference -> {
@@ -109,6 +112,11 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
         return definitions
     }
 
+    fun visitLambdaExpression(arguments: List<Definition.FunctionArgument>, body: Expression) {
+        arguments.forEach { visitFunctionArgument(it) }
+        visit(body)
+    }
+
     fun visit(expression: Expression) {
         when (expression) {
             is FieldRef.LValue -> visit(expression.obj)
@@ -117,10 +125,7 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
             is Block -> expression.expressions.forEach { visit(it) }
             is Definition.FunctionArgument -> visitFunctionArgument(expression)
 
-            is Definition.FunctionDefinition -> {
-                expression.arguments.forEach { visit(it) }
-                visit(expression.body)
-            }
+            is Definition.FunctionDefinition -> visitLambdaExpression(expression.arguments, expression.body)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression)
 
             is FunctionCall -> expression.arguments.forEach { visit(it) }
@@ -143,6 +148,8 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
                 visit(expression.testExpression)
                 visit(expression.doExpression)
             }
+
+            is LambdaExpression -> visitLambdaExpression(expression.arguments, expression.body)
 
             is Struct -> expression.fields.values.forEach { visit(it) }
 

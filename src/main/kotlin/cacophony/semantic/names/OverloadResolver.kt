@@ -50,6 +50,8 @@ fun resolveOverloads(ast: AST, nr: NameResolutionResult, diagnostics: Diagnostic
                 resolveOverloadsRec(expr.doExpression)
             }
 
+            is LambdaExpression -> resolveOverloadsRec(expr.body)
+
             is Struct -> {
                 expr.fields.values.forEach { resolveOverloadsRec(it) }
             }

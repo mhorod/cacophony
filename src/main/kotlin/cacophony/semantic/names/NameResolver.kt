@@ -143,6 +143,24 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
     val symbolsTable = emptySymbolsTable()
 
     fun traverseAst(node: Expression, openNewBlock: Boolean) {
+        fun visitLambdaExpression(arguments: List<FunctionArgument>, body: Expression) {
+            arguments
+                .groupBy { it.identifier }
+                .filter { it.value.size > 1 }
+                .values
+                .flatten()
+                .onEach { argNode ->
+                    diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument(argNode.identifier), argNode.range)
+                }.let { if (it.isNotEmpty()) throw diagnostics.fatal() }
+
+            // Open new block to make arguments visible in function body, but not after
+            // the whole function declaration.
+            symbolsTable.open()
+            arguments.forEach { traverseAst(it, false) }
+            traverseAst(body, true)
+            symbolsTable.close()
+        }
+
         if (openNewBlock) symbolsTable.open()
 
         when (node) {
@@ -164,22 +182,11 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
 
             is FunctionDefinition -> {
                 symbolsTable.define(node.identifier, node)
+                visitLambdaExpression(node.arguments, node.body)
+            }
 
-                node.arguments
-                    .groupBy { it.identifier }
-                    .filter { it.value.size > 1 }
-                    .values
-                    .flatten()
-                    .onEach { argNode ->
-                        diagnostics.report(NRDiagnostics.DuplicatedFunctionArgument(argNode.identifier), argNode.range)
-                    }.let { if (it.isNotEmpty()) throw diagnostics.fatal() }
-
-                // Open new block to make arguments visible in function body, but not after
-                // the whole function declaration.
-                symbolsTable.open()
-                node.arguments.forEach { traverseAst(it, false) }
-                traverseAst(node.body, true)
-                symbolsTable.close()
+            is LambdaExpression -> {
+                visitLambdaExpression(node.arguments, node.body)
             }
 
             is ForeignFunctionDeclaration -> {
