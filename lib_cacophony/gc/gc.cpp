@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include <functional>
-#include <set>
 
 #include <cassert>
 
@@ -14,6 +13,7 @@
 void memoryManager::createNewPage(int size) {
     assert(size % sizeof(ll*) == 0);
     ll *ptr = static_cast<ll*>(malloc(size));
+    std::memset(ptr, 0, size);
     auto page = memoryPage{size, 0, ptr};
     allocated_pages.push_back(page);
 }
@@ -36,7 +36,7 @@ ll* memoryManager::allocateMemory(int size) {
         last_page->occupied += size;
         if (allocated_pages.size() > 1) {
             int free_space_in_last_page =  allocated_pages.back().size - allocated_pages.back().occupied;
-            int previous_page_index = allocated_pages.size()-2;
+            int previous_page_index = allocated_pages.size() - 2;
             int free_space_in_previous_page = allocated_pages[previous_page_index].size - allocated_pages[previous_page_index].occupied;
             if (free_space_in_previous_page > free_space_in_last_page) {
                 std::swap(allocated_pages.back(), allocated_pages[previous_page_index]);
@@ -46,16 +46,13 @@ ll* memoryManager::allocateMemory(int size) {
     }
 }
 
-std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_objects) {
+std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects) {
     std::unordered_map<ll*, ll*> translation_map;
-
     std::vector<memoryPage> pages_to_process;
     std::swap(pages_to_process, allocated_pages);
-
-    std::set<ll*> alive_objects_set(alive_objects.begin(), alive_objects.end());
     std::set<ll*> processed_pages;
     
-    auto traverse_pages = [&](memoryPage page, std::function<void(ll*)> handler) {
+    auto traversePage = [&](memoryPage page, auto && handler /* action to perform on each object */) {
         for (auto it = page.ptr + 1; it < page.ptr + page.occupied / sizeof(ll*); ) {
             handler(it);
             ll *outline = reinterpret_cast<ll*>(*(it - 1));
@@ -65,8 +62,8 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
     };
     for (auto &page : pages_to_process) {
         bool is_page_untouched = true;
-        traverse_pages(page, [&](ll* ptr) {
-            if (alive_objects_set.find(ptr) == alive_objects_set.end())
+        traversePage(page, [&](ll* ptr) {
+            if (alive_objects.find(ptr) == alive_objects.end())
                 is_page_untouched = false;
         });
         if (is_page_untouched) {
@@ -80,8 +77,8 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
             continue;
 
         std::vector<ll*> alive_objects_on_page;
-        traverse_pages(page, [&](ll* ptr) {
-            if (alive_objects_set.find(ptr) != alive_objects_set.end())
+        traversePage(page, [&](ll* ptr) {
+            if (alive_objects.find(ptr) != alive_objects.end())
                 alive_objects_on_page.push_back(ptr);
         });
         if (alive_objects_on_page.empty()) {
@@ -99,8 +96,8 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
             } else 
                 createNewPage(MEMORY_BLOCK_SIZE);
         }
-        traverse_pages(page, [&](ll* ptr) {
-            if (alive_objects_set.find(ptr) == alive_objects_set.end()) 
+        traversePage(page, [&](ll* ptr) {
+            if (alive_objects.find(ptr) == alive_objects.end()) 
                 return;
             ll *outline = reinterpret_cast<ll*>(*(ptr - 1));
             int size = *outline + 1;
@@ -116,7 +113,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
                     last_page = &allocated_pages.back();
                 }
             }
-            translation_map[last_page->ptr + last_page->occupied / sizeof(ll*)] = ptr - 1;
+            translation_map[ptr] = last_page->ptr + last_page->occupied / sizeof(ll*) + 1;
             std::memcpy(last_page->ptr + last_page->occupied / sizeof(ll*), ptr - 1, size / sizeof(ll*));
             last_page->occupied += size;
         });
@@ -129,7 +126,32 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_obje
         free(free_page->ptr);
     // Last page can be empty, but we don't free it, as it may be useful in next cleanup to have clean page to copy into.
 
+    if(LOG_GC) {
+        std::cerr << "translation map: ";
+        for(auto kv: translation_map) std::cerr << kv.first << " to " << kv.second << ", ";
+        std::cerr << std::endl;
+    }
     return translation_map;
+}
+
+static std::vector<ll> offsetsFromOutline(ll *outline) {
+    const int MASK_SIZE = sizeof(ll) * 8;
+    if(LOG_GC) std::cerr << "outline ptr: " << outline;
+    ll size = *outline;
+    if(LOG_GC) std::cerr << ", size: " << size << std::endl;
+    ll num_of_chunks = (size + MASK_SIZE - 1) / MASK_SIZE;
+    std::vector<ll> offsets;
+
+    for(int chunk_ind = 0; chunk_ind < num_of_chunks; chunk_ind++) {
+        ull chunk = *(outline + chunk_ind + 1);
+        for(int pos = 0; pos < MASK_SIZE; pos++) {
+            if(chunk & (1ULL << pos)) {
+                offsets.push_back(chunk_ind * MASK_SIZE + pos);
+            }
+        }
+    }
+
+    return offsets;
 }
 
 void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
@@ -138,8 +160,12 @@ void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
     }
     if(!is_stack_frame) markVisited(object);
 
-    ll *outline = reinterpret_cast<ll*>(*(object - 1));
+    int outline_offset = is_stack_frame ? 1 : -1;
+    ll *outline = reinterpret_cast<ll*>(*(object + outline_offset));
     std::vector<ll> offsets = offsetsFromOutline(outline);
+    if(is_stack_frame) {
+        for(ll &offset: offsets) offset = -offset;
+    }
     if(LOG_GC) {
         std::cerr << "reference offsets:";
         for(int offset: offsets) std::cerr << " " << offset;
@@ -149,7 +175,7 @@ void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
     for(int offset: offsets) {
         ll **reference = reinterpret_cast<ll**>(object + offset);
         if(*reference == nullptr) continue;
-        if(reference_mapping.count(*reference)) {
+        if(remap_refs && reference_mapping.count(*reference)) {
             if(LOG_GC) {
                 std::cerr << "mapping " << *reference << " to " << reference_mapping[*reference] << std::endl;
             }
@@ -166,38 +192,21 @@ void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
 
 void objectTraversal::remapReferences(ll *rbp, std::unordered_map<ll*, ll*> mapping) {
     clear();
+    remap_refs = true;
     reference_mapping = mapping;
     traverseObjects(rbp, true);
 }
 
-std::vector<ll*> objectTraversal::getAliveReferences(ll *rbp) {
+std::set<ll*> objectTraversal::getAliveReferences(ll *rbp) {
     clear();
     traverseObjects(rbp, true);
-    std::vector<ll*> alive_objects = std::vector<ll*>(visited_objects.begin(), visited_objects.end());
+    std::set<ll*> alive_objects(visited_objects.begin(), visited_objects.end());
     if(LOG_GC) {
         std::cerr << "alive objects:";
         for(ll* object: alive_objects) std::cerr << " " << object;
         std::cerr << std::endl;
     }
     return alive_objects;
-}
-
-static std::vector<ll> offsetsFromOutline(ll *outline) {
-    const int MASK_SIZE = sizeof(ll) * 8;
-    ll size = *outline;
-    ll num_of_chunks = (size + MASK_SIZE - 1) / MASK_SIZE;
-    std::vector<ll> offsets;
-
-    for(int chunk_ind = 0; chunk_ind < num_of_chunks; chunk_ind++) {
-        ull chunk = *(outline + chunk_ind + 1);
-        for(int pos = 0; pos < MASK_SIZE; pos++) {
-            if(chunk & (1ULL << pos)) {
-                offsets.push_back(chunk_ind * MASK_SIZE + pos);
-            }
-        }
-    }
-
-    return offsets;
 }
 
 static ll getObjectSize(ll *outline) {
@@ -207,7 +216,7 @@ static ll getObjectSize(ll *outline) {
 static void runGc(ll *rbp) {
     if(LOG_GC) std::cerr << "running gc" << std::endl;
     objectTraversal object_traversal;
-    std::vector<ll*> alive_objects = object_traversal.getAliveReferences(rbp);
+    std::set<ll*> alive_objects = object_traversal.getAliveReferences(rbp);
     std::unordered_map<ll*, ll*> reference_mapping = memory_manager.cleanup(alive_objects); 
     object_traversal.remapReferences(rbp, reference_mapping);
 }
