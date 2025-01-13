@@ -23,10 +23,13 @@ struct memoryPage {
 };
 
 class memoryManager {
+    private:
+      void createNewPage(int size);
+      std::vector<memoryPage> allocated_pages;
     public:
 
-    ll* allocateMemory(int size);
-    std::unordered_map<ll*, ll*> cleanup(std::vector<ll*> &alive_objects);
+      ll* allocateMemory(int size);
+      std::unordered_map<ll*, ll*> cleanup(std::vector<ll*> &alive_objects);
 };
 
 memoryManager memory_manager;

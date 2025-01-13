@@ -1,7 +1,126 @@
 #include "gc.h"
 #include "gcimpl.h"
 
+#include <set>
+#include <functional>
+
 #include <cassert>
+
+#ifndef MEMORY_BLOCK_SIZE
+#define MEMORY_BLOCK_SIZE (1 << 12)
+#endif
+
+void memoryManager::createNewPage(int size) {
+    assert(size % sizeof(ll*) == 0);
+    ll *ptr = static_cast<ll*>(malloc(size));
+    auto page = memoryPage{size, 0, ptr};
+    allocated_pages.push_back(page);
+}
+
+ll* memoryManager::allocateMemory(int size) {
+    assert(size % sizeof(ll*) == 0);
+    if (size > MEMORY_BLOCK_SIZE) {
+        // Big struct, it'll get stored on special big page.
+        createNewPage(size);
+        return allocated_pages.back().ptr;
+    } else {
+        auto last_page = &allocated_pages.back();
+        if (last_page->size - last_page->occupied < size) {
+            createNewPage(MEMORY_BLOCK_SIZE);
+            last_page = &allocated_pages.back();
+        }
+        auto result = last_page->ptr + last_page->occupied / sizeof(ll*);
+        last_page->occupied += size;
+        if (allocated_pages.size() > 1) {
+            int free_space_in_last_page =  allocated_pages.back().size - allocated_pages.back().occupied;
+            int previous_page_index = allocated_pages.size()-2;
+            int free_space_in_previous_page = allocated_pages[previous_page_index].size - allocated_pages[previous_page_index].occupied;
+            if (free_space_in_previous_page > free_space_in_last_page) {
+                std::swap(allocated_pages.back(), allocated_pages[previous_page_index]);
+            }
+        }
+        return last_page->ptr;
+    }
+}
+
+std::unordered_map<ll*, ll*> memoryManager::cleanup(std::vector<ll*> &alive_objects) {
+    std::vector<memoryPage> pages_to_process;
+    std::swap(pages_to_process, allocated_pages);
+
+    std::set<ll*> alive_objects_set(alive_objects.begin(), alive_objects.end());
+    std::set<ll*> processed_pages;
+    
+    auto traverse_pages = [&](memoryPage page, std::function<void(ll*)> handler) {
+        for (auto it = page.ptr + 1; it < page.ptr + page.occupied / sizeof(ll*); ) {
+            handler(it);
+            ll *outline = reinterpret_cast<ll*>(*(it-1));
+            it += (*outline + 1);
+        }
+        
+    };
+    for (auto &page : pages_to_process) {
+        bool is_page_untouched = true;
+        traverse_pages(page, [&](ll* ptr) {
+            if (alive_objects_set.find(ptr) == alive_objects_set.end())
+                is_page_untouched = false;
+        });
+        if (is_page_untouched) {
+            allocated_pages.push_back(page);
+            processed_pages.insert(page.ptr);
+        }
+    }
+    memoryPage* free_page = nullptr; 
+    for (auto &page : pages_to_process) {
+        if (processed_pages.find(page.ptr) != processed_pages.end())
+            continue;
+
+        std::vector<ll*> alive_objects_on_page;
+        traverse_pages(page, [&](ll* ptr) {
+            if (alive_objects_set.find(ptr) != alive_objects_set.end())
+                alive_objects_on_page.push_back(ptr);
+        });
+        if (alive_objects_on_page.empty()) {
+            // Deallocate empty page or store it for later usage
+            if (free_page == nullptr)
+                free_page = &page;
+            else
+                free(page.ptr);
+            continue;
+        }
+        if(allocated_pages.empty()) {
+            if (free_page != nullptr) {
+                allocated_pages.push_back(*free_page);
+                free_page = nullptr;
+            } else 
+                createNewPage(MEMORY_BLOCK_SIZE);
+        }
+        traverse_pages(page, [&](ll* ptr) {
+            if (alive_objects_set.find(ptr) == alive_objects_set.end()) 
+                return;
+            ll *outline = reinterpret_cast<ll*>(*(ptr-1));
+            int size = *outline + 1;
+            auto last_page = &allocated_pages.back();
+            if (last_page->size - last_page->occupied < size) {
+                if (free_page != nullptr) {
+                    last_page = free_page;
+                    free_page = nullptr;
+                } else {
+                    createNewPage(MEMORY_BLOCK_SIZE);
+                    last_page = &allocated_pages.back();
+                }
+            }
+            std::memcpy(last_page->ptr + last_page->occupied / sizeof(ll*), ptr - 1, size / sizeof(ll*));
+            last_page->occupied += size;
+        });
+        if (free_page == nullptr) 
+            free_page = &page;
+        else
+            free(page.ptr);
+    }
+    if (free_page != nullptr)
+        free(free_page->ptr);
+    // Last page can be empty, but we don't free it, as it may be useful in next cleanup to have clean page to copy into.
+}
 
 void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
     if(LOG_GC) {
