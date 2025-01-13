@@ -12,7 +12,7 @@ let struct_of_ref = {
 
 let i = 0;
 
-while i < 10000 do (
+while i < 1000000 do (
     struct_of_ref.r1 = $struct_32;
     struct_of_ref.r2 = $struct_32;
     struct_of_ref.r3 = $struct_32;
@@ -21,7 +21,7 @@ while i < 10000 do (
     i = i+1;
 );
 
-while i < 10000 do ( # we should also free memory when reassigning whole struct
+while i < 1000000 do ( # we should also free memory when reassigning whole struct
     struct_of_ref = {r1=$struct_32, r2=$struct_32, r3=$struct_32, r4=$struct_32, r5=$struct_32};
     i = i+1;
 );
