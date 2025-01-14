@@ -4,7 +4,7 @@
     "message": {
       "__class__": "UnexpectedToken",
       "tokenName": "VARIABLE_IDENTIFIER",
-      "symbolName": "FUNCTION_DECLARATION"
+      "symbolName": "LAMBDA_EXPRESSION"
     },
     "range": {
       "__class__": "Pair",

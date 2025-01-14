@@ -1,5 +1,6 @@
 package cacophony.controlflow
 
+import cacophony.codegen.BlockLabel
 import cacophony.semantic.syntaxtree.Definition
 import kotlin.reflect.KClass
 
@@ -44,12 +45,12 @@ sealed interface CFGNode {
     data class Comment(val comment: String) : Leaf
 
     // declaration is nullable to create pattern without specific function
-    data class Function(override val function: Definition.FunctionDeclaration?) : FunctionRef
+    data class Function(override val function: Definition.FunctionDeclaration) : FunctionRef
 
     data class Call(
         val functionRef: FunctionRef,
     ) : CFGNode {
-        constructor(function: Definition.FunctionDeclaration?) : this(Function(function))
+        constructor(function: Definition.FunctionDeclaration) : this(Function(function))
 
         override fun children(): List<CFGNode> = listOf(functionRef)
 
@@ -58,6 +59,10 @@ sealed interface CFGNode {
 
     data class Return(val resultSize: CFGNode) : Leaf {
         override fun children() = listOf(resultSize)
+    }
+
+    data class RawCall(val label: BlockLabel) : CFGNode {
+        override fun toString(): String = "raw call ${label.name}"
     }
 
     // NOTE: Push may be unnecessary since it can be done via Assignment + MemoryAccess

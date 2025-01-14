@@ -49,7 +49,7 @@ class AccessTest {
                     jump("bodyExit") {
                         writeRegister(
                             getResultRegister(),
-                            memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)),
+                            memoryAccess(memoryAccess(registerUse(rbp) sub integer(8)) sub integer(16)),
                         )
                     }
             }
@@ -89,7 +89,7 @@ class AccessTest {
                     jump("bodyExit") {
                         writeRegister(
                             getResultRegister(),
-                            memoryAccess(memoryAccess(registerUse(rbp)) sub integer(8)),
+                            memoryAccess(memoryAccess(registerUse(rbp) sub integer(8)) sub integer(16)),
                         )
                     }
             }

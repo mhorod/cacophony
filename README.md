@@ -5,7 +5,11 @@ An imperative language made as team project for Compilers course.
 ## Usage
 
 To compile a file run `./compile.sh <path-to-file>`.
-For now it only prints errors and retrieved tokens.
+For now, it only prints errors and retrieved tokens.
+
+## Syntax Highlighting
+
+If you use IntelliJ IDE, run `Install Plugin from Disk...` and choose the zip file inside `ide` folder.
 
 ## Language Specification
 

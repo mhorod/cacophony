@@ -19,13 +19,14 @@ class FunctionHandlerImpl(
     private val variablesMap: VariablesMap,
 ) : FunctionHandler {
     private val staticLink = Variable.PrimitiveVariable("sl")
-    private var stackSpace = 0
+    private var stackSpace = REGISTER_SIZE
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
 
     // Initially variables may be allocated in virtualRegisters, only after spill handling we know
     // if they're truly on stack or in registers.
     // Every virtualRegister knows if it holds reference, therefore we care only about references on stack here.
-    private val referenceOffsets = ArrayList<Int>()
+    // Initialized with 0, because rbp points to caller rbp, which we treat as a reference
+    private val referenceOffsets = mutableListOf(0)
 
     // This does not perform any checks and may override previous allocation.
     // Holes in the stack may be also created if stack variables are directly allocated with this method.
@@ -86,9 +87,9 @@ class FunctionHandlerImpl(
 
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {
-            RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false)
+            registerUse(rbp, false)
         } else {
-            MemoryAccess(traverseStaticLink(depth - 1), false)
+            memoryAccess(traverseStaticLink(depth - 1) sub integer(REGISTER_SIZE), false)
         }
 
     override fun generateAccessToFramePointer(other: FunctionDefinition): CFGNode =
@@ -104,7 +105,7 @@ class FunctionHandlerImpl(
         // Since staticLink is not property of node itself, but rather of its children,
         // if caller is immediate parent, we have to fetch RBP instead.
         if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
-            RegisterUse(Register.FixedRegister(HardwareRegister.RBP), false)
+            registerUse(rbp, false)
         } else {
             callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
         }
@@ -193,7 +194,7 @@ class FunctionHandlerImpl(
     private fun introduceStaticLinksParams() {
         registerVariableAllocation(
             staticLink,
-            VariableAllocation.OnStack(0),
+            VariableAllocation.OnStack(REGISTER_SIZE),
         )
         analyzedFunction.auxVariables.add(staticLink)
     }

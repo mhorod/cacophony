@@ -1,6 +1,7 @@
 package cacophony.controlflow.generation
 
 import cacophony.*
+import cacophony.codegen.BlockLabel
 import cacophony.controlflow.*
 import cacophony.semantic.syntaxtree.Definition
 import org.junit.jupiter.api.Test
@@ -21,11 +22,12 @@ class FunctionPrologueAndEpilogueTest {
         // then
         val expectedCFG =
             singleFragmentCFG(fDef) {
-                setupStackFrame("entry", "save preserved")
+                setupStackFrame("entry", "clean references")
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store static link")
                 "store static link" does
                     jump("store result") {
-                        memoryAccess(registerUse(rbp) sub integer(0)) assign registerUse(rdi)
+                        memoryAccess(registerUse(rbp) sub integer(8)) assign registerUse(rdi)
                     }
                 "store result" does jump("restore preserved") { writeRegister("result", CFGNode.UNIT) }
                 restorePreservedRegisters("restore preserved", "move result to rax")
@@ -52,12 +54,13 @@ class FunctionPrologueAndEpilogueTest {
         // then
         val expectedCFG =
             singleFragmentCFG(fDef) {
-                setupStackFrame("entry", "save preserved")
+                setupStackFrame("entry", "clean references")
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store argument")
                 "store argument" does jump("store static link") { writeRegister("0th arg", registerUse(rdi)) }
                 "store static link" does
                     jump("store result") {
-                        memoryAccess(registerUse(rbp) sub integer(0)) assign registerUse(rsi)
+                        memoryAccess(registerUse(rbp) sub integer(8)) assign registerUse(rsi)
                     }
                 "store result" does jump("restore preserved") { writeRegister("result", integer(17)) }
                 restorePreservedRegisters("restore preserved", "move result to rax")
@@ -96,7 +99,8 @@ class FunctionPrologueAndEpilogueTest {
         // then
         val expectedCFG =
             singleFragmentCFG(fDef) {
-                setupStackFrame("entry", "save preserved")
+                setupStackFrame("entry", "clean references")
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store 0th argument")
                 "store 0th argument" does jump("store 1st argument") { writeRegister("0th arg", registerUse(rdi)) }
                 "store 1st argument" does jump("store 2nd argument") { writeRegister("1st arg", registerUse(rsi)) }
@@ -106,11 +110,11 @@ class FunctionPrologueAndEpilogueTest {
                 "store 5th argument" does jump("store 6th argument") { writeRegister("5th arg", registerUse(r9)) }
                 "store 6th argument" does
                     jump("store static link") {
-                        writeRegister("6th arg", memoryAccess(registerUse(rbp) sub integer(-24)))
+                        writeRegister("6th arg", memoryAccess(registerUse(rbp) sub integer(-32)))
                     }
                 "store static link" does
                     jump("store result") {
-                        memoryAccess(registerUse(rbp) sub integer(0)) assign memoryAccess(registerUse(rbp) sub integer(-32))
+                        memoryAccess(registerUse(rbp) sub integer(8)) assign memoryAccess(registerUse(rbp) sub integer(-40))
                     }
                 "store result" does jump("restore preserved") { writeRegister("result", integer(83)) }
                 restorePreservedRegisters("restore preserved", "move result to rax")
@@ -152,19 +156,20 @@ class FunctionPrologueAndEpilogueTest {
         // then
         val expectedFragment =
             standaloneCFGFragment(fDef) {
-                setupStackFrame("entry", "save preserved", allocatedSpace = 8)
+                setupStackFrame("entry", "clean references", allocatedSpace = 8)
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store argument")
                 "store argument" does
                     jump("store static link") {
-                        memoryAccess(registerUse(rbp) sub integer(8)) assign registerUse(rdi)
+                        memoryAccess(registerUse(rbp) sub integer(16)) assign registerUse(rdi)
                     }
                 "store static link" does
                     jump("store result") {
-                        memoryAccess(registerUse(rbp) sub integer(0)) assign registerUse(rsi)
+                        memoryAccess(registerUse(rbp) sub integer(8)) assign registerUse(rsi)
                     }
                 "store result" does
                     jump("restore preserved") {
-                        writeRegister("result", memoryAccess(registerUse(rbp) sub integer(8)))
+                        writeRegister("result", memoryAccess(registerUse(rbp) sub integer(16)))
                     }
                 restorePreservedRegisters("restore preserved", "move result to rax")
                 "move result to rax" does jump("teardown") { writeRegister(rax, "result") }
@@ -198,12 +203,14 @@ private fun CFGFragmentBuilder.restorePreservedRegisters(localEntry: String, loc
 }
 
 private fun CFGFragmentBuilder.setupStackFrame(localEntry: String, localExit: String, allocatedSpace: Int = 0) {
-    localEntry does jump("setup rbp") { pushRegister(rbp, false) }
-    "setup rbp" does jump("setup rsp") { registerUse(rbp) assign (registerUse(rsp) sub integer(8)) }
-    "setup rsp" does jump(localExit) { registerUse(rsp) subeq integer(8 + allocatedSpace) }
+    localEntry does jump("save outline") { registerUse(rsp) subeq integer(8) }
+    "save outline" does jump("save rbp") { pushLabel("outline_label") }
+    "save rbp" does jump("setup rbp") { pushRegister(rbp, false) }
+    "setup rbp" does jump("setup rsp") { registerUse(rbp) assign registerUse(rsp) }
+    "setup rsp" does jump(localExit) { registerUse(rsp) subeq integer(16 + allocatedSpace) }
 }
 
 private fun CFGFragmentBuilder.teardownStackFrame(localEntry: String, localExit: String) {
-    localEntry does jump("teardown rbp") { writeRegister(rsp, registerUse(rbp) add integer(8)) }
-    "teardown rbp" does jump(localExit) { popRegister(rbp, false) }
+    localEntry does jump("teardown rbp") { writeRegister(rsp, registerUse(rbp) add integer(24)) }
+    "teardown rbp" does jump(localExit) { writeRegister(rbp, memoryAccess(registerUse(rsp) sub integer(24))) }
 }
