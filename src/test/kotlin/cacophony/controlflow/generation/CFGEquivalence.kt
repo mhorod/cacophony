@@ -114,6 +114,12 @@ private class FragmentEquivalenceVisitor {
                 assertThat(actual.functionRef).isEqualTo(expected.functionRef)
             }
 
+            is CFGNode.RawCall -> {
+                assertThat(actual).isInstanceOf(CFGNode.RawCall::class.java)
+                check(actual is CFGNode.RawCall)
+                assertThat(actual.label).isEqualTo(expected.label)
+            }
+
             is CFGNode.Comment -> {
                 assertThat(actual).isInstanceOf(CFGNode.Comment::class.java)
                 check(actual is CFGNode.Comment)

@@ -1,0 +1,1 @@
+let f = [x : Bool] -> Int => if x then return 0 else return 1;

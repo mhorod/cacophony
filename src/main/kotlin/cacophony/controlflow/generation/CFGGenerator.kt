@@ -84,8 +84,7 @@ internal class CFGGenerator(
     private fun makeVerticesForAssignment(source: Layout, destination: Layout): List<GeneralCFGVertex.UnconditionalVertex> =
         when (source) {
             is SimpleLayout -> {
-                // TODO: restore my sanity
-                if (destination is StructLayout && source.access is CFGNode.NoOp) {
+                if (destination is VoidLayout) {
                     listOf(cfg.addUnconditionalVertex(CFGNode.NoOp))
                 } else {
                     require(destination is SimpleLayout) // by type checking
@@ -98,6 +97,7 @@ internal class CFGGenerator(
                 require(destination is StructLayout) // by type checking
                 destination.fields.flatMap { (field, layout) -> makeVerticesForAssignment(source.fields[field]!!, layout) }
             }
+            is VoidLayout -> emptyList()
         }
 
     internal fun ensureExtracted(subCFG: SubCFG, mode: EvalMode): SubCFG.Extracted =
@@ -488,7 +488,7 @@ internal class CFGGenerator(
                 }
                 is SubCFG.Immediate -> resultAssignment.entry
             }
-        return SubCFG.Extracted(entry, artificialExit, CFGNode.NoOp, false)
+        return SubCFG.Extracted(entry, artificialExit, VoidLayout())
     }
 
     private fun visitWhileStatement(expression: Statement.WhileStatement, mode: EvalMode, context: Context): SubCFG {
@@ -511,7 +511,7 @@ internal class CFGGenerator(
         // This means there's no real exit from the break statement, so we introduce an unreachable one
         //  that can be connected to expressions following the break statement
         val artificialExit = if (mode is EvalMode.Conditional) mode.exit else cfg.addUnconditionalVertex(CFGNode.NoOp)
-        return SubCFG.Extracted(vertex, artificialExit, CFGNode.NoOp, false)
+        return SubCFG.Extracted(vertex, artificialExit, VoidLayout())
     }
 
     private fun visitAssignable(expression: Assignable, mode: EvalMode): SubCFG {
