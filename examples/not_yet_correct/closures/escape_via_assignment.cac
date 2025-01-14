@@ -1,6 +1,6 @@
 let h = [] -> Int => 5;
 
-let f = [] -> () => (
+let f = [] -> Unit => (
     let x = 10;
     let g = [] -> Int = x;
     h = g;

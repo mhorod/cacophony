@@ -1,6 +1,6 @@
-let s = {h = () -> Int => 5, y = 10}
+let s = {h = [] -> Int => 5, y = 10}
 
-let f = [] -> () => (
+let f = [] -> Unit => (
     let x = 10;
     let g = [] -> Int = x;
     s = {h = g, y = 15};
