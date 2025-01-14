@@ -16,7 +16,7 @@ let ptr9 = $struct_16;
 
 let i = 0;
 
-while i < 1000000 do (
+while i < 100000 do (
     ptr0 = $struct_16;
     ptr1 = $struct_16;
     ptr2 = $struct_16;

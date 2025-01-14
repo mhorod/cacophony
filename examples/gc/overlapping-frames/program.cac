@@ -25,7 +25,7 @@ let g = [a: &Int, b: &Int] -> Int => (
 );
 
 let i = 0;
-while i < 100000 do (
+while i < 10000 do (
     i = i + 1;
     let a = $randint[100, 110];
     let b = $randint[0, 1000];

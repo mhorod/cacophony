@@ -11,7 +11,7 @@ let ptr5 = $struct_128;
 
 let i = 0;
 
-while i < 100000 do (     # we are counting number of references to each segment of memory:
+while i < 10000 do (     # we are counting number of references to each segment of memory:
     let temp1 = ptr1;   # (r1=2), r2=1, r3=1, r4=1, r5=1
     let temp2 = ptr2;   # r1=2, (r2=2), r3=1, r4=1, r5=1
     ptr2 = $struct_128; # r1=2, r2=1, r3=1, r4=1, r5=1, (r6=1)

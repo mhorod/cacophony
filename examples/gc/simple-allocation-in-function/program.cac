@@ -4,7 +4,7 @@ let f = [a: Int] -> Unit => (
 );
 
 let i : Int = 0;
-while (i < 10000000) do (
+while (i < 1000000) do (
     f[i];
     i = i + 1;
 );

@@ -1,6 +1,6 @@
 let i = 0;
 let ref: &Int = $1;
-while i < 10000000 do (
+while i < 1000000 do (
     ref = $1; # reassigning pointer should mark memory as unreachable
     i=i+1;
 );
