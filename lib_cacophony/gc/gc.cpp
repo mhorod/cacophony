@@ -14,6 +14,8 @@ static ll getObjectSize(ll *outline) {
 
 void memoryManager::createNewPage(int size) {
     assert(size % sizeof(ll*) == 0);
+    if (LOG_GC)
+        std::cerr << "creating page of size: " << size << std::endl;
     ll *ptr = static_cast<ll*>(malloc(size));
     auto page = memoryPage{size, 0, ptr};
     allocated_pages.push_back(page);
@@ -62,7 +64,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects
         
     };
     for (auto &page : pages_to_process) {
-        bool is_page_untouched = false; // TODO: change after debugging is finished
+        bool is_page_untouched = true;
         traversePage(page, [&](ll* ptr) {
             if (alive_objects.find(ptr) == alive_objects.end())
                 is_page_untouched = false;

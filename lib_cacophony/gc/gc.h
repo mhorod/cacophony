@@ -104,7 +104,7 @@ extern "C" {
  */
 
 #ifndef GC_WAIT
-#define GC_WAIT 1 // TODO: adjust after testing is finished
+#define GC_WAIT 100
 #endif
 
 static void clean_references(long long ** object_ptr) {
