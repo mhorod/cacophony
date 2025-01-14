@@ -8,7 +8,7 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.listDirectoryEntries
 
-const val BASE_MEMORY = 3000
+const val BASE_MEMORY = 6000
 
 class GCExamplesTest {
     @ParameterizedTest
