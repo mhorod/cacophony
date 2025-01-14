@@ -12,7 +12,7 @@ fun createBinary(path: Path, filename: String): Path {
     val asmFile = kotlin.io.path.createTempFile().apply { toFile().deleteOnExit() }
     val objFile = kotlin.io.path.createTempFile().apply { toFile().deleteOnExit() }
     val binFile = kotlin.io.path.createTempFile().apply { toFile().deleteOnExit() }
-    val additionalObjects = path.listDirectoryEntries("*.c").toList()
+    val additionalObjects = path.listDirectoryEntries("*.cpp").toList()
 
     val input = FileInput(programPath.toString())
     val diagnostics = CacophonyDiagnostics(input)

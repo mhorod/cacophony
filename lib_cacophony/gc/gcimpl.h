@@ -12,7 +12,7 @@
 typedef long long ll;
 typedef unsigned long long ull;
 
-const bool LOG_GC = true;
+const bool LOG_GC = false;
 
 struct memoryPage {
     int size;
