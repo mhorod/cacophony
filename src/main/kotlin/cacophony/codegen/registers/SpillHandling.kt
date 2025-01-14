@@ -78,7 +78,7 @@ fun adjustLoweredCFGToHandleSpills(
         instruction is CopyInstruction &&
             spills.contains(instruction.copyInto()) &&
             spills.contains(instruction.copyFrom()) &&
-            spillsColoring[instruction.copyInto()] === spillsColoring[instruction.copyFrom()]
+            spillsColoring[instruction.copyInto()] == spillsColoring[instruction.copyFrom()]
 
     return loweredCfg.map { block ->
         val newInstructions =

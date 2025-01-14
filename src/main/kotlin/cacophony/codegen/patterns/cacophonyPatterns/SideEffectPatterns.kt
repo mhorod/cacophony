@@ -25,6 +25,7 @@ val sideEffectPatterns =
         ModuloAssignmentRegisterPattern,
         ModuloAssignmentMemoryPattern,
         CallPattern,
+        RawCallPattern,
         ReturnPattern,
         PushPattern,
         PushRegPattern,
@@ -206,6 +207,15 @@ object CallPattern : NoTemporaryRegistersPattern {
     override fun makeInstance(fill: SlotFill) =
         instructions(fill) {
             call(functionLabel)
+        }
+}
+
+object RawCallPattern : NoTemporaryRegistersPattern {
+    override val tree = CFGNode.NodeSlot(NodeLabel(), CFGNode.RawCall::class)
+
+    override fun makeInstance(fill: SlotFill): List<Instruction> =
+        instructions(fill) {
+            rawCall(node(tree).label)
         }
 }
 

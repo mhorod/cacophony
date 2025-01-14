@@ -60,3 +60,5 @@ object SystemVAMD64CallConvention : StackCallConvention(REGISTER_ARGUMENT_ORDER,
 
     override fun preservedRegisters(): List<HardwareRegister> = preservedRegisters
 }
+
+abstract class StacklessCallConvention(private val registerArgumentOrder: List<HardwareRegister>) : CallConvention
