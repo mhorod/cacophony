@@ -1,0 +1,35 @@
+let struct_128 = {
+    a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8,
+    i=9, j=10, k=11, l=12, m=13, n=14, o=15, p=16
+};
+
+let ptr1 = $struct_128;
+let ptr2 = $struct_128;
+let ptr3 = $struct_128;
+let ptr4 = $struct_128;
+let ptr5 = $struct_128;
+
+let i = 0;
+
+while i < 10000 do (     # we are counting number of references to each segment of memory:
+    let temp1 = ptr1;   # (r1=2), r2=1, r3=1, r4=1, r5=1
+    let temp2 = ptr2;   # r1=2, (r2=2), r3=1, r4=1, r5=1
+    ptr2 = $struct_128; # r1=2, r2=1, r3=1, r4=1, r5=1, (r6=1)
+    let temp3 = ptr3 ;  # r1=2, r2=1, (r3=2), r4=1, r5=1, r6=1
+    ptr4 = ptr4;        # r1=2, r2=1, r3=1, (r4=2), r5=1, r6=1
+    ptr4 = temp3;       # r1=2, r2=1, (r3=2), r4=1, r5=1, r6=1
+    ptr1=ptr5;          # r1=1, r2=1, r3=2, r4=1, (r5=2), r6=1
+    temp2=temp1;        # (r1=2), r2=0, r3=2, r4=1, r5=2, r6=1 2nd segment should be freed
+    temp3=temp2;        # (r1=3), r2=0, r3=1, r4=1, r5=2, r6=1
+    ptr5=$struct_128;   # r1=3, r2=0, r3=1, r4=1, r5=1, r6=1, (r7=1)
+    # all references to 1st segment are temporary,
+    # so this memory should be freed at the end of iteration.
+    # overall 2 new allocations, 2 segments no more used
+    i = i+1;
+);
+
+struct_128 = @ptr1;
+struct_128 = @ptr2;
+struct_128 = @ptr3;
+struct_128 = @ptr4;
+struct_128 = @ptr5;

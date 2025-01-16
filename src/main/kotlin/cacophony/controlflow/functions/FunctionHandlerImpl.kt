@@ -25,8 +25,8 @@ class FunctionHandlerImpl(
     // Initially variables may be allocated in virtualRegisters, only after spill handling we know
     // if they're truly on stack or in registers.
     // Every virtualRegister knows if it holds reference, therefore we care only about references on stack here.
-    // Initialized with 0, because rbp points to caller rbp, which we treat as a reference
-    private val referenceOffsets = mutableListOf(0)
+    // Initialized with 0, because rbp points to caller rbp, which we treat as a reference, except for main function.
+    private val referenceOffsets = if (ancestorFunctionHandlers.isNotEmpty()) mutableListOf(0) else mutableListOf()
 
     // This does not perform any checks and may override previous allocation.
     // Holes in the stack may be also created if stack variables are directly allocated with this method.
@@ -73,7 +73,7 @@ class FunctionHandlerImpl(
             regVar.forEach {
                 registerVariableAllocation(
                     it,
-                    VariableAllocation.InRegister(Register.VirtualRegister()),
+                    VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),
                 )
             }
 

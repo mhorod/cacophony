@@ -1,0 +1,8 @@
+let i = 0;
+let ref: &Int = $1;
+while i < 1000000 do (
+    ref = $1; # reassigning pointer should mark memory as unreachable
+    i=i+1;
+);
+
+i = @ref; # check if reachable memory was not freed

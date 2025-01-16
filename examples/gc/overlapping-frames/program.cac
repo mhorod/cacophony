@@ -1,0 +1,39 @@
+foreign randint : [Int, Int] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let f = [a: &Int, b: &Int] -> Int => (
+    let ptr = $(@b);
+    let i = 1;
+    while i < @a do (
+        i = i + 1;
+        ptr = $(@b);
+        @ptr
+    );
+    return (@ptr % 100)
+);
+
+# allocate a copies of b on the stack and return b+100
+let g = [a: &Int, b: &Int] -> Int => (
+    let ptr = $(@b);
+    let i = 1;
+    while i < @a do (
+        i = i + 1;
+        ptr = $(@b);
+        @ptr
+    );
+    return (@ptr + 100)
+);
+
+let i = 0;
+while i < 10000 do (
+    i = i + 1;
+    let a = $randint[100, 110];
+    let b = $randint[0, 1000];
+    if (randint[0, 1] == 0) then (
+        let should_be_small = f[a, b];
+        cassert[(should_be_small < 100)];
+    ) else (
+        let should_be_large = g[a, b];
+        cassert[(should_be_large >= 100)];
+    );
+);

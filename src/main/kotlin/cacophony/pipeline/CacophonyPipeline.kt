@@ -290,15 +290,15 @@ class CacophonyPipeline(
 
     fun compileAndLink(
         input: Input,
-        additionalObjectFiles: List<Path>,
+        libraryFiles: List<Path>,
         asmFile: Path,
         objFile: Path,
         binFile: Path,
     ) {
         asmFile.writeText(generateAsm(input))
         assemble(asmFile, objFile)
-        val sources = listOf(objFile) + additionalObjectFiles
-        val options = listOf("gcc", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
+        val sources = listOf(objFile) + libraryFiles
+        val options = listOf("g++", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
         val gcc = ProcessBuilder(options).inheritIO().start()
         gcc.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedLinking(status)
