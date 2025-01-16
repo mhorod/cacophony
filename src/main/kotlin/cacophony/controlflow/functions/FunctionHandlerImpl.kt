@@ -144,7 +144,7 @@ class FunctionHandlerImpl(
                     variable.holdsReference,
                 )
             }
-            is VariableAllocation.OnHeap -> TODO()
+            is VariableAllocation.ViaPointer -> TODO()
         }
     }
 
