@@ -1,5 +1,8 @@
+let empty = []->Unit=>();
+
 let f = [a: Int] -> Unit => (
     let x = $a;
+    empty[];
     if (@x % 2) == 1 then (@x = @x + 1;);
 );
 

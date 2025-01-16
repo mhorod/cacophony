@@ -1,0 +1,25 @@
+let struct_128 = {
+    a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8,
+    i=9, j=10, k=11, l=12, m=13, n=14, o=15, p=16
+};
+
+let struct_5120 = {
+    a=struct_128, b=struct_128, c=struct_128, d=struct_128,
+    a1=struct_128, b1=struct_128, c1=struct_128, d1=struct_128,
+    a2=struct_128, b2=struct_128, c2=struct_128, d2=struct_128,
+    a3=struct_128, b3=struct_128, c3=struct_128, d3=struct_128,
+    a4=struct_128, b4=struct_128, c4=struct_128, d4=struct_128,
+    a5=struct_128, b5=struct_128, c5=struct_128, d5=struct_128,
+    a6=struct_128, b6=struct_128, c6=struct_128, d6=struct_128,
+    a7=struct_128, b7=struct_128, c7=struct_128, d7=struct_128,
+    a8=struct_128, b8=struct_128, c8=struct_128, d8=struct_128,
+    a9=struct_128, b9=struct_128, c9=struct_128, d9=struct_128,
+    a10=struct_128, b10=struct_128, c10=struct_128, d10=struct_128
+};
+
+let i = 0;
+while i < 100000 do (
+    let ref = $struct_5120;
+    @ref;
+    i=i+1;
+);
