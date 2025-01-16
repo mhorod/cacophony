@@ -3,6 +3,8 @@
 
 #include "gcimpl.h"
 
+#include <string.h>
+
 asm(
 ".text                                      \n"
 ".p2align 4                                 \n"
@@ -14,36 +16,20 @@ asm(
 
 "push %rax                                  \n" // # preserve registers used as local variables
 "push %rdi                                  \n" //
-"push %rsi                                  \n" //
-"push %rdx                                  \n" //
-"push %rcx                                  \n" //
 
 "mov 8(%rbp), %rdi                          \n" // outline := <outline address from stack>
+"mov (%rdi), %rdi                           \n" // struct_size := outline.size
 
 "mov $1, %rax                               \n" // i := 1
 
 ".loop_begin:                               \n" // while(true) {
 
-"cmp (%rdi), %rax                           \n" //     if(i >= outline.struct_size)
+"cmp %rdi, %rax                             \n" //     if(i >= struct_size)
 "jae .loop_end                              \n" //         break
 
-"mov %rax, %rsi                             \n" //     tmp0 = i
-"shr $6, %rsi                               \n" //     tmp0 = i / 64
-"mov 8(%rdi, %rsi, 8), %rsi                 \n" //     tmp0 = outline.blocks[i / 64]
-
-"mov %rax, %rcx                             \n" //     tmp1 = i
-"and $63, %rcx                              \n" //     tmp1 = i % 64
-"mov $1, %rdx                               \n" //     tmp2 = 1
-"shl %cl, %rdx                              \n" //     tmp2 = 1 << (i % 64)
-
-"test %rdx, %rsi                            \n" //     if(outline.blocks[i / 64] & (1 << (i % 64)))
-"jz .if_end                                 \n" //     {
-
-"neg %rax                                   \n" //         # rax is negated because the offsets from rbp are negative
-"movq $0, 0(%rbp, %rax, 8)                  \n" //         stack[i] = 0
-"neg %rax                                   \n" //         # rax is negated back
-
-".if_end:                                   \n" //     }
+"neg %rax                                   \n" //     # rax is negated because the offsets from rbp are negative
+"movq $0, 0(%rbp, %rax, 8)                  \n" //     stack[i] = 0
+"neg %rax                                   \n" //     # rax is negated back
 
 "inc %rax                                   \n" //     i++
 
@@ -51,10 +37,7 @@ asm(
 
 ".loop_end:                                 \n" //
 
-"pop %rcx                                   \n" // # restore registers used as local variables as if they never changed
-"pop %rdx                                   \n" //
-"pop %rsi                                   \n" //
-"pop %rdi                                   \n" //
+"pop %rdi                                   \n" // # restore registers used as local variables as if they never changed
 "pop %rax                                   \n" //
 
 "ret                                        \n" // return
@@ -107,19 +90,6 @@ extern "C" {
 #define GC_WAIT 100
 #endif
 
-static void clean_references(long long ** object_ptr) {
-    long long * outline_ptr = *(object_ptr - 1);
-    long long struct_size = *outline_ptr;
-    long long ** fields = object_ptr;
-    long long * blocks = outline_ptr + 1;
-    for(long long i = 0; i < struct_size; i++) {
-        long long field_block = i / 64;
-        long long field_bit = 1LL << (i % 64);
-        if(blocks[field_block] & field_bit)
-            fields[i] = 0;
-    }
-}
-
 /* ########### Cacophony Built-ins ########### */
 extern "C" {
     ll ** alloc_struct(ll * outline, ll * rbp) {
@@ -129,7 +99,7 @@ extern "C" {
             runGc(rbp);
         }
         long long ** object_ptr = allocMemory(outline);
-        clean_references(object_ptr);
+        memset(object_ptr, 0, 8 * **(object_ptr - 1));
         return object_ptr;
     }
 }
