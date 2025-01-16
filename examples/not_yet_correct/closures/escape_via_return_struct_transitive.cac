@@ -1,0 +1,6 @@
+let f = [] -> {h: [] -> Int, y: Int} => (
+    let x = 5;
+    let g = [] -> Int => x;
+    let s = {h = g, y = 10};
+    s
+)

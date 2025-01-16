@@ -19,6 +19,7 @@ fun generateLayoutOfVirtualRegisters(layout: Layout): Layout =
             )
         is StructLayout ->
             StructLayout(layout.fields.mapValues { (_, subLayout) -> generateLayoutOfVirtualRegisters(subLayout) })
+        is VoidLayout -> VoidLayout()
     }
 
 fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
@@ -26,7 +27,7 @@ fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
         is BuiltinType -> SimpleLayout(registerUse(Register.VirtualRegister(), false), false)
         is ReferentialType -> SimpleLayout(registerUse(Register.VirtualRegister(true), true), true)
         is StructType -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
-        TypeExpr.VoidType -> StructLayout(emptyMap())
+        TypeExpr.VoidType -> VoidLayout()
         is FunctionType -> throw IllegalArgumentException("No layout for function types")
     }
 
@@ -69,6 +70,7 @@ fun flattenLayout(layout: Layout): List<CFGNode> =
                 .toSortedMap()
                 .map { (_, subLayout) -> flattenLayout(subLayout) }
                 .flatten()
+        is VoidLayout -> emptyList()
     }
 
 private fun generateLayoutOfHeapObjectImpl(base: CFGNode, type: TypeExpr, offset: Int): Layout {
