@@ -44,6 +44,7 @@ data class AstAnalysisResult(
     val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
+    val escapeAnalysisResult: EscapeAnalysisResult,
 )
 
 data class ObjectOutlines(
@@ -202,7 +203,16 @@ class CacophonyPipeline(
         val analyzedClosures = analyseClosures()
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention, variablesMap, analyzedClosures)
         val foreignFunctions = filterForeignFunctions(resolvedNames)
-        return AstAnalysisResult(resolvedVariables, types, variablesMap, analyzedExpressions, functionHandlers, foreignFunctions)
+        val escapeAnalysis = escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap)
+        return AstAnalysisResult(
+            resolvedVariables,
+            types,
+            variablesMap,
+            analyzedExpressions,
+            functionHandlers,
+            foreignFunctions,
+            escapeAnalysis,
+        )
     }
 
     fun getUsedTypes(types: TypeCheckingResult): List<TypeExpr> = types.expressionTypes.values + types.definitionTypes.values
@@ -281,15 +291,15 @@ class CacophonyPipeline(
 
     fun compileAndLink(
         input: Input,
-        additionalObjectFiles: List<Path>,
+        libraryFiles: List<Path>,
         asmFile: Path,
         objFile: Path,
         binFile: Path,
     ) {
         asmFile.writeText(generateAsm(input))
         assemble(asmFile, objFile)
-        val sources = listOf(objFile) + additionalObjectFiles
-        val options = listOf("gcc", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
+        val sources = listOf(objFile) + libraryFiles
+        val options = listOf("g++", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
         val gcc = ProcessBuilder(options).inheritIO().start()
         gcc.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedLinking(status)

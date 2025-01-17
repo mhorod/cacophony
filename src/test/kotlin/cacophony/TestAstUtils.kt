@@ -95,6 +95,8 @@ fun typedVariableDeclaration(identifier: String, type: BaseType.Basic?, value: E
         value,
     )
 
+fun lambda(arguments: List<Definition.FunctionArgument>, body: Expression) = LambdaExpression(mockRange(), arguments, unitType(), body)
+
 fun struct(vararg fields: Pair<String, Expression>) = Struct(mockRange(), fields.associate { structField(it.first) to it.second })
 
 fun typedStructField(name: String, type: Type) = StructField(mockRange(), name, type)
