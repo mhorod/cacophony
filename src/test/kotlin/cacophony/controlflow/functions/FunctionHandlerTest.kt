@@ -5,6 +5,7 @@ import cacophony.controlflow.*
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.AnalyzedVariable
+import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.ParentLink
 import cacophony.semantic.analysis.VariableUseType
 import cacophony.semantic.createVariablesMap
@@ -21,10 +22,18 @@ class FunctionHandlerTest {
         analyzedFunction: AnalyzedFunction,
         definitions: Map<Definition, Variable.PrimitiveVariable> = emptyMap(),
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
+        closureAnalysisResult: ClosureAnalysisResult = emptyMap(),
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
-        return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention, createVariablesMap(definitions))
+        return FunctionHandlerImpl(
+            function,
+            analyzedFunction,
+            ancestorFunctionHandlers,
+            callConvention,
+            createVariablesMap(definitions),
+            closureAnalysisResult,
+        )
     }
 
     private fun unitFunctionDefinition(): Definition.FunctionDefinition {

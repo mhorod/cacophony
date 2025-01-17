@@ -5,6 +5,7 @@ import cacophony.controlflow.CFGNode.MemoryAccess
 import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.controlflow.generation.*
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
@@ -17,6 +18,7 @@ class FunctionHandlerImpl(
     private val ancestorFunctionHandlers: List<FunctionHandler>,
     callConvention: CallConvention,
     private val variablesMap: VariablesMap,
+    private val closureAnalysisResult: ClosureAnalysisResult,
 ) : FunctionHandler {
     private val staticLink = Variable.PrimitiveVariable("sl")
     private var stackSpace = REGISTER_SIZE
@@ -142,6 +144,7 @@ class FunctionHandlerImpl(
                     variable.holdsReference,
                 )
             }
+            is VariableAllocation.ViaPointer -> TODO()
         }
     }
 

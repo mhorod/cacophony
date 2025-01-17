@@ -11,6 +11,7 @@ import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
 import cacophony.mockRange
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
@@ -28,10 +29,18 @@ class GenerateCallKtTest {
         analyzedFunction: AnalyzedFunction,
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
         definitions: Map<Definition, Variable>,
+        closureAnalysisResult: ClosureAnalysisResult = emptyMap(),
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
-        return FunctionHandlerImpl(function, analyzedFunction, ancestorFunctionHandlers, callConvention, createVariablesMap(definitions))
+        return FunctionHandlerImpl(
+            function,
+            analyzedFunction,
+            ancestorFunctionHandlers,
+            callConvention,
+            createVariablesMap(definitions),
+            closureAnalysisResult,
+        )
     }
 
     // there is no easy way to check if constant computes exactly the stack space of a function handler

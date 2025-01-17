@@ -90,4 +90,5 @@ fun wrapAllocation(allocation: VariableAllocation, holdsReference: Boolean): CFG
     when (allocation) {
         is VariableAllocation.InRegister -> registerUse(allocation.register, holdsReference)
         is VariableAllocation.OnStack -> memoryAccess(registerUse(rbp, false) sub integer(allocation.offset), holdsReference)
+        is VariableAllocation.ViaPointer -> TODO()
     }
