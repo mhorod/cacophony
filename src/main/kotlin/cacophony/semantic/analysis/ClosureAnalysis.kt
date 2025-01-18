@@ -1,10 +1,12 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
-import cacophony.semantic.syntaxtree.Expression
+import cacophony.semantic.syntaxtree.LambdaExpression
 
-data class ClosureVariableInfo(val offset: Int)
-typealias ClosureAnalysisResult = Map<Expression, Map<Variable, ClosureVariableInfo>>
+/**
+ * Set of captured variables
+ */
+typealias ClosureAnalysisResult = Map<LambdaExpression, Set<Variable>>
 
 fun analyseClosures(): ClosureAnalysisResult {
     return emptyMap() // TODO - implement closure analysis
