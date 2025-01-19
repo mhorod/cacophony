@@ -36,6 +36,8 @@ interface LambdaHandler : CallableHandler {
     fun getBodyReference(): LambdaExpression
 
     fun getClosureLink(): Variable.PrimitiveVariable
+
+    fun getCapturedVariableOffsets(): Map<Variable, Int>
 }
 
 interface FunctionHandler : CallableHandler {
