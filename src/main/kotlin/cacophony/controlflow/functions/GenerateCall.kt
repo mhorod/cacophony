@@ -3,7 +3,6 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.FunctionLayout
 import cacophony.controlflow.generation.Layout
-import cacophony.controlflow.generation.SimpleLayout
 import cacophony.controlflow.generation.generateSubLayout
 import cacophony.diagnostics.DiagnosticMessage
 import cacophony.diagnostics.Diagnostics
@@ -15,29 +14,41 @@ import cacophony.utils.Location
 /**
  * Wrapper for generateCall that additionally fills staticLink to parent function.
  */
-fun generateCallFrom(callerFunction: CallableHandler, function: FunctionLayout, arguments: List<Layout>, result: Layout?): List<CFGNode> =
-    when (function) {
-        is Definition.ForeignFunctionDeclaration -> {
-            if (function.type!!.argumentsType.size != arguments.size) {
-                throw IllegalArgumentException("Wrong argument count")
-            }
-            if (result != null && !layoutMatchesType(result, function.type.returnType)) {
-                throw IllegalArgumentException("Wrong result layout")
-            }
-            generateCall(function, arguments, result, callerFunction.getStackSpace())
-        }
-
-        is Definition.FunctionDefinition -> {
-            if (function.arguments.size != arguments.size) {
-                throw IllegalArgumentException("Wrong argument count")
-            }
-            if (result != null && !layoutMatchesType(result, function.returnType)) {
-                throw IllegalArgumentException("Wrong result layout")
-            }
-            val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
-            generateCall(function, arguments + listOf(SimpleLayout(staticLinkVar)), result, callerFunction.getStackSpace())
-        }
-    }
+fun generateCallFrom(
+    callerFunction: CallableHandler,
+    functionLayout: FunctionLayout,
+    arguments: List<Layout>,
+    result: Layout?,
+): List<CFGNode> {
+    TODO("Justyna")
+    // detect whether this is a foreign function
+//    if (functionLayout.link == SimpleLayout(integer(0))) {
+//        generateCall(function, arguments, result, callerFunction.getStackSpace())
+//    }
+}
+// =
+//    when (function) {
+//        is Definition.ForeignFunctionDeclaration -> {
+//            if (function.type!!.argumentsType.size != arguments.size) {
+//                throw IllegalArgumentException("Wrong argument count")
+//            }
+//            if (result != null && !layoutMatchesType(result, function.type.returnType)) {
+//                throw IllegalArgumentException("Wrong result layout")
+//            }
+//            generateCall(function, arguments, result, callerFunction.getStackSpace())
+//        }
+//
+//        is Definition.FunctionDefinition -> {
+//            if (function.arguments.size != arguments.size) {
+//                throw IllegalArgumentException("Wrong argument count")
+//            }
+//            if (result != null && !layoutMatchesType(result, function.returnType)) {
+//                throw IllegalArgumentException("Wrong result layout")
+//            }
+//            val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
+//            generateCall(function, arguments + listOf(SimpleLayout(staticLinkVar)), result, callerFunction.getStackSpace())
+//        }
+//    }
 
 private fun layoutMatchesType(layout: Layout, type: Type): Boolean = layout.matchesType(type)
 

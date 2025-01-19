@@ -2,8 +2,6 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallableHandler
-import cacophony.controlflow.generation.generateLayoutOfHeapObject
-import cacophony.controlflow.generation.generateLayoutOfVirtualRegisters
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type

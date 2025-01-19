@@ -192,6 +192,8 @@ class FunctionHandlerImpl(
 
     override fun getReferenceAccesses(): List<Int> = referenceOffsets
 
+    override fun getFunctionLabel(): String = function.getLabel()
+
     // Creates staticLink auxVariable in analyzedFunction, therefore shouldn't be called multiple times.
     // Static link is created even if parent doesn't exist.
     private fun introduceStaticLinksParams() {

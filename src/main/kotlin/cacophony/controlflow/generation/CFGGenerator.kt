@@ -6,8 +6,6 @@ import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.CallableHandler
 import cacophony.controlflow.functions.FunctionHandler
 import cacophony.controlflow.functions.LambdaHandler
-import cacophony.controlflow.generation.FunctionLayout
-import cacophony.controlflow.generation.getVariableLayout
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
