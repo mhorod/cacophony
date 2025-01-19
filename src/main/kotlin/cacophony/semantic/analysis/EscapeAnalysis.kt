@@ -32,7 +32,7 @@ fun escapeAnalysis(
     val variableToDefinition = variablesMap.definitions.map { (variable, def) -> def to variable }.toMap()
 
     // Initialize usageDepth and definitionDepth for each non-global variable to static depth of function declaring it.
-    functionAnalysis.forEach { (_, analysis) ->
+    functionAnalysis.forEach { (function, analysis) ->
         analysis.declaredVariables().forEach {
             definitionDepth[it.origin] = analysis.staticDepth
             usageDepth[it.origin] = analysis.staticDepth

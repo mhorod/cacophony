@@ -3,11 +3,7 @@ package cacophony.controlflow.functions
 import cacophony.*
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.SimpleLayout
-import cacophony.semantic.analysis.AnalyzedFunction
-import cacophony.semantic.analysis.AnalyzedVariable
-import cacophony.semantic.analysis.ClosureAnalysisResult
-import cacophony.semantic.analysis.ParentLink
-import cacophony.semantic.analysis.VariableUseType
+import cacophony.semantic.analysis.*
 import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.*
 import io.mockk.*
@@ -23,6 +19,7 @@ class FunctionHandlerTest {
         definitions: Map<Definition, Variable.PrimitiveVariable> = emptyMap(),
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
         closureAnalysisResult: ClosureAnalysisResult = emptyMap(),
+        escapeAnalysis: EscapeAnalysisResult = emptySet(),
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
@@ -33,6 +30,7 @@ class FunctionHandlerTest {
             callConvention,
             createVariablesMap(definitions),
             closureAnalysisResult,
+            escapeAnalysis,
         )
     }
 

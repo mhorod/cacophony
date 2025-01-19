@@ -6,6 +6,7 @@ import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.controlflow.generation.*
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.ClosureAnalysisResult
+import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
@@ -18,7 +19,9 @@ class FunctionHandlerImpl(
     private val ancestorFunctionHandlers: List<FunctionHandler>,
     callConvention: CallConvention,
     private val variablesMap: VariablesMap,
+    // TODO (?): closure analysis is not really used in the FunctionHandler, as it does not need to generate a closure
     private val closureAnalysisResult: ClosureAnalysisResult,
+    escapeAnalysis: EscapeAnalysisResult,
 ) : FunctionHandler {
     private val staticLink = Variable.PrimitiveVariable("sl")
     private var stackSpace = REGISTER_SIZE
@@ -54,11 +57,52 @@ class FunctionHandlerImpl(
         )
     }
 
+    // TODO: probably some part of this code should be present also in the LambdaHandler
     init {
         introduceStaticLinksParams()
-
+        println("analyzedFunction.declaredVariables() ${analyzedFunction.declaredVariables()}")
         run {
-            val usedVars = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
+            // New version
+            // every variable this function declares needs a place to life. We decide where it lives as follows:
+            // 1) if the variable escapes, then it accessible on the heap
+            //      a) if it is used inside a nested function, then the pointer to it is placed on the stack
+            //      b) otherwise, the pointer to it is placed inside a virtual register
+            // 2) otherwise, if the variable is used inside a nested function, then it is accessible on stack
+            // 3) otherwise, the variable can be placed inside a virtual register
+            // val declared =
+            // (
+            // analyzedFunction.declaredVariables().map { it.origin.getPrimitives() }.flatten() union
+            // function.arguments.map { variablesMap.definitions[it]!!.getPrimitives() }.flatten()
+            // ).toSet()
+            // val nestedUsage = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>().toSet()
+            // val escaped = declared intersect escapeAnalysis.filterIsInstance<Variable.PrimitiveVariable>().toSet()
+            // val escapedStack = escaped intersect nestedUsage
+            // val escapedReg = escaped.minus(escapedStack)
+            // val nonEscaped = declared.minus(escaped)
+            // val stack = nonEscaped intersect nestedUsage
+            // val reg = nonEscaped.minus(stack)
+            // println(escapeAnalysis)
+            //
+            // // TODO: in test without lambdas, these should be empty
+            // // 1.a
+            // assert(escapedStack.isEmpty())
+            //
+            // // 1.b
+            // assert(escapedReg.isEmpty())
+            //
+            // // 2
+            // stack.forEach { allocateFrameVariable(it) }
+            //
+            // // 3
+            // reg.forEach {
+            // registerVariableAllocation(
+            // it,
+            // VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),
+            // )
+            // }
+
+            // Old version
+            val stackVars = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
             val regVar =
                 (
                     analyzedFunction
@@ -70,7 +114,7 @@ class FunctionHandlerImpl(
                             .map { it.getPrimitives() }
                             .flatten()
                 ).toSet()
-                    .minus(usedVars.toSet())
+                    .minus(stackVars.toSet())
 
             regVar.forEach {
                 registerVariableAllocation(
@@ -79,7 +123,7 @@ class FunctionHandlerImpl(
                 )
             }
 
-            usedVars.forEach {
+            stackVars.forEach {
                 allocateFrameVariable(it)
             }
         }
