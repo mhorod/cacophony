@@ -1,9 +1,29 @@
 package cacophony.semantic.rtti
 
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.types.*
 import kotlin.math.absoluteValue
 
 typealias ObjectOutlineLocation = Map<TypeExpr, String>
+typealias LambdaOutlineLocation = Map<LambdaExpression, String>
+
+data class ObjectOutlines(
+    val locations: ObjectOutlineLocation,
+    val lambdaLocations: LambdaOutlineLocation,
+    val asm: List<String>,
+)
+
+fun createObjectOutlines(types: List<TypeExpr>, lambdas: List<LambdaExpression>): ObjectOutlines {
+    val objectOutlinesCreator = ObjectOutlinesCreator()
+    // all internal structures, like closures, must later be added here
+    objectOutlinesCreator.addTypes(types)
+    objectOutlinesCreator.addLambdas(lambdas)
+    return ObjectOutlines(
+        objectOutlinesCreator.getLocations(),
+        emptyMap(), // TODO
+        objectOutlinesCreator.getAsm(),
+    )
+}
 
 /**
  * Object outline consists of 8B blocks:
@@ -13,7 +33,7 @@ typealias ObjectOutlineLocation = Map<TypeExpr, String>
  *   check block number i / 64 on bit position i % 64.
  */
 
-class ObjectOutlinesCreator {
+internal class ObjectOutlinesCreator {
     private val locations: MutableMap<TypeExpr, String> = mutableMapOf()
     private val asmDataSectionEntries = mutableListOf<String>()
 
@@ -49,7 +69,7 @@ class ObjectOutlinesCreator {
             is TypeExpr.VoidType -> emptyList()
         }
 
-    fun add(type: TypeExpr) {
+    private fun add(type: TypeExpr) {
         if (locations.containsKey(type)) return
         if (type is FunctionType) return // functional types not supported for now
 
@@ -60,8 +80,16 @@ class ObjectOutlinesCreator {
         asmDataSectionEntries.add(asmEntry)
     }
 
-    fun add(types: List<TypeExpr>) {
+    private fun add(lambda: LambdaExpression) {
+        // TODO
+    }
+
+    fun addTypes(types: List<TypeExpr>) {
         types.forEach { add(it) }
+    }
+
+    fun addLambdas(lambdas: List<LambdaExpression>) {
+        lambdas.forEach { add(it) }
     }
 
     fun getLocations(): ObjectOutlineLocation = locations

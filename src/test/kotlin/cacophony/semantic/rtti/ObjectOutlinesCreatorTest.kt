@@ -13,7 +13,7 @@ class ObjectOutlinesCreatorTest {
     @Test
     fun `builtin types`() {
         val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(listOf(BuiltinType.IntegerType, BuiltinType.BooleanType, BuiltinType.UnitType))
+        ooCreator.addTypes(listOf(BuiltinType.IntegerType, BuiltinType.BooleanType, BuiltinType.UnitType))
 
         val labelInt = "outline_I${BuiltinType.IntegerType.hashCode().absoluteValue}"
         val labelBoolean = "outline_B${BuiltinType.BooleanType.hashCode().absoluteValue}"
@@ -45,7 +45,7 @@ class ObjectOutlinesCreatorTest {
         val labelRefStruct = "outline_1RS${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(listOf(refInt, refStruct))
+        ooCreator.addTypes(listOf(refInt, refStruct))
 
         assertThat(ooCreator.getLocations()).containsExactlyInAnyOrderEntriesOf(
             mapOf(refInt to labelRefInt, refStruct to labelRefStruct),
@@ -72,7 +72,7 @@ class ObjectOutlinesCreatorTest {
         val labelRefRefStruct = "outline_2RS${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(listOf(refRefRefInt, refRefStruct))
+        ooCreator.addTypes(listOf(refRefRefInt, refRefStruct))
 
         assertThat(ooCreator.getLocations()).containsExactlyInAnyOrderEntriesOf(
             mapOf(refRefRefInt to labelRefRefRefInt, refRefStruct to labelRefRefStruct),
@@ -93,7 +93,7 @@ class ObjectOutlinesCreatorTest {
         val label = "outline_S${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(struct)
+        ooCreator.addTypes(listOf(struct))
 
         assertThat(ooCreator.getLocations()).containsExactly(entry(struct, label))
         assertThat(ooCreator.getAsm()).containsExactlyInAnyOrder("$label: dq 3, 4")
@@ -114,7 +114,7 @@ class ObjectOutlinesCreatorTest {
         val label = "outline_S${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(struct)
+        ooCreator.addTypes(listOf(struct))
 
         assertThat(ooCreator.getLocations()).containsExactly(entry(struct, label))
         assertThat(ooCreator.getAsm()).containsExactlyInAnyOrder("$label: dq 4, 10")
@@ -133,7 +133,7 @@ class ObjectOutlinesCreatorTest {
         val label = "outline_S${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(struct)
+        ooCreator.addTypes(listOf(struct))
 
         assertThat(ooCreator.getLocations()).containsExactly(entry(struct, label))
         assertThat(ooCreator.getAsm()).containsExactlyInAnyOrder("$label: dq 72, ${ULong.MAX_VALUE}, ${255 - 64}")
@@ -152,7 +152,7 @@ class ObjectOutlinesCreatorTest {
         val label = "outline_S${struct.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(struct)
+        ooCreator.addTypes(listOf(struct))
 
         assertThat(ooCreator.getLocations()).containsExactly(entry(struct, label))
         assertThat(ooCreator.getAsm()).containsExactlyInAnyOrder("$label: dq 2, 2")
@@ -176,10 +176,10 @@ class ObjectOutlinesCreatorTest {
         val label3 = "outline_S${struct3.hashCode().absoluteValue}"
 
         val ooCreator = ObjectOutlinesCreator()
-        ooCreator.add(listOf(struct1, struct2, struct3))
-        ooCreator.add(struct1)
-        ooCreator.add(struct2)
-        ooCreator.add(struct1)
+        ooCreator.addTypes(listOf(struct1, struct2, struct3))
+        ooCreator.addTypes(listOf(struct1))
+        ooCreator.addTypes(listOf(struct2))
+        ooCreator.addTypes(listOf(struct1))
 
         assertThat(ooCreator.getLocations()).containsExactlyInAnyOrderEntriesOf(
             mapOf(struct1 to label1, struct2 to label2, struct3 to label3),
