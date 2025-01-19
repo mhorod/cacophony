@@ -42,8 +42,7 @@ class FunctionType(
     val args: List<TypeExpr>,
     val result: TypeExpr,
 ) : TypeExpr(args.joinToString(", ", "[", "] -> ${result.name}")) {
-    // functions do not support size atm
-    override fun size(): Int = -1
+    override fun size(): Int = 2
 }
 
 class StructType(

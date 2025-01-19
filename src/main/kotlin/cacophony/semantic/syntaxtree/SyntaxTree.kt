@@ -138,7 +138,7 @@ class VariableUse(
 }
 
 sealed interface FunctionalExpression {
-    val arguments: List<Expression>
+    val arguments: List<Definition.FunctionArgument>
     val returnType: Type
     val body: Expression
 }

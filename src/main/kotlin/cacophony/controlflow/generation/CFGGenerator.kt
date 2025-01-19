@@ -3,16 +3,20 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.Builtin
 import cacophony.controlflow.functions.CallGenerator
+import cacophony.controlflow.functions.CallableHandler
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.LambdaHandler
+import cacophony.controlflow.generation.FunctionLayout
+import cacophony.controlflow.generation.getVariableLayout
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.TypeCheckingResult
-import cacophony.semantic.types.TypeExpr
 
 /**
  * Converts Expressions into CFG
@@ -20,8 +24,9 @@ import cacophony.semantic.types.TypeExpr
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
-    private val function: Definition.FunctionDefinition,
+    private val function: FunctionalExpression,
     private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
+    private val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
     val variablesMap: VariablesMap,
     private val typeCheckingResult: TypeCheckingResult,
     private val callGenerator: CallGenerator,
@@ -99,6 +104,10 @@ internal class CFGGenerator(
                 require(destination is StructLayout) // by type checking
                 destination.fields.flatMap { (field, layout) -> makeVerticesForAssignment(source.fields[field]!!, layout) }
             }
+            is FunctionLayout -> {
+                require(destination is FunctionLayout) // by type checking
+                makeVerticesForAssignment(source.code, destination.code) + makeVerticesForAssignment(source.link, destination.link)
+            }
             is VoidLayout -> emptyList()
         }
 
@@ -139,6 +148,7 @@ internal class CFGGenerator(
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
             is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
+            is LambdaExpression -> visitLambdaExpression(expression, mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
             is FunctionCall -> visitFunctionCall(expression, mode, context)
@@ -163,24 +173,23 @@ internal class CFGGenerator(
             is EvalMode.Value -> {
                 val type = typeCheckingResult.expressionTypes[expression]!!
                 require(type is ReferentialType) // by type checking
-                val call =
-                    generateFunctionCall(
-                        Builtin.allocStruct,
-                        typeCheckingResult.expressionTypes[expression]!!,
-                        mode,
-                        listOf(
-                            ensureExtracted(
-                                SubCFG.Immediate(dataLabel(objectOutlineLocation[type.type]!!), false),
-                                mode,
-                            ),
-                            ensureExtracted(
-                                SubCFG.Immediate(registerUse(rbp, false), false),
-                                mode,
-                            ),
+                val arguments =
+                    listOf(
+                        ensureExtracted(
+                            SubCFG.Immediate(dataLabel(objectOutlineLocation[type.type]!!), false),
+                            mode,
+                        ),
+                        ensureExtracted(
+                            SubCFG.Immediate(registerUse(rbp, false), false),
+                            mode,
                         ),
                     )
-                require(call.access is SimpleLayout) // by type check
-                val resultLayout = generateLayoutOfHeapObject(call.access.access, type.type)
+
+                val resultPointerLayout = SimpleLayout(registerUse(Register.VirtualRegister(), true), true)
+
+                val call = generateCall(getForeignFunctionLayout(Builtin.allocStruct), arguments.map { it.access }, resultPointerLayout)
+
+                val resultLayout = generateLayoutOfHeapObject(resultPointerLayout.access, type.type)
                 val allocation = call merge assignLayoutWithValue(calcExpression.access, resultLayout, call.access)
                 when (calcExpression) {
                     is SubCFG.Extracted -> calcExpression merge allocation
@@ -279,6 +288,21 @@ internal class CFGGenerator(
 
     private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
+    private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
+        val handler = lambdaHandlers[lambda]!!
+        val label = handler.getFunctionLabel()
+        // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
+        // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?
+        return when (mode) {
+            is EvalMode.Value ->
+                handler.generateVariableAccess(handler.getClosureLink()).let { link ->
+                    SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(link)))
+                }
+            is EvalMode.SideEffect -> SubCFG.Immediate(noOpOrUnit(mode))
+            is EvalMode.Conditional -> throw IllegalArgumentException("Lambda expression can not be used as condition")
+        }
+    }
+
     private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode, context: Context): SubCFG =
         assignmentHandler.generateAssignment(
             getVariableLayout(getCurrentFunctionHandler(), variablesMap.definitions[expression]!!),
@@ -291,59 +315,35 @@ internal class CFGGenerator(
     private fun visitEmpty(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
     private fun visitFunctionCall(expression: FunctionCall, mode: EvalMode, context: Context): SubCFG {
+        val calleeCFG = ensureExtracted(visit(expression.function, EvalMode.Value, context), EvalMode.Value)
+
+        val functionLayout = calleeCFG.access
+        require(functionLayout is FunctionLayout)
+
         val argumentVertices =
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
-        return generateFunctionCall(
-            resolvedVariables[expression.function] as Definition.FunctionDeclaration,
-            typeCheckingResult.expressionTypes[expression]!!,
-            mode,
-            argumentVertices,
-        )
-    }
-
-    private fun generateFunctionCall(
-        function: Definition.FunctionDeclaration,
-        returnType: TypeExpr,
-        mode: EvalMode,
-        arguments: List<SubCFG.Extracted>,
-    ): SubCFG.Extracted {
-        val functionHandler =
-            when (function) {
-                is Definition.FunctionDefinition -> getFunctionHandler(function)
-                is Definition.ForeignFunctionDeclaration -> null
-            }
+        val functionType = typeCheckingResult.expressionTypes[expression]!!
+        require(functionType is FunctionType) { "LHS of call should be callable but is $functionType" }
 
         val resultLayout =
             when (mode) {
                 is EvalMode.SideEffect -> null
-                else -> generateLayoutOfVirtualRegisters(returnType)
+                else -> generateLayoutOfVirtualRegisters(functionType.result)
             }
 
-        // It may hold reference, but I believe it won't be used anywhere else
-        val callSequence =
-            callGenerator
-                .generateCallFrom(
-                    getCurrentFunctionHandler(),
-                    function,
-                    functionHandler,
-                    arguments.map { it.access },
-                    resultLayout,
-                ).map { ensureExtracted(it, false) }
-                .reduce(SubCFG.Extracted::merge)
-        val entry =
-            if (arguments.isNotEmpty()) {
-                val extractedArguments = arguments.reduce(SubCFG.Extracted::merge)
-                extractedArguments.exit.connect(callSequence.entry.label)
-                extractedArguments.entry
-            } else {
-                callSequence.entry
-            }
+        val callCFG = generateCall(functionLayout, argumentVertices.map { it.access }, resultLayout)
 
-        return if (mode is EvalMode.Conditional) extendWithConditional(callSequence, mode)
-        else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp, false))
+        return calleeCFG merge argumentVertices.reduce(SubCFG.Extracted::merge) merge callCFG
     }
+
+    private fun generateCall(function: FunctionLayout, arguments: List<Layout>, result: Layout?) =
+        callGenerator
+            .generateCallFrom(getCurrentFunctionHandler(), function, arguments, result)
+            .map {
+                ensureExtracted(it, false)
+            }.reduce(SubCFG.Extracted::merge)
 
     private fun visitLiteral(literal: Literal, mode: EvalMode): SubCFG =
         when (mode) {
@@ -526,8 +526,11 @@ internal class CFGGenerator(
         }
     }
 
-    private fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
+    private fun getCurrentFunctionHandler(): CallableHandler = getCallableHandler(function)
 
-    private fun getFunctionHandler(function: Definition.FunctionDefinition): FunctionHandler =
-        functionHandlers[function] ?: error("Function $function has no handler")
+    private fun getCallableHandler(callable: FunctionalExpression): CallableHandler =
+        when (callable) {
+            is Definition.FunctionDefinition -> functionHandlers[function] ?: error("Function $function has no handler")
+            is LambdaExpression -> lambdaHandlers[function] ?: error("Lambda $function has no handler")
+        }
 }

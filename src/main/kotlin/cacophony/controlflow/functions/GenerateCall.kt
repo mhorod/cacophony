@@ -1,6 +1,7 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
+import cacophony.controlflow.generation.FunctionLayout
 import cacophony.controlflow.generation.Layout
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.controlflow.generation.generateSubLayout
@@ -14,13 +15,7 @@ import cacophony.utils.Location
 /**
  * Wrapper for generateCall that additionally fills staticLink to parent function.
  */
-fun generateCallFrom(
-    callerFunction: FunctionHandler,
-    function: Definition.FunctionDeclaration,
-    functionHandler: FunctionHandler?,
-    arguments: List<Layout>,
-    result: Layout?,
-): List<CFGNode> =
+fun generateCallFrom(callerFunction: CallableHandler, function: FunctionLayout, arguments: List<Layout>, result: Layout?): List<CFGNode> =
     when (function) {
         is Definition.ForeignFunctionDeclaration -> {
             if (function.type!!.argumentsType.size != arguments.size) {
@@ -164,21 +159,14 @@ fun generateCall(
 }
 
 interface CallGenerator {
-    fun generateCallFrom(
-        callerFunction: FunctionHandler,
-        function: Definition.FunctionDeclaration,
-        functionHandler: FunctionHandler?,
-        arguments: List<Layout>,
-        result: Layout?,
-    ): List<CFGNode>
+    fun generateCallFrom(callerHandler: CallableHandler, callee: FunctionLayout, arguments: List<Layout>, result: Layout?): List<CFGNode>
 }
 
 class SimpleCallGenerator : CallGenerator {
     override fun generateCallFrom(
-        callerFunction: FunctionHandler,
-        function: Definition.FunctionDeclaration,
-        functionHandler: FunctionHandler?,
+        callerHandler: CallableHandler,
+        callee: FunctionLayout,
         arguments: List<Layout>,
         result: Layout?,
-    ): List<CFGNode> = cacophony.controlflow.functions.generateCallFrom(callerFunction, function, functionHandler, arguments, result)
+    ): List<CFGNode> = cacophony.controlflow.functions.generateCallFrom(callerHandler, callee, arguments, result)
 }

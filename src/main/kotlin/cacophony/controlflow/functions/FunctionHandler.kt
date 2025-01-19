@@ -30,6 +30,8 @@ interface CallableHandler {
 
     // Returns offsets from RBP to all references on stack
     fun getReferenceAccesses(): List<Int>
+
+    fun getFunctionLabel(): String
 }
 
 interface LambdaHandler : CallableHandler {

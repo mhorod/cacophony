@@ -1,8 +1,11 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
-import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.CallableHandler
+import cacophony.controlflow.generation.generateLayoutOfHeapObject
+import cacophony.controlflow.generation.generateLayoutOfVirtualRegisters
 import cacophony.semantic.syntaxtree.BaseType
+import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type
 import cacophony.semantic.types.*
 
@@ -19,6 +22,11 @@ fun generateLayoutOfVirtualRegisters(layout: Layout): Layout =
             )
         is StructLayout ->
             StructLayout(layout.fields.mapValues { (_, subLayout) -> generateLayoutOfVirtualRegisters(subLayout) })
+        is FunctionLayout ->
+            FunctionLayout(
+                generateLayoutOfVirtualRegisters(layout.code) as SimpleLayout,
+                generateLayoutOfVirtualRegisters(layout.link) as SimpleLayout,
+            )
         is VoidLayout -> VoidLayout()
     }
 
@@ -27,8 +35,12 @@ fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
         is BuiltinType -> SimpleLayout(registerUse(Register.VirtualRegister(), false), false)
         is ReferentialType -> SimpleLayout(registerUse(Register.VirtualRegister(true), true), true)
         is StructType -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
+        is FunctionType ->
+            FunctionLayout(
+                SimpleLayout(registerUse(Register.VirtualRegister(), false), false),
+                SimpleLayout(registerUse(Register.VirtualRegister(), true), true),
+            )
         TypeExpr.VoidType -> VoidLayout()
-        is FunctionType -> throw IllegalArgumentException("No layout for function types")
     }
 
 fun generateLayoutOfVirtualRegisters(type: Type): Layout =
@@ -55,23 +67,19 @@ fun generateSubLayout(layout: Layout, type: TypeExpr): Layout {
     throw IllegalArgumentException("layout does not match type")
 }
 
-fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
+fun getVariableLayout(handler: CallableHandler, variable: Variable): Layout =
     when (variable) {
         is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
         is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(handler, subfield) })
+        is Variable.FunctionVariable ->
+            FunctionLayout(
+                getVariableLayout(handler, variable.code) as SimpleLayout,
+                getVariableLayout(handler, variable.link) as SimpleLayout,
+            )
         is Variable.Heap -> throw IllegalArgumentException("`Heap` is a special marker `Variable` and has no layout")
     }
 
-fun flattenLayout(layout: Layout): List<CFGNode> =
-    when (layout) {
-        is SimpleLayout -> listOf(layout.access)
-        is StructLayout ->
-            layout.fields
-                .toSortedMap()
-                .map { (_, subLayout) -> flattenLayout(subLayout) }
-                .flatten()
-        is VoidLayout -> emptyList()
-    }
+fun flattenLayout(layout: Layout): List<CFGNode> = layout.flatten().map { it.access }
 
 private fun generateLayoutOfHeapObjectImpl(base: CFGNode, type: TypeExpr, offset: Int): Layout {
     var offsetInternal = offset
@@ -89,9 +97,16 @@ private fun generateLayoutOfHeapObjectImpl(base: CFGNode, type: TypeExpr, offset
                     },
             )
 
-        is FunctionType -> throw IllegalArgumentException("No layout for function types")
+        is FunctionType ->
+            FunctionLayout(
+                SimpleLayout(memoryAccess(base add integer(offset * REGISTER_SIZE), false), false),
+                SimpleLayout(memoryAccess(base add integer((offset + 1) * REGISTER_SIZE), true), true),
+            )
         is TypeExpr.VoidType -> StructLayout(emptyMap()) // void type on the heap?
     }
 }
 
 fun generateLayoutOfHeapObject(base: CFGNode, type: TypeExpr): Layout = generateLayoutOfHeapObjectImpl(base, type, 0)
+
+fun getForeignFunctionLayout(function: Definition.ForeignFunctionDeclaration) =
+    FunctionLayout(SimpleLayout(dataLabel(function.getLabel())), SimpleLayout(integer(0)))

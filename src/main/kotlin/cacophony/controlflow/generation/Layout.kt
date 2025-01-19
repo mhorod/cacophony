@@ -22,6 +22,13 @@ class SimpleLayout(val access: CFGNode, val holdsReference: Boolean = false) : L
         }
 }
 
+// NOTE: link is either the static link or closure link
+class FunctionLayout(val code: SimpleLayout, val link: SimpleLayout) : Layout() {
+    override fun flatten() = listOf(code, link).map { LayoutAccessInfo(it.access, it.holdsReference) }
+
+    override fun matchesType(type: Type): Boolean = type is BaseType.Functional
+}
+
 class StructLayout(val fields: Map<String, Layout>) : Layout() {
     override fun flatten(): List<LayoutAccessInfo> =
         fields.entries
