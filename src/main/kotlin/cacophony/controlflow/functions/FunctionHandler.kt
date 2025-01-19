@@ -5,28 +5,16 @@ import cacophony.controlflow.Variable
 import cacophony.controlflow.VariableAllocation
 import cacophony.controlflow.generation.Layout
 import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 
-interface FunctionHandler {
-    fun getFunctionDeclaration(): Definition.FunctionDefinition
-
+interface CallableHandler {
     fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
     fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation
 
     fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation)
 
-    // Returns static link to parent
-    fun getStaticLink(): Variable.PrimitiveVariable
-
-    fun getStackSpace(): CFGNode.ConstantLazy
-
     fun getVariableFromDefinition(varDef: Definition): Variable
-
-    fun generateAccessToFramePointer(other: Definition.FunctionDefinition): CFGNode
-
-    fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode
-
-    fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
     fun generatePrologue(): List<CFGNode>
 
@@ -36,4 +24,25 @@ interface FunctionHandler {
 
     // Returns offsets from RBP to all references on stack
     fun getReferenceAccesses(): List<Int>
+
+    fun getStackSpace(): CFGNode.ConstantLazy
+
+    fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue
+
+    fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode
+}
+
+interface LambdaHandler : CallableHandler {
+    fun getBodyReference(): LambdaExpression
+
+    // TODO: maybe add getClosureLink?
+}
+
+interface FunctionHandler : CallableHandler {
+    fun getFunctionDeclaration(): Definition.FunctionDefinition
+
+    // Returns static link to parent
+    fun getStaticLink(): Variable.PrimitiveVariable
+
+    fun generateAccessToFramePointer(other: Definition.FunctionDefinition): CFGNode
 }

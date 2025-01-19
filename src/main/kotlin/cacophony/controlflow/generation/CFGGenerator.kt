@@ -25,6 +25,7 @@ internal class CFGGenerator(
     private val typeCheckingResult: TypeCheckingResult,
     private val callGenerator: CallGenerator,
     private val objectOutlineLocation: ObjectOutlineLocation,
+    // TODO: escape analysis?
 ) {
     private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
@@ -152,6 +153,7 @@ internal class CFGGenerator(
             is Allocation -> visitAllocation(expression, mode, context)
             is Dereference -> visitDereference(expression, mode, context)
             is Assignable -> visitAssignable(expression, mode)
+            is LambdaExpression -> visitFunctionDeclaration(mode)
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
@@ -217,6 +219,14 @@ internal class CFGGenerator(
             }
         return if (mode is EvalMode.Conditional) extendWithConditional(dereference, mode)
         else dereference
+    }
+
+    private fun visitLambdaExpression(...) {
+        TODO("Alloc struct for closure")
+        TODO("(Use closure layout)")
+        TODO("Fill closure")
+        TODO("Use pseudo function handler")
+        TODO("Use pseudo function handler")
     }
 
     private fun visitFieldRef(expression: FieldRef, mode: EvalMode, context: Context): SubCFG {

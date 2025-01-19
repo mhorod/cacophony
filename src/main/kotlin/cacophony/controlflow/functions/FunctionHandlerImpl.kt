@@ -9,7 +9,72 @@ import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.syntaxtree.LambdaExpression
 import kotlin.math.max
+
+class LambdaHandlerImpl(
+    private val body: LambdaExpression,
+    callConvention: CallConvention,
+    private val variablesMap: VariablesMap,
+    private val closureAnalysisResult: ClosureAnalysisResult,
+) : LambdaHandler {
+    private var stackSpace = REGISTER_SIZE
+    private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
+
+    override fun getBodyReference(): LambdaExpression = body
+
+    override fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
+        TODO()
+    }
+
+    override fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation {
+        TODO("Not yet implemented")
+    }
+
+    private val referenceOffsets = mutableListOf<Int>()
+
+    override fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation) {
+        if (allocation is VariableAllocation.OnStack) {
+            if (variable.holdsReference) {
+                referenceOffsets.add(allocation.offset)
+            }
+            stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
+        }
+        variableAllocation[variable] = allocation
+    }
+
+    override fun getVariableFromDefinition(varDef: Definition): Variable {
+        TODO("Not yet implemented")
+    }
+
+    override fun generatePrologue(): List<CFGNode> {
+        TODO("Not yet implemented")
+    }
+
+    override fun generateEpilogue(): List<CFGNode> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getResultLayout(): Layout {
+        TODO("Not yet implemented")
+    }
+
+    override fun getReferenceAccesses(): List<Int> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getStackSpace(): CFGNode.ConstantLazy {
+        TODO("Not yet implemented")
+    }
+
+    override fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue {
+        TODO("Not yet implemented")
+    }
+
+    override fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode {
+        TODO("Not yet implemented")
+    }
+}
 
 class FunctionHandlerImpl(
     private val function: FunctionDefinition,
@@ -18,6 +83,7 @@ class FunctionHandlerImpl(
     private val ancestorFunctionHandlers: List<FunctionHandler>,
     callConvention: CallConvention,
     private val variablesMap: VariablesMap,
+    // TODO:
     private val closureAnalysisResult: ClosureAnalysisResult,
 ) : FunctionHandler {
     private val staticLink = Variable.PrimitiveVariable("sl")

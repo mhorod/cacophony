@@ -188,6 +188,7 @@ sealed class Definition(
         identifier: String,
         type: BaseType.Functional,
         returnType: Type,
+        // TODO: make this inherit from FunctionalExpression
     ) : FunctionDeclaration(range, identifier, type, returnType), LeafExpression {
         override fun getLabel() = identifier
 
