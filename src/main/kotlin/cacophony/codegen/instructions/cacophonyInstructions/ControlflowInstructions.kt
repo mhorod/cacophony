@@ -1,11 +1,9 @@
 package cacophony.codegen.instructions.cacophonyInstructions
 
 import cacophony.codegen.BlockLabel
-import cacophony.codegen.functionBodyLabel
 import cacophony.codegen.instructions.Instruction
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.SystemVAMD64CallConvention
-import cacophony.semantic.syntaxtree.Definition
 
 data class PushReg(
     val reg: Register,
@@ -99,21 +97,20 @@ data class Jz(override val label: BlockLabel) : InstructionTemplates.JccInstruct
 
 data class Jnz(override val label: BlockLabel) : InstructionTemplates.JccInstruction(label, "jnz")
 
-private fun Definition.FunctionDeclaration.argumentRegisters(): Set<Register.FixedRegister> {
-    val argumentCount =
-        when (this) {
-            is Definition.FunctionDefinition -> arguments.size + 1
-            is Definition.ForeignFunctionDeclaration -> type!!.argumentsType.size
-        }
-    return REGISTER_ARGUMENT_ORDER.take(argumentCount).map { Register.FixedRegister(it) }.toSet()
-}
+private fun argumentRegisters(cnt: Int): Set<Register.FixedRegister> =
+    REGISTER_ARGUMENT_ORDER
+        .take(cnt)
+        .map {
+            Register.FixedRegister(it)
+        }.toSet()
 
-data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
+// data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
+data class Call(val child: Register, val const: Int) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(
             Register.FixedRegister(HardwareRegister.RSP),
             Register.FixedRegister(HardwareRegister.RBP),
-        ) union function.argumentRegisters()
+        ) union argumentRegisters(const)
     override val registersWritten: Set<Register> =
         HardwareRegister
             .entries
@@ -122,7 +119,7 @@ data class Call(val function: Definition.FunctionDeclaration) : InstructionTempl
             .map(Register::FixedRegister)
             .toSet()
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${functionBodyLabel(function).name}"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${hardwareRegisterMapping[child]}"
 }
 
 /**

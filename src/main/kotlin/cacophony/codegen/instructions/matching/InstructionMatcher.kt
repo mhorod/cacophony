@@ -15,15 +15,14 @@ interface InstructionMatcher {
     fun findMatchesForCondition(node: CFGNode, destinationLabel: BlockLabel, jumpIf: Boolean = true): Set<Match>
 }
 
-fun slotFillFromMetadata(valueMapping: ValueSlotMapping, metadata: InstructionMatcherImpl.MatchMetadata): SlotFill {
-    return SlotFill(
+fun slotFillFromMetadata(valueMapping: ValueSlotMapping, metadata: InstructionMatcherImpl.MatchMetadata): SlotFill =
+    SlotFill(
         valueMapping,
         metadata.registerFill,
         metadata.constantFill,
-        metadata.functionFill,
+        // metadata.functionFill,
         metadata.nodeFill,
     )
-}
 
 class InstructionMatcherImpl(
     private val valuePatterns: List<ValuePattern>,
@@ -86,7 +85,7 @@ class InstructionMatcherImpl(
         val registerFill: MutableMap<RegisterLabel, Register> = mutableMapOf(),
         val constantFill: MutableMap<ConstantLabel, CFGNode.Constant> = mutableMapOf(),
         val toFill: MutableMap<ValueLabel, CFGNode> = mutableMapOf(),
-        val functionFill: MutableMap<FunctionLabel, CFGNode.Function> = mutableMapOf(),
+        // val functionFill: MutableMap<FunctionLabel, CFGNode.Function> = mutableMapOf(),
         val nodeFill: MutableMap<NodeLabel, CFGNode> = mutableMapOf(),
         var size: Int = 0,
     )
@@ -133,10 +132,10 @@ class InstructionMatcherImpl(
                     matchMetadata.toFill[pattern.label] = node
                 }
 
-                is CFGNode.FunctionSlot -> {
-                    if (node !is CFGNode.Function) return false
-                    matchMetadata.functionFill[pattern.label] = node
-                }
+//                is CFGNode.FunctionSlot -> {
+//                    if (node !is CFGNode.Function) return false
+//                    matchMetadata.functionFill[pattern.label] = node
+//                }
                 is CFGNode.NodeSlot<*> -> {
                     if (!pattern.clazz.isInstance(node)) return false
                     matchMetadata.nodeFill[pattern.label] = node

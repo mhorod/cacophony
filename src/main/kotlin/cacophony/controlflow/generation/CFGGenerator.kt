@@ -185,7 +185,15 @@ internal class CFGGenerator(
 
                 val resultPointerLayout = SimpleLayout(registerUse(Register.VirtualRegister(), true), true)
 
-                val call = generateCall(getForeignFunctionLayout(Builtin.allocStruct), arguments.map { it.access }, resultPointerLayout)
+                val functionType = typeCheckingResult.expressionTypes[Builtin.allocStruct]!!
+                require(functionType is FunctionType) { "LHS of call should be callable but is $functionType" }
+                val call =
+                    generateCall(
+                        functionType,
+                        getForeignFunctionLayout(Builtin.allocStruct),
+                        arguments.map { it.access },
+                        resultPointerLayout,
+                    )
 
                 val resultLayout = generateLayoutOfHeapObject(resultPointerLayout.access, type.type)
                 val allocation = call merge assignLayoutWithValue(calcExpression.access, resultLayout, call.access)
@@ -322,7 +330,7 @@ internal class CFGGenerator(
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
-        val functionType = typeCheckingResult.expressionTypes[expression]!!
+        val functionType = typeCheckingResult.expressionTypes[expression.function]!!
         require(functionType is FunctionType) { "LHS of call should be callable but is $functionType" }
 
         val resultLayout =
@@ -331,14 +339,14 @@ internal class CFGGenerator(
                 else -> generateLayoutOfVirtualRegisters(functionType.result)
             }
 
-        val callCFG = generateCall(functionLayout, argumentVertices.map { it.access }, resultLayout)
+        val callCFG = generateCall(functionType, functionLayout, argumentVertices.map { it.access }, resultLayout)
 
         return calleeCFG merge argumentVertices.reduce(SubCFG.Extracted::merge) merge callCFG
     }
 
-    private fun generateCall(function: FunctionLayout, arguments: List<Layout>, result: Layout?) =
+    private fun generateCall(functionType: FunctionType, function: FunctionLayout, arguments: List<Layout>, result: Layout?) =
         callGenerator
-            .generateCallFrom(getCurrentFunctionHandler(), function, arguments, result)
+            .generateCallFrom(getCurrentFunctionHandler(), functionType, function, arguments, result)
             .map {
                 ensureExtracted(it, false)
             }.reduce(SubCFG.Extracted::merge)
@@ -515,12 +523,15 @@ internal class CFGGenerator(
     }
 
     private fun visitAssignable(expression: Assignable, mode: EvalMode): SubCFG {
-        val variable = variablesMap.lvalues[expression]!!
-        val variableAccess = getVariableLayout(getCurrentFunctionHandler(), variable)
-        return when (mode) {
-            is EvalMode.Value -> SubCFG.Immediate(variableAccess)
-            is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp, false)
-            is EvalMode.Conditional -> extendWithConditional(SubCFG.Immediate(variableAccess), mode)
+        variablesMap.lvalues[expression]?.let { variable ->
+            val variableAccess = getVariableLayout(getCurrentFunctionHandler(), variable)
+            return when (mode) {
+                is EvalMode.Value -> SubCFG.Immediate(variableAccess)
+                is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp, false)
+                is EvalMode.Conditional -> extendWithConditional(SubCFG.Immediate(variableAccess), mode)
+            }
+        } ?: {
+            TODO()
         }
     }
 

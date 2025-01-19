@@ -1,7 +1,6 @@
 package cacophony.controlflow
 
 import cacophony.codegen.BlockLabel
-import cacophony.semantic.syntaxtree.Definition
 import kotlin.reflect.KClass
 
 class CFGLabel {
@@ -16,7 +15,7 @@ class ValueLabel : SlotLabel
 
 class ConstantLabel : SlotLabel
 
-class FunctionLabel : SlotLabel
+// class FunctionLabel : SlotLabel
 
 class NodeLabel : SlotLabel
 
@@ -34,9 +33,9 @@ sealed interface CFGNode {
 
     sealed interface RegisterRef : Leaf, LValue
 
-    sealed interface FunctionRef : Leaf {
-        val function: Definition.FunctionDeclaration?
-    }
+//    sealed interface FunctionRef : Leaf {
+//        val function: Definition.FunctionDeclaration?
+//    }
 
     data object NoOp : Leaf {
         override fun toString(): String = "nop"
@@ -45,16 +44,18 @@ sealed interface CFGNode {
     data class Comment(val comment: String) : Leaf
 
     // declaration is nullable to create pattern without specific function
-    data class Function(override val function: Definition.FunctionDeclaration) : FunctionRef
+//    data class Function(override val function: Definition.FunctionDeclaration) : FunctionRef
 
     data class Call(
-        val functionRef: FunctionRef,
+        // val functionRef: FunctionRef,
+        val childPtr: CFGNode,
+        val numArgs: Constant,
     ) : CFGNode {
-        constructor(function: Definition.FunctionDeclaration) : this(Function(function))
+//        constructor(function: Definition.FunctionDeclaration) : this(Function(function))
 
-        override fun children(): List<CFGNode> = listOf(functionRef)
+        override fun children(): List<CFGNode> = listOf(childPtr)
 
-        override fun toString(): String = "call ${functionRef.function?.identifier}"
+        override fun toString(): String = "call $childPtr($numArgs)"
     }
 
     data class Return(val resultSize: CFGNode) : Leaf {
@@ -303,14 +304,19 @@ sealed interface CFGNode {
     data class ConstantSlot(
         override val label: ConstantLabel,
         val predicate: (Int) -> Boolean,
-    ) : Slot, Value
+    ) : Slot, Value, Constant() {
+        override val value
+            get() = error("can't do this")
 
-    data class FunctionSlot(
-        override val label: FunctionLabel,
-    ) : Slot, FunctionRef {
-        override val function: Definition.FunctionDefinition?
-            get() = null
+        override fun unaryMinus() = TODO()
     }
+
+//    data class FunctionSlot(
+//        override val label: FunctionLabel,
+//    ) : Slot, FunctionRef {
+//        override val function: Definition.FunctionDefinition?
+//            get() = null
+//    }
 
     data class NodeSlot<T : CFGNode>(
         override val label: NodeLabel,
