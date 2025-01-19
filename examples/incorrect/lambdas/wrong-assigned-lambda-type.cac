@@ -1,0 +1,2 @@
+let f: [Int] -> Int = ([x: Int] -> Int => x+1);
+f = [] -> Int => 5; # wrong type of lambda
