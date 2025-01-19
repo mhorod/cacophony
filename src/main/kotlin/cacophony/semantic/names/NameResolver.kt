@@ -9,140 +9,135 @@ import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
-import cacophony.utils.CompileException
 
-class NameResolutionException(
-    reason: String,
-) : CompileException(reason)
+sealed interface ResolvedEntity {
+    class Unambiguous(val definition: Definition) : ResolvedEntity
 
-sealed interface ResolvedName {
-    class Variable(
-        val def: VariableDeclaration,
-    ) : ResolvedName
+    class WithOverloads(val overloads: OverloadSet) : ResolvedEntity
+}
 
-    class Argument(
-        val def: FunctionArgument,
-    ) : ResolvedName
-
-    class Function(
-        val def: OverloadSet,
-    ) : ResolvedName
+private fun toArities(entity: ResolvedEntity): Set<Int> = when (entity) {
+    is ResolvedEntity.Unambiguous -> emptySet()
+    is ResolvedEntity.WithOverloads -> entity.overloads.toMap().keys
 }
 
 private class OverloadSetImpl : OverloadSet {
-    private val overloads: MutableMap<Int, FunctionDeclaration> = mutableMapOf()
+    private val overloads: MutableMap<Int, Definition> = mutableMapOf()
 
-    override fun get(arity: Int): FunctionDeclaration? = overloads.get(arity)
+    override fun get(arity: Int): Definition? = overloads[arity]
 
-    override fun toMap(): Map<Int, FunctionDeclaration> = overloads
+    override fun toMap(): Map<Int, Definition> = overloads
 
-    override fun withDeclaration(arity: Int, declaration: FunctionDeclaration): OverloadSet {
+    override fun addDeclaration(arity: Int, declaration: Definition): OverloadSet {
         overloads[arity] = declaration
         return this
     }
 
-    fun withDeclarationsFrom(overloadSet: OverloadSet): OverloadSet {
+    fun addDeclarationsFrom(overloadSet: OverloadSet): OverloadSet {
         overloadSet.toMap().forEach { (arity, declaration) -> overloads[arity] = declaration }
         return this
     }
 }
 
-private interface SymbolsTable {
-    fun open()
+private class SymbolsTable {
+    val blocks: MutableList<MutableMap<String, ResolvedEntity>> = mutableListOf()
+    val idToBlocks: MutableMap<String, MutableList<MutableMap<String, ResolvedEntity>>> = mutableMapOf()
 
-    fun close()
+    fun open() {
+        blocks.add(mutableMapOf())
+    }
 
-    fun define(id: String, definition: Definition)
-
-    fun find(id: String): ResolvedName?
-}
-
-private fun emptySymbolsTable(): SymbolsTable {
-    val blocks: MutableList<MutableMap<String, ResolvedName>> = mutableListOf()
-    val idToBlocks: MutableMap<String, MutableList<MutableMap<String, ResolvedName>>> = mutableMapOf()
-
-    return object : SymbolsTable {
-        override fun open() {
-            blocks.add(mutableMapOf())
+    fun close() {
+        blocks.lastOrNull()?.let { block ->
+            block.keys.forEach { id -> idToBlocks[id]!!.removeLast() }
+            blocks.removeLast()
         }
+    }
 
-        override fun close() {
-            blocks.lastOrNull()?.let { block ->
-                block.keys.forEach { id -> idToBlocks[id]!!.removeLast() }
-                blocks.removeLast()
+    fun define(id: String, definition: Definition, arity: Int? = null): Set<Int> {
+        if (blocks.isNotEmpty()) {
+            if (!idToBlocks.containsKey(id)) {
+                idToBlocks[id] = mutableListOf()
             }
-        }
+            if (idToBlocks[id]!!.lastOrNull() !== blocks.last()) {
+                idToBlocks[id]!!.add(blocks.last())
+            }
 
-        override fun define(id: String, definition: Definition) {
-            if (blocks.isNotEmpty()) {
-                if (!idToBlocks.containsKey(id)) {
-                    idToBlocks[id] = mutableListOf()
+            when (definition) {
+                is VariableDeclaration -> {
+                    blocks.last()[id] = arity?.let {
+                        ResolvedEntity.WithOverloads(OverloadSetImpl().addDeclaration(it, definition))
+                    } ?: ResolvedEntity.Unambiguous(definition)
                 }
-                if (idToBlocks[id]!!.lastOrNull() !== blocks.last()) {
-                    idToBlocks[id]!!.add(blocks.last())
+
+                is FunctionArgument -> {
+                    blocks.last()[id] = if (definition.type is BaseType.Functional) {
+                        ResolvedEntity.WithOverloads(
+                            OverloadSetImpl().addDeclaration(
+                                definition.type.argumentsType.size,
+                                definition
+                            )
+                        )
+                    } else {
+                        ResolvedEntity.Unambiguous(definition)
+                    }
                 }
 
-                when (definition) {
-                    is VariableDeclaration -> {
-                        blocks.last()[id] = ResolvedName.Variable(definition)
-                    }
+                is FunctionDeclaration -> {
+                    val declaredArity =
+                        when (definition) {
+                            is FunctionDefinition -> definition.arguments.size
+                            is ForeignFunctionDeclaration ->
+                                (definition.type ?: error("foreign function without a type")).argumentsType.size
+                        }
+                    when (val closestDefs = blocks.last()[id]) {
+                        is ResolvedEntity.WithOverloads -> {
+                            closestDefs
+                                .overloads
+                                .addDeclaration(declaredArity, definition)
+                        }
 
-                    is FunctionArgument -> {
-                        blocks.last()[id] = ResolvedName.Argument(definition)
-                    }
-
-                    is FunctionDeclaration -> {
-                        val arity =
-                            when (definition) {
-                                is FunctionDefinition -> definition.arguments.size
-                                is ForeignFunctionDeclaration ->
-                                    (definition.type ?: error("foreign function without a type")).argumentsType.size
-                            }
-
-                        when (blocks.last()[id]) {
-                            is ResolvedName.Function -> {
-                                (blocks.last()[id] as ResolvedName.Function)
-                                    .def
-                                    .withDeclaration(arity, definition)
-                            }
-
-                            else -> {
-                                blocks.last()[id] =
-                                    ResolvedName.Function(
-                                        OverloadSetImpl().withDeclaration(arity, definition),
-                                    )
-                            }
+                        else -> {
+                            blocks.last()[id] =
+                                ResolvedEntity.WithOverloads(
+                                    OverloadSetImpl().addDeclaration(declaredArity, definition)
+                                )
                         }
                     }
                 }
             }
-        }
 
-        override fun find(id: String): ResolvedName? =
-            idToBlocks[id]?.let { blocks ->
-                if (blocks.isEmpty()) return null
-                if (blocks.last()[id]!! is ResolvedName.Function) {
-                    // A bit convoluted logic of merging overload sets.
-                    val lastNonFunction = blocks.indexOfLast { it[id] !is ResolvedName.Function }
-                    val overloadSet = OverloadSetImpl()
-                    for (i in lastNonFunction + 1 until blocks.size) {
-                        overloadSet.withDeclarationsFrom((blocks[i][id]!! as ResolvedName.Function).def)
-                    }
-                    return ResolvedName.Function(overloadSet)
-                } else {
-                    return blocks.last()[id]!!
-                }
-            }
+            return toArities(blocks.last()[id]!!)
+        }
+        return emptySet()
     }
+
+    fun find(id: String): ResolvedEntity? =
+        idToBlocks[id]?.let { blocks ->
+            if (blocks.isEmpty()) return null
+            val closestDefs = blocks.last()[id]!!
+            if (closestDefs is ResolvedEntity.WithOverloads) {
+                val overloadSet = OverloadSetImpl()
+                for (block in blocks.reversed()) {
+                    when (val defs = block[id]) {
+                        is ResolvedEntity.WithOverloads -> overloadSet.addDeclarationsFrom(defs.overloads)
+                        else -> break
+                    }
+                }
+                return ResolvedEntity.WithOverloads(overloadSet)
+            } else {
+                return blocks.last()[id]!!
+            }
+        }
 }
 
-typealias NameResolutionResult = Map<VariableUse, ResolvedName>
+typealias NameResolutionResult = Map<VariableUse, ResolvedEntity>
 
 fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
-    val resolution = mutableMapOf<VariableUse, ResolvedName>()
-    val symbolsTable = emptySymbolsTable()
+    val resolution = mutableMapOf<VariableUse, ResolvedEntity>()
+    val symbolsTable = SymbolsTable()
 
-    fun traverseAst(node: Expression, openNewBlock: Boolean) {
+    fun traverseAst(node: Expression, openNewBlock: Boolean): Set<Int> {
         fun visitLambdaExpression(arguments: List<FunctionArgument>, body: Expression) {
             arguments
                 .groupBy { it.identifier }
@@ -163,21 +158,28 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
 
         if (openNewBlock) symbolsTable.open()
 
-        when (node) {
+        val arities: Set<Int> = when (node) {
             is Block -> {
-                node.expressions.forEach { traverseAst(it, it is Block) }
+                node.expressions.map { traverseAst(it, it is Block) }.lastOrNull() ?: emptySet()
             }
 
             is VariableUse -> {
                 symbolsTable
                     .find(node.identifier)
-                    ?.let { resolvedName -> resolution[node] = resolvedName }
-                    ?: diagnostics.report(NRDiagnostics.UnidentifiedIdentifier(node.identifier), node.range)
+                    ?.let { entity ->
+                        resolution[node] = entity
+                        toArities(entity)
+                    }
+                    ?: run {
+                        diagnostics.report(NRDiagnostics.UnidentifiedIdentifier(node.identifier), node.range)
+                        emptySet()
+                    }
             }
 
             is VariableDeclaration -> {
+                val arities = traverseAst(node.value, true)
+
                 symbolsTable.define(node.identifier, node)
-                traverseAst(node.value, true)
             }
 
             is FunctionDefinition -> {

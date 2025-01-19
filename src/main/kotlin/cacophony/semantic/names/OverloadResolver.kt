@@ -1,7 +1,6 @@
 package cacophony.semantic.names
 
 import cacophony.diagnostics.Diagnostics
-import cacophony.diagnostics.ORDiagnostics
 import cacophony.semantic.syntaxtree.*
 
 typealias ResolvedVariables = Map<VariableUse, Definition>
@@ -15,26 +14,7 @@ fun resolveOverloads(ast: AST, nr: NameResolutionResult, diagnostics: Diagnostic
             is Definition.VariableDeclaration -> resolveOverloadsRec(expr.value)
             is Definition.FunctionDefinition -> resolveOverloadsRec(expr.body)
             is FunctionCall -> {
-                if (expr.function is VariableUse) {
-                    when (val resName = nr[expr.function]!!) {
-                        is ResolvedName.Function -> {
-                            when (val overload = resName.def[expr.arguments.size]) {
-                                null ->
-                                    diagnostics.report(ORDiagnostics.IdentifierNotFound(expr.function.identifier), expr.function.range)
-
-                                else -> resolvedVariables[expr.function] = overload
-                            }
-                        }
-
-                        is ResolvedName.Argument ->
-                            diagnostics.report(ORDiagnostics.UsingArgumentAsFunction(expr.function.identifier), expr.function.range)
-
-                        is ResolvedName.Variable ->
-                            diagnostics.report(ORDiagnostics.UsingVariableAsFunction(expr.function.identifier), expr.function.range)
-                    }
-                } else {
-                    diagnostics.report(ORDiagnostics.FunctionIsNotVariableUse, expr.function.range)
-                }
+                resolveOverloadsRec(expr.function)
                 expr.arguments.forEach { resolveOverloadsRec(it) }
             }
 
@@ -68,10 +48,6 @@ fun resolveOverloads(ast: AST, nr: NameResolutionResult, diagnostics: Diagnostic
 
                     is ResolvedName.Argument -> {
                         resolvedVariables[expr] = resName.def
-                    }
-
-                    is ResolvedName.Function -> {
-                        diagnostics.report(ORDiagnostics.UnexpectedFunctionCall, expr.range)
                     }
                 }
             }

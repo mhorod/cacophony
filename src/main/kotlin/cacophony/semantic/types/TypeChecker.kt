@@ -1,6 +1,7 @@
 package cacophony.semantic.types
 
 import cacophony.diagnostics.Diagnostics
+import cacophony.semantic.names.OverloadSet
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
@@ -12,30 +13,40 @@ fun checkTypes(ast: AST, resolvedVariables: ResolvedVariables, diagnostics: Diag
     return TypeCheckingResult(typer.result, typer.typedVariables)
 }
 
+sealed interface OverloadChoice {
+    object None: OverloadChoice
+    class Arity(val arity: Int): OverloadChoice
+}
+
 private class Typer(
     diagnostics: Diagnostics,
     val resolvedVariables: ResolvedVariables,
 ) {
-    val result: MutableMap<Expression, TypeExpr> = mutableMapOf()
+    val result: MutableMap<Expression, TmpType> = mutableMapOf()
     val typedVariables: MutableMap<Definition, TypeExpr> = mutableMapOf()
     val functionContext = ArrayDeque<TypeExpr>()
     val error = ErrorHandler(diagnostics)
     val translator = TypeTranslator(diagnostics)
     var whileDepth = 0
 
-    fun typeExpression(expression: Expression): TypeExpr? {
-        val expressionType: TypeExpr? =
+    sealed interface TmpType {
+        class Basic(val type: TypeExpr): TmpType
+        class Overloaded(val overloads: OverloadSet): TmpType
+    }
+
+    fun typeExpression(expression: Expression): TmpType? {
+        val expressionType: TmpType? =
             when (expression) {
                 is Block -> {
                     if (expression.expressions.isEmpty()) {
-                        BuiltinType.UnitType
+                        TmpType.Basic(BuiltinType.UnitType)
                     } else {
                         var voided = false
                         for (expr in expression.expressions) {
                             val type = typeExpression(expr)
-                            if (type is TypeExpr.VoidType) voided = true
+                            if (type is TmpType.Basic && type.type is TypeExpr.VoidType) voided = true
                         }
-                        if (voided) TypeExpr.VoidType else result[expression.expressions.last()]
+                        if (voided) TmpType.Basic(TypeExpr.VoidType) else result[expression.expressions.last()]
                     }
                 }
 
