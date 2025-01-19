@@ -1,6 +1,7 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
+import cacophony.controlflow.functions.CallableHandler
 import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
@@ -55,7 +56,7 @@ fun generateSubLayout(layout: Layout, type: TypeExpr): Layout {
     throw IllegalArgumentException("layout does not match type")
 }
 
-fun getVariableLayout(handler: FunctionHandler, variable: Variable): Layout =
+fun getVariableLayout(handler: CallableHandler, variable: Variable): Layout =
     when (variable) {
         is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
         is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(handler, subfield) })

@@ -28,6 +28,9 @@ data class AnalyzedFunction(
     val function: Definition.FunctionDefinition,
     val parentLink: ParentLink?,
     val variables: Set<AnalyzedVariable>,
+    // TODO: probably need to change, but we needed it for prologueHandler to compile
+    val arguments: List<Definition.FunctionArgument>,
+
     val auxVariables: MutableSet<Variable>,
     val staticDepth: Int,
     val variablesUsedInNestedFunctions: Set<Variable>,
@@ -39,7 +42,7 @@ data class AnalyzedFunction(
 
 data class AnalyzedVariable(
     val origin: Variable,
-    val definedIn: Definition.FunctionDefinition,
+    val definedIn: Definition.FunctionDefinition, // TODO: change to FunctionalExpression
     val useType: VariableUseType,
 )
 
@@ -111,6 +114,7 @@ fun makeAnalyzedFunction(
         function,
         parentLink,
         variables,
+        function.arguments,
         mutableSetOf(),
         staticRelations.staticDepth,
         variablesUsedInNestedFunctions,

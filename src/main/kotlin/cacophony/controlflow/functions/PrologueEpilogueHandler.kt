@@ -7,11 +7,13 @@ import cacophony.semantic.rtti.getStackFrameLocation
 import cacophony.semantic.syntaxtree.BaseType
 
 class PrologueEpilogueHandler(
-    private val handler: FunctionHandler,
+    private val handler: CallableHandler,
     private val callConvention: CallConvention,
     private val stackSpace: CFGNode.ConstantLazy,
     private val flattenedArguments: List<CFGNode>,
     private val resultAccess: Layout,
+    private val heapVariablePointers: Map<Variable.PrimitiveVariable, Variable.PrimitiveVariable>,
+    // TODO: heap variables should be allocated in prologue
 ) {
     // Preserved registers cannot contain references
     private val spaceForPreservedRegisters: List<Register.VirtualRegister> =
@@ -22,6 +24,7 @@ class PrologueEpilogueHandler(
     fun generatePrologue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
         nodes.add(registerUse(rsp) subeq integer(REGISTER_SIZE))
+        // TODO: how to cover lambdas here?
         nodes.add(pushLabel(getStackFrameLocation(handler.getFunctionDeclaration())))
         nodes.add(pushRegister(rbp, false))
         nodes.add(registerUse(rbp, false) assign registerUse(rsp, false))
@@ -33,9 +36,10 @@ class PrologueEpilogueHandler(
         for ((source, destination) in callConvention.preservedRegisters() zip spaceForPreservedRegisters) {
             nodes.add(registerUse(destination, false) assign registerUse(Register.FixedRegister(source), false))
         }
+
         val isReference =
             handler
-                .getFunctionDeclaration()
+                .getAnalyzedFunction()
                 .arguments
                 .flatMap { it.type.flatten() }
                 .map { it is BaseType.Referential } + listOf(false)
@@ -64,7 +68,7 @@ class PrologueEpilogueHandler(
 
     private fun getReturnLocation(index: Int): VariableAllocation =
         // + 1 argument for static link
-        callConvention.returnAllocation(index, handler.getFunctionDeclaration().arguments.sumOf { it.type.size() } + 1)
+        callConvention.returnAllocation(index, handler.getAnalyzedFunction().arguments.sumOf { it.type.size() } + 1)
 
     fun generateEpilogue(): List<CFGNode> {
         val nodes = mutableListOf<CFGNode>()
