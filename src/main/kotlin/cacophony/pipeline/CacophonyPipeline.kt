@@ -19,12 +19,14 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.parser.CacophonyParser
 import cacophony.semantic.analysis.*
 import cacophony.semantic.names.*
+import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
-import cacophony.semantic.rtti.ObjectOutlinesCreator
+import cacophony.semantic.rtti.createObjectOutlines
 import cacophony.semantic.rtti.generateStackFrameOutline
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.syntaxtree.generateAST
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.semantic.types.TypeExpr
@@ -45,11 +47,6 @@ data class AstAnalysisResult(
     val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
     val escapeAnalysisResult: EscapeAnalysisResult,
-)
-
-data class ObjectOutlines(
-    val locations: ObjectOutlineLocation,
-    val asm: List<String>,
 )
 
 class CacophonyPipeline(
@@ -217,12 +214,7 @@ class CacophonyPipeline(
 
     fun getUsedTypes(types: TypeCheckingResult): List<TypeExpr> = types.expressionTypes.values + types.definitionTypes.values
 
-    fun createObjectOutlines(usedTypes: List<TypeExpr>): ObjectOutlines {
-        val objectOutlinesCreator = ObjectOutlinesCreator()
-        // all internal strucctures, like closures, must later be added here
-        objectOutlinesCreator.add(usedTypes)
-        return ObjectOutlines(objectOutlinesCreator.getLocations(), objectOutlinesCreator.getAsm())
-    }
+    fun getLambdas(): List<LambdaExpression> = emptyList() // TODO
 
     fun generateStackFrameOutlines(functionHandlers: Collection<FunctionHandler>): List<String> =
         functionHandlers.map { generateStackFrameOutline(it) }
@@ -231,6 +223,7 @@ class CacophonyPipeline(
         analyzedAst: AstAnalysisResult,
         callGenerator: CallGenerator,
         objectOutlineLocation: ObjectOutlineLocation,
+        lambdaOutlineLocation: LambdaOutlineLocation,
     ): ProgramCFG {
         val cfg =
             generateCFG(
@@ -241,6 +234,7 @@ class CacophonyPipeline(
                 analyzedAst.types,
                 callGenerator,
                 objectOutlineLocation,
+                lambdaOutlineLocation,
             )
         logger?.logSuccessfulControlFlowGraphGeneration(cfg)
         return cfg
@@ -259,8 +253,18 @@ class CacophonyPipeline(
     fun process(input: Input): Pair<String, Map<FunctionDefinition, String>> {
         val ast = generateAst(input)
         val semantics = analyzeAst(ast)
-        val objectOutlines = createObjectOutlines(getUsedTypes(semantics.types))
-        val cfg = generateControlFlowGraph(semantics, SimpleCallGenerator(), objectOutlines.locations)
+        val objectOutlines =
+            createObjectOutlines(
+                getUsedTypes(semantics.types),
+                getLambdas(),
+            )
+        val cfg =
+            generateControlFlowGraph(
+                semantics,
+                SimpleCallGenerator(),
+                objectOutlines.locations,
+                objectOutlines.lambdaLocations,
+            )
         val (covering, registerAllocation) = linearize(cfg, semantics.functionHandlers)
         val asm =
             covering.mapValues { (function, loweredCFG) ->
