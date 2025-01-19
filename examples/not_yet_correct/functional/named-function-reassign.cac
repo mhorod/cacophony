@@ -1,0 +1,3 @@
+let f = [] -> Int => 5;
+let g = [] -> Int => 6;
+f = g;

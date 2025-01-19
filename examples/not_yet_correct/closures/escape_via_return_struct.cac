@@ -1,5 +1,0 @@
-let f = [] -> {h: [] -> Int, y: Int} => (
-    let x = 5;
-    let g = [] -> Int => x;
-    {h = g, y = 10}
-)

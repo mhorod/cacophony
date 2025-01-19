@@ -1,5 +1,0 @@
-let int_reference = $2;
-
-let x: Int = @int_reference;
-
-@int_reference = 5;
