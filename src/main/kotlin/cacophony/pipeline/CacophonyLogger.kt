@@ -10,10 +10,7 @@ import cacophony.controlflow.print.programCfgToGraphviz
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
-import cacophony.semantic.analysis.CallGraph
-import cacophony.semantic.analysis.FunctionAnalysisResult
-import cacophony.semantic.analysis.VariableUseType
-import cacophony.semantic.analysis.VariablesMap
+import cacophony.semantic.analysis.*
 import cacophony.semantic.names.NameResolutionResult
 import cacophony.semantic.names.ResolvedName
 import cacophony.semantic.names.ResolvedVariables
@@ -35,6 +32,7 @@ class CacophonyLogger(
     private val logVariables: Boolean,
     private val logCallGraph: Boolean,
     private val logFunctions: Boolean,
+    private val logClosures: Boolean,
     private val logCFG: Boolean,
     private val logCover: Boolean,
     private val logRegs: Boolean,
@@ -185,6 +183,29 @@ class CacophonyLogger(
             }
 
             logMaybeSave("Function analysis", content.lines().joinToString("\n"))
+        }
+    }
+
+    override fun logSuccessfulEscapeAnalysis(result: EscapeAnalysisResult) {
+        if (logClosures) {
+            val content = StringBuilder()
+            result.forEach {
+                content.appendLine(it)
+            }
+            logMaybeSave("Escape analysis", content.lines().joinToString("\n"))
+        }
+    }
+
+    override fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult) {
+        if (logClosures) {
+            val content = StringBuilder()
+            result.forEach { (lambda, closure) ->
+                content.appendLine("Lambda $lambda has closure variables:")
+                closure.forEach {
+                    content.appendLine("  $it")
+                }
+            }
+            logMaybeSave("Closure analysis", content.lines().joinToString("\n"))
         }
     }
 
