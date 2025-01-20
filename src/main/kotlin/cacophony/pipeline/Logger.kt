@@ -52,8 +52,6 @@ interface Logger {
 
     fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult)
 
-    fun logSuccessfulEscapeAnalysis(result: EscapeAnalysisResult)
-
     fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult)
 
     fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>)

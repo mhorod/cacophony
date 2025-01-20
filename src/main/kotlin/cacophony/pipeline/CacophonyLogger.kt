@@ -186,16 +186,6 @@ class CacophonyLogger(
         }
     }
 
-    override fun logSuccessfulEscapeAnalysis(result: EscapeAnalysisResult) {
-        if (logClosures) {
-            val content = StringBuilder()
-            result.forEach {
-                content.appendLine(it)
-            }
-            logMaybeSave("Escape analysis", content.lines().joinToString("\n"))
-        }
-    }
-
     override fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult) {
         if (logClosures) {
             val content = StringBuilder()

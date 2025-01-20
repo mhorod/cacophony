@@ -187,8 +187,10 @@ class CacophonyPipeline(
             }.filterIsInstance<Definition.ForeignFunctionDeclaration>()
             .toSet()
 
-    private fun analyzeClosures(escapeAnalysis: EscapeAnalysisResult /*, lambdaAnalysis: LambdaAnalysisResult */): ClosureAnalysisResult {
-        logger?.logSuccessfulEscapeAnalysis(escapeAnalysis)
+    private fun determineClosureSets(
+        escapeAnalysis: EscapeAnalysisResult,
+        /*, lambdaAnalysis: LambdaAnalysisResult */
+    ): ClosureAnalysisResult {
         val analyzedClosures = analyseClosures(escapeAnalysis)
         logger?.logSuccessfulClosureAnalysis(analyzedClosures)
         return analyzedClosures
@@ -203,7 +205,7 @@ class CacophonyPipeline(
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
         val escapeAnalysis = escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap)
-        val analyzedClosures = analyzeClosures(escapeAnalysis)
+        val analyzedClosures = determineClosureSets(escapeAnalysis)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention, variablesMap, analyzedClosures)
         val lambdaHandlers = generateLambdaHandlers()
         val foreignFunctions = filterForeignFunctions(resolvedNames)
