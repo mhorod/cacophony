@@ -36,6 +36,8 @@ class EscapeAnalysisKtTest {
             TypeCheckingResult(
                 mapOf(),
                 mapOf(
+                    xDef to BuiltinType.IntegerType,
+                    yDef to BuiltinType.IntegerType,
                     fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
                     gDef to FunctionType(listOf(), BuiltinType.IntegerType),
                 ),
@@ -108,6 +110,8 @@ class EscapeAnalysisKtTest {
             TypeCheckingResult(
                 mapOf(),
                 mapOf(
+                    xDef to BuiltinType.IntegerType,
+                    hDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
                     fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
                     gDef to FunctionType(listOf(), BuiltinType.IntegerType),
                 ),
@@ -177,14 +181,17 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, sDef, sUse))
         val ast = block(fDef)
 
+        val sType = StructType(mapOf("h" to FunctionType(listOf(), BuiltinType.IntegerType)))
         val types =
             TypeCheckingResult(
                 mapOf(),
                 mapOf(
+                    xDef to BuiltinType.IntegerType,
+                    sDef to sType,
                     fDef to
                         FunctionType(
                             listOf(),
-                            FunctionType(listOf(), StructType(mapOf("h" to FunctionType(listOf(), BuiltinType.IntegerType)))),
+                            FunctionType(listOf(), sType),
                         ),
                     gDef to FunctionType(listOf(), BuiltinType.IntegerType),
                 ),
@@ -256,8 +263,12 @@ class EscapeAnalysisKtTest {
 
         val types =
             TypeCheckingResult(
-                mapOf(),
                 mapOf(
+                    hUse to FunctionType(listOf(), BuiltinType.IntegerType),
+                    gUse to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+                mapOf(
+                    xDef to BuiltinType.IntegerType,
                     hDef to FunctionType(listOf(), BuiltinType.IntegerType),
                     fDef to FunctionType(listOf(), BuiltinType.UnitType),
                     gDef to FunctionType(listOf(), BuiltinType.IntegerType),
@@ -331,6 +342,8 @@ class EscapeAnalysisKtTest {
                     lambda to FunctionType(listOf(), BuiltinType.IntegerType),
                 ),
                 mapOf(
+                    yDef to BuiltinType.IntegerType,
+                    xDef to BuiltinType.IntegerType,
                     fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
                 ),
             )
@@ -432,6 +445,7 @@ class EscapeAnalysisKtTest {
             TypeCheckingResult(
                 mapOf(),
                 mapOf(
+                    xDef to BuiltinType.IntegerType,
                     fDef to FunctionType(listOf(), BuiltinType.IntegerType),
                 ),
             )
@@ -450,6 +464,61 @@ class EscapeAnalysisKtTest {
             VariablesMap(
                 mapOf(),
                 mapOf(xDef to xVar),
+            )
+
+        // when
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
+
+        // then
+        assertThat(result).isEmpty()
+    }
+
+    /*
+     * let y = 10;
+     * let f = [] -> Unit => (
+     *   let x = 15;
+     *   y = x;
+     * )
+     * EXPECTED: {} escape
+     */
+    @Test
+    fun `variables do not escape through assignment to non-functional type`() {
+        // given
+        val xDef = variableDeclaration("x")
+        val xUse = variableUse("x")
+        val yDef = variableDeclaration("y")
+        val yUse = variableUse("y")
+        val fDef = functionDefinition("f", listOf(), block(xDef, yUse assign xUse))
+        val ast = block(fDef)
+
+        val types =
+            TypeCheckingResult(
+                mapOf(
+                    yUse to BuiltinType.IntegerType,
+                    xUse to BuiltinType.IntegerType,
+                ),
+                mapOf(
+                    yDef to BuiltinType.IntegerType,
+                    xDef to BuiltinType.IntegerType,
+                    fDef to FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType),
+                ),
+            )
+
+        val resolvedVariables = mapOf(xUse to xDef, yUse to yDef)
+
+        val yVar = Variable.PrimitiveVariable()
+        val xVar = Variable.PrimitiveVariable()
+
+        val xAVar = AnalyzedVariable(xVar, fDef, VariableUseType.READ_WRITE)
+
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar), mutableSetOf(), 0, emptySet())
+
+        val functionAnalysis = mapOf(fDef to fA)
+
+        val variablesMap =
+            VariablesMap(
+                mapOf(),
+                mapOf(xDef to xVar, yDef to yVar),
             )
 
         // when
