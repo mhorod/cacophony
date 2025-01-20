@@ -19,7 +19,7 @@ fun escapeAnalysis(
     resolvedVariables: ResolvedVariables,
     functionAnalysis: FunctionAnalysisResult,
     variablesMap: VariablesMap,
-    types: TypeCheckingResult,
+    types: TypeCheckingResult
 ): EscapeAnalysisResult {
     val baseVisitor = BaseEscapeAnalysisVisitor(resolvedVariables, variablesMap, types)
     baseVisitor.visit(ast)
@@ -32,7 +32,7 @@ fun escapeAnalysis(
     val variableToDefinition = variablesMap.definitions.map { (variable, def) -> def to variable }.toMap()
 
     // Initialize usageDepth and definitionDepth for each non-global variable to static depth of function declaring it.
-    functionAnalysis.forEach { (function, analysis) ->
+    functionAnalysis.forEach { (_, analysis) ->
         analysis.declaredVariables().forEach {
             definitionDepth[it.origin] = analysis.staticDepth
             usageDepth[it.origin] = analysis.staticDepth
@@ -101,7 +101,7 @@ private data class BaseEscapeAnalysisResult(
 private class BaseEscapeAnalysisVisitor(
     val resolvedVariables: ResolvedVariables,
     val variablesMap: VariablesMap,
-    val types: TypeCheckingResult,
+    val types: TypeCheckingResult
 ) {
     private var currentStaticDepth = -1
     private var functionTypeStack = ArrayDeque<FunctionType>()
