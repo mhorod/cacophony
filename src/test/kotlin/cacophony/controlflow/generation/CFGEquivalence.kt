@@ -102,18 +102,6 @@ private class FragmentEquivalenceVisitor {
                 mapRegisters(actual.register, expected.register)
             }
 
-//            is CFGNode.Function -> {
-//                assertThat(actual).isInstanceOf(CFGNode.Function::class.java)
-//                check(actual is CFGNode.Function)
-//                assertThat(actual.function).isEqualTo(expected.function)
-//            }
-//
-//            is CFGNode.Call -> {
-//                assertThat(actual).isInstanceOf(CFGNode.Call::class.java)
-//                check(actual is CFGNode.Call)
-//                assertThat(actual.functionRef).isEqualTo(expected.functionRef)
-//            }
-
             is CFGNode.RawCall -> {
                 assertThat(actual).isInstanceOf(CFGNode.RawCall::class.java)
                 check(actual is CFGNode.RawCall)
@@ -163,11 +151,6 @@ private class FragmentEquivalenceVisitor {
                 assertThat(actual).isInstanceOf(CFGNode.ValueSlot::class.java)
                 check(actual is CFGNode.ValueSlot)
             }
-
-//            is CFGNode.FunctionSlot -> {
-//                assertThat(actual).isInstanceOf(CFGNode.FunctionSlot::class.java)
-//                check(actual is CFGNode.FunctionSlot)
-//            }
 
             is CFGNode.NodeSlot<*> -> {
             }

@@ -94,20 +94,20 @@ class InstructionMatcherTest {
         assertThat(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()).size).isEqualTo(1)
     }
 
-    // TODO() : write an alternative test
     @Test
     fun `function slot is filled`() {
-        val functionLabel = ValueLabel()
+        val regLabel = RegisterLabel()
         val argNumLabel = ConstantLabel()
-        val patternTree = CFGNode.Call(CFGNode.ValueSlot(functionLabel), CFGNode.ConstantSlot(argNumLabel) { true })
+        val patternTree = CFGNode.Call(CFGNode.RegisterSlot(regLabel), CFGNode.ConstantSlot(argNumLabel) { true })
         val customCallPattern = mockk<SideEffectPattern>()
+
         every { customCallPattern.tree } returns patternTree
         every { customCallPattern.makeInstance(any()) } returns emptyList()
 
         val instructionMatcher = InstructionMatcherImpl(emptyList(), listOf(customCallPattern), emptyList(), emptyList())
-        val functionLinkNode = CFGNode.RegisterUse(Register.VirtualRegister(true))
+        val functionLinkReg = Register.VirtualRegister(true)
         val argNumNode = CFGNode.ConstantKnown(2)
-        val node = CFGNode.Call(functionLinkNode, argNumNode)
+        val node = CFGNode.Call(CFGNode.RegisterUse(functionLinkReg), argNumNode)
 
         val match = instructionMatcher.findMatchesForSideEffects(node).elementAt(0)
 
@@ -116,8 +116,8 @@ class InstructionMatcherTest {
             customCallPattern.makeInstance(
                 match {
                     it.constantFill == mapOf(argNumLabel to argNumNode) &&
-                        it.valueFill == mapOf(functionLabel to functionLinkNode) &&
-                        it.registerFill == emptyMap<ValueLabel, Register>()
+                        it.valueFill == emptyMap<ValueLabel, CFGNode.ValueSlot>() &&
+                        it.registerFill == mapOf(regLabel to functionLinkReg)
                 },
             )
         }

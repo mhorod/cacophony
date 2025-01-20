@@ -24,7 +24,7 @@ val sideEffectPatterns =
         DivisionAssignmentMemoryPattern,
         ModuloAssignmentRegisterPattern,
         ModuloAssignmentMemoryPattern,
-        CallRegPattern,
+//        CallRegPattern,
         CallPattern,
         RawCallPattern,
         ReturnPattern,
@@ -214,19 +214,19 @@ object CallPattern : SideEffectPattern {
         }
 }
 
-object CallRegPattern : NoTemporaryRegistersPattern {
-    private val childLabel = RegisterLabel()
-    private val childSlot = CFGNode.RegisterSlot(childLabel)
-    private val constLabel = ConstantLabel()
-    private val constSlot = CFGNode.ConstantSlot(constLabel) { true }
-
-    override val tree = CFGNode.Call(childSlot, constSlot)
-
-    override fun makeInstance(fill: SlotFill): List<Instruction> =
-        instructions(fill) {
-            call(reg(childLabel), const(constLabel))
-        }
-}
+// object CallRegPattern : NoTemporaryRegistersPattern {
+//    private val childLabel = RegisterLabel()
+//    private val childSlot = CFGNode.RegisterSlot(childLabel)
+//    private val constLabel = ConstantLabel()
+//    private val constSlot = CFGNode.ConstantSlot(constLabel) { true }
+//
+//    override val tree = CFGNode.Call(childSlot, constSlot)
+//
+//    override fun makeInstance(fill: SlotFill): List<Instruction> =
+//        instructions(fill) {
+//            call(reg(childLabel), const(constLabel))
+//        }
+// }
 
 // object CallPattern : NoTemporaryRegistersPattern {
 //    private val functionLabel = FunctionLabel()
