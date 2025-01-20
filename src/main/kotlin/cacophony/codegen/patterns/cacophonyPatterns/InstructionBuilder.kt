@@ -148,13 +148,8 @@ class InstructionBuilder(val slotFill: SlotFill) {
         instructions.add(MovzxReg64Reg8(register, registerByte))
     }
 
-    fun call(childLabel: ValueLabel, constLabel: ConstantLabel) {
-        instructions.add(
-            Call(
-                slotFill.valueFill[childLabel]!!,
-                slotFill.constantFill[constLabel]!!.value,
-            ),
-        )
+    fun call(register: Register, argsCount: CFGNode.Constant) {
+        instructions.add(Call(register, argsCount.value))
     }
 
     fun rawCall(label: BlockLabel) {

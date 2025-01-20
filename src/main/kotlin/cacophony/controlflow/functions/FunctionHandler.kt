@@ -18,7 +18,7 @@ interface CallableHandler {
 
     fun getVariableFromDefinition(varDef: Definition): Variable
 
-    fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode
+    fun generateStaticLinkVariable(callerFunction: CallableHandler): CFGNode
 
     fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue
 

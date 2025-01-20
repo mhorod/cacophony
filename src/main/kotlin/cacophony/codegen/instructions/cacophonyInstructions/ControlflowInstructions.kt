@@ -104,10 +104,10 @@ private fun argumentRegisters(cnt: Int): Set<Register.FixedRegister> =
             Register.FixedRegister(it)
         }.toSet()
 
-// data class Call(val function: Definition.FunctionDeclaration) : InstructionTemplates.FixedRegistersInstruction() {
 data class Call(val child: Register, val const: Int) : InstructionTemplates.FixedRegistersInstruction() {
     override val registersRead =
         setOf(
+            child,
             Register.FixedRegister(HardwareRegister.RSP),
             Register.FixedRegister(HardwareRegister.RBP),
         ) union argumentRegisters(const)
@@ -116,10 +116,17 @@ data class Call(val child: Register, val const: Int) : InstructionTemplates.Fixe
             .entries
             .filterNot(SystemVAMD64CallConvention.preservedRegisters()::contains)
             .filterNot { it == HardwareRegister.RSP }
+            .filterNot { it == HardwareRegister.RBP }
             .map(Register::FixedRegister)
             .toSet()
 
-    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping) = "call ${hardwareRegisterMapping[child]}"
+    override fun toAsm(hardwareRegisterMapping: HardwareRegisterMapping): String {
+        val register = hardwareRegisterMapping[child]
+
+        require(register != null) { "No hardware register mapping found for $child" }
+
+        return "call $register"
+    }
 }
 
 /**

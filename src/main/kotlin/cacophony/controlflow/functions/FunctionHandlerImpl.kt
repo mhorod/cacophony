@@ -103,12 +103,14 @@ class FunctionHandlerImpl(
             )
         }
 
-    override fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode =
+    override fun generateStaticLinkVariable(callerFunction: CallableHandler): CFGNode =
         // Since staticLink is not property of node itself, but rather of its children,
         // if caller is immediate parent, we have to fetch RBP instead.
         if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
             registerUse(rbp, false)
         } else {
+            // LambdaHandler must be root of hierarchy
+            require(callerFunction is FunctionHandler)
             callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first().getFunctionDeclaration())
         }
 
@@ -169,12 +171,8 @@ class FunctionHandlerImpl(
     private fun getFlattenedArguments(): List<CFGNode> =
         function.arguments
             .map { variablesMap.definitions[it]!! }
-            .map {
-                getVariableLayout(
-                    this,
-                    it,
-                )
-            }.map { flattenLayout(it) }
+            .map { getVariableLayout(this, it) }
+            .map { flattenLayout(it) }
             .flatten() + generateVariableAccess(getStaticLink())
 
     private val prologueEpilogueHandler =

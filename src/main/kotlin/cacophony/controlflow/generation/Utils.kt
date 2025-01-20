@@ -2,6 +2,7 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallableHandler
+import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type
@@ -105,6 +106,12 @@ private fun generateLayoutOfHeapObjectImpl(base: CFGNode, type: TypeExpr, offset
 }
 
 fun generateLayoutOfHeapObject(base: CFGNode, type: TypeExpr): Layout = generateLayoutOfHeapObjectImpl(base, type, 0)
+
+fun getFunctionLayout(callerHandler: CallableHandler, calleeHandler: FunctionHandler) =
+    FunctionLayout(
+        SimpleLayout(dataLabel(calleeHandler.getFunctionDeclaration().getLabel())),
+        SimpleLayout(calleeHandler.generateStaticLinkVariable(callerHandler), true),
+    )
 
 fun getForeignFunctionLayout(function: Definition.ForeignFunctionDeclaration) =
     FunctionLayout(SimpleLayout(dataLabel(function.getLabel())), SimpleLayout(integer(0)))

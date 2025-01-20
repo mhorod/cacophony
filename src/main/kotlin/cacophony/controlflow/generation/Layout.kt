@@ -35,7 +35,6 @@ class StructLayout(val fields: Map<String, Layout>) : Layout() {
             .sortedBy { it.key }
             .map { it.value }
             .flatMap { it.flatten() }
-            .toList()
 
     override fun matchesType(type: Type): Boolean =
         when (type) {

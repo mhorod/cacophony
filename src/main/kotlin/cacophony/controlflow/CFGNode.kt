@@ -9,15 +9,23 @@ class CFGLabel {
 
 sealed interface SlotLabel
 
-class RegisterLabel : SlotLabel
+class RegisterLabel : SlotLabel {
+    override fun toString() = "l(${hashCode()})"
+}
 
-class ValueLabel : SlotLabel
+class ValueLabel : SlotLabel {
+    override fun toString() = "v(${hashCode()})"
+}
 
-class ConstantLabel : SlotLabel
+class ConstantLabel : SlotLabel {
+    override fun toString() = "c(${hashCode()})"
+}
 
 // class FunctionLabel : SlotLabel
 
-class NodeLabel : SlotLabel
+class NodeLabel : SlotLabel {
+    override fun toString() = "n(${hashCode()})"
+}
 
 /**
  * Single computation tree that has no control-flow or data-flow dependencies
@@ -53,9 +61,9 @@ sealed interface CFGNode {
     ) : CFGNode {
 //        constructor(function: Definition.FunctionDeclaration) : this(Function(function))
 
-        override fun children(): List<CFGNode> = listOf(childPtr)
+        override fun children(): List<CFGNode> = listOf(childPtr, numArgs)
 
-        override fun toString(): String = "call $childPtr($numArgs)"
+        override fun toString(): String = "call/$numArgs $childPtr"
     }
 
     data class Return(val resultSize: CFGNode) : Leaf {
@@ -128,7 +136,9 @@ sealed interface CFGNode {
         override operator fun unaryMinus(): ConstantLazy = ConstantLazy { -value }
     }
 
-    class DataLabel(val dataLabel: String) : Value
+    class DataLabel(val dataLabel: String) : Value {
+        override fun toString(): String = "label($dataLabel)"
+    }
 
     sealed interface ArithmeticOperator : Value
 
@@ -306,9 +316,9 @@ sealed interface CFGNode {
         val predicate: (Int) -> Boolean,
     ) : Slot, Value, Constant() {
         override val value
-            get() = error("can't do this")
+            get() = error("Cannot use ConstantSlot as a value")
 
-        override fun unaryMinus() = TODO()
+        override fun unaryMinus() = error("Cannot use ConstantSlot as a value")
     }
 
 //    data class FunctionSlot(
