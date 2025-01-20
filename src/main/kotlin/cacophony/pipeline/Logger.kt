@@ -56,6 +56,8 @@ interface Logger {
 
     fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult)
 
+    fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult)
+
     fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>)
 
     fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>)

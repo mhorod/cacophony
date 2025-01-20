@@ -33,6 +33,7 @@ class CacophonyLogger(
     private val logVariables: Boolean,
     private val logCallGraph: Boolean,
     private val logFunctions: Boolean,
+    private val logClosures: Boolean,
     private val logCFG: Boolean,
     private val logCover: Boolean,
     private val logRegs: Boolean,
@@ -196,6 +197,19 @@ class CacophonyLogger(
             }
 
             logMaybeSave("Function analysis", content.lines().joinToString("\n"))
+        }
+    }
+
+    override fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult) {
+        if (logClosures) {
+            val content = StringBuilder()
+            result.forEach { (lambda, closure) ->
+                content.appendLine("Lambda $lambda has closure variables:")
+                closure.forEach {
+                    content.appendLine("  $it")
+                }
+            }
+            logMaybeSave("Closure analysis", content.lines().joinToString("\n"))
         }
     }
 

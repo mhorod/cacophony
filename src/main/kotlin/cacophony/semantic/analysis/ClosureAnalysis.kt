@@ -8,6 +8,9 @@ import cacophony.semantic.syntaxtree.LambdaExpression
  */
 typealias ClosureAnalysisResult = Map<LambdaExpression, Set<Variable>>
 
-fun analyseClosures(): ClosureAnalysisResult {
-    return emptyMap() // TODO - implement closure analysis
+fun analyseClosures(escapeAnalysis: EscapeAnalysisResult /*, lambdaAnalysis: LambdaAnalysisResult */): ClosureAnalysisResult {
+//    return lambdaAnalysis.mapValues { (_, analysis) ->
+//        analysis.declaredVariables().map { it.origin }.filter { escapeAnalysis.contains(it) }.toSet()
+//    }
+    return emptyMap()
 }
