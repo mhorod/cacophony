@@ -104,8 +104,6 @@ class FunctionHandlerImpl(
             throw GenerateVariableAccessException("Function $function has no access to $variable.")
         }
 
-        println((definedInFunctionHandler as FunctionHandler).getFunctionDeclaration())
-
         return generateVariableAccessFrom(variable, definedInFunctionHandler)
     }
 
