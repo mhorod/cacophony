@@ -32,13 +32,14 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, gUse))
         val ast = block(fDef)
 
-        val types = TypeCheckingResult(
-            mapOf(),
-            mapOf(
-                fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
-                gDef to FunctionType(listOf(), BuiltinType.IntegerType)
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
             )
-        )
 
         val resolvedVariables =
             mapOf(
@@ -103,13 +104,14 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, hDef, hUse))
         val ast = block(fDef)
 
-        val types = TypeCheckingResult(
-            mapOf(),
-            mapOf(
-                fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
-                gDef to FunctionType(listOf(), BuiltinType.IntegerType)
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
             )
-        )
 
         val resolvedVariables =
             mapOf(
@@ -175,13 +177,18 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, sDef, sUse))
         val ast = block(fDef)
 
-        val types = TypeCheckingResult(
-            mapOf(),
-            mapOf(
-                fDef to FunctionType(listOf(), FunctionType(listOf(), StructType(mapOf("h" to FunctionType(listOf(), BuiltinType.IntegerType))))),
-                gDef to FunctionType(listOf(), BuiltinType.IntegerType)
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    fDef to
+                        FunctionType(
+                            listOf(),
+                            FunctionType(listOf(), StructType(mapOf("h" to FunctionType(listOf(), BuiltinType.IntegerType)))),
+                        ),
+                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
             )
-        )
 
         val resolvedVariables =
             mapOf(
@@ -247,14 +254,15 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, hUse assign gUse))
         val ast = block(hDef, fDef)
 
-        val types = TypeCheckingResult(
-            mapOf(),
-            mapOf(
-                hDef to FunctionType(listOf(), BuiltinType.IntegerType),
-                fDef to FunctionType(listOf(), BuiltinType.UnitType),
-                gDef to FunctionType(listOf(), BuiltinType.IntegerType)
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    hDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                    fDef to FunctionType(listOf(), BuiltinType.UnitType),
+                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
             )
-        )
 
         val resolvedVariables =
             mapOf(
@@ -317,14 +325,15 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, lambda))
         val ast = block(fDef)
 
-        val types = TypeCheckingResult(
-            mapOf(
-                lambda to FunctionType(listOf(), BuiltinType.IntegerType),
-            ),
-            mapOf(
-                fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+        val types =
+            TypeCheckingResult(
+                mapOf(
+                    lambda to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+                mapOf(
+                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+                ),
             )
-        )
 
         val resolvedVariables =
             mapOf(
@@ -360,7 +369,7 @@ class EscapeAnalysisKtTest {
         // then
         assertThat(result).containsExactlyInAnyOrder(xVar)
     }
-    
+
     /*
      * let f = [x: Int] -> Int => x;
      * EXPECTED: {} escape
@@ -373,12 +382,13 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(xDef), xUse)
         val ast = block(fDef)
 
-        val types = TypeCheckingResult(
-            mapOf(),
-            mapOf(
-                fDef to FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType),
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    fDef to FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType),
+                ),
             )
-        )
 
         val resolvedVariables = mapOf(xUse to xDef)
 
@@ -418,12 +428,13 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, xUse))
         val ast = block(fDef)
 
-        val types = TypeCheckingResult(
-            mapOf(),
-            mapOf(
-                fDef to FunctionType(listOf(), BuiltinType.IntegerType),
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    fDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
             )
-        )
 
         val resolvedVariables = mapOf(xUse to xDef)
 

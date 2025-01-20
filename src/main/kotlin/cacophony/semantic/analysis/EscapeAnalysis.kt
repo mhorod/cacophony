@@ -19,7 +19,7 @@ fun escapeAnalysis(
     resolvedVariables: ResolvedVariables,
     functionAnalysis: FunctionAnalysisResult,
     variablesMap: VariablesMap,
-    types: TypeCheckingResult
+    types: TypeCheckingResult,
 ): EscapeAnalysisResult {
     val baseVisitor = BaseEscapeAnalysisVisitor(resolvedVariables, variablesMap, types)
     baseVisitor.visit(ast)
@@ -101,7 +101,7 @@ private data class BaseEscapeAnalysisResult(
 private class BaseEscapeAnalysisVisitor(
     val resolvedVariables: ResolvedVariables,
     val variablesMap: VariablesMap,
-    val types: TypeCheckingResult
+    val types: TypeCheckingResult,
 ) {
     private var currentStaticDepth = -1
     private var functionTypeStack = ArrayDeque<FunctionType>()
