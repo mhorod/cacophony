@@ -104,7 +104,7 @@ private fun argumentRegisters(cnt: Int): Set<Register.FixedRegister> =
             Register.FixedRegister(it)
         }.toSet()
 
-data class Call(val child: Register, val const: Int) : InstructionTemplates.FixedRegistersInstruction() {
+data class Call(val child: Register, val const: Int) : Instruction {
     override val registersRead =
         setOf(
             child,
@@ -127,6 +127,8 @@ data class Call(val child: Register, val const: Int) : InstructionTemplates.Fixe
 
         return "call $register"
     }
+
+    override fun substituteRegisters(map: Map<Register, Register>) = Call(map.getValue(child), const)
 }
 
 /**
