@@ -74,45 +74,45 @@ class FunctionHandlerImpl(
             //      b) otherwise, the pointer to it is placed inside a virtual register (can this happen?)
             // 2) otherwise, if the variable is used inside a nested function, then it is accessible on stack
             // 3) otherwise, the variable can be placed inside a virtual register
-            val stackAll = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>().toSet()
-            val regAll =
+            val declared =
                 (
                     analyzedFunction.declaredVariables().map { it.origin.getPrimitives() }.flatten() union
+                        analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>() union
                         function.arguments.map { variablesMap.definitions[it]!!.getPrimitives() }.flatten()
-                ).toSet().minus(stackAll.toSet())
-            println(escapeAnalysis)
-            println(variablesMap.definitions)
-            val escaped = escapeAnalysis.filterIsInstance<Variable.PrimitiveVariable>().toSet()
+                ).toSet()
+            val stackAll = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>().toSet()
+            val escaped = escapeAnalysis.filterIsInstance<Variable.PrimitiveVariable>() intersect declared
+            val nonEscaped = declared.minus(escaped)
             val escapedStack = escaped intersect stackAll
-            val escapedReg = escaped intersect regAll
-            val stack = stackAll.minus(escapedStack)
-            val reg = regAll.minus(escapedReg)
+            val escapedReg = escaped.minus(escapedStack)
+            val stack = nonEscaped intersect stackAll
+            val reg = nonEscaped.minus(stack)
 
-//            // without lambdas, 1.a, 1.b should be empty
-//            // 1.a
-//            escapedStack.forEach {
-//                // There is something fishy going on with escaped variables which are structs, but maybe that's ok
-//                registerVariableAllocation(
-//                    it,
-//                    VariableAllocation.ViaPointer(VariableAllocation.OnStack(stackSpace), 0),
-//                )
-//            }
-//
-//            // 1.b
-//            escapedReg.forEach {
-//                registerVariableAllocation(
-//                    it,
-//                    VariableAllocation.ViaPointer(VariableAllocation.InRegister(Register.VirtualRegister(true)), 0),
-//                )
-//            }
+            // without lambdas, 1.a, 1.b should be empty
+            // 1.a
+            escapedStack.forEach {
+                // There is something fishy going on with escaped variables which are structs, but maybe that's ok
+                registerVariableAllocation(
+                    it,
+                    VariableAllocation.ViaPointer(VariableAllocation.OnStack(stackSpace), 0),
+                )
+            }
+
+            // 1.b
+            escapedReg.forEach {
+                registerVariableAllocation(
+                    it,
+                    VariableAllocation.ViaPointer(VariableAllocation.InRegister(Register.VirtualRegister(true)), 0),
+                )
+            }
 
             // 2
-            stackAll.forEach {
+            stack.forEach {
                 allocateFrameVariable(it)
             }
 
             // 3
-            regAll.forEach {
+            reg.forEach {
                 registerVariableAllocation(
                     it,
                     VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),

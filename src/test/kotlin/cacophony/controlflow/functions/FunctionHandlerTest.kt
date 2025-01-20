@@ -293,6 +293,155 @@ class FunctionHandlerTest {
         assertEquals(48, handler.getStackSpace().value)
     }
 
+    @Test
+    fun `escaped variable has via pointer allocation, no usage in nested`() {
+        val funDef = unitFunctionDefinition()
+        val staticLinkVariable = mockk<Variable>()
+
+        val ownVariableDef = mockk<Definition>()
+        val ownVariable = Variable.PrimitiveVariable()
+        every { ownVariableDef.identifier } returns "x"
+        val analyzedOwnVariable = mockk<AnalyzedVariable>()
+        every { analyzedOwnVariable.origin } returns ownVariable
+
+        val analyzedFunction = mockk<AnalyzedFunction>()
+        every { analyzedFunction.variables } returns setOf(analyzedOwnVariable)
+        every { analyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { analyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedOwnVariable)
+
+        val handler = makeDefaultHandler(funDef, analyzedFunction, escapeAnalysis = setOf(ownVariable))
+        val assignedAllocation = handler.getVariableAllocation(ownVariable)
+        require(assignedAllocation is VariableAllocation.ViaPointer)
+        require(assignedAllocation.pointer is VariableAllocation.InRegister)
+        assertThat(assignedAllocation.offset).isZero()
+    }
+
+    @Test
+    fun `escaped variable has via pointer allocation, usage in nested`() {
+        val funDef = unitFunctionDefinition()
+        val staticLinkVariable = mockk<Variable>()
+
+        val ownVariableDef = mockk<Definition>()
+        val ownVariable = Variable.PrimitiveVariable()
+        every { ownVariableDef.identifier } returns "x"
+        val analyzedOwnVariable = mockk<AnalyzedVariable>()
+        every { analyzedOwnVariable.origin } returns ownVariable
+
+        val analyzedFunction = mockk<AnalyzedFunction>()
+        every { analyzedFunction.variables } returns setOf(analyzedOwnVariable)
+        every { analyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(ownVariable)
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedOwnVariable)
+
+        val handler = makeDefaultHandler(funDef, analyzedFunction, escapeAnalysis = setOf(ownVariable))
+        val assignedAllocation = handler.getVariableAllocation(ownVariable)
+        require(assignedAllocation is VariableAllocation.ViaPointer)
+        assertThat(assignedAllocation.offset).isZero()
+        val insideAlloc = assignedAllocation.pointer
+        require(insideAlloc is VariableAllocation.OnStack)
+        assertThat(insideAlloc.offset).isEqualTo(16)
+    }
+
+    @Test
+    fun `one escaped no nested, one escaped nested`() {
+        val funDef = unitFunctionDefinition()
+        val staticLinkVariable = mockk<Variable>()
+
+        val defVar1 = mockk<Definition>()
+        val var1 = Variable.PrimitiveVariable()
+        every { defVar1.identifier } returns "x"
+        val analyzedVar1 = mockk<AnalyzedVariable>()
+        every { analyzedVar1.origin } returns var1
+
+        val defVar2 = mockk<Definition>()
+        val var2 = Variable.PrimitiveVariable()
+        every { defVar2.identifier } returns "y"
+        val analyzedVar2 = mockk<AnalyzedVariable>()
+        every { analyzedVar2.origin } returns var2
+
+        val analyzedFunction = mockk<AnalyzedFunction>()
+        every { analyzedFunction.variables } returns setOf(analyzedVar1, analyzedVar2)
+        every { analyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(var1)
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVar1, analyzedVar2)
+
+        val handler = makeDefaultHandler(funDef, analyzedFunction, escapeAnalysis = setOf(var1, var2))
+
+        val var1Alloc = handler.getVariableAllocation(var1)
+        require(var1Alloc is VariableAllocation.ViaPointer)
+        assertThat(var1Alloc.offset).isZero()
+        val insideAlloc = var1Alloc.pointer
+        require(insideAlloc is VariableAllocation.OnStack)
+        assertThat(insideAlloc.offset).isEqualTo(16)
+
+        val var2Alloc = handler.getVariableAllocation(var2)
+        require(var2Alloc is VariableAllocation.ViaPointer)
+        require(var2Alloc.pointer is VariableAllocation.InRegister)
+        assertThat(var2Alloc.offset).isZero()
+    }
+
+    @Test
+    fun `4 kinds`() {
+        val funDef = unitFunctionDefinition()
+        val staticLinkVariable = mockk<Variable>()
+
+        // escape nested
+        val defVar1 = mockk<Definition>()
+        val var1 = Variable.PrimitiveVariable()
+        every { defVar1.identifier } returns "x"
+        val analyzedVar1 = mockk<AnalyzedVariable>()
+        every { analyzedVar1.origin } returns var1
+
+        // escape no nested
+        val defVar2 = mockk<Definition>()
+        val var2 = Variable.PrimitiveVariable()
+        every { defVar2.identifier } returns "y"
+        val analyzedVar2 = mockk<AnalyzedVariable>()
+        every { analyzedVar2.origin } returns var2
+
+        // no escape nested
+        val defVar3 = mockk<Definition>()
+        val var3 = Variable.PrimitiveVariable()
+        every { defVar3.identifier } returns "z"
+        val analyzedVar3 = mockk<AnalyzedVariable>()
+        every { analyzedVar3.origin } returns var3
+
+        // no escape no nested
+        val defVar4 = mockk<Definition>()
+        val var4 = Variable.PrimitiveVariable()
+        every { defVar4.identifier } returns "t"
+        val analyzedVar4 = mockk<AnalyzedVariable>()
+        every { analyzedVar4.origin } returns var4
+
+        val analyzedFunction = mockk<AnalyzedFunction>()
+        every { analyzedFunction.variables } returns setOf(analyzedVar1, analyzedVar2, analyzedVar3, analyzedVar4)
+        every { analyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { analyzedFunction.variablesUsedInNestedFunctions } returns setOf(var1, var3)
+        every { analyzedFunction.declaredVariables() } returns listOf(analyzedVar1, analyzedVar2, analyzedVar3, analyzedVar4)
+
+        val handler = makeDefaultHandler(funDef, analyzedFunction, escapeAnalysis = setOf(var1, var2))
+
+        val var1Alloc = handler.getVariableAllocation(var1)
+        require(var1Alloc is VariableAllocation.ViaPointer)
+        assertThat(var1Alloc.offset).isZero()
+        val insideAlloc = var1Alloc.pointer
+        require(insideAlloc is VariableAllocation.OnStack)
+        assertThat(insideAlloc.offset).isEqualTo(16)
+
+        val var2Alloc = handler.getVariableAllocation(var2)
+        require(var2Alloc is VariableAllocation.ViaPointer)
+        require(var2Alloc.pointer is VariableAllocation.InRegister)
+        assertThat(var2Alloc.offset).isZero()
+
+        val var3Alloc = handler.getVariableAllocation(var3)
+        require(var3Alloc is VariableAllocation.OnStack)
+        assertThat(var3Alloc.offset).isEqualTo(24)
+
+        val var4Alloc = handler.getVariableAllocation(var4)
+        require(var4Alloc is VariableAllocation.InRegister)
+    }
+
     @Nested
     inner class GenerateVariableAccess {
         @Test
