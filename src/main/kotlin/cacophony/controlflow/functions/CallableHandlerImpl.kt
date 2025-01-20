@@ -8,12 +8,10 @@ import cacophony.controlflow.generation.generateLayoutOfVirtualRegisters
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
-import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.FunctionalExpression
 import kotlin.math.max
 
 abstract class CallableHandlerImpl(
-    callConvention: CallConvention,
     private val analyzedFunction: AnalyzedFunction, // TODO: we need to change it so it also covers lambda expressions
     private val function: FunctionalExpression, // TODO: and probably get rid of that, analyzedFunction should have all necessary info
     private val variablesMap: VariablesMap,
@@ -127,10 +125,7 @@ abstract class CallableHandlerImpl(
             throw IllegalArgumentException("Variable $variable have not been allocated inside $this FunctionHandler")
         }
 
-    override fun getVariableFromDefinition(varDef: Definition): Variable =
-        variablesMap.definitions.getOrElse(varDef) {
-            throw IllegalArgumentException("Variable $varDef have not been defined inside function $function")
-        }
+    override fun hasVariableAllocation(variable: Variable.PrimitiveVariable) = variableAllocation.containsKey(variable)
 
     override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
 
@@ -149,4 +144,9 @@ abstract class CallableHandlerImpl(
     override fun getReferenceAccesses(): List<Int> = referenceOffsets
 
     protected fun getHeapVariablePointers() = heapVariablePointers
+
+    override fun getPointerToHeapVariable(variable: Variable.PrimitiveVariable) =
+        heapVariablePointers.getOrElse(variable) {
+            throw IllegalArgumentException("Variable $variable is not allocated on heap inside $this FunctionHandler")
+        }
 }

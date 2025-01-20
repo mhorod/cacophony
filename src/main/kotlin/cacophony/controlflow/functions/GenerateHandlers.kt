@@ -12,6 +12,7 @@ fun generateFunctionHandlers(
     analyzedFunctions: FunctionAnalysisResult,
     callConvention: CallConvention,
     variablesMap: VariablesMap,
+    escapeAnalysisResult: EscapeAnalysisResult,
     closureAnalysisResult: ClosureAnalysisResult,
     escapeAnalysis: EscapeAnalysisResult,
 ): Map<Definition.FunctionDefinition, FunctionHandler> {
@@ -29,7 +30,6 @@ fun generateFunctionHandlers(
                     emptyList(),
                     callConvention,
                     variablesMap,
-                    closureAnalysisResult,
                     escapeAnalysis,
                 )
         } else {
@@ -45,7 +45,6 @@ fun generateFunctionHandlers(
                     functionAncestorHandlers,
                     callConvention,
                     variablesMap,
-                    closureAnalysisResult,
                     escapeAnalysis,
                 )
             ancestorHandlers[function] = functionAncestorHandlers

@@ -11,13 +11,15 @@ import cacophony.semantic.syntaxtree.LambdaExpression
 interface CallableHandler {
     fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
+    fun hasVariableAllocation(variable: Variable.PrimitiveVariable): Boolean
+
     fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation
 
     fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation)
 
-    fun getStackSpace(): CFGNode.ConstantLazy
+    fun getPointerToHeapVariable(variable: Variable.PrimitiveVariable): Variable.PrimitiveVariable
 
-    fun getVariableFromDefinition(varDef: Definition): Variable
+    fun getStackSpace(): CFGNode.ConstantLazy
 
     fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue
 

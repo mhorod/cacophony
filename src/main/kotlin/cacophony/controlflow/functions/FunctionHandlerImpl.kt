@@ -15,11 +15,8 @@ class FunctionHandlerImpl(
     private val ancestorFunctionHandlers: List<CallableHandler>, // first (or last?) can be Lambda, not Function
     callConvention: CallConvention,
     private val variablesMap: VariablesMap,
-    private val escapeAnalysisResult: EscapeAnalysisResult,
-    private val closureAnalysisResult: ClosureAnalysisResult,
-    escapeAnalysis: EscapeAnalysisResult,
-) :  FunctionHandler, CallableHandlerImpl(
-        callConvention,
+    escapeAnalysisResult: EscapeAnalysisResult,
+) : FunctionHandler, CallableHandlerImpl(
         analyzedFunction,
         function,
         variablesMap,
@@ -97,41 +94,45 @@ class FunctionHandlerImpl(
             }.map { flattenLayout(it) }
             .flatten() + generateVariableAccess(getStaticLink())
 
-    override fun generateOutsideVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
-        TODO("Not yet implemented")
+    private fun generateVariableAccessFrom(variable: Variable.PrimitiveVariable, handler: CallableHandler): CFGNode.LValue =
+        when (val variableAllocation = handler.getVariableAllocation(variable)) {
+            is VariableAllocation.InRegister -> {
+                CFGNode.RegisterUse(variableAllocation.register, variable.holdsReference)
+            }
 
-        /*
-        val analyzedVariable = analyzedFunction.variables.find { it.origin == variable }
+            is VariableAllocation.OnStack -> {
+                CFGNode.MemoryAccess(
+                    CFGNode.Subtraction(
+                        generateAccessToFramePointer(handler),
+                        CFGNode.ConstantKnown(variableAllocation.offset),
+                    ),
+                    variable.holdsReference,
+                )
+            }
+
+            is VariableAllocation.ViaPointer -> {
+                CFGNode.MemoryAccess(
+                    CFGNode.Addition(
+                        generateVariableAccessFrom(
+                            handler.getPointerToHeapVariable(variable),
+                            handler,
+                        ),
+                        CFGNode.ConstantKnown(variableAllocation.offset),
+                    ),
+                )
+            }
+        }
+
+    override fun generateOutsideVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
         val definedInFunctionHandler =
-            if (analyzedVariable != null) {
-                (ancestorFunctionHandlers + this).find { it.getFunctionDeclaration() == analyzedVariable.definedIn }
-            } else {
-                (ancestorFunctionHandlers + this).find { it.getStaticLink() == variable }
+            ancestorFunctionHandlers.find {
+                it.hasVariableAllocation(variable)
             }
 
         if (definedInFunctionHandler == null) {
             throw GenerateVariableAccessException("Function $function has no access to $variable.")
         }
 
-        val definedInDeclaration = definedInFunctionHandler.getFunctionDeclaration()
-
-        return when (val variableAllocation = definedInFunctionHandler.getVariableAllocation(variable)) {
-            is VariableAllocation.InRegister -> {
-                RegisterUse(variableAllocation.register, variable.holdsReference)
-            }
-
-            is VariableAllocation.OnStack -> {
-                MemoryAccess(
-                    CFGNode.Subtraction(
-                        generateAccessToFramePointer(definedInDeclaration),
-                        CFGNode.ConstantKnown(variableAllocation.offset),
-                    ),
-                    variable.holdsReference,
-                )
-            }
-            is VariableAllocation.ViaPointer -> TODO()
-        }
-
-         */
+        return generateVariableAccessFrom(variable, definedInFunctionHandler)
     }
 }
