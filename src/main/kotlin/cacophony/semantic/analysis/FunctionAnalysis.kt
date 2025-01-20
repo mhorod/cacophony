@@ -51,7 +51,6 @@ fun analyzeFunctions(
 ): FunctionAnalysisResult {
     val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
     val variableFunctions = getVariableFunctions(relations, variablesMap)
-    println("variableFunction: $variableFunctions")
     val parentGraph =
         relations.mapValues { (_, staticRelations) ->
             staticRelations.parent?.let { setOf(it) } ?: emptySet()
@@ -72,7 +71,6 @@ fun analyzeFunctions(
             childrenGraphClosedRelations,
             variableFunctions,
         )
-    println("analyzedVariables: $analyzedVariables")
     val variablesUsedInNestedFunctions = variablesUsedInNestedFunctions(analyzedVariables)
 
     return relations.mapValues { (function, staticRelations) ->
