@@ -1,0 +1,47 @@
+{
+  "__class__": "LinkedHashMap",
+  "(Location(value\u003d-1), Location(value\u003d-1))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d8), Location(value\u003d9))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d0), Location(value\u003d9))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d20), Location(value\u003d20))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d24), Location(value\u003d24))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d20), Location(value\u003d24))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d12), Location(value\u003d24))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d0), Location(value\u003d25))": {
+    "__class__": "UnitType",
+    "name": "Unit"
+  },
+  "(Location(value\u003d26), Location(value\u003d26))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  },
+  "(Location(value\u003d0), Location(value\u003d26))": {
+    "__class__": "VoidType",
+    "name": "Void"
+  },
+  "(Location(value\u003d-1), Location(value\u003d26))": {
+    "__class__": "IntegerType",
+    "name": "Int"
+  }
+}
