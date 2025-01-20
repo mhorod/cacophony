@@ -672,6 +672,7 @@
         "useType": "READ_WRITE"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []

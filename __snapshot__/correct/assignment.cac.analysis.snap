@@ -1142,6 +1142,7 @@
         "useType": "READ"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []

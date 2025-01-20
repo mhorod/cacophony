@@ -1,0 +1,4 @@
+let f = [g: [] -> Int] -> Int => g[];
+let h = [] -> Int => 6;
+f[[] -> Int => 5];
+f[h];

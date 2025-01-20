@@ -46,7 +46,7 @@ internal fun generateSimplifiedCFG(
             }
             generator
         }
-    return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator, mockk())
+    return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator, mockk(), mockk())
 }
 
 fun singleFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =

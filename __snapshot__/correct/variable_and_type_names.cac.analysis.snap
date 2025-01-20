@@ -2402,6 +2402,7 @@
         "useType": "UNUSED"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
@@ -2967,6 +2968,38 @@
           }
         },
         "useType": "READ"
+      }
+    ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 308
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 310
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 305
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 310
+          }
+        }
       }
     ],
     "auxVariables": [],

@@ -1,0 +1,59 @@
+foreign write_int: [Int] -> Unit;
+
+let s: {a: [] -> Int, b: [] -> Int} = {
+    a = [] -> Int => 1,
+    b = [] -> Int => 3
+};
+
+let f1 = [x: Int] -> [] -> Int => (
+    let y = 567;
+    let z = 890;
+
+    let g = [] -> Int => y + 100;
+    let k: {h: [] -> Int} = {h = g};
+    if x % 2 == 0 then
+        s.a = k.h
+    else
+        s.a = [] -> Int => z - 100;
+);
+
+let f2 = [x: Int] -> [] -> Int => (
+    let y = 21;
+    let z = 76;
+
+    let g = [] -> [] -> Int => (
+        let k = {e = 10};
+        let kk = k;
+        let kkk = kk;
+
+        let h = [] -> [] -> Int => (
+            let zz = z;
+
+            if x % 2 == 0 then
+                return [] -> Int => kkk.e + y
+            else
+                return [] -> Int => zz;
+        );
+
+        h[]
+    );
+
+    if x % 2 == 0 then
+        return g[]
+    else
+        return (
+            let t = 78;
+            let tt = t;
+            let ttt = t;
+            let i = [] -> [] -> Int => [] -> Int => ttt;
+            i[]
+        );
+);
+
+f1[0];
+s.b = f2[0];
+write_int[s.a[] + s.b[]];
+
+f1[1];
+s.b = f2[1];
+write_int[s.a[] + s.b[]];

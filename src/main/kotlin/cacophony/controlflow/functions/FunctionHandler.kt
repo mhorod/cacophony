@@ -4,27 +4,22 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.Variable
 import cacophony.controlflow.VariableAllocation
 import cacophony.controlflow.generation.Layout
+import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 
-interface FunctionHandler {
-    fun getFunctionDeclaration(): Definition.FunctionDefinition
-
+interface CallableHandler {
     fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue
+
+    fun hasVariableAllocation(variable: Variable.PrimitiveVariable): Boolean
 
     fun getVariableAllocation(variable: Variable.PrimitiveVariable): VariableAllocation
 
     fun registerVariableAllocation(variable: Variable.PrimitiveVariable, allocation: VariableAllocation)
 
-    // Returns static link to parent
-    fun getStaticLink(): Variable.PrimitiveVariable
+    fun getPointerToHeapVariable(variable: Variable.PrimitiveVariable): Variable.PrimitiveVariable
 
     fun getStackSpace(): CFGNode.ConstantLazy
-
-    fun getVariableFromDefinition(varDef: Definition): Variable
-
-    fun generateAccessToFramePointer(other: Definition.FunctionDefinition): CFGNode
-
-    fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode
 
     fun allocateFrameVariable(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
@@ -36,4 +31,25 @@ interface FunctionHandler {
 
     // Returns offsets from RBP to all references on stack
     fun getReferenceAccesses(): List<Int>
+
+    fun getAnalyzedFunction(): AnalyzedFunction
+
+    fun generateAccessToFramePointer(other: CallableHandler): CFGNode
+}
+
+interface LambdaHandler : CallableHandler {
+    fun getBodyReference(): LambdaExpression
+
+    fun getClosureLink(): Variable.PrimitiveVariable
+
+    fun getCapturedVariableOffsets(): Map<Variable, Int>
+}
+
+interface FunctionHandler : CallableHandler {
+    fun getFunctionDeclaration(): Definition.FunctionDefinition // we probably want to delete this?
+
+    // Returns static link to parent
+    fun getStaticLink(): Variable.PrimitiveVariable
+
+    fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode
 }

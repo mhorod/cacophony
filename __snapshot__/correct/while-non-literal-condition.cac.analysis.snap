@@ -320,6 +320,7 @@
       }
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
@@ -694,6 +695,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -1083,6 +1085,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []

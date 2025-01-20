@@ -2,6 +2,10 @@ package cacophony.semantic.analysis
 
 import cacophony.*
 import cacophony.controlflow.Variable
+import cacophony.semantic.types.BuiltinType
+import cacophony.semantic.types.FunctionType
+import cacophony.semantic.types.StructType
+import cacophony.semantic.types.TypeCheckingResult
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -28,6 +32,17 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, gUse))
         val ast = block(fDef)
 
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    xDef to BuiltinType.IntegerType,
+                    yDef to BuiltinType.IntegerType,
+                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+            )
+
         val resolvedVariables =
             mapOf(
                 xUse to xDef,
@@ -43,8 +58,8 @@ class EscapeAnalysisKtTest {
         val yAVar = AnalyzedVariable(yVar, gDef, VariableUseType.READ_WRITE)
         val gAVar = AnalyzedVariable(gVar, fDef, VariableUseType.READ_WRITE)
 
-        val gA = AnalyzedFunction(gDef, null, setOf(xAVar, yAVar), mutableSetOf(), 1, setOf())
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar), mutableSetOf(), 0, setOf(xVar))
+        val gA = AnalyzedFunction(gDef, null, setOf(xAVar, yAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -64,7 +79,7 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap)
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
 
         // then
         assertThat(result).containsExactlyInAnyOrder(gVar, xVar)
@@ -91,6 +106,17 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, hDef, hUse))
         val ast = block(fDef)
 
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    xDef to BuiltinType.IntegerType,
+                    hDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+            )
+
         val resolvedVariables =
             mapOf(
                 xUse to xDef,
@@ -107,8 +133,8 @@ class EscapeAnalysisKtTest {
         val gAVar = AnalyzedVariable(gVar, fDef, VariableUseType.READ_WRITE)
         val hAVar = AnalyzedVariable(hVar, fDef, VariableUseType.READ_WRITE)
 
-        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), mutableSetOf(), 1, setOf())
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar, hAVar), mutableSetOf(), 0, setOf(xVar))
+        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar, hAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -128,7 +154,7 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap)
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
 
         // then
         assertThat(result).containsExactlyInAnyOrder(gVar, hVar, xVar)
@@ -155,6 +181,22 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, sDef, sUse))
         val ast = block(fDef)
 
+        val sType = StructType(mapOf("h" to FunctionType(listOf(), BuiltinType.IntegerType)))
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    xDef to BuiltinType.IntegerType,
+                    sDef to sType,
+                    fDef to
+                        FunctionType(
+                            listOf(),
+                            FunctionType(listOf(), sType),
+                        ),
+                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+            )
+
         val resolvedVariables =
             mapOf(
                 xUse to xDef,
@@ -171,8 +213,8 @@ class EscapeAnalysisKtTest {
         val gAVar = AnalyzedVariable(gVar, fDef, VariableUseType.READ_WRITE)
         val sAVar = AnalyzedVariable(sVar, fDef, VariableUseType.READ_WRITE)
 
-        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), mutableSetOf(), 1, setOf())
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar, sAVar), mutableSetOf(), 0, setOf(xVar))
+        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar, sAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -192,7 +234,7 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap)
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
 
         // then
         assertThat(result).containsExactlyInAnyOrder(sVar, gVar, xVar)
@@ -219,6 +261,20 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, hUse assign gUse))
         val ast = block(hDef, fDef)
 
+        val types =
+            TypeCheckingResult(
+                mapOf(
+                    hUse to FunctionType(listOf(), BuiltinType.IntegerType),
+                    gUse to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+                mapOf(
+                    xDef to BuiltinType.IntegerType,
+                    hDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                    fDef to FunctionType(listOf(), BuiltinType.UnitType),
+                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+            )
+
         val resolvedVariables =
             mapOf(
                 xUse to xDef,
@@ -234,9 +290,9 @@ class EscapeAnalysisKtTest {
         val xAVar = AnalyzedVariable(xVar, fDef, VariableUseType.READ_WRITE)
         val gAVar = AnalyzedVariable(gVar, fDef, VariableUseType.READ_WRITE)
 
-        val hA = AnalyzedFunction(hDef, null, setOf(), mutableSetOf(), 0, setOf())
-        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), mutableSetOf(), 1, setOf())
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar), mutableSetOf(), 0, setOf(xVar))
+        val hA = AnalyzedFunction(hDef, null, setOf(), listOf(), mutableSetOf(), 0, setOf())
+        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -257,7 +313,7 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap)
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
 
         // then
         assertThat(result).containsExactlyInAnyOrder(gVar, xVar)
@@ -266,7 +322,7 @@ class EscapeAnalysisKtTest {
     /*
      * let f = [] -> [] -> Int => (
      *   let x = 10;
-     *   [] -> (let y = 15; x)
+     *   [] -> Int => (let y = 15; x)
      * )
      * EXPECTED: {x} escapes
      */
@@ -280,6 +336,18 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, lambda))
         val ast = block(fDef)
 
+        val types =
+            TypeCheckingResult(
+                mapOf(
+                    lambda to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+                mapOf(
+                    yDef to BuiltinType.IntegerType,
+                    xDef to BuiltinType.IntegerType,
+                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+                ),
+            )
+
         val resolvedVariables =
             mapOf(
                 xUse to xDef,
@@ -290,9 +358,8 @@ class EscapeAnalysisKtTest {
         val fVar = Variable.PrimitiveVariable()
 
         val xAVar = AnalyzedVariable(xVar, fDef, VariableUseType.READ_WRITE)
-        val yAVar = AnalyzedVariable(yVar, fDef, VariableUseType.READ_WRITE)
 
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar), mutableSetOf(), 0, setOf(xVar))
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -310,9 +377,154 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap)
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
 
         // then
         assertThat(result).containsExactlyInAnyOrder(xVar)
+    }
+
+    /*
+     * let f = [x: Int] -> Int => x;
+     * EXPECTED: {} escape
+     */
+    @Test
+    fun `arguments do not escape if not necessary`() {
+        // given
+        val xDef = intArg("x")
+        val xUse = variableUse("x")
+        val fDef = functionDefinition("f", listOf(xDef), xUse)
+        val ast = block(fDef)
+
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    fDef to FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType),
+                ),
+            )
+
+        val resolvedVariables = mapOf(xUse to xDef)
+
+        val xVar = Variable.PrimitiveVariable()
+
+        val xAVar = AnalyzedVariable(xVar, fDef, VariableUseType.READ_WRITE)
+
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar), listOf(), mutableSetOf(), 0, emptySet())
+
+        val functionAnalysis = mapOf(fDef to fA)
+
+        val variablesMap =
+            VariablesMap(
+                mapOf(),
+                mapOf(xDef to xVar),
+            )
+
+        // when
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
+
+        // then
+        assertThat(result).isEmpty()
+    }
+
+    /*
+     * let f = [] -> Int => (
+     *   let x = 10;
+     *   x
+     * )
+     * EXPECTED: {} escape
+     */
+    @Test
+    fun `local variables do not escape if not necessary`() {
+        // given
+        val xDef = variableDeclaration("x")
+        val xUse = variableUse("x")
+        val fDef = functionDefinition("f", listOf(), block(xDef, xUse))
+        val ast = block(fDef)
+
+        val types =
+            TypeCheckingResult(
+                mapOf(),
+                mapOf(
+                    xDef to BuiltinType.IntegerType,
+                    fDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                ),
+            )
+
+        val resolvedVariables = mapOf(xUse to xDef)
+
+        val xVar = Variable.PrimitiveVariable()
+
+        val xAVar = AnalyzedVariable(xVar, fDef, VariableUseType.READ_WRITE)
+
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar), listOf(), mutableSetOf(), 0, emptySet())
+
+        val functionAnalysis = mapOf(fDef to fA)
+
+        val variablesMap =
+            VariablesMap(
+                mapOf(),
+                mapOf(xDef to xVar),
+            )
+
+        // when
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
+
+        // then
+        assertThat(result).isEmpty()
+    }
+
+    /*
+     * let y = 10;
+     * let f = [] -> Unit => (
+     *   let x = 15;
+     *   y = x;
+     * )
+     * EXPECTED: {} escape
+     */
+    @Test
+    fun `variables do not escape through assignment to non-functional type`() {
+        // given
+        val xDef = variableDeclaration("x")
+        val xUse = variableUse("x")
+        val yDef = variableDeclaration("y")
+        val yUse = variableUse("y")
+        val fDef = functionDefinition("f", listOf(), block(xDef, yUse assign xUse))
+        val ast = block(fDef)
+
+        val types =
+            TypeCheckingResult(
+                mapOf(
+                    yUse to BuiltinType.IntegerType,
+                    xUse to BuiltinType.IntegerType,
+                ),
+                mapOf(
+                    yDef to BuiltinType.IntegerType,
+                    xDef to BuiltinType.IntegerType,
+                    fDef to FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType),
+                ),
+            )
+
+        val resolvedVariables = mapOf(xUse to xDef, yUse to yDef)
+
+        val yVar = Variable.PrimitiveVariable()
+        val xVar = Variable.PrimitiveVariable()
+
+        val xAVar = AnalyzedVariable(xVar, fDef, VariableUseType.READ_WRITE)
+
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar), listOf(), mutableSetOf(), 0, emptySet())
+
+        val functionAnalysis = mapOf(fDef to fA)
+
+        val variablesMap =
+            VariablesMap(
+                mapOf(),
+                mapOf(xDef to xVar, yDef to yVar),
+            )
+
+        // when
+        val result = escapeAnalysis(ast, resolvedVariables, functionAnalysis, variablesMap, types)
+
+        // then
+        assertThat(result).isEmpty()
     }
 }

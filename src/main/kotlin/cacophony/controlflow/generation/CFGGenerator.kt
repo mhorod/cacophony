@@ -7,6 +7,7 @@ import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
+import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.types.ReferentialType
@@ -25,6 +26,7 @@ internal class CFGGenerator(
     private val typeCheckingResult: TypeCheckingResult,
     private val callGenerator: CallGenerator,
     private val objectOutlineLocation: ObjectOutlineLocation,
+    private val lambdaOutlineLocation: LambdaOutlineLocation,
 ) {
     private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)

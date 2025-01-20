@@ -25,5 +25,12 @@ sealed class Variable(
             is Heap -> emptyList()
         }
 
+    fun size(): Int =
+        when (this) {
+            is PrimitiveVariable -> 1
+            is StructVariable -> fields.map { (_, field) -> field.size() }.sum()
+            is Heap -> 0 // This is an internal entity
+        }
+
     override fun toString(): String = name
 }

@@ -3469,6 +3469,7 @@
         "useType": "READ"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
@@ -4106,6 +4107,104 @@
       "used": false
     },
     "variables": [],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Structural",
+          "fields": {
+            "__class__": "LinkedHashMap",
+            "x": {
+              "__class__": "Structural",
+              "fields": {
+                "__class__": "LinkedHashMap",
+                "b": {
+                  "__class__": "Basic",
+                  "identifier": "Int",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 142
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 144
+                    }
+                  }
+                },
+                "a": {
+                  "__class__": "Basic",
+                  "identifier": "Bool",
+                  "range": {
+                    "__class__": "Pair",
+                    "first": {
+                      "__class__": "Location",
+                      "value": 150
+                    },
+                    "second": {
+                      "__class__": "Location",
+                      "value": 153
+                    }
+                  }
+                }
+              },
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 138
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 154
+                }
+              }
+            },
+            "a": {
+              "__class__": "Structural",
+              "fields": {
+                "__class__": "EmptyMap"
+              },
+              "range": {
+                "__class__": "Pair",
+                "first": {
+                  "__class__": "Location",
+                  "value": 160
+                },
+                "second": {
+                  "__class__": "Location",
+                  "value": 161
+                }
+              }
+            }
+          },
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 134
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 162
+            }
+          }
+        },
+        "identifier": "a",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 131
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 162
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []

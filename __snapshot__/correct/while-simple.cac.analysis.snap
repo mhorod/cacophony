@@ -2140,6 +2140,7 @@
         "useType": "READ"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
@@ -2831,6 +2832,98 @@
       "used": false
     },
     "variables": [],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 14
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 16
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 11
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 16
+          }
+        }
+      },
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 22
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 24
+            }
+          }
+        },
+        "identifier": "y",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 19
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 24
+          }
+        }
+      },
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 30
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 32
+            }
+          }
+        },
+        "identifier": "z",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 27
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 32
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
