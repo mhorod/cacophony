@@ -204,7 +204,7 @@ class CacophonyPipeline(
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
-        val escapeAnalysis = escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap)
+        val escapeAnalysis = escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
         val analyzedClosures = determineClosureSets(escapeAnalysis)
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention, variablesMap, analyzedClosures)
         val lambdaHandlers = generateLambdaHandlers()

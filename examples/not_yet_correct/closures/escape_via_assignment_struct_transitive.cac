@@ -1,8 +1,0 @@
-let s = {h = [] -> Int => 5, y = 10}
-
-let f = [] -> Unit => (
-    let x = 10;
-    let g = [] -> Int = x;
-    let k = {h = g, y = 15};
-    s = k;
-)

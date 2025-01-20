@@ -1,6 +1,0 @@
-let f = [] -> [] -> Int => (
-    let x = 5;
-    let g = [] -> Int => x;
-    let h = g;
-    h
-)
