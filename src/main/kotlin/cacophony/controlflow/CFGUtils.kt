@@ -89,6 +89,13 @@ fun not(node: CFGNode) = CFGNode.LogicalNot(node)
 fun wrapAllocation(allocation: VariableAllocation, holdsReference: Boolean): CFGNode.LValue =
     when (allocation) {
         is VariableAllocation.InRegister -> registerUse(allocation.register, holdsReference)
-        is VariableAllocation.OnStack -> memoryAccess(registerUse(rbp, false) sub integer(allocation.offset), holdsReference)
-        is VariableAllocation.ViaPointer -> TODO()
+        is VariableAllocation.OnStack ->
+            memoryAccess(
+                registerUse(rbp, false) sub integer(allocation.offset),
+                holdsReference,
+            )
+        is VariableAllocation.ViaPointer ->
+            memoryAccess(
+                wrapAllocation(allocation.pointer, true) add integer(allocation.offset),
+            )
     }

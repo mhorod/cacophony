@@ -29,6 +29,7 @@ class CacophonyLogger(
     private val logNameRes: Boolean,
     private val logOverloads: Boolean,
     private val logTypes: Boolean,
+    private val logEscapeAnalysis: Boolean,
     private val logVariables: Boolean,
     private val logCallGraph: Boolean,
     private val logFunctions: Boolean,
@@ -122,6 +123,19 @@ class CacophonyLogger(
     }
 
     override fun logFailedTypeChecking() = printError("Type checking failed :(")
+
+    override fun logSuccessfulEscapeAnalysis(result: EscapeAnalysisResult, variableMap: VariablesMap) {
+        if (logEscapeAnalysis) {
+            val variableToDefinition = variableMap.definitions.entries.associate { (k, v) -> v to k }
+            logMaybeSave(
+                "Escaping variables",
+                result
+                    .joinToString("\n") { "$it (${variableToDefinition.getOrDefault(it, "no declaration")})" },
+            )
+        }
+    }
+
+    override fun logFailedEscapeAnalysis() = printError("Escape analysis failed :(")
 
     override fun logSuccessfulVariableCreation(variableMap: VariablesMap) {
         if (logVariables) {

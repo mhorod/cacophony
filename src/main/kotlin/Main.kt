@@ -23,6 +23,7 @@ class Main : CliktCommand() {
     private val logNameRes by option("--log-names").flag()
     private val logOverloads by option("--log-overloads").flag()
     private val logTypes by option("--log-types").flag()
+    private val logEscapeAnalysis by option("--log-escape-analysis").flag()
     private val logVariables by option("--log-variables").flag()
     private val logCallGraph by option("--log-callgraph").flag()
     private val logFunctions by option("--log-functions").flag()
@@ -59,6 +60,7 @@ class Main : CliktCommand() {
                 verbose || logAnalysis || logNameRes,
                 verbose || logAnalysis || logOverloads,
                 verbose || logAnalysis || logTypes,
+                verbose || logAnalysis || logEscapeAnalysis,
                 verbose || logAnalysis || logVariables,
                 verbose || logAnalysis || logCallGraph,
                 verbose || logAnalysis || logFunctions,

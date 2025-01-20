@@ -46,6 +46,10 @@ interface Logger {
 
     fun logFailedTypeChecking()
 
+    fun logFailedEscapeAnalysis()
+
+    fun logSuccessfulEscapeAnalysis(result: EscapeAnalysisResult, variableMap: VariablesMap)
+
     fun logSuccessfulCallGraphGeneration(callGraph: CallGraph)
 
     fun logFailedCallGraphGeneration()

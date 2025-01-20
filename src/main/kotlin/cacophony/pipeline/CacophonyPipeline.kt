@@ -196,6 +196,24 @@ class CacophonyPipeline(
         return analyzedClosures
     }
 
+    private fun findEscapingVariables(
+        ast: AST,
+        resolvedVariables: ResolvedVariables,
+        analyzedFunctions: FunctionAnalysisResult,
+        variablesMap: VariablesMap,
+        types: TypeCheckingResult,
+    ): EscapeAnalysisResult {
+        val escapeAnalysisResult =
+            try {
+                escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
+            } catch (e: Exception) {
+                logger?.logFailedEscapeAnalysis()
+                throw e
+            }
+        logger?.logSuccessfulEscapeAnalysis(escapeAnalysisResult, variablesMap)
+        return escapeAnalysisResult
+    }
+
     fun analyzeAst(ast: AST): AstAnalysisResult {
         val resolvedNames = resolveNames(ast)
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
@@ -204,10 +222,17 @@ class CacophonyPipeline(
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
-        val escapeAnalysis = escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
+        val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
         val analyzedClosures = determineClosureSets(escapeAnalysis)
-        val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention, variablesMap, analyzedClosures)
         val lambdaHandlers = generateLambdaHandlers()
+        val functionHandlers =
+            generateFunctionHandlers(
+                analyzedFunctions,
+                SystemVAMD64CallConvention,
+                variablesMap,
+                analyzedClosures,
+                escapeAnalysis,
+            )
         val foreignFunctions = filterForeignFunctions(resolvedNames)
         return AstAnalysisResult(
             resolvedVariables,
