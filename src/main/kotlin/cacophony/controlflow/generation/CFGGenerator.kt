@@ -183,23 +183,38 @@ internal class CFGGenerator(
                         ),
                     )
 
-                val resultPointerLayout = SimpleLayout(registerUse(Register.VirtualRegister(), true), true)
+                val resultPointerLayout = generateLayoutOfVirtualRegisters(type)
+                require(resultPointerLayout is SimpleLayout)
 
-                val functionType = typeCheckingResult.expressionTypes[Builtin.allocStruct]!!
+                val functionType = typeCheckingResult.definitionTypes[Builtin.allocStruct]!!
+                val functionLayout = getForeignFunctionLayout(Builtin.allocStruct)
+                println(functionType)
                 require(functionType is FunctionType) { "LHS of call should be callable but is $functionType" }
                 val call =
                     generateCall(
                         functionType,
-                        getForeignFunctionLayout(Builtin.allocStruct),
+                        functionLayout,
                         arguments.map { it.access },
                         resultPointerLayout,
                     )
-
+                val callWithArgs = arguments.reduce(SubCFG.Extracted::merge) merge call
                 val resultLayout = generateLayoutOfHeapObject(resultPointerLayout.access, type.type)
-                val allocation = call merge assignLayoutWithValue(calcExpression.access, resultLayout, call.access)
+                val callCFG =
+                    (
+                        callWithArgs merge
+                            assignLayoutWithValue(calcExpression.access, resultLayout, resultPointerLayout)
+                    )
+//                        .let {
+//                        SubCFG.Extracted(it.entry, it.exit, functionLayout)
+//                    }
+//                if (mode is EvalMode.Conditional) {
+//                    return extendWithConditional(fullCFG, mode)
+//                }
+
+//                val allocation = call merge
                 when (calcExpression) {
-                    is SubCFG.Extracted -> calcExpression merge allocation
-                    is SubCFG.Immediate -> allocation
+                    is SubCFG.Extracted -> calcExpression merge callCFG
+                    is SubCFG.Immediate -> callCFG
                 }
             }
             // do nothing if value is not used

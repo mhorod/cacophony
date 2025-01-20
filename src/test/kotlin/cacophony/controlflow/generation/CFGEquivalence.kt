@@ -301,7 +301,12 @@ private class FragmentEquivalenceVisitor {
                 check(actual is CFGNode.DataLabel)
             }
 
-            is CFGNode.Call -> TODO()
+            is CFGNode.Call -> {
+                assertThat(actual).isInstanceOf(CFGNode.Call::class.java)
+                check(actual is CFGNode.Call)
+                visit(actual.childPtr, expected.childPtr)
+                visit(actual.numArgs, expected.numArgs)
+            }
         }
     }
 

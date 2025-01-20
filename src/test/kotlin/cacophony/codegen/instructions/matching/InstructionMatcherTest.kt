@@ -4,7 +4,6 @@ import cacophony.codegen.patterns.SideEffectPattern
 import cacophony.codegen.patterns.ValuePattern
 import cacophony.codegen.patterns.cacophonyPatterns.AdditionPattern
 import cacophony.controlflow.*
-import cacophony.semantic.syntaxtree.Definition
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -76,8 +75,7 @@ class InstructionMatcherTest {
                 match {
                     it.constantFill == mapOf(constLabel to nodes[0]) &&
                         it.valueFill == mapOf(valueLabel to subOperationResult) &&
-                        it.registerFill == mapOf(registerLabel to register) &&
-                        it.functionFill == emptyMap<FunctionLabel, CFGNode.Function>()
+                        it.registerFill == mapOf(registerLabel to register)
                 },
                 resultRegister,
             )
@@ -96,17 +94,20 @@ class InstructionMatcherTest {
         assertThat(instructionMatcher.findMatchesForValue(node, Register.VirtualRegister()).size).isEqualTo(1)
     }
 
+    // TODO() : write an alternative test
     @Test
     fun `function slot is filled`() {
-        val functionLabel = FunctionLabel()
-        val patternTree = CFGNode.Call(CFGNode.FunctionSlot(functionLabel))
+        val functionLabel = ValueLabel()
+        val argNumLabel = ConstantLabel()
+        val patternTree = CFGNode.Call(CFGNode.ValueSlot(functionLabel), CFGNode.ConstantSlot(argNumLabel) { true })
         val customCallPattern = mockk<SideEffectPattern>()
         every { customCallPattern.tree } returns patternTree
         every { customCallPattern.makeInstance(any()) } returns emptyList()
 
         val instructionMatcher = InstructionMatcherImpl(emptyList(), listOf(customCallPattern), emptyList(), emptyList())
-        val function = Definition.FunctionDefinition(mockk(), "f", mockk(), listOf(), mockk(), mockk())
-        val node = CFGNode.Call(function)
+        val functionLinkNode = CFGNode.RegisterUse(Register.VirtualRegister(true))
+        val argNumNode = CFGNode.ConstantKnown(2)
+        val node = CFGNode.Call(functionLinkNode, argNumNode)
 
         val match = instructionMatcher.findMatchesForSideEffects(node).elementAt(0)
 
@@ -114,10 +115,9 @@ class InstructionMatcherTest {
         verify {
             customCallPattern.makeInstance(
                 match {
-                    it.constantFill == emptyMap<ConstantLabel, CFGNode.Constant>() &&
-                        it.valueFill == emptyMap<ValueLabel, Register>() &&
-                        it.registerFill == emptyMap<ValueLabel, Register>() &&
-                        it.functionFill == mapOf(functionLabel to CFGNode.Function(function))
+                    it.constantFill == mapOf(argNumLabel to argNumNode) &&
+                        it.valueFill == mapOf(functionLabel to functionLinkNode) &&
+                        it.registerFill == emptyMap<ValueLabel, Register>()
                 },
             )
         }

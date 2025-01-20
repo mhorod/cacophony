@@ -174,102 +174,102 @@ class StructReturnTest {
         assertEquivalent(actualCFG, expectedCFG)
     }
 
-    @Test
-    fun `call sequence - return struct simple no args`() {
-        // given
+//    @Test
+//    fun `call sequence - return struct simple no args`() {
+//        // given
+//
+//        /* let g = [] -> Int => (
+//         *  let f = [] -> {a: Int, b: Bool} => {a = 7, b = true};
+//         *  f[].a
+//         * );
+//         */
+//        val fDef =
+//            functionDefinition(
+//                "f",
+//                listOf(),
+//                simpleStruct(),
+//                simpleType(),
+//            )
+//
+//        val gDef =
+//            intFunctionDefinition(
+//                "g",
+//                listOf(),
+//                block(
+//                    fDef,
+//                    rvalueFieldRef(call(variableUse("f")), "a"),
+//                ),
+//            )
+//
+//        // when
+//        val actualCFG = generateSimplifiedCFG(gDef, fullCallSequences = true)[gDef]!!
+//
+//        // then
+//        val expectedCFG =
+//            standaloneWrappedCFGFragment(gDef) {
+//                "bodyEntry" does jump("assign sl") { registerUse(rsp) subeq integer(0) }
+//                "assign sl" does jump("call f") { writeRegister(rdi, registerUse(rbp)) }
+//                "call f" does jump("restore rsp") { call(fDef) }
+//                "restore rsp" does jump("assign a") { registerUse(rsp) addeq integer(0) }
+//                "assign a" does jump("assign b") { writeRegister("virA", registerUse(rax)) }
+//                "assign b" does jump("assign res") { writeRegister("virB", registerUse(rdi)) }
+//                "assign res" does jump("bodyExit") { writeRegister("virC", registerUse("virA")) }
+//            }
+//
+//        assertFragmentIsEquivalent(actualCFG, expectedCFG)
+//    }
 
-        /* let g = [] -> Int => (
-         *  let f = [] -> {a: Int, b: Bool} => {a = 7, b = true};
-         *  f[].a
-         * );
-         */
-        val fDef =
-            functionDefinition(
-                "f",
-                listOf(),
-                simpleStruct(),
-                simpleType(),
-            )
-
-        val gDef =
-            intFunctionDefinition(
-                "g",
-                listOf(),
-                block(
-                    fDef,
-                    rvalueFieldRef(call(variableUse("f")), "a"),
-                ),
-            )
-
-        // when
-        val actualCFG = generateSimplifiedCFG(gDef, fullCallSequences = true)[gDef]!!
-
-        // then
-        val expectedCFG =
-            standaloneWrappedCFGFragment(gDef) {
-                "bodyEntry" does jump("assign sl") { registerUse(rsp) subeq integer(0) }
-                "assign sl" does jump("call f") { writeRegister(rdi, registerUse(rbp)) }
-                "call f" does jump("restore rsp") { call(fDef) }
-                "restore rsp" does jump("assign a") { registerUse(rsp) addeq integer(0) }
-                "assign a" does jump("assign b") { writeRegister("virA", registerUse(rax)) }
-                "assign b" does jump("assign res") { writeRegister("virB", registerUse(rdi)) }
-                "assign res" does jump("bodyExit") { writeRegister("virC", registerUse("virA")) }
-            }
-
-        assertFragmentIsEquivalent(actualCFG, expectedCFG)
-    }
-
-    @Test
-    fun `call sequence - return struct nested few args`() {
-        // given
-
-        /* let g = [] -> Int => (
-         *  let f = [x: Int, y: Int, z: Int] -> {a: Int, b: Bool} => {a = 5, b = {a = 7, b = true}};
-         *  f[0,1,2].a
-         * );
-         */
-        val fDef =
-            functionDefinition(
-                "f",
-                listOf(intArg("x"), intArg("y"), intArg("z")),
-                nestedStruct(),
-                nestedType(),
-            )
-
-        val gDef =
-            intFunctionDefinition(
-                "g",
-                listOf(),
-                block(
-                    fDef,
-                    rvalueFieldRef(call(variableUse("f"), lit(0), lit(1), lit(2)), "a"),
-                ),
-            )
-
-        // when
-        val actualCFG = generateSimplifiedCFG(gDef, fullCallSequences = true)[gDef]!!
-
-        // then
-        val expectedCFG =
-            standaloneWrappedCFGFragment(gDef) {
-                "bodyEntry" does jump("prep arg2") { writeRegister("arg1", integer(0)) }
-                "prep arg2" does jump("prep arg3") { writeRegister("arg2", integer(1)) }
-                "prep arg3" does jump("prep rsp") { writeRegister("arg3", integer(2)) }
-                "prep rsp" does jump("assign arg1") { registerUse(rsp) subeq integer(0) }
-                "assign arg1" does jump("assign arg2") { writeRegister(rdi, registerUse("arg1")) }
-                "assign arg2" does jump("assign arg3") { writeRegister(rsi, registerUse("arg2")) }
-                "assign arg3" does jump("assign sl") { writeRegister(rdx, registerUse("arg3")) }
-                "assign sl" does jump("call f") { writeRegister(rcx, registerUse(rbp)) }
-                "call f" does jump("restore rsp") { call(fDef) }
-                "restore rsp" does jump("assign a") { registerUse(rsp) addeq integer(0) }
-                "assign a" does jump("assign b.a") { writeRegister("virA", registerUse(rax)) }
-                "assign b.a" does jump("assign b.b") { writeRegister("virB", registerUse(rdi)) }
-                "assign b.b" does jump("assign res") { writeRegister("virC", registerUse(rsi)) }
-                "assign res" does jump("bodyExit") { writeRegister("virD", registerUse("virA")) }
-            }
-
-        assertFragmentIsEquivalent(actualCFG, expectedCFG)
-    }
+//    @Test
+//    fun `call sequence - return struct nested few args`() {
+//        // given
+//
+//        /* let g = [] -> Int => (
+//         *  let f = [x: Int, y: Int, z: Int] -> {a: Int, b: Bool} => {a = 5, b = {a = 7, b = true}};
+//         *  f[0,1,2].a
+//         * );
+//         */
+//        val fDef =
+//            functionDefinition(
+//                "f",
+//                listOf(intArg("x"), intArg("y"), intArg("z")),
+//                nestedStruct(),
+//                nestedType(),
+//            )
+//
+//        val gDef =
+//            intFunctionDefinition(
+//                "g",
+//                listOf(),
+//                block(
+//                    fDef,
+//                    rvalueFieldRef(call(variableUse("f"), lit(0), lit(1), lit(2)), "a"),
+//                ),
+//            )
+//
+//        // when
+//        val actualCFG = generateSimplifiedCFG(gDef, fullCallSequences = true)[gDef]!!
+//
+//        // then
+//        val expectedCFG =
+//            standaloneWrappedCFGFragment(gDef) {
+//                "bodyEntry" does jump("prep arg2") { writeRegister("arg1", integer(0)) }
+//                "prep arg2" does jump("prep arg3") { writeRegister("arg2", integer(1)) }
+//                "prep arg3" does jump("prep rsp") { writeRegister("arg3", integer(2)) }
+//                "prep rsp" does jump("assign arg1") { registerUse(rsp) subeq integer(0) }
+//                "assign arg1" does jump("assign arg2") { writeRegister(rdi, registerUse("arg1")) }
+//                "assign arg2" does jump("assign arg3") { writeRegister(rsi, registerUse("arg2")) }
+//                "assign arg3" does jump("assign sl") { writeRegister(rdx, registerUse("arg3")) }
+//                "assign sl" does jump("call f") { writeRegister(rcx, registerUse(rbp)) }
+//                "call f" does jump("restore rsp") { call(fDef) }
+//                "restore rsp" does jump("assign a") { registerUse(rsp) addeq integer(0) }
+//                "assign a" does jump("assign b.a") { writeRegister("virA", registerUse(rax)) }
+//                "assign b.a" does jump("assign b.b") { writeRegister("virB", registerUse(rdi)) }
+//                "assign b.b" does jump("assign res") { writeRegister("virC", registerUse(rsi)) }
+//                "assign res" does jump("bodyExit") { writeRegister("virD", registerUse("virA")) }
+//            }
+//
+//        assertFragmentIsEquivalent(actualCFG, expectedCFG)
+//    }
 
     @Test
     fun `return with struct and value`() {

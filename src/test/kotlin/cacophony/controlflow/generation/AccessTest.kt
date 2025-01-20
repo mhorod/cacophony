@@ -2,6 +2,7 @@ package cacophony.controlflow.generation
 
 import cacophony.*
 import cacophony.controlflow.*
+import cacophony.controlflow.print.cfgFragmentToBuilder
 import org.junit.jupiter.api.Test
 
 class AccessTest {
@@ -41,6 +42,7 @@ class AccessTest {
 
         // when
         val actualFragment = generateSimplifiedCFG(outerDef)[innerDef]!!
+        println(cfgFragmentToBuilder(innerDef, actualFragment))
 
         // then
         val expectedFragment =
