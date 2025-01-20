@@ -22,7 +22,7 @@ void memoryManager::createNewPage(int size) {
     occupied_memory += size;
 }
 
-// This step is performed during cleanup, where allocated_pages is being modified, therefore no need to modify it heee.
+// This step is performed during cleanup, where allocated_pages is being modified, therefore no need to modify it here.
 void memoryManager::deallocatePage(memoryPage page) {
     occupied_memory -= page.size;
     free(page.ptr);
