@@ -1,6 +1,12 @@
+foreign get_current_heap_space: [] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let memoryLimit = 4 * 1024;
+
 let i = 0;
 let ref: &Int = $1;
 while i < 1000000 do (
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     ref = $1; # reassigning pointer should mark memory as unreachable
     i=i+1;
 );

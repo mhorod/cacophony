@@ -1,0 +1,2 @@
+let f = [x: Int] -> [Int] -> Int => [y: Int] -> Int => x + y;
+f[5][10];

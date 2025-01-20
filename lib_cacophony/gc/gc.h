@@ -102,6 +102,10 @@ extern "C" {
         memset(object_ptr, 0, 8 * **(object_ptr - 1));
         return object_ptr;
     }
+
+    ll get_current_heap_space() {
+        return memory_manager.getOccupiedMemory();
+    }
 }
 
 #endif /* GC_LIB_H */

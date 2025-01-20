@@ -30,11 +30,11 @@ fun analyzedFunction(function: Definition.FunctionDefinition, staticDepth: Int, 
         function,
         null,
         variables,
+        function.arguments,
         mutableSetOf(),
         staticDepth,
         emptySet(),
     )
 
-fun createVariablesMap(definitions: Map<Definition, Variable> = emptyMap(), lvalues: Map<Assignable, Variable> = emptyMap()): VariablesMap {
-    return VariablesMap(lvalues, definitions)
-}
+fun createVariablesMap(definitions: Map<Definition, Variable> = emptyMap(), lvalues: Map<Assignable, Variable> = emptyMap()): VariablesMap =
+    VariablesMap(lvalues, definitions)

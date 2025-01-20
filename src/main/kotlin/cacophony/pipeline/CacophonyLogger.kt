@@ -10,10 +10,7 @@ import cacophony.controlflow.print.programCfgToGraphviz
 import cacophony.grammars.AnalyzedGrammar
 import cacophony.grammars.ParseTree
 import cacophony.parser.CacophonyGrammarSymbol
-import cacophony.semantic.analysis.CallGraph
-import cacophony.semantic.analysis.FunctionAnalysisResult
-import cacophony.semantic.analysis.VariableUseType
-import cacophony.semantic.analysis.VariablesMap
+import cacophony.semantic.analysis.*
 import cacophony.semantic.names.NameResolutionResult
 import cacophony.semantic.names.ResolvedName
 import cacophony.semantic.names.ResolvedVariables
@@ -32,9 +29,11 @@ class CacophonyLogger(
     private val logNameRes: Boolean,
     private val logOverloads: Boolean,
     private val logTypes: Boolean,
+    private val logEscapeAnalysis: Boolean,
     private val logVariables: Boolean,
     private val logCallGraph: Boolean,
     private val logFunctions: Boolean,
+    private val logClosures: Boolean,
     private val logCFG: Boolean,
     private val logCover: Boolean,
     private val logRegs: Boolean,
@@ -125,6 +124,19 @@ class CacophonyLogger(
 
     override fun logFailedTypeChecking() = printError("Type checking failed :(")
 
+    override fun logSuccessfulEscapeAnalysis(result: EscapeAnalysisResult, variableMap: VariablesMap) {
+        if (logEscapeAnalysis) {
+            val variableToDefinition = variableMap.definitions.entries.associate { (k, v) -> v to k }
+            logMaybeSave(
+                "Escaping variables",
+                result
+                    .joinToString("\n") { "$it (${variableToDefinition.getOrDefault(it, "no declaration")})" },
+            )
+        }
+    }
+
+    override fun logFailedEscapeAnalysis() = printError("Escape analysis failed :(")
+
     override fun logSuccessfulVariableCreation(variableMap: VariablesMap) {
         if (logVariables) {
             logMaybeSave(
@@ -185,6 +197,19 @@ class CacophonyLogger(
             }
 
             logMaybeSave("Function analysis", content.lines().joinToString("\n"))
+        }
+    }
+
+    override fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult) {
+        if (logClosures) {
+            val content = StringBuilder()
+            result.forEach { (lambda, closure) ->
+                content.appendLine("Lambda $lambda has closure variables:")
+                closure.forEach {
+                    content.appendLine("  $it")
+                }
+            }
+            logMaybeSave("Closure analysis", content.lines().joinToString("\n"))
         }
     }
 

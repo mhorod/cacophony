@@ -6,6 +6,7 @@ import cacophony.utils.TreePrinter
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Path
+import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 
 // TODO - Once we finish implementing lambdas move the tests to correct/io examples and remove this class
@@ -15,6 +16,9 @@ class LambdaExpressionsTest {
     fun `parse lambda expression`(path: Path) {
         val pipeline = testPipeline()
         val input = FileInput(path.toString())
+
+        println(path)
+
         try {
             val ast = pipeline.generateAst(input)
             println(TreePrinter(StringBuilder()).printTree(ast))
@@ -27,6 +31,10 @@ class LambdaExpressionsTest {
 
     companion object {
         @JvmStatic
-        fun examples(): List<Path> = Path.of("examples/not_yet_correct/lambdas").listDirectoryEntries().toList()
+        fun examples(): List<Path> =
+            Path.of("examples/not_yet_correct/functional")
+                .listDirectoryEntries()
+                .flatMap { if (it.isDirectory()) it.listDirectoryEntries("*.cac") else listOf(it) }
+                .toList()
     }
 }

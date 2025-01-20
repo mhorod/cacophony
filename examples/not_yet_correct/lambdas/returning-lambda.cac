@@ -1,7 +1,0 @@
-# io test
-
-foreign write_int: [Int] -> Int;
-
-let returnsLambda = [] -> [Int] -> Int => [x: Int] -> Int => x + 1;
-
-write_int[(returnsLambda[])[0]]; # should output 1

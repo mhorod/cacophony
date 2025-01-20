@@ -176,8 +176,8 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
             }
 
             is VariableDeclaration -> {
-                symbolsTable.define(node.identifier, node)
                 traverseAst(node.value, true)
+                symbolsTable.define(node.identifier, node)
             }
 
             is FunctionDefinition -> {

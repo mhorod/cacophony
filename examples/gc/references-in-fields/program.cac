@@ -1,3 +1,8 @@
+foreign get_current_heap_space: [] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let memoryLimit = 4 * 1024;
+
 let struct_32 = {
     a=1, b=2, c=3, d=4
 };
@@ -13,6 +18,7 @@ let struct_of_ref = {
 let i = 0;
 
 while i < 100000 do (
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     struct_of_ref.r1 = $struct_32;
     struct_of_ref.r2 = $struct_32;
     struct_of_ref.r3 = $struct_32;
@@ -22,6 +28,7 @@ while i < 100000 do (
 );
 
 while i < 100000 do ( # we should also free memory when reassigning whole struct
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     struct_of_ref = {r1=$struct_32, r2=$struct_32, r3=$struct_32, r4=$struct_32, r5=$struct_32};
     i = i+1;
 );
