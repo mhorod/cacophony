@@ -4,6 +4,7 @@ import cacophony.codegen.BlockLabel
 import cacophony.codegen.instructions.CopyInstruction
 import cacophony.codegen.instructions.Instruction
 import cacophony.codegen.instructions.InstructionCovering
+import cacophony.codegen.instructions.cacophonyInstructions.Call
 import cacophony.codegen.linearization.BasicBlock
 import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.controlflow.CFGNode
@@ -94,8 +95,12 @@ fun adjustLoweredCFGToHandleSpills(
                 } else if (isRedundantCopy(instruction)) {
                     listOf()
                 } else {
+                    // Call instructions are treated separately because they are very special boys and are using all registers.
+                    // But, the only way for a Call instruction to spill is when the function address is passed via a spilled register
+                    // (e.g. call reg11), in such case we can use any register for spill handling because the address is only read once
+                    // before the function is actually run, and the fact that it can override the register later does not hurt us.
                     val availableSpareRegisters =
-                        spareRegisters
+                        if (instruction is Call) spareRegisters else spareRegisters
                             .minus(instruction.registersWritten)
                             .minus(instruction.registersRead)
 
