@@ -447,7 +447,6 @@ class FunctionHandlerTest {
         assertThat(var1Alloc.offset).isZero()
         val insideAlloc = var1Alloc.pointer
         require(insideAlloc is VariableAllocation.OnStack)
-        assertThat(insideAlloc.offset).isEqualTo(16)
 
         val var2Alloc = handler.getVariableAllocation(var2)
         require(var2Alloc is VariableAllocation.ViaPointer)
@@ -456,7 +455,9 @@ class FunctionHandlerTest {
 
         val var3Alloc = handler.getVariableAllocation(var3)
         require(var3Alloc is VariableAllocation.OnStack)
-        assertThat(var3Alloc.offset).isEqualTo(24)
+
+        // pointer to var1 and var3 must be on stack, we do not care in which order
+        assertThat(listOf(insideAlloc.offset, var3Alloc.offset)).containsExactlyInAnyOrder(16, 24)
 
         val var4Alloc = handler.getVariableAllocation(var4)
         require(var4Alloc is VariableAllocation.InRegister)

@@ -29,7 +29,7 @@ abstract class CallableHandlerImpl(
             }.filter {
                 escapeAnalysisResult.contains(it)
             }.filterIsInstance<Variable.PrimitiveVariable>()
-            .associateWith { Variable.PrimitiveVariable() }
+            .associateWith { Variable.PrimitiveVariable(true) }
 
     // Initially variables may be allocated in virtualRegisters, only after spill handling we know
     // if they're truly on stack or in registers.
@@ -44,7 +44,6 @@ abstract class CallableHandlerImpl(
                 referenceOffsets.add(allocation.offset)
             }
             stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
-            println("stack space increases due to $variable.")
         }
         variableAllocation[variable] = allocation
     }
@@ -102,7 +101,14 @@ abstract class CallableHandlerImpl(
             }
 
         heapVariablePointers.forEach {
-            allocateFrameVariable(it.value) // allocate pointer on stack
+            if (usedVars.contains(it.key)) {
+                allocateFrameVariable(it.value) // allocate pointer on stack if variable is used in nested
+            } else {
+                registerVariableAllocation(
+                    it.value,
+                    VariableAllocation.InRegister(Register.VirtualRegister(true)),
+                )
+            }
             registerVariableAllocation(
                 it.key,
                 VariableAllocation.ViaPointer(variableAllocation[it.value]!!, 0),
@@ -129,11 +135,7 @@ abstract class CallableHandlerImpl(
             throw IllegalArgumentException("Variable $variable have not been allocated inside $this FunctionHandler")
         }
 
-    override fun hasVariableAllocation(variable: Variable.PrimitiveVariable): Boolean {
-        println((this as FunctionHandler).getFunctionDeclaration())
-        println(variableAllocation[variable])
-        return variableAllocation.containsKey(variable)
-    }
+    override fun hasVariableAllocation(variable: Variable.PrimitiveVariable): Boolean = variableAllocation.containsKey(variable)
 
     override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
 

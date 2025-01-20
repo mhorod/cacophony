@@ -3,7 +3,6 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.*
 import cacophony.semantic.analysis.AnalyzedFunction
-import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
