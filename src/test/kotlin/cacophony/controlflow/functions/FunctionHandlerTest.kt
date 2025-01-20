@@ -18,7 +18,7 @@ class FunctionHandlerTest {
         analyzedFunction: AnalyzedFunction,
         definitions: Map<Definition, Variable.PrimitiveVariable> = emptyMap(),
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
-        escapeAnalysisResult: EscapeAnalysisResult = emptySet(),
+        escapeAnalysis: EscapeAnalysisResult = emptySet(),
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
@@ -28,7 +28,7 @@ class FunctionHandlerTest {
             ancestorFunctionHandlers,
             callConvention,
             createVariablesMap(definitions),
-            escapeAnalysisResult,
+            escapeAnalysis,
         )
     }
 

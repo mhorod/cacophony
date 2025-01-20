@@ -230,7 +230,6 @@ class CacophonyPipeline(
                 analyzedFunctions,
                 SystemVAMD64CallConvention,
                 variablesMap,
-                analyzedClosures,
                 escapeAnalysis,
             )
         val foreignFunctions = filterForeignFunctions(resolvedNames)
