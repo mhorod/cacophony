@@ -86,31 +86,31 @@ class FunctionHandlerImpl(
             val stack = stackAll.minus(escapedStack)
             val reg = regAll.minus(escapedReg)
 
-            // without lambdas, 1.a, 1.b should be empty
-            // 1.a
-            escapedStack.forEach {
-                // There is something fishy going on with escaped variables which are structs, but maybe that's ok
-                registerVariableAllocation(
-                    it,
-                    VariableAllocation.ViaPointer(VariableAllocation.OnStack(stackSpace), 0),
-                )
-            }
-
-            // 1.b
-            escapedReg.forEach {
-                registerVariableAllocation(
-                    it,
-                    VariableAllocation.ViaPointer(VariableAllocation.InRegister(Register.VirtualRegister(true)), 0),
-                )
-            }
+//            // without lambdas, 1.a, 1.b should be empty
+//            // 1.a
+//            escapedStack.forEach {
+//                // There is something fishy going on with escaped variables which are structs, but maybe that's ok
+//                registerVariableAllocation(
+//                    it,
+//                    VariableAllocation.ViaPointer(VariableAllocation.OnStack(stackSpace), 0),
+//                )
+//            }
+//
+//            // 1.b
+//            escapedReg.forEach {
+//                registerVariableAllocation(
+//                    it,
+//                    VariableAllocation.ViaPointer(VariableAllocation.InRegister(Register.VirtualRegister(true)), 0),
+//                )
+//            }
 
             // 2
-            stack.forEach {
+            stackAll.forEach {
                 allocateFrameVariable(it)
             }
 
             // 3
-            reg.forEach {
+            regAll.forEach {
                 registerVariableAllocation(
                     it,
                     VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),
