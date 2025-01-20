@@ -19,7 +19,17 @@ abstract class CallableHandlerImpl(
 ) : CallableHandler {
     private var stackSpace = REGISTER_SIZE
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
-    private val heapVariablePointers: Map<Variable.PrimitiveVariable, Variable.PrimitiveVariable>
+
+    // we want to create pointers for all variables
+    // that need to be allocated on heap
+    private val heapVariablePointers: Map<Variable.PrimitiveVariable, Variable.PrimitiveVariable> =
+        analyzedFunction.variables
+            .map {
+                it.origin
+            }.filter {
+                escapeAnalysisResult.contains(it)
+            }.filterIsInstance<Variable.PrimitiveVariable>()
+            .associateWith { Variable.PrimitiveVariable() }
 
     // Initially variables may be allocated in virtualRegisters, only after spill handling we know
     // if they're truly on stack or in registers.
@@ -52,57 +62,44 @@ abstract class CallableHandlerImpl(
 
     override fun getAnalyzedFunction() = analyzedFunction
 
-    init {
-        // we want to create pointers for all variables
-        // that need to be allocated on heap
-        heapVariablePointers =
-            analyzedFunction.variables
-                .map {
-                    it.origin
-                }.filter {
-                    escapeAnalysisResult.contains(it)
-                }.filterIsInstance<Variable.PrimitiveVariable>()
-                .associateWith { Variable.PrimitiveVariable() }
-        run {
+    protected fun allocateVariables() {
+        val usedVars = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
+        val regVar =
+            (
+                analyzedFunction
+                    .declaredVariables()
+                    .map { it.origin.getPrimitives() }
+                    .flatten() union
+                    function.arguments
+                        .map { variablesMap.definitions[it]!! }
+                        .map { it.getPrimitives() }
+                        .flatten()
+            ).toSet()
+                .minus(usedVars.toSet())
 
-            val usedVars = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
-            val regVar =
-                (
-                    analyzedFunction
-                        .declaredVariables()
-                        .map { it.origin.getPrimitives() }
-                        .flatten() union
-                        function.arguments
-                            .map { variablesMap.definitions[it]!! }
-                            .map { it.getPrimitives() }
-                            .flatten()
-                ).toSet()
-                    .minus(usedVars.toSet())
-
-            regVar
-                .filterNot {
-                    heapVariablePointers.containsKey(it)
-                }.forEach {
-                    registerVariableAllocation(
-                        it,
-                        VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),
-                    )
-                }
-
-            usedVars
-                .filterNot {
-                    heapVariablePointers.containsKey(it)
-                }.forEach {
-                    allocateFrameVariable(it)
-                }
-
-            heapVariablePointers.forEach {
-                allocateFrameVariable(it.value) // allocate pointer on stack
+        regVar
+            .filterNot {
+                heapVariablePointers.containsKey(it)
+            }.forEach {
                 registerVariableAllocation(
-                    it.key,
-                    VariableAllocation.ViaPointer(variableAllocation[it.value]!!, 0),
+                    it,
+                    VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),
                 )
             }
+
+        usedVars
+            .filterNot {
+                heapVariablePointers.containsKey(it)
+            }.forEach {
+                allocateFrameVariable(it)
+            }
+
+        heapVariablePointers.forEach {
+            allocateFrameVariable(it.value) // allocate pointer on stack
+            registerVariableAllocation(
+                it.key,
+                VariableAllocation.ViaPointer(variableAllocation[it.value]!!, 0),
+            )
         }
     }
 

@@ -42,7 +42,7 @@ interface LambdaHandler : CallableHandler {
 
     fun getClosureLink(): Variable.PrimitiveVariable
 
-    fun getCapturedVariableOffsets(): Map<Variable, Int>
+    fun getCapturedVariableOffsets(): Map<Variable.PrimitiveVariable, Int>
 }
 
 interface FunctionHandler : CallableHandler {

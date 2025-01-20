@@ -59,6 +59,7 @@ class FunctionHandlerImpl(
 
     init {
         introduceStaticLinksParams()
+        allocateVariables()
         prologueEpilogueHandler =
             PrologueEpilogueHandler(
                 this,
