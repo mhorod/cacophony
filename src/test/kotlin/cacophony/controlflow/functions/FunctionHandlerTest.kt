@@ -18,8 +18,7 @@ class FunctionHandlerTest {
         analyzedFunction: AnalyzedFunction,
         definitions: Map<Definition, Variable.PrimitiveVariable> = emptyMap(),
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
-        closureAnalysisResult: ClosureAnalysisResult = emptyMap(),
-        escapeAnalysis: EscapeAnalysisResult = emptySet(),
+        escapeAnalysisResult: EscapeAnalysisResult = emptySet(),
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
@@ -29,8 +28,7 @@ class FunctionHandlerTest {
             ancestorFunctionHandlers,
             callConvention,
             createVariablesMap(definitions),
-            closureAnalysisResult,
-            escapeAnalysis,
+            escapeAnalysisResult,
         )
     }
 
@@ -157,6 +155,7 @@ class FunctionHandlerTest {
                 fDef,
                 null,
                 emptySet(),
+                emptyList(),
                 mutableSetOf(),
                 0,
                 emptySet(),
@@ -206,12 +205,22 @@ class FunctionHandlerTest {
         every { noArgAnalyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
         every { noArgAnalyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
         every { noArgAnalyzedFunction.declaredVariables() } returns emptyList()
+        every { noArgAnalyzedFunction.arguments } returns emptyList()
 
         val unaryAnalyzedFunction = mockk<AnalyzedFunction>()
         every { unaryAnalyzedFunction.variables } returns setOf(analyzedArgumentVariable, analyzedOwnVariable, analyzedNestedVariable)
         every { unaryAnalyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
         every { unaryAnalyzedFunction.variablesUsedInNestedFunctions } returns setOf(nestedVariable)
         every { unaryAnalyzedFunction.declaredVariables() } returns listOf(analyzedOwnVariable)
+        every { noArgAnalyzedFunction.arguments } returns listOf(argumentDef)
+
+        val unaryAnalyzedFunctionWithNestedUsage = mockk<AnalyzedFunction>()
+        every { unaryAnalyzedFunctionWithNestedUsage.variables } returns
+            setOf(analyzedArgumentVariable, analyzedOwnVariable, analyzedNestedVariable)
+        every { unaryAnalyzedFunctionWithNestedUsage.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { unaryAnalyzedFunctionWithNestedUsage.variablesUsedInNestedFunctions } returns setOf(nestedVariable, ownVariable)
+        every { unaryAnalyzedFunctionWithNestedUsage.declaredVariables() } returns listOf(analyzedOwnVariable)
+        every { unaryAnalyzedFunctionWithNestedUsage.arguments } returns listOf(argumentDef)
 
         // run
         val noArgFunctionHandler =
@@ -233,9 +242,20 @@ class FunctionHandlerTest {
                     nestedVariableDef to nestedVariable,
                 ),
             )
+        val unaryWithNestedUsageFunctionHandler =
+            makeDefaultHandler(
+                unaryFunDef,
+                unaryAnalyzedFunctionWithNestedUsage,
+                mapOf(
+                    argumentDef to argVariable,
+                    ownVariableDef to ownVariable,
+                    nestedVariableDef to nestedVariable,
+                ),
+            )
         // check
         assertEquals(16, noArgFunctionHandler.getStackSpace().value)
-        assertEquals(24, unaryFunctionHandler.getStackSpace().value)
+        assertEquals(16, unaryFunctionHandler.getStackSpace().value)
+        assertEquals(24, unaryWithNestedUsageFunctionHandler.getStackSpace().value)
     }
 
     @Test
@@ -469,6 +489,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -513,6 +534,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -578,6 +600,7 @@ class FunctionHandlerTest {
                     fDef,
                     ParentLink(gDef, true),
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     2,
                     emptySet(),
@@ -587,6 +610,7 @@ class FunctionHandlerTest {
                     gDef,
                     ParentLink(hDef, true),
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     1,
                     setOf(xVariable),
@@ -596,6 +620,7 @@ class FunctionHandlerTest {
                     hDef,
                     null,
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     setOf(xVariable),
@@ -643,6 +668,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -685,6 +711,7 @@ class FunctionHandlerTest {
                     fDef,
                     ParentLink(gDef, true),
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     1,
                     emptySet(),
@@ -694,6 +721,7 @@ class FunctionHandlerTest {
                     gDef,
                     null,
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -743,6 +771,7 @@ class FunctionHandlerTest {
                     hDef,
                     ParentLink(gDef, true),
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     1,
                     emptySet(),
@@ -752,6 +781,7 @@ class FunctionHandlerTest {
                     fDef,
                     ParentLink(gDef, true),
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     1,
                     emptySet(),
@@ -761,6 +791,7 @@ class FunctionHandlerTest {
                     gDef,
                     null,
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -805,6 +836,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -829,6 +861,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     setOf(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),

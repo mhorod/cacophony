@@ -58,8 +58,8 @@ class EscapeAnalysisKtTest {
         val yAVar = AnalyzedVariable(yVar, gDef, VariableUseType.READ_WRITE)
         val gAVar = AnalyzedVariable(gVar, fDef, VariableUseType.READ_WRITE)
 
-        val gA = AnalyzedFunction(gDef, null, setOf(xAVar, yAVar), mutableSetOf(), 1, setOf())
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar), mutableSetOf(), 0, setOf(xVar))
+        val gA = AnalyzedFunction(gDef, null, setOf(xAVar, yAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -133,8 +133,8 @@ class EscapeAnalysisKtTest {
         val gAVar = AnalyzedVariable(gVar, fDef, VariableUseType.READ_WRITE)
         val hAVar = AnalyzedVariable(hVar, fDef, VariableUseType.READ_WRITE)
 
-        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), mutableSetOf(), 1, setOf())
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar, hAVar), mutableSetOf(), 0, setOf(xVar))
+        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar, hAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -213,8 +213,8 @@ class EscapeAnalysisKtTest {
         val gAVar = AnalyzedVariable(gVar, fDef, VariableUseType.READ_WRITE)
         val sAVar = AnalyzedVariable(sVar, fDef, VariableUseType.READ_WRITE)
 
-        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), mutableSetOf(), 1, setOf())
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar, sAVar), mutableSetOf(), 0, setOf(xVar))
+        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar, sAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -290,9 +290,9 @@ class EscapeAnalysisKtTest {
         val xAVar = AnalyzedVariable(xVar, fDef, VariableUseType.READ_WRITE)
         val gAVar = AnalyzedVariable(gVar, fDef, VariableUseType.READ_WRITE)
 
-        val hA = AnalyzedFunction(hDef, null, setOf(), mutableSetOf(), 0, setOf())
-        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), mutableSetOf(), 1, setOf())
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar), mutableSetOf(), 0, setOf(xVar))
+        val hA = AnalyzedFunction(hDef, null, setOf(), listOf(), mutableSetOf(), 0, setOf())
+        val gA = AnalyzedFunction(gDef, null, setOf(xAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar, gAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
@@ -359,7 +359,7 @@ class EscapeAnalysisKtTest {
 
         val xAVar = AnalyzedVariable(xVar, fDef, VariableUseType.READ_WRITE)
 
-        val fA = AnalyzedFunction(fDef, null, setOf(xAVar), mutableSetOf(), 0, setOf(xVar))
+        val fA = AnalyzedFunction(fDef, null, setOf(xAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(

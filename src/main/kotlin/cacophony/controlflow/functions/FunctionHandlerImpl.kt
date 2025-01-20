@@ -95,6 +95,21 @@ class FunctionHandlerImpl(
             }.map { flattenLayout(it) }
             .flatten() + generateVariableAccess(getStaticLink())
 
+    override fun generateOutsideVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
+        val definedInFunctionHandler =
+            ancestorFunctionHandlers.find {
+                it.hasVariableAllocation(variable)
+            }
+
+        if (definedInFunctionHandler == null) {
+            throw GenerateVariableAccessException("Function $function has no access to $variable.")
+        }
+
+        println((definedInFunctionHandler as FunctionHandler).getFunctionDeclaration())
+
+        return generateVariableAccessFrom(variable, definedInFunctionHandler)
+    }
+
     private fun generateVariableAccessFrom(variable: Variable.PrimitiveVariable, handler: CallableHandler): CFGNode.LValue =
         when (val variableAllocation = handler.getVariableAllocation(variable)) {
             is VariableAllocation.InRegister -> {
@@ -123,17 +138,4 @@ class FunctionHandlerImpl(
                 )
             }
         }
-
-    override fun generateOutsideVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
-        val definedInFunctionHandler =
-            ancestorFunctionHandlers.find {
-                it.hasVariableAllocation(variable)
-            }
-
-        if (definedInFunctionHandler == null) {
-            throw GenerateVariableAccessException("Function $function has no access to $variable.")
-        }
-
-        return generateVariableAccessFrom(variable, definedInFunctionHandler)
-    }
 }

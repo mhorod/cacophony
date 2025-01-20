@@ -44,6 +44,7 @@ abstract class CallableHandlerImpl(
                 referenceOffsets.add(allocation.offset)
             }
             stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
+            println("stack space increases due to $variable.")
         }
         variableAllocation[variable] = allocation
     }
@@ -63,8 +64,10 @@ abstract class CallableHandlerImpl(
     override fun getAnalyzedFunction() = analyzedFunction
 
     protected fun allocateVariables() {
-        val usedVars = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
-        val regVar =
+        val usedVars =
+            analyzedFunction.variablesUsedInNestedFunctions
+                .filterIsInstance<Variable.PrimitiveVariable>()
+        val declVars =
             (
                 analyzedFunction
                     .declaredVariables()
@@ -75,6 +78,8 @@ abstract class CallableHandlerImpl(
                         .map { it.getPrimitives() }
                         .flatten()
             ).toSet()
+        val regVar =
+            declVars
                 .minus(usedVars.toSet())
 
         regVar
@@ -87,7 +92,9 @@ abstract class CallableHandlerImpl(
                 )
             }
 
-        usedVars
+        val stackVars = declVars.intersect(usedVars.toSet())
+
+        stackVars
             .filterNot {
                 heapVariablePointers.containsKey(it)
             }.forEach {
@@ -122,7 +129,11 @@ abstract class CallableHandlerImpl(
             throw IllegalArgumentException("Variable $variable have not been allocated inside $this FunctionHandler")
         }
 
-    override fun hasVariableAllocation(variable: Variable.PrimitiveVariable) = variableAllocation.containsKey(variable)
+    override fun hasVariableAllocation(variable: Variable.PrimitiveVariable): Boolean {
+        println((this as FunctionHandler).getFunctionDeclaration())
+        println(variableAllocation[variable])
+        return variableAllocation.containsKey(variable)
+    }
 
     override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
 
