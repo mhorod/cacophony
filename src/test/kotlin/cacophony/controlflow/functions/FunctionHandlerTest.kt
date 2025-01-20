@@ -240,7 +240,8 @@ class FunctionHandlerTest {
 
     @Test
     fun `allocateFrameVariable creates variable allocation`() {
-        val funDef = unitFunctionDefinition()
+        val funDef =
+            unitFunctionDefinition()
 
         val staticLinkVariable = mockk<Variable>()
 

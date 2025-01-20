@@ -42,6 +42,12 @@ class FunctionHandlerImpl(
             }
             stackSpace = max(stackSpace, allocation.offset + REGISTER_SIZE)
         }
+        if (allocation is VariableAllocation.ViaPointer && allocation.pointer is VariableAllocation.OnStack) {
+            if (variable.holdsReference) {
+                referenceOffsets.add(allocation.pointer.offset)
+            }
+            stackSpace = max(stackSpace, allocation.pointer.offset + REGISTER_SIZE)
+        }
         variableAllocation[variable] = allocation
     }
 
@@ -62,69 +68,61 @@ class FunctionHandlerImpl(
         introduceStaticLinksParams()
         println("analyzedFunction.declaredVariables() ${analyzedFunction.declaredVariables()}")
         run {
-            // New version
-            // every variable this function declares needs a place to life. We decide where it lives as follows:
+            // Every variable this function declares needs a place to life. We decide where it lives as follows:
             // 1) if the variable escapes, then it accessible on the heap
             //      a) if it is used inside a nested function, then the pointer to it is placed on the stack
             //      b) otherwise, the pointer to it is placed inside a virtual register
             // 2) otherwise, if the variable is used inside a nested function, then it is accessible on stack
             // 3) otherwise, the variable can be placed inside a virtual register
-            // val declared =
-            // (
-            // analyzedFunction.declaredVariables().map { it.origin.getPrimitives() }.flatten() union
-            // function.arguments.map { variablesMap.definitions[it]!!.getPrimitives() }.flatten()
-            // ).toSet()
-            // val nestedUsage = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>().toSet()
-            // val escaped = declared intersect escapeAnalysis.filterIsInstance<Variable.PrimitiveVariable>().toSet()
-            // val escapedStack = escaped intersect nestedUsage
-            // val escapedReg = escaped.minus(escapedStack)
-            // val nonEscaped = declared.minus(escaped)
-            // val stack = nonEscaped intersect nestedUsage
-            // val reg = nonEscaped.minus(stack)
-            // println(escapeAnalysis)
-            //
-            // // TODO: in test without lambdas, these should be empty
-            // // 1.a
-            // assert(escapedStack.isEmpty())
-            //
-            // // 1.b
-            // assert(escapedReg.isEmpty())
-            //
-            // // 2
-            // stack.forEach { allocateFrameVariable(it) }
-            //
-            // // 3
-            // reg.forEach {
-            // registerVariableAllocation(
-            // it,
-            // VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),
-            // )
-            // }
-
-            // Old version
-            val stackVars = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
-            val regVar =
-                (
-                    analyzedFunction
-                        .declaredVariables()
-                        .map { it.origin.getPrimitives() }
-                        .flatten() union
-                        function.arguments
-                            .map { variablesMap.definitions[it]!! }
-                            .map { it.getPrimitives() }
-                            .flatten()
+            val declared =
+                ( // Why do we need to collect the variables from so many places?
+                    analyzedFunction.declaredVariables().map { it.origin.getPrimitives() }.flatten() union
+                        function.arguments.map { variablesMap.definitions[it]!!.getPrimitives() }.flatten() union
+                        analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>()
                 ).toSet()
-                    .minus(stackVars.toSet())
+            val nestedUsage = analyzedFunction.variablesUsedInNestedFunctions.filterIsInstance<Variable.PrimitiveVariable>().toSet()
+            val escaped = declared intersect escapeAnalysis.filterIsInstance<Variable.PrimitiveVariable>().toSet()
+            val escapedStack = escaped intersect nestedUsage
+            val escapedReg = escaped.minus(escapedStack)
+            val nonEscaped = declared.minus(escaped)
+            val stack = nonEscaped intersect nestedUsage
+            val reg = nonEscaped.minus(stack)
+            println("declared: $declared")
+            println("nestedUsage: $nestedUsage")
+            println("escaped: $escaped")
+            println("nonEscaped: $nonEscaped")
+            println("stack: $stack")
+            println("reg: $reg")
 
-            regVar.forEach {
+            // without lambdas, 1.a, 1.b should be empty
+            // 1.a
+            escapedStack.forEach {
+                // There is something fishy going on with escaped variables which are structs, but maybe that's ok
+                registerVariableAllocation(
+                    it,
+                    VariableAllocation.ViaPointer(VariableAllocation.OnStack(stackSpace), 0),
+                )
+            }
+
+            // 1.b
+            escapedReg.forEach {
+                registerVariableAllocation(
+                    it,
+                    VariableAllocation.ViaPointer(VariableAllocation.InRegister(Register.VirtualRegister(true)), 0),
+                )
+            }
+
+            // 2
+            stack.forEach {
+                allocateFrameVariable(it)
+            }
+
+            // 3
+            reg.forEach {
                 registerVariableAllocation(
                     it,
                     VariableAllocation.InRegister(Register.VirtualRegister(it.holdsReference)),
                 )
-            }
-
-            stackVars.forEach {
-                allocateFrameVariable(it)
             }
         }
     }
