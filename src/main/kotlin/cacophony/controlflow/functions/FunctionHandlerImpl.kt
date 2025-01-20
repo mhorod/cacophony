@@ -80,6 +80,8 @@ class FunctionHandlerImpl(
                     analyzedFunction.declaredVariables().map { it.origin.getPrimitives() }.flatten() union
                         function.arguments.map { variablesMap.definitions[it]!!.getPrimitives() }.flatten()
                 ).toSet().minus(stackAll.toSet())
+            println(escapeAnalysis)
+            println(variablesMap.definitions)
             val escaped = escapeAnalysis.filterIsInstance<Variable.PrimitiveVariable>().toSet()
             val escapedStack = escaped intersect stackAll
             val escapedReg = escaped intersect regAll

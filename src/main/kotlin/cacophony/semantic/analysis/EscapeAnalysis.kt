@@ -209,10 +209,10 @@ private class BaseEscapeAnalysisVisitor(
         visitFunctionBody(expr.body, types.expressionTypes[expr] as FunctionType)
     }
 
-    private fun canEscapeViaReturn(returnType: TypeExpr?): Boolean {
-        return when (returnType) {
+    private fun canEscapeViaExpressionOfType(type: TypeExpr?): Boolean {
+        return when (type) {
             is FunctionType -> true
-            is StructType -> returnType.fields.values.any { canEscapeViaReturn(it) }
+            is StructType -> type.fields.values.any { canEscapeViaExpressionOfType(it) }
             else -> false
         }
     }
@@ -221,7 +221,7 @@ private class BaseEscapeAnalysisVisitor(
         returnStack.add(mutableSetOf())
         visitExpression(expr)
 
-        if (returnStack.last().isNotEmpty() && canEscapeViaReturn(functionTypeStack.last().result)) {
+        if (returnStack.last().isNotEmpty() && canEscapeViaExpressionOfType(functionTypeStack.last().result)) {
             returnVariables.getOrPut(currentStaticDepth) { mutableSetOf() }.addAll(returnStack.last())
         }
 
@@ -229,6 +229,16 @@ private class BaseEscapeAnalysisVisitor(
     }
 
     private fun visitAssignment(expr: OperatorBinary.Assignment) {
+        val rhsType =
+            types.expressionTypes[expr.rhs]
+                ?: throw EscapeAnalysisException("Missing type of rhs of assignment expression: $expr")
+
+        if (!canEscapeViaExpressionOfType(rhsType)) {
+            visitExpression(expr.rhs)
+            visitExpression(expr.lhs)
+            return
+        }
+
         assignmentRhsStack.add(mutableSetOf())
         visitExpression(expr.rhs)
 
@@ -248,6 +258,15 @@ private class BaseEscapeAnalysisVisitor(
 
     // We treat variable declaration with value similarly to assignments.
     private fun visitVariableDeclaration(expr: Definition.VariableDeclaration) {
+        val variableType =
+            types.definitionTypes[expr]
+                ?: throw EscapeAnalysisException("Missing type of variable declaration: $expr")
+
+        if (!canEscapeViaExpressionOfType(variableType)) {
+            visitExpression(expr.value)
+            return
+        }
+
         assignmentRhsStack.add(mutableSetOf())
         visitExpression(expr.value)
 
