@@ -42,7 +42,7 @@ internal fun generateSimplifiedCFG(
         else {
             val generator: CallGenerator = mockk()
             every { generator.generateCallFrom(any(), any(), any(), any(), any()) } answers {
-                listOf(CFGNode.Call(arg<CFGNode>(1), arg<CFGNode.Constant>(1)))
+                listOf(CFGNode.Call(arg<FunctionLayout>(2).code.access, integer(arg<List<Layout>>(3).size)))
             }
             generator
         }
