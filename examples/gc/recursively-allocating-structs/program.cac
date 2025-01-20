@@ -1,6 +1,11 @@
 # 1000 nested function calls (in 2 variants), each of which allocates 128B on the heap
 # each call uses info allocated on a child call
 
+foreign get_current_heap_space: [] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let memoryLimit = 4 * 1024;
+
 let struct_64 = {
     a=$1, b=$2, c=$3, d=$4, e=$5, f=$6, g=$7, h=$8
 };
@@ -8,6 +13,7 @@ let struct_64 = {
 let allocateAndIncrement = [depth: Int] -> {
     a:&Int, b:&Int, c:&Int, d:&Int, e:&Int, f:&Int, g:&Int, h:&Int
 } => (
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     if (depth == 0) then struct_64
     else (
         let previousStr = allocateAndIncrement[depth - 1];
@@ -32,6 +38,7 @@ let allocateAndCopy = [depth: Int, ptr: &{
 }] -> &{
     a:&Int, b:&Int, c:&Int, d:&Int, e:&Int, f:&Int, g:&Int, h:&Int
 } => (
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     if (depth == 0) then ptr
     else (
         let previousPtr = allocateAndCopy[depth - 1, ptr];

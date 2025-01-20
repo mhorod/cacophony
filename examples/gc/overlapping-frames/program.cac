@@ -1,3 +1,8 @@
+foreign get_current_heap_space: [] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let memoryLimit = 4 * 1024;
+
 foreign randint : [Int, Int] -> Int;
 foreign cassert : [Bool] -> Unit;
 
@@ -25,7 +30,10 @@ let g = [a: &Int, b: &Int] -> Int => (
 );
 
 let i = 0;
+let a = $1;
+let b = $1;
 while i < 10000 do (
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     i = i + 1;
     let a = $randint[100, 110];
     let b = $randint[0, 1000];
@@ -37,3 +45,6 @@ while i < 10000 do (
         cassert[(should_be_large >= 100)];
     );
 );
+
+i = @a;
+i = @b;

@@ -5,6 +5,20 @@ import kotlin.math.absoluteValue
 
 typealias ObjectOutlineLocation = Map<TypeExpr, String>
 
+data class ObjectOutlines(
+    val locations: ObjectOutlineLocation,
+    val asm: List<String>,
+)
+
+fun createObjectOutlines(types: List<TypeExpr>): ObjectOutlines {
+    val objectOutlinesCreator = ObjectOutlinesCreator()
+    objectOutlinesCreator.addTypes(types)
+    return ObjectOutlines(
+        objectOutlinesCreator.getLocations(),
+        objectOutlinesCreator.getAsm(),
+    )
+}
+
 /**
  * Object outline consists of 8B blocks:
  * - The first block denotes object size (in 8B blocks, e.g. Int or a reference has size 1).
@@ -13,7 +27,7 @@ typealias ObjectOutlineLocation = Map<TypeExpr, String>
  *   check block number i / 64 on bit position i % 64.
  */
 
-class ObjectOutlinesCreator {
+internal class ObjectOutlinesCreator {
     private val locations: MutableMap<TypeExpr, String> = mutableMapOf()
     private val asmDataSectionEntries = mutableListOf<String>()
 
@@ -49,7 +63,7 @@ class ObjectOutlinesCreator {
             is TypeExpr.VoidType -> emptyList()
         }
 
-    fun add(type: TypeExpr) {
+    private fun add(type: TypeExpr) {
         if (locations.containsKey(type)) return
         if (type is FunctionType) return // functional types not supported for now
 
@@ -60,7 +74,7 @@ class ObjectOutlinesCreator {
         asmDataSectionEntries.add(asmEntry)
     }
 
-    fun add(types: List<TypeExpr>) {
+    fun addTypes(types: List<TypeExpr>) {
         types.forEach { add(it) }
     }
 

@@ -1100,6 +1100,27 @@ class NameResolverTest {
         }
 
         @Test
+        fun `new variable identifier is not visible in declaration value`() {
+            // let a = a + 1;
+
+            // given
+            val invalidUseRange = Location(1) to Location(5)
+            val ast =
+                block(
+                    variableDeclaration("a", VariableUse(invalidUseRange, "a") add lit(1)),
+                )
+
+            // when
+            val resolvedNames = resolveNames(ast, diagnostics)
+
+            // then
+            assertThatResolvedNames(resolvedNames)
+                .andNothingElse()
+            verify(exactly = 1) { diagnostics.report(NRDiagnostics.UnidentifiedIdentifier("a"), invalidUseRange) }
+            confirmVerified(diagnostics)
+        }
+
+        @Test
         fun `declaration is not visible after block is closed`() {
             // (let a = true);
             // a

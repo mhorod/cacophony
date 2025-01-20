@@ -7,6 +7,7 @@ import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
+import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.types.ReferentialType
@@ -25,7 +26,7 @@ internal class CFGGenerator(
     private val typeCheckingResult: TypeCheckingResult,
     private val callGenerator: CallGenerator,
     private val objectOutlineLocation: ObjectOutlineLocation,
-    // TODO: escape analysis?
+    private val lambdaOutlineLocation: LambdaOutlineLocation,
 ) {
     private val cfg = CFG()
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
@@ -153,7 +154,6 @@ internal class CFGGenerator(
             is Allocation -> visitAllocation(expression, mode, context)
             is Dereference -> visitDereference(expression, mode, context)
             is Assignable -> visitAssignable(expression, mode)
-            is LambdaExpression -> visitFunctionDeclaration(mode)
             else -> error("Unexpected expression for CFG generation: $expression")
         }
 
@@ -221,7 +221,7 @@ internal class CFGGenerator(
         else dereference
     }
 
-    private fun visitLambdaExpression(...) {
+    private fun visitLambdaExpression() {
         TODO("Alloc struct for closure")
         TODO("(Use closure layout)")
         TODO("Fill closure")

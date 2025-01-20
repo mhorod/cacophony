@@ -494,6 +494,7 @@
         "useType": "WRITE"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": [
@@ -1076,6 +1077,7 @@
         "useType": "WRITE"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []

@@ -141,6 +141,8 @@ sealed interface FunctionalExpression {
     val arguments: List<Expression>
     val returnType: Type
     val body: Expression
+
+    fun getLabel(): String
 }
 
 sealed class Definition(
@@ -251,6 +253,8 @@ class LambdaExpression(
 ) : BaseExpression(range),
     FunctionalExpression {
     override fun toString() = "[${arguments.joinToString(", ")}] -> $returnType"
+
+    override fun getLabel() = "Lambda_${arguments.size}_${hashCode().toULong()}"
 
     override fun children() = arguments + listOf(body)
 

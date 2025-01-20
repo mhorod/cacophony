@@ -46,11 +46,17 @@ interface Logger {
 
     fun logFailedTypeChecking()
 
+    fun logFailedEscapeAnalysis()
+
+    fun logSuccessfulEscapeAnalysis(result: EscapeAnalysisResult, variableMap: VariablesMap)
+
     fun logSuccessfulCallGraphGeneration(callGraph: CallGraph)
 
     fun logFailedCallGraphGeneration()
 
     fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult)
+
+    fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult)
 
     fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>)
 

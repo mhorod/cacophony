@@ -288,6 +288,7 @@
       }
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
@@ -889,6 +890,38 @@
           }
         },
         "useType": "READ"
+      }
+    ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 13
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 16
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 9
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 16
+          }
+        }
       }
     ],
     "auxVariables": [],

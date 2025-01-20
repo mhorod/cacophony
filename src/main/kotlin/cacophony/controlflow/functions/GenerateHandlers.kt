@@ -1,6 +1,6 @@
 package cacophony.controlflow.functions
 
-import cacophony.semantic.analysis.ClosureAnalysisResult
+import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
@@ -11,7 +11,7 @@ fun generateFunctionHandlers(
     analyzedFunctions: FunctionAnalysisResult,
     callConvention: CallConvention,
     variablesMap: VariablesMap,
-    closureAnalysisResult: ClosureAnalysisResult,
+    escapeAnalysis: EscapeAnalysisResult,
 ): Map<Definition.FunctionDefinition, FunctionHandler> {
     val handlers = mutableMapOf<Definition.FunctionDefinition, FunctionHandler>()
     val order = analyzedFunctions.entries.sortedBy { it.value.staticDepth }
@@ -27,7 +27,7 @@ fun generateFunctionHandlers(
                     emptyList(),
                     callConvention,
                     variablesMap,
-                    closureAnalysisResult,
+                    escapeAnalysis,
                 )
         } else {
             val parentHandler =
@@ -42,7 +42,7 @@ fun generateFunctionHandlers(
                     functionAncestorHandlers,
                     callConvention,
                     variablesMap,
-                    closureAnalysisResult,
+                    escapeAnalysis,
                 )
             ancestorHandlers[function] = functionAncestorHandlers
         }
@@ -51,11 +51,7 @@ fun generateFunctionHandlers(
     return handlers
 }
 
-fun generateLambdaHandlers(
-    lambdas: List<LambdaExpression>,
-    callConvention: CallConvention, // no f-ing clue what it does
-    variablesMap: VariablesMap,
-    closureAnalysisResult: ClosureAnalysisResult,
-): Map<LambdaExpression, FunctionHandler> {
-    TODO()
+fun generateLambdaHandlers(): Map<LambdaExpression, LambdaHandler> {
+    // TODO
+    return emptyMap()
 }
