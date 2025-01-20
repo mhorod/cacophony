@@ -1575,6 +1575,7 @@
       }
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
@@ -3278,6 +3279,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -4951,6 +4953,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -6610,6 +6613,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -8253,6 +8257,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -9924,6 +9929,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -12805,6 +12811,68 @@
         "useType": "READ"
       }
     ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 660
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 663
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 657
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 663
+          }
+        }
+      },
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 669
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 672
+            }
+          }
+        },
+        "identifier": "y",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 666
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 672
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -15266,6 +15334,38 @@
         "useType": "READ"
       }
     ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 1057
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 1060
+            }
+          }
+        },
+        "identifier": "early",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 1050
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 1060
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": [
@@ -15985,6 +16085,7 @@
         "useType": "READ"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 2,
     "variablesUsedInNestedFunctions": []

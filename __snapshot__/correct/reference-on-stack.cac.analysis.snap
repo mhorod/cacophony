@@ -464,6 +464,7 @@
         "useType": "READ"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": [
@@ -1001,6 +1002,7 @@
         "useType": "READ"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []

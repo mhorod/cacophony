@@ -18,7 +18,6 @@ class FunctionHandlerTest {
         analyzedFunction: AnalyzedFunction,
         definitions: Map<Definition, Variable.PrimitiveVariable> = emptyMap(),
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
-        closureAnalysisResult: ClosureAnalysisResult = emptyMap(),
         escapeAnalysis: EscapeAnalysisResult = emptySet(),
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
@@ -29,7 +28,6 @@ class FunctionHandlerTest {
             ancestorFunctionHandlers,
             callConvention,
             createVariablesMap(definitions),
-            closureAnalysisResult,
             escapeAnalysis,
         )
     }
@@ -157,6 +155,7 @@ class FunctionHandlerTest {
                 fDef,
                 null,
                 emptySet(),
+                emptyList(),
                 mutableSetOf(),
                 0,
                 emptySet(),
@@ -206,12 +205,22 @@ class FunctionHandlerTest {
         every { noArgAnalyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
         every { noArgAnalyzedFunction.variablesUsedInNestedFunctions } returns emptySet()
         every { noArgAnalyzedFunction.declaredVariables() } returns emptyList()
+        every { noArgAnalyzedFunction.arguments } returns emptyList()
 
         val unaryAnalyzedFunction = mockk<AnalyzedFunction>()
         every { unaryAnalyzedFunction.variables } returns setOf(analyzedArgumentVariable, analyzedOwnVariable, analyzedNestedVariable)
         every { unaryAnalyzedFunction.auxVariables } returns mutableSetOf(staticLinkVariable)
         every { unaryAnalyzedFunction.variablesUsedInNestedFunctions } returns setOf(nestedVariable)
         every { unaryAnalyzedFunction.declaredVariables() } returns listOf(analyzedOwnVariable)
+        every { noArgAnalyzedFunction.arguments } returns listOf(argumentDef)
+
+        val unaryAnalyzedFunctionWithNestedUsage = mockk<AnalyzedFunction>()
+        every { unaryAnalyzedFunctionWithNestedUsage.variables } returns
+            setOf(analyzedArgumentVariable, analyzedOwnVariable, analyzedNestedVariable)
+        every { unaryAnalyzedFunctionWithNestedUsage.auxVariables } returns mutableSetOf(staticLinkVariable)
+        every { unaryAnalyzedFunctionWithNestedUsage.variablesUsedInNestedFunctions } returns setOf(nestedVariable, ownVariable)
+        every { unaryAnalyzedFunctionWithNestedUsage.declaredVariables() } returns listOf(analyzedOwnVariable)
+        every { unaryAnalyzedFunctionWithNestedUsage.arguments } returns listOf(argumentDef)
 
         // run
         val noArgFunctionHandler =
@@ -233,9 +242,20 @@ class FunctionHandlerTest {
                     nestedVariableDef to nestedVariable,
                 ),
             )
+        val unaryWithNestedUsageFunctionHandler =
+            makeDefaultHandler(
+                unaryFunDef,
+                unaryAnalyzedFunctionWithNestedUsage,
+                mapOf(
+                    argumentDef to argVariable,
+                    ownVariableDef to ownVariable,
+                    nestedVariableDef to nestedVariable,
+                ),
+            )
         // check
         assertEquals(16, noArgFunctionHandler.getStackSpace().value)
-        assertEquals(24, unaryFunctionHandler.getStackSpace().value)
+        assertEquals(16, unaryFunctionHandler.getStackSpace().value)
+        assertEquals(24, unaryWithNestedUsageFunctionHandler.getStackSpace().value)
     }
 
     @Test
@@ -427,7 +447,6 @@ class FunctionHandlerTest {
         assertThat(var1Alloc.offset).isZero()
         val insideAlloc = var1Alloc.pointer
         require(insideAlloc is VariableAllocation.OnStack)
-        assertThat(insideAlloc.offset).isEqualTo(16)
 
         val var2Alloc = handler.getVariableAllocation(var2)
         require(var2Alloc is VariableAllocation.ViaPointer)
@@ -436,7 +455,9 @@ class FunctionHandlerTest {
 
         val var3Alloc = handler.getVariableAllocation(var3)
         require(var3Alloc is VariableAllocation.OnStack)
-        assertThat(var3Alloc.offset).isEqualTo(24)
+
+        // pointer to var1 and var3 must be on stack, we do not care in which order
+        assertThat(listOf(insideAlloc.offset, var3Alloc.offset)).containsExactlyInAnyOrder(16, 24)
 
         val var4Alloc = handler.getVariableAllocation(var4)
         require(var4Alloc is VariableAllocation.InRegister)
@@ -469,6 +490,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -513,6 +535,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -578,6 +601,7 @@ class FunctionHandlerTest {
                     fDef,
                     ParentLink(gDef, true),
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     2,
                     emptySet(),
@@ -587,6 +611,7 @@ class FunctionHandlerTest {
                     gDef,
                     ParentLink(hDef, true),
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     1,
                     setOf(xVariable),
@@ -596,6 +621,7 @@ class FunctionHandlerTest {
                     hDef,
                     null,
                     setOf(xAnalyzed),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     setOf(xVariable),
@@ -643,6 +669,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -685,6 +712,7 @@ class FunctionHandlerTest {
                     fDef,
                     ParentLink(gDef, true),
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     1,
                     emptySet(),
@@ -694,6 +722,7 @@ class FunctionHandlerTest {
                     gDef,
                     null,
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -743,6 +772,7 @@ class FunctionHandlerTest {
                     hDef,
                     ParentLink(gDef, true),
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     1,
                     emptySet(),
@@ -752,6 +782,7 @@ class FunctionHandlerTest {
                     fDef,
                     ParentLink(gDef, true),
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     1,
                     emptySet(),
@@ -761,6 +792,7 @@ class FunctionHandlerTest {
                     gDef,
                     null,
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -805,6 +837,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     emptySet(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),
@@ -829,6 +862,7 @@ class FunctionHandlerTest {
                     fDef,
                     null,
                     setOf(),
+                    emptyList(),
                     mutableSetOf(),
                     0,
                     emptySet(),

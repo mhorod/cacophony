@@ -11,7 +11,6 @@ import cacophony.controlflow.generation.SimpleLayout
 import cacophony.foreignFunctionDeclaration
 import cacophony.mockRange
 import cacophony.semantic.analysis.AnalyzedFunction
-import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.createVariablesMap
 import cacophony.semantic.syntaxtree.BaseType
@@ -30,8 +29,7 @@ class GenerateCallKtTest {
         analyzedFunction: AnalyzedFunction,
         ancestorFunctionHandlers: List<FunctionHandler> = emptyList(),
         definitions: Map<Definition, Variable>,
-        closureAnalysisResult: ClosureAnalysisResult = emptyMap(),
-        escapeAnalysis: EscapeAnalysisResult = emptySet(),
+        escapeAnalysisResult: EscapeAnalysisResult = emptySet(),
     ): FunctionHandlerImpl {
         val callConvention = mockk<CallConvention>()
         every { callConvention.preservedRegisters() } returns emptyList()
@@ -41,8 +39,7 @@ class GenerateCallKtTest {
             ancestorFunctionHandlers,
             callConvention,
             createVariablesMap(definitions),
-            closureAnalysisResult,
-            escapeAnalysis,
+            escapeAnalysisResult,
         )
     }
 

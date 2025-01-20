@@ -97,5 +97,6 @@ fun wrapAllocation(allocation: VariableAllocation, holdsReference: Boolean): CFG
         is VariableAllocation.ViaPointer ->
             memoryAccess(
                 wrapAllocation(allocation.pointer, true) add integer(allocation.offset),
+                holdsReference,
             )
     }
