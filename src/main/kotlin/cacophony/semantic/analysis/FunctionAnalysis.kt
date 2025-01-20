@@ -30,7 +30,6 @@ data class AnalyzedFunction(
     val variables: Set<AnalyzedVariable>,
     // TODO: probably need to change, but we needed it for prologueHandler to compile
     val arguments: List<Definition.FunctionArgument>,
-
     val auxVariables: MutableSet<Variable>,
     val staticDepth: Int,
     val variablesUsedInNestedFunctions: Set<Variable>,

@@ -2,7 +2,6 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallableHandler
-import cacophony.controlflow.functions.FunctionHandler
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 import cacophony.semantic.types.*
