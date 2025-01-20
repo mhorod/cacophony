@@ -1,3 +1,8 @@
+foreign get_current_heap_space: [] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let memoryLimit = 4 * 1024;
+
 let ref1 = $1;
 let ref2 = $1;
 let ref3 = $1;
@@ -9,6 +14,7 @@ let ref8 = $1;
 
 let i = 0;
 while i < 1000000 do (
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     ref1 = $1;
     if i%4 == 0 then (ref2 = $1;);
     if i%4 == 1 then (ref3 = $1;);

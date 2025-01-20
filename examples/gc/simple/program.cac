@@ -1,4 +1,8 @@
+foreign get_current_heap_space: [] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let memoryLimit = 4 * 1024;
+
 let x = $1;
 
-# this program is made te ensure that memory limit is enough to run
-# code with (almost) no allocations
+cassert[(get_current_heap_space[] <= memoryLimit)];
