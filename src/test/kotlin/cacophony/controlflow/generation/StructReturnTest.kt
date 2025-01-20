@@ -174,6 +174,7 @@ class StructReturnTest {
         assertEquivalent(actualCFG, expectedCFG)
     }
 
+    // TODO: rewrite
 //    @Test
 //    fun `call sequence - return struct simple no args`() {
 //        // given
