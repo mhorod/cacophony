@@ -6,6 +6,7 @@ import cacophony.codegen.linearization.linearize
 import cacophony.controlflow.functions.SimpleCallGenerator
 import cacophony.pipeline.Params
 import cacophony.semantic.rtti.createObjectOutlines
+import cacophony.semantic.rtti.generateClosureOutlines
 import cacophony.utils.StringInput
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -178,14 +179,13 @@ class DebugRegressionTest {
         val objectOutlines =
             createObjectOutlines(
                 pipeline.getUsedTypes(semantics.types),
-                pipeline.getLambdas(),
             )
         val cfg =
             pipeline.generateControlFlowGraph(
                 pipeline.analyzeAst(ast),
                 SimpleCallGenerator(),
                 objectOutlines.locations,
-                objectOutlines.lambdaLocations,
+                generateClosureOutlines(semantics.lambdaHandlers),
             )
         val covering = cfg.mapValues { (_, cfg) -> linearize(cfg, Params.instructionCovering) }
         val registersInteractions = analyzeRegistersInteraction(covering)

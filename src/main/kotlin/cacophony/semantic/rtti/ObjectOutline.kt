@@ -1,26 +1,20 @@
 package cacophony.semantic.rtti
 
-import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.types.*
 import kotlin.math.absoluteValue
 
 typealias ObjectOutlineLocation = Map<TypeExpr, String>
-typealias LambdaOutlineLocation = Map<LambdaExpression, String>
 
 data class ObjectOutlines(
     val locations: ObjectOutlineLocation,
-    val lambdaLocations: LambdaOutlineLocation,
     val asm: List<String>,
 )
 
-fun createObjectOutlines(types: List<TypeExpr>, lambdas: List<LambdaExpression>): ObjectOutlines {
+fun createObjectOutlines(types: List<TypeExpr>): ObjectOutlines {
     val objectOutlinesCreator = ObjectOutlinesCreator()
-    // all internal structures, like closures, must later be added here
     objectOutlinesCreator.addTypes(types)
-    objectOutlinesCreator.addLambdas(lambdas)
     return ObjectOutlines(
         objectOutlinesCreator.getLocations(),
-        emptyMap(), // TODO
         objectOutlinesCreator.getAsm(),
     )
 }
@@ -80,16 +74,8 @@ internal class ObjectOutlinesCreator {
         asmDataSectionEntries.add(asmEntry)
     }
 
-    private fun add(lambda: LambdaExpression) {
-        // TODO
-    }
-
     fun addTypes(types: List<TypeExpr>) {
         types.forEach { add(it) }
-    }
-
-    fun addLambdas(lambdas: List<LambdaExpression>) {
-        lambdas.forEach { add(it) }
     }
 
     fun getLocations(): ObjectOutlineLocation = locations

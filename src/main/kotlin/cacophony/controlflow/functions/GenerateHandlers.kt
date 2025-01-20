@@ -4,6 +4,7 @@ import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.utils.CompileException
 
 fun generateFunctionHandlers(
@@ -47,4 +48,9 @@ fun generateFunctionHandlers(
     }
 
     return handlers
+}
+
+fun generateLambdaHandlers(): Map<LambdaExpression, LambdaHandler> {
+    // TODO
+    return emptyMap()
 }
