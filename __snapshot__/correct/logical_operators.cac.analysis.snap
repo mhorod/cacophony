@@ -3116,6 +3116,7 @@
         "useType": "UNUSED"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []

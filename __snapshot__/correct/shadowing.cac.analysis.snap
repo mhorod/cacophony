@@ -34667,6 +34667,7 @@
         "useType": "UNUSED"
       }
     ],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 0,
     "variablesUsedInNestedFunctions": []
@@ -37498,6 +37499,38 @@
           }
         },
         "useType": "READ"
+      }
+    ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 88
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 91
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 85
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 91
+          }
+        }
       }
     ],
     "auxVariables": [],
@@ -40333,6 +40366,38 @@
         "useType": "READ"
       }
     ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 221
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 224
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 218
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 224
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -43164,6 +43229,38 @@
           }
         },
         "useType": "READ"
+      }
+    ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 371
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 374
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 368
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 374
+          }
+        }
       }
     ],
     "auxVariables": [],
@@ -45999,6 +46096,38 @@
         "useType": "READ"
       }
     ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 436
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 438
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 433
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 438
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -48830,6 +48959,38 @@
           }
         },
         "useType": "READ"
+      }
+    ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 540
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 542
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 537
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 542
+          }
+        }
       }
     ],
     "auxVariables": [],
@@ -51665,6 +51826,38 @@
         "useType": "READ"
       }
     ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 640
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 642
+            }
+          }
+        },
+        "identifier": "a",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 637
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 642
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -54412,6 +54605,38 @@
       "used": false
     },
     "variables": [],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 698
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 701
+            }
+          }
+        },
+        "identifier": "a",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 695
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 701
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -57159,6 +57384,38 @@
       "used": false
     },
     "variables": [],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 772
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 775
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 769
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 775
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -60176,6 +60433,38 @@
         "useType": "READ"
       }
     ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 807
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 809
+            }
+          }
+        },
+        "identifier": "x",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 804
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 809
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -62892,6 +63181,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -65608,6 +65898,7 @@
       "used": false
     },
     "variables": [],
+    "arguments": [],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -68441,6 +68732,38 @@
         "useType": "READ"
       }
     ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Bool",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 1136
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 1139
+            }
+          }
+        },
+        "identifier": "a",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 1133
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 1139
+          }
+        }
+      }
+    ],
     "auxVariables": [],
     "staticDepth": 1,
     "variablesUsedInNestedFunctions": []
@@ -71272,6 +71595,38 @@
           }
         },
         "useType": "READ"
+      }
+    ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 1172
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 1174
+            }
+          }
+        },
+        "identifier": "a",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 1169
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 1174
+          }
+        }
       }
     ],
     "auxVariables": [],
@@ -74163,6 +74518,38 @@
           }
         },
         "useType": "READ"
+      }
+    ],
+    "arguments": [
+      {
+        "__class__": "FunctionArgument",
+        "type": {
+          "__class__": "Basic",
+          "identifier": "Int",
+          "range": {
+            "__class__": "Pair",
+            "first": {
+              "__class__": "Location",
+              "value": 1256
+            },
+            "second": {
+              "__class__": "Location",
+              "value": 1258
+            }
+          }
+        },
+        "identifier": "f",
+        "range": {
+          "__class__": "Pair",
+          "first": {
+            "__class__": "Location",
+            "value": 1253
+          },
+          "second": {
+            "__class__": "Location",
+            "value": 1258
+          }
+        }
       }
     ],
     "auxVariables": [],
