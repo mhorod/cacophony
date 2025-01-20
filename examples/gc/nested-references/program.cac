@@ -1,3 +1,8 @@
+foreign get_current_heap_space: [] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let memoryLimit = 4 * 1024;
+
 let struct_32 = {
     a=1, b=2, c=3, d=4
 };
@@ -7,6 +12,7 @@ let nested_ref = $$$$$$$$$$struct_32;
 let i = 0;
 
 while i < 100000 do (
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     nested_ref=$$$$$$$$$$struct_32; # reassigning of pointer should free the memory at its subfields
     @@@nested_ref=$$$$$$$struct_32;
     @@@@@@nested_ref=$$$$struct_32;

@@ -1,3 +1,8 @@
+foreign get_current_heap_space: [] -> Int;
+foreign cassert : [Bool] -> Unit;
+
+let memoryLimit = 4 * 1024;
+
 let struct_16 = {
     a=1, b=2
 };
@@ -17,6 +22,7 @@ let ptr9 = $struct_16;
 let i = 0;
 
 while i < 100000 do (
+    cassert[(get_current_heap_space[] <= memoryLimit)];
     ptr0 = $struct_16;
     ptr1 = $struct_16;
     ptr2 = $struct_16;

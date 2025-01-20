@@ -9,7 +9,7 @@
 #endif
 
 static ll getObjectSize(ll *outline) {
-    return 8 * (1 + *outline);
+    return sizeof(ll*) * (1 + *outline);
 }
 
 void memoryManager::createNewPage(int size) {
@@ -19,6 +19,17 @@ void memoryManager::createNewPage(int size) {
     ll *ptr = static_cast<ll*>(malloc(size));
     auto page = memoryPage{size, 0, ptr};
     allocated_pages.push_back(page);
+    occupied_memory += size;
+}
+
+// This step is performed during cleanup, where allocated_pages is being modified, therefore no need to modify it heee.
+void memoryManager::deallocatePage(memoryPage page) {
+    occupied_memory -= page.size;
+    free(page.ptr);
+}
+
+ll memoryManager::getOccupiedMemory() {
+    return occupied_memory;
 }
 
 ll* memoryManager::allocateMemory(int size) {
@@ -55,21 +66,18 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects
     std::swap(pages_to_process, allocated_pages);
     std::set<ll*> processed_pages;
     
-    auto traversePage = [&](memoryPage page, auto && handler /* action to perform on each object */) {
-        for (auto it = page.ptr + 1; it < page.ptr + page.occupied / sizeof(ll*); ) {
-            handler(it);
-            ll *outline = reinterpret_cast<ll*>(*(it - 1));
-            it += (*outline + 1);
+    auto traverseAliveObjectsOnPage = [&](memoryPage page, auto && handler /* action to perform on each object */) {
+        for (auto it = alive_objects.lower_bound(page.ptr+1); it != alive_objects.end() && *it < page.ptr + page.size / sizeof(ll*); it++) {
+            handler(*it);
         }
-        
     };
     for (auto &page : pages_to_process) {
-        bool is_page_untouched = true;
-        traversePage(page, [&](ll* ptr) {
-            if (alive_objects.find(ptr) == alive_objects.end())
-                is_page_untouched = false;
+        int alive_memory_size = 0;
+        traverseAliveObjectsOnPage(page, [&](ll* ptr) {
+            ll *outline = reinterpret_cast<ll*>(*(ptr - 1));
+            alive_memory_size += getObjectSize(outline);
         });
-        if (is_page_untouched) {
+        if (alive_memory_size == page.occupied) {
             allocated_pages.push_back(page);
             processed_pages.insert(page.ptr);
         }
@@ -80,16 +88,15 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects
             continue;
 
         std::vector<ll*> alive_objects_on_page;
-        traversePage(page, [&](ll* ptr) {
-            if (alive_objects.find(ptr) != alive_objects.end())
-                alive_objects_on_page.push_back(ptr);
+        traverseAliveObjectsOnPage(page, [&](ll* ptr) {
+            alive_objects_on_page.push_back(ptr);
         });
         if (alive_objects_on_page.empty()) {
             // Deallocate empty page or store it for later usage
             if (free_page == nullptr)
                 free_page = &page;
             else
-                free(page.ptr);
+                deallocatePage(page);
             continue;
         }
         if(allocated_pages.empty()) {
@@ -99,9 +106,7 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects
             } else 
                 createNewPage(MEMORY_BLOCK_SIZE);
         }
-        traversePage(page, [&](ll* ptr) {
-            if (alive_objects.find(ptr) == alive_objects.end()) 
-                return;
+        traverseAliveObjectsOnPage(page, [&](ll* ptr) {
             ll *outline = reinterpret_cast<ll*>(*(ptr - 1));
             int size = getObjectSize(outline);
             memoryPage *last_page = nullptr;
@@ -123,10 +128,10 @@ std::unordered_map<ll*, ll*> memoryManager::cleanup(std::set<ll*> &alive_objects
         if (free_page == nullptr) 
             free_page = &page;
         else
-            free(page.ptr);
+            deallocatePage(page);
     }
     if (free_page != nullptr)
-        free(free_page->ptr);
+        deallocatePage(*free_page);
     // Last page can be empty, but we don't free it, as it may be useful in next cleanup to have clean page to copy into.
 
     if(LOG_GC) {
