@@ -11,7 +11,7 @@ class FunctionHandlerImpl(
     private val function: FunctionDefinition,
     private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
-    private val ancestorFunctionHandlers: List<CallableHandler>, // first (or last?) can be Lambda, not Function
+    private val ancestorFunctionHandlers: List<CallableHandler>,
     callConvention: CallConvention,
     private val variablesMap: VariablesMap,
     escapeAnalysisResult: EscapeAnalysisResult,
