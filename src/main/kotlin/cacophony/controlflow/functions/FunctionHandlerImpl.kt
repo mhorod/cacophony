@@ -5,7 +5,6 @@ import cacophony.controlflow.generation.*
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
-import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 
 class FunctionHandlerImpl(
@@ -82,11 +81,6 @@ class FunctionHandlerImpl(
             registerUse(rbp, false)
         } else {
             callerFunction.generateAccessToFramePointer(ancestorFunctionHandlers.first())
-        }
-
-    override fun getVariableFromDefinition(varDef: Definition): Variable =
-        variablesMap.definitions.getOrElse(varDef) {
-            throw IllegalArgumentException("Variable $varDef have not been defined inside function $function")
         }
 
     override fun getFlattenedArguments(): List<CFGNode> =
