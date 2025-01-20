@@ -4,17 +4,24 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.types.FunctionType
+import cacophony.semantic.types.StructType
+import cacophony.semantic.types.TypeCheckingResult
+import cacophony.semantic.types.TypeExpr
 import kotlin.math.min
 
 typealias EscapeAnalysisResult = Set<Variable>
+
+class EscapeAnalysisException(reason: String) : Exception(reason)
 
 fun escapeAnalysis(
     ast: AST,
     resolvedVariables: ResolvedVariables,
     functionAnalysis: FunctionAnalysisResult,
     variablesMap: VariablesMap,
+    types: TypeCheckingResult
 ): EscapeAnalysisResult {
-    val baseVisitor = BaseEscapeAnalysisVisitor(resolvedVariables, variablesMap)
+    val baseVisitor = BaseEscapeAnalysisVisitor(resolvedVariables, variablesMap, types)
     baseVisitor.visit(ast)
     val baseResult = baseVisitor.getResult()
 
@@ -94,8 +101,10 @@ private data class BaseEscapeAnalysisResult(
 private class BaseEscapeAnalysisVisitor(
     val resolvedVariables: ResolvedVariables,
     val variablesMap: VariablesMap,
+    val types: TypeCheckingResult
 ) {
     private var currentStaticDepth = -1
+    private var functionTypeStack = ArrayDeque<FunctionType>()
     private val assignmentLhsStack = ArrayDeque<MutableSet<Variable>>()
     private val assignmentRhsStack = ArrayDeque<MutableSet<Variable>>()
     private val returnStack = ArrayDeque<MutableSet<Variable>>()
@@ -118,7 +127,7 @@ private class BaseEscapeAnalysisVisitor(
             is FieldRef.LValue -> visitExpression(expr.obj)
             is FieldRef.RValue -> visitExpression(expr.obj)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
-            is LambdaExpression -> visitFunctionBody(expr.body)
+            is LambdaExpression -> visitLambdaExpression(expr)
             is FunctionDefinition -> visitFunctionDeclaration(expr)
             is FunctionCall -> {
                 visitExpression(expr.function)
@@ -163,8 +172,9 @@ private class BaseEscapeAnalysisVisitor(
         }
     }
 
-    private fun visitFunctionBody(expr: Expression) {
+    private fun visitFunctionBody(expr: Expression, functionType: FunctionType) {
         currentStaticDepth += 1
+        functionTypeStack.add(functionType)
 
         val lastBodyExpression = if (expr is Block) expr.expressions.lastOrNull() else expr
 
@@ -174,13 +184,36 @@ private class BaseEscapeAnalysisVisitor(
 
         if (lastBodyExpression != null) visitReturnedExpression(lastBodyExpression)
 
+        functionTypeStack.removeLast()
         currentStaticDepth -= 1
     }
 
     private fun visitFunctionDeclaration(expr: Definition.FunctionDeclaration) {
         when (expr) {
             is Definition.ForeignFunctionDeclaration -> return
-            is FunctionDefinition -> visitFunctionBody(expr.body)
+            is FunctionDefinition -> {
+                val functionType = types.definitionTypes[expr]
+                if (functionType == null || functionType !is FunctionType) {
+                    throw EscapeAnalysisException("Unexpected type $functionType of function $expr")
+                }
+                visitFunctionBody(expr.body, types.definitionTypes[expr] as FunctionType)
+            }
+        }
+    }
+
+    private fun visitLambdaExpression(expr: LambdaExpression) {
+        val lambdaType = types.expressionTypes[expr]
+        if (lambdaType == null || lambdaType !is FunctionType) {
+            throw EscapeAnalysisException("Unexpected type $lambdaType of lambda expression $expr")
+        }
+        visitFunctionBody(expr.body, types.expressionTypes[expr] as FunctionType)
+    }
+
+    private fun canEscapeViaReturn(returnType: TypeExpr?): Boolean {
+        return when (returnType) {
+            is FunctionType -> true
+            is StructType -> returnType.fields.values.any { canEscapeViaReturn(it) }
+            else -> false
         }
     }
 
@@ -188,7 +221,7 @@ private class BaseEscapeAnalysisVisitor(
         returnStack.add(mutableSetOf())
         visitExpression(expr)
 
-        if (returnStack.last().isNotEmpty()) {
+        if (returnStack.last().isNotEmpty() && canEscapeViaReturn(functionTypeStack.last().result)) {
             returnVariables.getOrPut(currentStaticDepth) { mutableSetOf() }.addAll(returnStack.last())
         }
 
