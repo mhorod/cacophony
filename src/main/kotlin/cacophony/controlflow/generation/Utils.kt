@@ -72,11 +72,6 @@ fun getVariableLayout(handler: CallableHandler, variable: Variable): Layout =
     when (variable) {
         is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
         is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(handler, subfield) })
-        is Variable.FunctionVariable ->
-            FunctionLayout(
-                getVariableLayout(handler, variable.code) as SimpleLayout,
-                getVariableLayout(handler, variable.link) as SimpleLayout,
-            )
         is Variable.Heap -> throw IllegalArgumentException("`Heap` is a special marker `Variable` and has no layout")
     }
 
