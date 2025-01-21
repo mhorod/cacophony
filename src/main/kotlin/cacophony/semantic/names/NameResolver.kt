@@ -80,7 +80,6 @@ private class NameResolver(val diagnostics: Diagnostics) {
         val decidedShape = decideSingleShape(declaration.type, declaration.value)
         val arity = (decidedShape as? Shape.Functional)?.arity
         symbolsTable.define(declaration.identifier, declaration, arity)
-        println("decided shape for $declaration is $decidedShape")
         defsToShapes[declaration] = decidedShape
         return setOf(Shape.Atomic)
     }

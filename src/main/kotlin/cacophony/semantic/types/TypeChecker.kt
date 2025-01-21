@@ -88,7 +88,6 @@ private class Typer(
 
                 is Definition.VariableDeclaration -> {
                     val expect = if (expression.type == null) {
-                        println(shapes[expression])
                         shapes[expression].toExpectation()
                     } else expression.type.toExpectation()
                     val deducedType = typeExpression(expression.value, expect) ?: return null
@@ -184,9 +183,8 @@ private class Typer(
                     }
 
                     if (functionType.args.size != expression.arguments.size) {
-                        val p = TreePrinter().printTree(expression)
                         throw IllegalStateException(
-                            "Arity of function resolved in previous step does not match (in $p)",
+                            "Arity of function resolved in previous step does not match",
                         )
                     }
                     val argsTypes = expression.arguments.zip(functionType.args).map {
