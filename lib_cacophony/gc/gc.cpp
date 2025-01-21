@@ -166,7 +166,7 @@ void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
     if(LOG_GC) {
         std::cerr << "traversing " << object << ", is stack " << is_stack_frame << std::endl;
     }
-    if(!is_stack_frame) markVisited(object);
+    markVisited(object);
 
     int outline_offset = is_stack_frame ? 1 : -1;
     ll *outline = reinterpret_cast<ll*>(*(object + outline_offset));
@@ -192,7 +192,7 @@ void objectTraversal::traverseObjects(ll *object, bool is_stack_frame) {
         ll *referenced_object = *reference;
 
         bool next_is_stack_frame = is_stack_frame && offset == 0;
-        if(next_is_stack_frame || !isVisited(referenced_object)) {
+        if(!isVisited(referenced_object)) {
             traverseObjects(referenced_object, next_is_stack_frame);
         }
     }

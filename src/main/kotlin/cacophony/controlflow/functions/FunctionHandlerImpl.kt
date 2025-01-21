@@ -74,7 +74,7 @@ class FunctionHandlerImpl(
 
     override fun getStaticLink(): Variable.PrimitiveVariable = staticLink
 
-    override fun generateStaticLinkVariable(callerFunction: FunctionHandler): CFGNode =
+    override fun generateStaticLinkVariable(callerFunction: CallableHandler): CFGNode =
         // Since staticLink is not property of node itself, but rather of its children,
         // if caller is an immediate parent, we have to fetch RBP instead.
         if (ancestorFunctionHandlers.isEmpty() || callerFunction === ancestorFunctionHandlers.first()) {
@@ -135,4 +135,6 @@ class FunctionHandlerImpl(
                 )
             }
         }
+
+    override fun getFunctionLabel(): String = function.getLabel()
 }

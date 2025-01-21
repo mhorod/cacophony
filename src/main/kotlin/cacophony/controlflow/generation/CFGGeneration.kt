@@ -57,6 +57,7 @@ internal fun generateFunctionCFG(
             analyzedUseTypes,
             function,
             functionHandlers,
+            emptyMap(), // TODO: fill LambdaHandlers in
             variablesMap,
             typeCheckingResult,
             callGenerator,

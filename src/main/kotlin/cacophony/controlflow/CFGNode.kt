@@ -1,7 +1,6 @@
 package cacophony.controlflow
 
 import cacophony.codegen.BlockLabel
-import cacophony.semantic.syntaxtree.Definition
 import kotlin.reflect.KClass
 
 class CFGLabel {
@@ -10,15 +9,21 @@ class CFGLabel {
 
 sealed interface SlotLabel
 
-class RegisterLabel : SlotLabel
+class RegisterLabel : SlotLabel {
+    override fun toString() = "l(${hashCode()})"
+}
 
-class ValueLabel : SlotLabel
+class ValueLabel : SlotLabel {
+    override fun toString() = "v(${hashCode()})"
+}
 
-class ConstantLabel : SlotLabel
+class ConstantLabel : SlotLabel {
+    override fun toString() = "c(${hashCode()})"
+}
 
-class FunctionLabel : SlotLabel
-
-class NodeLabel : SlotLabel
+class NodeLabel : SlotLabel {
+    override fun toString() = "n(${hashCode()})"
+}
 
 /**
  * Single computation tree that has no control-flow or data-flow dependencies
@@ -34,27 +39,19 @@ sealed interface CFGNode {
 
     sealed interface RegisterRef : Leaf, LValue
 
-    sealed interface FunctionRef : Leaf {
-        val function: Definition.FunctionDeclaration?
-    }
-
     data object NoOp : Leaf {
         override fun toString(): String = "nop"
     }
 
     data class Comment(val comment: String) : Leaf
 
-    // declaration is nullable to create pattern without specific function
-    data class Function(override val function: Definition.FunctionDeclaration) : FunctionRef
-
     data class Call(
-        val functionRef: FunctionRef,
+        val childPtr: CFGNode,
+        val numArgs: Constant,
     ) : CFGNode {
-        constructor(function: Definition.FunctionDeclaration) : this(Function(function))
+        override fun children(): List<CFGNode> = listOf(childPtr, numArgs)
 
-        override fun children(): List<CFGNode> = listOf(functionRef)
-
-        override fun toString(): String = "call ${functionRef.function?.identifier}"
+        override fun toString(): String = "call/$numArgs $childPtr"
     }
 
     data class Return(val resultSize: CFGNode) : Leaf {
@@ -127,7 +124,9 @@ sealed interface CFGNode {
         override operator fun unaryMinus(): ConstantLazy = ConstantLazy { -value }
     }
 
-    class DataLabel(val dataLabel: String) : Value
+    class DataLabel(val dataLabel: String) : Value {
+        override fun toString(): String = "label($dataLabel)"
+    }
 
     sealed interface ArithmeticOperator : Value
 
@@ -303,13 +302,11 @@ sealed interface CFGNode {
     data class ConstantSlot(
         override val label: ConstantLabel,
         val predicate: (Int) -> Boolean,
-    ) : Slot, Value
+    ) : Slot, Value, Constant() {
+        override val value
+            get() = error("Cannot use ConstantSlot as a value")
 
-    data class FunctionSlot(
-        override val label: FunctionLabel,
-    ) : Slot, FunctionRef {
-        override val function: Definition.FunctionDefinition?
-            get() = null
+        override fun unaryMinus() = error("Cannot use ConstantSlot as a value")
     }
 
     data class NodeSlot<T : CFGNode>(

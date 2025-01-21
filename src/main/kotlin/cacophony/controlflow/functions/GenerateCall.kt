@@ -1,77 +1,42 @@
 package cacophony.controlflow.functions
 
 import cacophony.controlflow.*
+import cacophony.controlflow.generation.FunctionLayout
 import cacophony.controlflow.generation.Layout
 import cacophony.controlflow.generation.SimpleLayout
 import cacophony.controlflow.generation.generateSubLayout
-import cacophony.diagnostics.DiagnosticMessage
-import cacophony.diagnostics.Diagnostics
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Type
-import cacophony.semantic.types.TypeTranslator
-import cacophony.utils.Location
+import cacophony.semantic.types.FunctionType
 
 /**
  * Wrapper for generateCall that additionally fills staticLink to parent function.
  */
 fun generateCallFrom(
-    callerFunction: FunctionHandler,
-    function: Definition.FunctionDeclaration,
-    functionHandler: FunctionHandler?,
+    callerFunction: CallableHandler,
+    type: FunctionType,
+    functionLayout: FunctionLayout,
     arguments: List<Layout>,
     result: Layout?,
-): List<CFGNode> =
-    when (function) {
-        is Definition.ForeignFunctionDeclaration -> {
-            if (function.type!!.argumentsType.size != arguments.size) {
-                throw IllegalArgumentException("Wrong argument count")
-            }
-            if (result != null && !layoutMatchesType(result, function.type.returnType)) {
-                throw IllegalArgumentException("Wrong result layout")
-            }
-            generateCall(function, arguments, result, callerFunction.getStackSpace())
-        }
-
-        is Definition.FunctionDefinition -> {
-            if (function.arguments.size != arguments.size) {
-                throw IllegalArgumentException("Wrong argument count")
-            }
-            if (result != null && !layoutMatchesType(result, function.returnType)) {
-                throw IllegalArgumentException("Wrong result layout")
-            }
-            val staticLinkVar = functionHandler!!.generateStaticLinkVariable(callerFunction)
-            generateCall(function, arguments + listOf(SimpleLayout(staticLinkVar)), result, callerFunction.getStackSpace())
-        }
+): List<CFGNode> {
+    // detect whether this is a foreign function
+    if (functionLayout.link == SimpleLayout(integer(0))) {
+        return generateCall(type, functionLayout, arguments, result, callerFunction.getStackSpace())
+    } else {
+        return generateCall(type, functionLayout, arguments + listOf(functionLayout.link), result, callerFunction.getStackSpace())
     }
-
-private fun layoutMatchesType(layout: Layout, type: Type): Boolean = layout.matchesType(type)
+}
 
 fun generateCall(
-    function: Definition.FunctionDeclaration,
+    type: FunctionType,
+    functionLayout: FunctionLayout,
     argumentLayouts: List<Layout>,
     result: Layout?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
-    val translator =
-        TypeTranslator(
-            object : Diagnostics {
-                override fun report(message: DiagnosticMessage, range: Pair<Location, Location>): Unit =
-                    throw IllegalArgumentException("Invalid type $message")
-
-                override fun fatal(): Throwable = throw IllegalArgumentException("Invalid type")
-
-                override fun getErrors(): List<String> = listOf()
-            },
-        )
-    val argumentTypes =
-        when (function) {
-            is Definition.ForeignFunctionDeclaration -> function.type!!.argumentsType
-            is Definition.FunctionDefinition -> function.arguments.map { it.type }
-        }
+    val argumentTypes = type.args
 
     var arguments =
         argumentLayouts.zip(argumentTypes).flatMap { (layout, type) ->
-            generateSubLayout(layout, translator.translateType(type)!!).flatten()
+            generateSubLayout(layout, type).flatten()
         }
 
     // Handle static link
@@ -82,7 +47,7 @@ fun generateCall(
     val registerArguments = arguments.zip(REGISTER_ARGUMENT_ORDER)
     val stackArguments = arguments.drop(registerArguments.size).map { Pair(it, Register.VirtualRegister(it.holdsReference)) }
 
-    val resultSize = function.returnType.size()
+    val resultSize = type.result.size()
 
     val stackResultsSize = (resultSize - REGISTER_RETURN_ORDER.size).let { if (it > 0) it else 0 }
 
@@ -120,7 +85,7 @@ fun generateCall(
         nodes.add(pushRegister(register, register.holdsReference))
     }
 
-    nodes.add(call(function))
+    nodes.add(call(functionLayout.code.access, arguments.size))
 
     if (result == null) {
         nodes.add(
@@ -165,9 +130,9 @@ fun generateCall(
 
 interface CallGenerator {
     fun generateCallFrom(
-        callerFunction: FunctionHandler,
-        function: Definition.FunctionDeclaration,
-        functionHandler: FunctionHandler?,
+        callerHandler: CallableHandler,
+        type: FunctionType,
+        callee: FunctionLayout,
         arguments: List<Layout>,
         result: Layout?,
     ): List<CFGNode>
@@ -175,10 +140,16 @@ interface CallGenerator {
 
 class SimpleCallGenerator : CallGenerator {
     override fun generateCallFrom(
-        callerFunction: FunctionHandler,
-        function: Definition.FunctionDeclaration,
-        functionHandler: FunctionHandler?,
+        callerHandler: CallableHandler,
+        type: FunctionType,
+        callee: FunctionLayout,
         arguments: List<Layout>,
         result: Layout?,
-    ): List<CFGNode> = cacophony.controlflow.functions.generateCallFrom(callerFunction, function, functionHandler, arguments, result)
+    ): List<CFGNode> {
+        if (callee.link == SimpleLayout(integer(0))) {
+            return generateCall(type, callee, arguments, result, callerHandler.getStackSpace())
+        } else {
+            return generateCall(type, callee, arguments + listOf(callee.link), result, callerHandler.getStackSpace())
+        }
+    }
 }

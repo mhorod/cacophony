@@ -8,6 +8,7 @@ import cacophony.controlflow.generation.generateLayoutOfVirtualRegisters
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
+import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.FunctionalExpression
 import kotlin.math.max
 
@@ -137,7 +138,14 @@ abstract class CallableHandlerImpl(
 
     override fun hasVariableAllocation(variable: Variable.PrimitiveVariable): Boolean = variableAllocation.containsKey(variable)
 
+    override fun getVariableFromDefinition(varDef: Definition): Variable =
+        variablesMap.definitions.getOrElse(varDef) {
+            throw IllegalArgumentException("Variable $varDef have not been defined inside function $function")
+        }
+
     override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
+
+    override fun getFunctionLabel(): String = "lambda_${function.hashCode()}"
 
     private val resultLayout = generateLayoutOfVirtualRegisters(function.returnType)
 

@@ -1,7 +1,5 @@
 package cacophony.controlflow
 
-import cacophony.semantic.syntaxtree.Definition
-
 val rax = Register.FixedRegister(HardwareRegister.RAX)
 val rbx = Register.FixedRegister(HardwareRegister.RBX)
 val rsp = Register.FixedRegister(HardwareRegister.RSP)
@@ -69,7 +67,7 @@ fun pushRegister(register: Register, holdsReference: Boolean) = CFGNode.Push(CFG
 
 fun popRegister(register: Register, holdsReference: Boolean) = CFGNode.Pop(CFGNode.RegisterUse(register, holdsReference))
 
-fun call(function: Definition.FunctionDeclaration) = CFGNode.Call(function)
+fun call(child: CFGNode, argCnt: Int) = CFGNode.Call(child, integer(argCnt))
 
 // logical
 infix fun CFGNode.eq(other: CFGNode) = CFGNode.Equals(this, other)

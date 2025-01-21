@@ -59,21 +59,24 @@ fun cfgNodeToBuilder(tree: CFGNode): String =
         is CFGNode.Assignment ->
             cfgNodeToBuilder(tree.destination) + " assign " + cfgNodeToBuilder(tree.value)
 
-        is CFGNode.Call -> "call(\"${tree.functionRef.function?.identifier}\")"
+        is CFGNode.Call -> "call(\"${tree.childPtr}, ${tree.numArgs}\")"
         is CFGNode.MemoryAccess -> "memoryAccess(${cfgNodeToBuilder(tree.destination)})"
         is CFGNode.RegisterSlot -> "registerSlot"
         is CFGNode.RegisterUse -> {
             val register =
                 when (tree.register) {
-                    is Register.FixedRegister -> tree.register.hardwareRegister.toString().lowercase()
+                    is Register.FixedRegister ->
+                        tree.register.hardwareRegister
+                            .toString()
+                            .lowercase()
                     is Register.VirtualRegister -> "virtualRegister(\"${tree.register}\")"
                 }
             "registerUse($register)"
         }
         is CFGNode.Comment -> "CFGNode.Comment(\"${tree.comment}\")"
         is CFGNode.Constant -> "CFGNode.ConstantKnown(${tree.value})"
-        is CFGNode.Function -> "function"
-        is CFGNode.FunctionSlot -> "functionSlot"
+//        is CFGNode.Function -> "function"
+//        is CFGNode.FunctionSlot -> "functionSlot"
         CFGNode.NoOp -> "CFGNode.NoOp"
         is CFGNode.Pop -> "popRegister(${tree.register})"
         is CFGNode.Return -> "returnNode(${cfgNodeToBuilder(tree.resultSize)})"

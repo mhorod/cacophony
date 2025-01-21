@@ -3,16 +3,18 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.Builtin
 import cacophony.controlflow.functions.CallGenerator
+import cacophony.controlflow.functions.CallableHandler
 import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.LambdaHandler
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.TypeCheckingResult
-import cacophony.semantic.types.TypeExpr
 
 /**
  * Converts Expressions into CFG
@@ -20,8 +22,9 @@ import cacophony.semantic.types.TypeExpr
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
-    private val function: Definition.FunctionDefinition,
+    private val function: FunctionalExpression,
     private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
+    private val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
     val variablesMap: VariablesMap,
     private val typeCheckingResult: TypeCheckingResult,
     private val callGenerator: CallGenerator,
@@ -32,12 +35,12 @@ internal class CFGGenerator(
     private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
     private val operatorHandler = OperatorHandler(cfg, this, sideEffectAnalyzer)
     private val assignmentHandler = AssignmentHandler(this)
-    private val prologue = listOfNodesToExtracted(getCurrentFunctionHandler().generatePrologue())
-    private val epilogue = listOfNodesToExtracted(getCurrentFunctionHandler().generateEpilogue())
+    private val prologue = listOfNodesToExtracted(getCurrentCallableHandler().generatePrologue())
+    private val epilogue = listOfNodesToExtracted(getCurrentCallableHandler().generateEpilogue())
 
     internal fun generateFunctionCFG(): CFGFragment {
         val bodyCFG = visit(function.body, EvalMode.Value, Context(null))
-        val returnValueLayout = getCurrentFunctionHandler().getResultLayout()
+        val returnValueLayout = getCurrentCallableHandler().getResultLayout()
 
         val extended =
             when (bodyCFG) {
@@ -99,6 +102,13 @@ internal class CFGGenerator(
                 require(destination is StructLayout) // by type checking
                 destination.fields.flatMap { (field, layout) -> makeVerticesForAssignment(source.fields[field]!!, layout) }
             }
+            is FunctionLayout -> {
+                require(destination is FunctionLayout) // by type checking
+                makeVerticesForAssignment(source.code, destination.code) + makeVerticesForAssignment(source.link, destination.link)
+            }
+            is ClosureLayout -> {
+                error("Unexpected assignment to internal layout type ClosureLayout")
+            }
             is VoidLayout -> emptyList()
         }
 
@@ -139,6 +149,7 @@ internal class CFGGenerator(
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
             is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
+            is LambdaExpression -> visitLambdaExpression(expression, mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
             is FunctionCall -> visitFunctionCall(expression, mode, context)
@@ -163,28 +174,18 @@ internal class CFGGenerator(
             is EvalMode.Value -> {
                 val type = typeCheckingResult.expressionTypes[expression]!!
                 require(type is ReferentialType) // by type checking
-                val call =
-                    generateFunctionCall(
-                        Builtin.allocStruct,
-                        typeCheckingResult.expressionTypes[expression]!!,
-                        mode,
-                        listOf(
-                            ensureExtracted(
-                                SubCFG.Immediate(dataLabel(objectOutlineLocation[type.type]!!), false),
-                                mode,
-                            ),
-                            ensureExtracted(
-                                SubCFG.Immediate(registerUse(rbp, false), false),
-                                mode,
-                            ),
-                        ),
-                    )
-                require(call.access is SimpleLayout) // by type check
-                val resultLayout = generateLayoutOfHeapObject(call.access.access, type.type)
-                val allocation = call merge assignLayoutWithValue(calcExpression.access, resultLayout, call.access)
+
+                val outlineLocation = objectOutlineLocation[type.type]!!
+
+                val callCFG =
+                    allocAndCopy(
+                        outlineLocation,
+                        calcExpression.access,
+                    ) { pointerLayout -> generateLayoutOfHeapObject(pointerLayout.access, type.type) }
+
                 when (calcExpression) {
-                    is SubCFG.Extracted -> calcExpression merge allocation
-                    is SubCFG.Immediate -> allocation
+                    is SubCFG.Extracted -> calcExpression merge callCFG
+                    is SubCFG.Immediate -> callCFG
                 }
             }
             // do nothing if value is not used
@@ -279,9 +280,42 @@ internal class CFGGenerator(
 
     private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
+    private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
+        val handler = lambdaHandlers[lambda]!!
+        val label = handler.getFunctionLabel()
+        // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
+        // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?
+        return when (mode) {
+            is EvalMode.Value -> {
+                val outlineLocation = lambdaOutlineLocation.getValue(lambda)
+                val offsets = handler.getCapturedVariableOffsets()
+                val sourceLayout =
+                    ClosureLayout(
+                        offsets.mapValues { (variable, _) ->
+                            SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
+                        },
+                    )
+
+                val allocCFG =
+                    allocAndCopy(outlineLocation, sourceLayout) { pointerLayout -> generateLayoutOfClosure(pointerLayout.access, offsets) }
+
+                val closureLink = allocCFG.access
+                require(closureLink is SimpleLayout)
+
+                SubCFG.Extracted(
+                    allocCFG.entry,
+                    allocCFG.exit,
+                    FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
+                )
+            }
+            is EvalMode.SideEffect -> SubCFG.Immediate(noOpOrUnit(mode))
+            is EvalMode.Conditional -> throw IllegalArgumentException("Lambda expression can not be used as condition")
+        }
+    }
+
     private fun visitVariableDeclaration(expression: Definition.VariableDeclaration, mode: EvalMode, context: Context): SubCFG =
         assignmentHandler.generateAssignment(
-            getVariableLayout(getCurrentFunctionHandler(), variablesMap.definitions[expression]!!),
+            getVariableLayout(getCurrentCallableHandler(), variablesMap.definitions[expression]!!),
             expression.value,
             mode,
             context,
@@ -291,59 +325,42 @@ internal class CFGGenerator(
     private fun visitEmpty(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
 
     private fun visitFunctionCall(expression: FunctionCall, mode: EvalMode, context: Context): SubCFG {
+        val calleeCFG = ensureExtracted(visit(expression.function, EvalMode.Value, context), EvalMode.Value)
+
+        val functionLayout = calleeCFG.access
+        require(functionLayout is FunctionLayout)
+
         val argumentVertices =
             expression.arguments
                 .map { visitExtracted(it, EvalMode.Value, context) }
 
-        return generateFunctionCall(
-            resolvedVariables[expression.function] as Definition.FunctionDeclaration,
-            typeCheckingResult.expressionTypes[expression]!!,
-            mode,
-            argumentVertices,
-        )
-    }
-
-    private fun generateFunctionCall(
-        function: Definition.FunctionDeclaration,
-        returnType: TypeExpr,
-        mode: EvalMode,
-        arguments: List<SubCFG.Extracted>,
-    ): SubCFG.Extracted {
-        val functionHandler =
-            when (function) {
-                is Definition.FunctionDefinition -> getFunctionHandler(function)
-                is Definition.ForeignFunctionDeclaration -> null
-            }
+        val functionType = typeCheckingResult.expressionTypes[expression.function]!!
+        require(functionType is FunctionType) { "LHS of call should be callable but is $functionType" }
 
         val resultLayout =
             when (mode) {
                 is EvalMode.SideEffect -> null
-                else -> generateLayoutOfVirtualRegisters(returnType)
+                else -> generateLayoutOfVirtualRegisters(functionType.result)
             }
 
-        // It may hold reference, but I believe it won't be used anywhere else
-        val callSequence =
-            callGenerator
-                .generateCallFrom(
-                    getCurrentFunctionHandler(),
-                    function,
-                    functionHandler,
-                    arguments.map { it.access },
-                    resultLayout,
-                ).map { ensureExtracted(it, false) }
-                .reduce(SubCFG.Extracted::merge)
-        val entry =
-            if (arguments.isNotEmpty()) {
-                val extractedArguments = arguments.reduce(SubCFG.Extracted::merge)
-                extractedArguments.exit.connect(callSequence.entry.label)
-                extractedArguments.entry
-            } else {
-                callSequence.entry
-            }
+        val callCFG = generateCall(functionType, functionLayout, argumentVertices.map { it.access }, resultLayout)
 
-        return if (mode is EvalMode.Conditional) extendWithConditional(callSequence, mode)
-        else SubCFG.Extracted(entry, callSequence.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp, false))
+        val fullCFG =
+            (argumentVertices.fold(calleeCFG, SubCFG.Extracted::merge) merge callCFG).let {
+                SubCFG.Extracted(it.entry, it.exit, resultLayout ?: SimpleLayout(CFGNode.NoOp))
+            }
+        if (mode is EvalMode.Conditional) {
+            return extendWithConditional(fullCFG, mode)
+        }
+        return fullCFG
     }
+
+    private fun generateCall(functionType: FunctionType, function: FunctionLayout, arguments: List<Layout>, result: Layout?) =
+        callGenerator
+            .generateCallFrom(getCurrentCallableHandler(), functionType, function, arguments, result)
+            .map {
+                ensureExtracted(it, false)
+            }.reduce(SubCFG.Extracted::merge)
 
     private fun visitLiteral(literal: Literal, mode: EvalMode): SubCFG =
         when (mode) {
@@ -373,7 +390,7 @@ internal class CFGGenerator(
         return when (expression.lhs) {
             is VariableUse, is FieldRef.LValue ->
                 assignmentHandler.generateAssignment(
-                    getVariableLayout(getCurrentFunctionHandler(), variablesMap.lvalues[lhs]!!),
+                    getVariableLayout(getCurrentCallableHandler(), variablesMap.lvalues[lhs]!!),
                     expression.rhs,
                     mode,
                     context,
@@ -475,7 +492,7 @@ internal class CFGGenerator(
     private fun visitReturnStatement(expression: Statement.ReturnStatement, mode: EvalMode, context: Context): SubCFG {
         val valueCFG = visit(expression.value, EvalMode.Value, context)
         val resultAssignment =
-            assignLayoutWithValue(valueCFG.access, getCurrentFunctionHandler().getResultLayout(), SimpleLayout(CFGNode.NoOp, false))
+            assignLayoutWithValue(valueCFG.access, getCurrentCallableHandler().getResultLayout(), SimpleLayout(CFGNode.NoOp, false))
 
         resultAssignment.exit.connect(epilogue.entry.label)
 
@@ -517,17 +534,67 @@ internal class CFGGenerator(
     }
 
     private fun visitAssignable(expression: Assignable, mode: EvalMode): SubCFG {
-        val variable = variablesMap.lvalues[expression]!!
-        val variableAccess = getVariableLayout(getCurrentFunctionHandler(), variable)
+        val layout =
+            variablesMap.lvalues[expression]?.let { variable ->
+                getVariableLayout(getCurrentCallableHandler(), variable)
+            } ?: let {
+                require(expression is VariableUse) { "Expected $expression to be instance of VariableUse" }
+
+                when (val function = resolvedVariables[expression]) {
+                    is Definition.FunctionDefinition -> getFunctionLayout(getCurrentCallableHandler(), functionHandlers[function]!!)
+                    is Definition.ForeignFunctionDeclaration -> getForeignFunctionLayout(function)
+                    else -> error("Expected function declaration, but got $function")
+                }
+            }
+
         return when (mode) {
-            is EvalMode.Value -> SubCFG.Immediate(variableAccess)
+            is EvalMode.Value -> SubCFG.Immediate(layout)
             is EvalMode.SideEffect -> SubCFG.Immediate(CFGNode.NoOp, false)
-            is EvalMode.Conditional -> extendWithConditional(SubCFG.Immediate(variableAccess), mode)
+            is EvalMode.Conditional -> extendWithConditional(SubCFG.Immediate(layout), mode)
         }
     }
 
-    private fun getCurrentFunctionHandler(): FunctionHandler = getFunctionHandler(function)
+    private fun getCurrentCallableHandler(): CallableHandler = getCallableHandler(function)
 
-    private fun getFunctionHandler(function: Definition.FunctionDefinition): FunctionHandler =
-        functionHandlers[function] ?: error("Function $function has no handler")
+    private fun getCallableHandler(callable: FunctionalExpression): CallableHandler =
+        when (callable) {
+            is Definition.FunctionDefinition -> functionHandlers[function] ?: error("Function $function has no handler")
+            is LambdaExpression -> lambdaHandlers[function] ?: error("Lambda $function has no handler")
+        }
+
+    // sourceLayout opisuje gdzie są rzeczy, które chcemy przekopiować na stertę
+    // resultLayout opisuje obiekt na stercie
+    private fun allocAndCopy(outlineLocation: String, sourceLayout: Layout, makeResultLayout: (SimpleLayout) -> Layout): SubCFG.Extracted {
+        val arguments =
+            listOf(
+                ensureExtracted(
+                    SubCFG.Immediate(dataLabel(outlineLocation), false),
+                    EvalMode.Value,
+                ),
+                ensureExtracted(
+                    SubCFG.Immediate(registerUse(rbp, false), false),
+                    EvalMode.Value,
+                ),
+            )
+
+        val resultPointerLayout = SimpleLayout(registerUse(Register.VirtualRegister(true), true), true)
+
+        val functionType = typeCheckingResult.definitionTypes[Builtin.allocStruct]!!
+        val functionLayout = getForeignFunctionLayout(Builtin.allocStruct)
+        require(functionType is FunctionType) { "LHS of call should be callable but is $functionType" }
+        val call =
+            generateCall(
+                functionType,
+                functionLayout,
+                arguments.map { it.access },
+                resultPointerLayout,
+            )
+        val callWithArgs = arguments.reduce(SubCFG.Extracted::merge) merge call
+        val resultLayout = makeResultLayout(resultPointerLayout)
+
+        return (
+            callWithArgs merge
+                assignLayoutWithValue(sourceLayout, resultLayout, resultPointerLayout)
+        )
+    }
 }
