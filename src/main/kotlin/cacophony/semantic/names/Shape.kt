@@ -3,12 +3,14 @@ package cacophony.semantic.names
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Type
 
-sealed interface Shape {
+internal sealed interface Shape {
     data object Atomic : Shape
 
     data class Structural(val fields: Map<String, Shape>) : Shape
 
     data class Functional(val arity: Int, val result: Shape) : Shape
+
+    data class Referential(val internal: Shape) : Shape
 
     data object Top : Shape
 
@@ -26,6 +28,7 @@ sealed interface Shape {
             return when (this) {
                 is Atomic -> other is Atomic
                 is Functional -> other is Functional && other.arity == this.arity && this.result isSubshapeOf other.result
+                is Referential -> other is Referential && this.internal isSubshapeOf other.internal
                 is Structural -> {
                     other is Structural &&
                         this.fields.all { (name, shape) -> other.fields[name]?.let { shape isSubshapeOf it } ?: false }

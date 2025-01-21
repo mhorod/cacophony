@@ -3,28 +3,32 @@ package cacophony.semantic.types
 import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.names.EntityResolutionResult
 import cacophony.semantic.names.ResolvedEntity
-import cacophony.semantic.names.Shape
-import cacophony.semantic.names.ShapeResolutionResult
+import cacophony.semantic.names.ArityResolutionResult
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
-import cacophony.utils.TreePrinter
 
 // Result contains every variable that could be properly typed
-fun checkTypes(ast: AST, resolvedEntities: EntityResolutionResult, resolvedShapes: ShapeResolutionResult, diagnostics: Diagnostics): TypeCheckingResult {
+fun checkTypes(
+    ast: AST,
+    resolvedEntities: EntityResolutionResult,
+    resolvedShapes: ArityResolutionResult,
+    diagnostics: Diagnostics,
+): TypeCheckingResult {
     val typer = Typer(diagnostics, resolvedEntities, resolvedShapes)
     typer.typeExpression(ast, Expectation.Any)
     return TypeCheckingResult(typer.result, typer.typedVariables, typer.resolvedVariables)
 }
 
-
 interface Expectation {
-    data class Arity(val n: Int): Expectation
-    data object Any: Expectation
-    data object Value: Expectation
+    data class Arity(val n: Int) : Expectation
+
+    data object Any : Expectation
+
+    data object Value : Expectation
 }
 
 fun TypeExpr?.toExpectation(): Expectation {
-    return when(this) {
+    return when (this) {
         BuiltinType.BooleanType -> Expectation.Value
         BuiltinType.IntegerType -> Expectation.Value
         BuiltinType.UnitType -> Expectation.Value
@@ -46,20 +50,10 @@ fun Type?.toExpectation(): Expectation {
     }
 }
 
-fun Shape?.toExpectation(): Expectation {
-    return when(this) {
-        Shape.Atomic -> Expectation.Value
-        is Shape.Functional -> Expectation.Arity(this.arity)
-        is Shape.Structural -> Expectation.Value
-        Shape.Top -> Expectation.Any
-        null -> Expectation.Any
-    }
-}
-
 private class Typer(
     diagnostics: Diagnostics,
-    val resolvedEntities: Map<VariableUse, ResolvedEntity>,
-    val shapes: Map<Definition, Shape>
+    val resolvedEntities: EntityResolutionResult,
+    val arities: ArityResolutionResult,
 ) {
     val result: MutableMap<Expression, TypeExpr> = mutableMapOf()
     val typedVariables: MutableMap<Definition, TypeExpr> = mutableMapOf()
@@ -87,9 +81,10 @@ private class Typer(
                 }
 
                 is Definition.VariableDeclaration -> {
-                    val expect = if (expression.type == null) {
-                        shapes[expression].toExpectation()
-                    } else expression.type.toExpectation()
+                    val expect =
+                        if (expression.type == null) {
+                            arities[expression]?.let { Expectation.Arity(it) } ?: Expectation.Value
+                        } else expression.type.toExpectation()
                     val deducedType = typeExpression(expression.value, expect) ?: return null
                     val variableType = initializedType(expression.type, deducedType, expression.value.range) ?: return null
                     typedVariables[expression] = variableType
@@ -153,7 +148,7 @@ private class Typer(
                                         (typeExpression(fieldExpr, field.type.toExpectation()) ?: return null),
                                         fieldExpr.range,
                                     ) ?: return null
-                                    )
+                                )
                             }.toMap(),
                     )
                 }
@@ -175,7 +170,6 @@ private class Typer(
 
                 is Empty -> BuiltinType.UnitType
                 is FunctionCall -> {
-
                     val functionType = typeExpression(expression.function, Expectation.Arity(expression.arguments.size)) ?: return null
                     if (functionType !is FunctionType) {
                         error.expectedFunction(expression.function.range)
@@ -187,10 +181,10 @@ private class Typer(
                             "Arity of function resolved in previous step does not match",
                         )
                     }
-                    val argsTypes = expression.arguments.zip(functionType.args).map {
-                        (expr, type) ->
-                        typeExpression(expr, type.toExpectation())
-                    }
+                    val argsTypes =
+                        expression.arguments.zip(functionType.args).map { (expr, type) ->
+                            typeExpression(expr, type.toExpectation())
+                        }
                     (argsTypes zip functionType.args)
                         .mapIndexed { ind, (deduced, required) ->
                             if (deduced == null) {
@@ -333,7 +327,7 @@ private class Typer(
                     whileDepth++
                     typeExpression(expression.doExpression, Expectation.Any)
                     whileDepth--
-                    val conditionType = typeExpression(expression.testExpression, Expectation.Value)?: return null
+                    val conditionType = typeExpression(expression.testExpression, Expectation.Value) ?: return null
                     if (!isSubtype(conditionType, BuiltinType.BooleanType)) {
                         error.typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
                         return null
@@ -362,37 +356,39 @@ private class Typer(
                 }
 
                 is VariableUse -> {
-                    val def = when (expectation) {
-                        is Expectation.Arity -> when(val entity = resolvedEntities[expression]) {
-                            is ResolvedEntity.Unambiguous -> entity.definition
-                            is ResolvedEntity.WithOverloads -> {
-                                when (val def = entity.overloads[expectation.n]) {
-                                    null -> {
-                                        error.expectedFunction(expression.range)
-                                        return null
+                    val def =
+                        when (expectation) {
+                            is Expectation.Arity ->
+                                when (val entity = resolvedEntities[expression]) {
+                                    is ResolvedEntity.Unambiguous -> entity.definition
+                                    is ResolvedEntity.WithOverloads -> {
+                                        when (val def = entity.overloads[expectation.n]) {
+                                            null -> {
+                                                error.expectedFunction(expression.range)
+                                                return null
+                                            }
+
+                                            else -> def
+                                        }
                                     }
 
-                                    else -> def
+                                    null -> throw IllegalArgumentException("Entity not resolved :(")
                                 }
-                            }
-
-                            null -> throw IllegalArgumentException("Entity not resolved :(")
-                        }
-                        else -> {
-                            when(val entity = resolvedEntities[expression]) {
-                                is ResolvedEntity.Unambiguous -> entity.definition
-                                is ResolvedEntity.WithOverloads -> {
-                                    if(entity.overloads.size == 1) {
-                                        entity.overloads.values.first()
-                                    } else {
-                                        error.tooManyOverloads(expression.range)
-                                        return null
+                            else -> {
+                                when (val entity = resolvedEntities[expression]) {
+                                    is ResolvedEntity.Unambiguous -> entity.definition
+                                    is ResolvedEntity.WithOverloads -> {
+                                        if (entity.overloads.size == 1) {
+                                            entity.overloads.values.first()
+                                        } else {
+                                            error.tooManyOverloads(expression.range)
+                                            return null
+                                        }
                                     }
+                                    null -> throw IllegalArgumentException("Entity not resolved :( $expression")
                                 }
-                                null -> throw IllegalArgumentException("Entity not resolved :( $expression")
                             }
                         }
-                    }
                     resolvedVariables[expression] = def
                     typedVariables[def]!!
                 }

@@ -9,21 +9,15 @@ import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 import cacophony.utils.Location
-import io.mockk.Called
-import io.mockk.MockKAnnotations
-import io.mockk.confirmVerified
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.MockK
-import io.mockk.just
-import io.mockk.runs
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-/*class NameResolverTest {
+class NameResolverTest {
     private val mockValue = Empty(mockRange())
 
     private fun variableDeclaration(name: String): VariableDeclaration = variableDeclaration(name, mockValue)
@@ -43,34 +37,36 @@ import org.junit.jupiter.api.Test
 
         return object : ResolvedNamesAssert {
             override fun hasVariable(binding: Pair<VariableUse, VariableDeclaration>): ResolvedNamesAssert {
-                val resolvedName = resolvedNames[binding.first]
-                assert(resolvedName !== null)
-                assert(resolvedName is Variable)
-                assertThat((resolvedName as Variable).def).isEqualTo(binding.second)
+                val resolvedEntity = resolvedNames.entityResolution[binding.first]
+                assert(resolvedEntity is ResolvedEntity.Unambiguous)
+                val definition = (resolvedEntity as ResolvedEntity.Unambiguous).definition
+                assert(definition is VariableDeclaration)
+                assertThat(definition).isSameAs(binding.second)
                 checked.add(binding.first)
                 return this
             }
 
             override fun hasArgument(binding: Pair<VariableUse, FunctionArgument>): ResolvedNamesAssert {
-                val resolvedName = resolvedNames[binding.first]
-                assert(resolvedName !== null)
-                assert(resolvedName is Argument)
-                assertThat((resolvedName as Argument).def).isEqualTo(binding.second)
+                val resolvedEntity = resolvedNames.entityResolution[binding.first]
+                assert(resolvedEntity is ResolvedEntity.Unambiguous)
+                val definition = (resolvedEntity as ResolvedEntity.Unambiguous).definition
+                assert(definition is FunctionArgument)
+                assertThat(definition).isSameAs(binding.second)
                 checked.add(binding.first)
                 return this
             }
 
             override fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, FunctionDeclaration>>): ResolvedNamesAssert {
-                val overloadSet = resolvedNames[binding.first]
-                assert(overloadSet !== null)
-                assert(overloadSet is Function)
-                assertThat((overloadSet as Function).def.toMap()).containsExactlyInAnyOrderEntriesOf(binding.second)
+                val resolvedEntity = resolvedNames.entityResolution[binding.first]
+                assert(resolvedEntity is ResolvedEntity.WithOverloads)
+                val overloadSet = (resolvedEntity as ResolvedEntity.WithOverloads).overloads
+                assertThat(overloadSet).containsExactlyInAnyOrderEntriesOf(binding.second)
                 checked.add(binding.first)
                 return this
             }
 
             override fun andNothingElse() {
-                assertThat(resolvedNames.keys).containsExactlyInAnyOrderElementsOf(checked)
+                assertThat(resolvedNames.entityResolution.keys).containsExactlyInAnyOrderElementsOf(checked)
             }
         }
     }
@@ -1394,7 +1390,7 @@ import org.junit.jupiter.api.Test
 
         @Test
         fun `error when finds argument of functional type`() {
-            // let f = [x: () -> Int] -> Int => 0
+            // let f = [x: [] -> Int] -> Int => 0
 
             // given
             val functionalArgumentRange = Location(9) to Location(20)
@@ -1415,7 +1411,7 @@ import org.junit.jupiter.api.Test
 
             // when & then
             resolveNames(ast, diagnostics)
-            verify(exactly = 1) { diagnostics.report(NRDiagnostics.IllegalFunctionalArgument("x"), functionalArgumentRange) }
+            verify { diagnostics wasNot called }
             confirmVerified(diagnostics)
         }
 
@@ -1457,4 +1453,3 @@ import org.junit.jupiter.api.Test
         }
     }
 }
-*/

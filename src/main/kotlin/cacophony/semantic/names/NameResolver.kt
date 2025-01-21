@@ -12,14 +12,18 @@ import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 
 typealias EntityResolutionResult = Map<VariableUse, ResolvedEntity>
-typealias ShapeResolutionResult = Map<Definition, Shape>
+typealias ArityResolutionResult = Map<Definition, Int>
 
-class NameResolutionResult(val entityResolution: EntityResolutionResult, val shapeResolution: ShapeResolutionResult)
+class NameResolutionResult(val entityResolution: EntityResolutionResult, val shapeResolution: ArityResolutionResult)
 
-fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult{
+fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult  {
     val resolver = NameResolver(diagnostics)
     resolver.traverseAst(root, true)
-    return NameResolutionResult(resolver.resolvedEntities, resolver.defsToShapes)
+    val arities = resolver
+        .defsToShapes
+        .mapNotNull { (definition, shape) -> if (shape is Shape.Functional) definition to shape.arity else null  }
+        .toMap()
+    return NameResolutionResult(resolver.resolvedEntities, arities)
 }
 
 private class NameResolver(val diagnostics: Diagnostics) {
@@ -31,26 +35,27 @@ private class NameResolver(val diagnostics: Diagnostics) {
     fun traverseAst(node: Expression, openNewBlock: Boolean): Set<Shape> {
         if (openNewBlock) symbolsTable.open()
 
-        val shapes = when (node) {
-            is Block -> traverseBlock(node)
-            is VariableUse -> traverseVariableUse(node)
-            is VariableDeclaration -> traverseVariableDeclaration(node)
-            is FunctionDefinition -> traverseFunctionDefinition(node)
-            is LambdaExpression -> traverseLambdaExpression(node)
-            is ForeignFunctionDeclaration -> traverseForeignFunctionDeclaration(node)
-            is FunctionArgument -> traverseFunctionArgument(node)
-            is FunctionCall -> traverseFunctionCall(node)
-            is Statement.IfElseStatement -> traverseIfElseStatement(node)
-            is Statement.WhileStatement -> traverseWhileStatement(node)
-            is Statement.ReturnStatement -> traverseReturnStatement(node)
-            is OperatorUnary -> traverseOperatorUnary(node)
-            is OperatorBinary -> traverseOperatorBinary(node)
-            is Struct -> traverseStruct(node)
-            is FieldRef -> traverseFieldRef(node)
-            is Dereference -> traverseDereference(node)
-            is Allocation -> traverseAllocation(node)
-            is LeafExpression -> setOf(Shape.Atomic)
-        }
+        val shapes =
+            when (node) {
+                is Block -> traverseBlock(node)
+                is VariableUse -> traverseVariableUse(node)
+                is VariableDeclaration -> traverseVariableDeclaration(node)
+                is FunctionDefinition -> traverseFunctionDefinition(node)
+                is LambdaExpression -> traverseLambdaExpression(node)
+                is ForeignFunctionDeclaration -> traverseForeignFunctionDeclaration(node)
+                is FunctionArgument -> traverseFunctionArgument(node)
+                is FunctionCall -> traverseFunctionCall(node)
+                is Statement.IfElseStatement -> traverseIfElseStatement(node)
+                is Statement.WhileStatement -> traverseWhileStatement(node)
+                is Statement.ReturnStatement -> traverseReturnStatement(node)
+                is OperatorUnary -> traverseOperatorUnary(node)
+                is OperatorBinary -> traverseOperatorBinary(node)
+                is Struct -> traverseStruct(node)
+                is FieldRef -> traverseFieldRef(node)
+                is Dereference -> traverseDereference(node)
+                is Allocation -> traverseAllocation(node)
+                is LeafExpression -> setOf(Shape.Atomic)
+            }
 
         if (openNewBlock) symbolsTable.close()
 
@@ -152,10 +157,11 @@ private class NameResolver(val diagnostics: Diagnostics) {
     }
 
     private fun traverseStruct(struct: Struct): Set<Shape> {
-        val fieldMap = struct
-            .fields
-            .map { (field, value) -> field.name to decideSingleShape(field.type, value) }
-            .toMap()
+        val fieldMap =
+            struct
+                .fields
+                .map { (field, value) -> field.name to decideSingleShape(field.type, value) }
+                .toMap()
         return setOf(Shape.Structural(fieldMap))
     }
 
@@ -165,15 +171,16 @@ private class NameResolver(val diagnostics: Diagnostics) {
             .mapNotNull { it.fields[ref.field] }
             .toSet()
 
-    private fun traverseAllocation(allocation: Allocation): Set<Shape> {
+    private fun traverseAllocation(allocation: Allocation): Set<Shape> =
         traverseAst(allocation.value, true)
-        return setOf(Shape.Atomic)
-    }
+            .map { Shape.Referential(it) }
+            .toSet()
 
-    private fun traverseDereference(dereference: Dereference): Set<Shape> {
+    private fun traverseDereference(dereference: Dereference): Set<Shape> =
         traverseAst(dereference.value, true)
-        return setOf(Shape.Atomic)
-    }
+            .filterIsInstance<Shape.Referential>()
+            .map { it.internal }
+            .toSet()
 
     private fun visitLambdaExpression(arguments: List<FunctionArgument>, returnType: Type, body: Expression): Shape {
         arguments
@@ -197,13 +204,14 @@ private class NameResolver(val diagnostics: Diagnostics) {
     private fun decideSingleShape(annotation: Type?, value: Expression): Shape {
         val expectedShape = annotation?.let { Shape.from(it) } ?: Shape.Top
         val validShapes = traverseAst(value, true).filter { it isSubshapeOf expectedShape }
-        val decidedShape = if (validShapes.size == 1) {
-            val shape = validShapes.last()
-            if (annotation == null) shape else expectedShape
-        } else {
-            // TODO: report diagnostic
-            expectedShape
-        }
+        val decidedShape =
+            if (validShapes.size == 1) {
+                val shape = validShapes.last()
+                if (annotation == null) shape else expectedShape
+            } else {
+                // TODO: report diagnostic
+                expectedShape
+            }
         return decidedShape
     }
 }
@@ -247,19 +255,15 @@ private class SymbolsTable {
                 if (arity == null)
                     blocks.last()[id] = ResolvedEntity.Unambiguous(definition)
                 else {
-                    val overloadSet = blocks.last().getOrPut(id) { MutableWithOverloads() }
-                    check(overloadSet is MutableWithOverloads)
-                    overloadSet.mutableOverloads[arity] = definition
+                    defineOverload(id, arity, definition)
                 }
             }
 
             is FunctionArgument -> {
-                blocks.last()[id] = if (definition.type is BaseType.Functional) {
-                    val entity = MutableWithOverloads()
-                    entity.mutableOverloads[definition.type.argumentsType.size] = definition
-                    entity
+                if (definition.type is BaseType.Functional) {
+                    defineOverload(id, definition.type.argumentsType.size, definition)
                 } else {
-                    ResolvedEntity.Unambiguous(definition)
+                    blocks.last()[id] = ResolvedEntity.Unambiguous(definition)
                 }
             }
 
@@ -270,15 +274,7 @@ private class SymbolsTable {
                         is ForeignFunctionDeclaration ->
                             (definition.type ?: error("foreign function without a type")).argumentsType.size
                     }
-                when (val closestDefs = blocks.last()[id]) {
-                    is MutableWithOverloads -> closestDefs.mutableOverloads[declaredArity] = definition
-
-                    else -> {
-                        val entity = MutableWithOverloads()
-                        entity.mutableOverloads[declaredArity] = definition
-                        blocks.last()[id] = entity
-                    }
-                }
+                defineOverload(id, declaredArity, definition)
             }
         }
     }
@@ -291,7 +287,10 @@ private class SymbolsTable {
                 val entity = MutableWithOverloads()
                 for (block in blocks.reversed()) {
                     when (val defs = block[id]) {
-                        is ResolvedEntity.WithOverloads -> entity.mutableOverloads.putAll(defs.overloads)
+                        is ResolvedEntity.WithOverloads ->
+                            defs.overloads.forEach { (arity, definition) ->
+                                entity.mutableOverloads.putIfAbsent(arity, definition)
+                            }
                         else -> break
                     }
                 }
@@ -300,4 +299,17 @@ private class SymbolsTable {
                 return blocks.last()[id]!!
             }
         }
+
+    private fun defineOverload(id: String, arity: Int, definition: Definition) {
+        val entity =
+            when (val presentEntity = blocks.last()[id]) {
+                is MutableWithOverloads -> presentEntity
+                else -> {
+                    val withOverloads = MutableWithOverloads()
+                    blocks.last()[id] = withOverloads
+                    withOverloads
+                }
+            }
+        entity.mutableOverloads[arity] = definition
+    }
 }

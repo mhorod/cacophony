@@ -12,7 +12,6 @@ import cacophony.semantic.analysis.*
 import cacophony.semantic.names.*
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific

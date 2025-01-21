@@ -4,7 +4,6 @@ import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.utils.*
 import com.karumi.kotlinsnapshot.matchWithSnapshot
@@ -16,14 +15,13 @@ import java.nio.file.Path
 class ExamplesTest {
     data class TestResult(
         var ast: AST? = null,
-        var resolvedVariables: ResolvedVariables? = null,
         var types: TypeCheckingResult? = null,
         var analysisResult: FunctionAnalysisResult? = null,
         var errors: List<CacophonyDiagnostics.ReportedError>? = null,
     ) {
         fun checkSnapshots(path: String) {
             ast.matchWithSnapshot("$path.ast")
-            (resolvedVariables?.map { (k, v) -> k.range to v.range }?.toMap()).matchWithSnapshot("$path.resolved")
+            (types?.resolvedVariables?.map { (k, v) -> k.range to v.range }?.toMap()).matchWithSnapshot("$path.resolved")
             (types?.expressionTypes?.mapKeys { (k, _) -> k.range }).matchWithSnapshot("$path.types")
             (analysisResult?.mapKeys { (k, _) -> k.range }).matchWithSnapshot("$path.analysis")
             errors.matchWithSnapshot("$path.errors")
@@ -40,9 +38,9 @@ class ExamplesTest {
             result.ast = pipeline.generateAst(input)
             val nameResolutionResult = pipeline.resolveNames(result.ast!!)
             result.types = pipeline.checkTypes(result.ast!!, nameResolutionResult.entityResolution, nameResolutionResult.shapeResolution)
-            val callGraph = pipeline.generateCallGraph(result.ast!!, result.resolvedVariables!!)
-            val variablesMap = pipeline.createVariables(result.ast!!, result.resolvedVariables!!, result.types!!)
-            result.analysisResult = pipeline.analyzeFunctions(result.ast!!, variablesMap, result.resolvedVariables!!, callGraph)
+            val callGraph = pipeline.generateCallGraph(result.ast!!, result.types!!.resolvedVariables)
+            val variablesMap = pipeline.createVariables(result.ast!!, result.types!!.resolvedVariables, result.types!!)
+            result.analysisResult = pipeline.analyzeFunctions(result.ast!!, variablesMap, result.types!!.resolvedVariables, callGraph)
         } catch (_: CompileException) {
         } finally {
             result.errors = diagnostics.extractErrors()

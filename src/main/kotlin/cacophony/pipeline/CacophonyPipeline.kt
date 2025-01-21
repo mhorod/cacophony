@@ -116,10 +116,10 @@ class CacophonyPipeline(
         return result
     }
 
-    fun checkTypes(ast: AST, resolvedEntities: EntityResolutionResult, resolvedShapes: ShapeResolutionResult): TypeCheckingResult {
+    fun checkTypes(ast: AST, resolvedEntities: EntityResolutionResult, arities: ArityResolutionResult): TypeCheckingResult {
         val types =
             try {
-                assertEmptyDiagnosticsAfter { cacophony.semantic.types.checkTypes(ast, resolvedEntities, resolvedShapes, diagnostics) }
+                assertEmptyDiagnosticsAfter { cacophony.semantic.types.checkTypes(ast, resolvedEntities, arities, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedTypeChecking()
                 throw e

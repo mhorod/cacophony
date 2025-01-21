@@ -94,7 +94,7 @@ class CacophonyLogger(
         if (logNameRes) {
             logMaybeSave(
                 "Resolved names",
-                "dfasd" // TODO: RESTORE
+                "dfasd", // TODO: RESTORE
 //                result.entries.joinToString("\n") { "${it.key.identifier} -> ${resolvedNameToString(it.value)}" },
             )
         }
@@ -103,11 +103,12 @@ class CacophonyLogger(
     private fun resolvedNameToString(resolvedEntity: ResolvedEntity) =
         when (resolvedEntity) {
             is ResolvedEntity.Unambiguous -> {
-                val kind = when (resolvedEntity.definition) {
-                    is Definition.FunctionArgument -> "argument"
-                    is Definition.VariableDeclaration -> "variable"
-                    else -> "symbol"
-                }
+                val kind =
+                    when (resolvedEntity.definition) {
+                        is Definition.FunctionArgument -> "argument"
+                        is Definition.VariableDeclaration -> "variable"
+                        else -> "symbol"
+                    }
                 "Unambiguous $kind ${resolvedEntity.definition.identifier}"
             }
             is ResolvedEntity.WithOverloads -> {
@@ -119,7 +120,12 @@ class CacophonyLogger(
 
     override fun logSuccessfulTypeChecking(result: TypeCheckingResult) {
         if (logOverloads) {
-            logMaybeSave("Resolved variables", result.resolvedVariables.entries.joinToString("\n") { "${it.key.identifier} -> ${it.value}" })
+            logMaybeSave(
+                "Resolved variables",
+                result.resolvedVariables.entries.joinToString("\n") {
+                    "${it.key.identifier} -> ${it.value}"
+                },
+            )
         }
         if (logTypes) {
             logMaybeSave("Types", result.expressionTypes.entries.joinToString("\n") { "${it.key} : ${it.value}" })

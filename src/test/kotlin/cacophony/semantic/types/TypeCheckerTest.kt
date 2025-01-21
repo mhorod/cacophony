@@ -1,4 +1,4 @@
-/*package cacophony.semantic.types
+package cacophony.semantic.types
 
 import cacophony.*
 import cacophony.diagnostics.Diagnostics
@@ -1864,4 +1864,3 @@ class TypeCheckerTest {
         confirmVerified(diagnostics)
     }
 }
- */
