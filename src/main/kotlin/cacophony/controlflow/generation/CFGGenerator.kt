@@ -204,14 +204,7 @@ internal class CFGGenerator(
                         callWithArgs merge
                             assignLayoutWithValue(calcExpression.access, resultLayout, resultPointerLayout)
                     )
-//                        .let {
-//                        SubCFG.Extracted(it.entry, it.exit, functionLayout)
-//                    }
-//                if (mode is EvalMode.Conditional) {
-//                    return extendWithConditional(fullCFG, mode)
-//                }
 
-//                val allocation = call merge
                 when (calcExpression) {
                     is SubCFG.Extracted -> calcExpression merge callCFG
                     is SubCFG.Immediate -> callCFG
@@ -315,10 +308,14 @@ internal class CFGGenerator(
         // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
         // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?
         return when (mode) {
-            is EvalMode.Value ->
-                handler.generateVariableAccess(handler.getClosureLink()).let { link ->
-                    SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(link)))
-                }
+            is EvalMode.Value -> {
+                val functionVariable =
+                    handler.generateVariableAccess(handler.getClosureLink()).let { link ->
+                        SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(link, true)))
+                    }
+                val capturedVariableOffsets = handler.getCapturedVariableOffsets()
+                return functionVariable
+            }
             is EvalMode.SideEffect -> SubCFG.Immediate(noOpOrUnit(mode))
             is EvalMode.Conditional -> throw IllegalArgumentException("Lambda expression can not be used as condition")
         }

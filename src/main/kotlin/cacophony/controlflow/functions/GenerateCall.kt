@@ -7,45 +7,13 @@ import cacophony.controlflow.generation.SimpleLayout
 import cacophony.controlflow.generation.generateSubLayout
 import cacophony.semantic.types.FunctionType
 
-/**
- * Wrapper for generateCall that additionally fills staticLink to parent function.
- */
-fun generateCallFrom(
-    callerFunction: CallableHandler,
-    type: FunctionType,
-    functionLayout: FunctionLayout,
-    arguments: List<Layout>,
-    result: Layout?,
-): List<CFGNode> {
-    // detect whether this is a foreign function
-    if (functionLayout.link == SimpleLayout(integer(0))) {
-        return generateCall(type, functionLayout, arguments, result, callerFunction.getStackSpace())
-    } else {
-        return generateCall(type, functionLayout, arguments + listOf(functionLayout.link), result, callerFunction.getStackSpace())
-    }
-}
-
-// private fun layoutMatchesType(layout: Layout, type: Type): Boolean = layout.matchesType(type)
-
 fun generateCall(
-    // function: Definition.FunctionDeclaration,
     type: FunctionType,
     functionLayout: FunctionLayout,
     argumentLayouts: List<Layout>,
     result: Layout?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
-//    val translator =
-//        TypeTranslator(
-//            object : Diagnostics {
-//                override fun report(message: DiagnosticMessage, range: Pair<Location, Location>): Unit =
-//                    throw IllegalArgumentException("Invalid type $message")
-//
-//                override fun fatal(): Throwable = throw IllegalArgumentException("Invalid type")
-//
-//                override fun getErrors(): List<String> = listOf()
-//            },
-//        )
     val argumentTypes = type.args
 
     var arguments =
@@ -99,7 +67,6 @@ fun generateCall(
         nodes.add(pushRegister(register, register.holdsReference))
     }
 
-    // Tomek: "Chyba będzie działało :>"
     nodes.add(call(functionLayout.code.access, arguments.size))
 
     if (result == null) {

@@ -21,8 +21,6 @@ class ConstantLabel : SlotLabel {
     override fun toString() = "c(${hashCode()})"
 }
 
-// class FunctionLabel : SlotLabel
-
 class NodeLabel : SlotLabel {
     override fun toString() = "n(${hashCode()})"
 }
@@ -41,26 +39,16 @@ sealed interface CFGNode {
 
     sealed interface RegisterRef : Leaf, LValue
 
-//    sealed interface FunctionRef : Leaf {
-//        val function: Definition.FunctionDeclaration?
-//    }
-
     data object NoOp : Leaf {
         override fun toString(): String = "nop"
     }
 
     data class Comment(val comment: String) : Leaf
 
-    // declaration is nullable to create pattern without specific function
-//    data class Function(override val function: Definition.FunctionDeclaration) : FunctionRef
-
     data class Call(
-        // val functionRef: FunctionRef,
         val childPtr: CFGNode,
         val numArgs: Constant,
     ) : CFGNode {
-//        constructor(function: Definition.FunctionDeclaration) : this(Function(function))
-
         override fun children(): List<CFGNode> = listOf(childPtr, numArgs)
 
         override fun toString(): String = "call/$numArgs $childPtr"
@@ -320,13 +308,6 @@ sealed interface CFGNode {
 
         override fun unaryMinus() = error("Cannot use ConstantSlot as a value")
     }
-
-//    data class FunctionSlot(
-//        override val label: FunctionLabel,
-//    ) : Slot, FunctionRef {
-//        override val function: Definition.FunctionDefinition?
-//            get() = null
-//    }
 
     data class NodeSlot<T : CFGNode>(
         override val label: NodeLabel,
