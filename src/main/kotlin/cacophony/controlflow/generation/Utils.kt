@@ -26,6 +26,8 @@ fun generateLayoutOfVirtualRegisters(layout: Layout): Layout =
                 generateLayoutOfVirtualRegisters(layout.code) as SimpleLayout,
                 generateLayoutOfVirtualRegisters(layout.link) as SimpleLayout,
             )
+        is ClosureLayout ->
+            ClosureLayout(layout.vars.mapValues { (_, subLayout) -> generateLayoutOfVirtualRegisters(subLayout) as SimpleLayout })
         is VoidLayout -> VoidLayout()
     }
 
@@ -106,6 +108,14 @@ private fun generateLayoutOfHeapObjectImpl(base: CFGNode, type: TypeExpr, offset
 }
 
 fun generateLayoutOfHeapObject(base: CFGNode, type: TypeExpr): Layout = generateLayoutOfHeapObjectImpl(base, type, 0)
+
+fun generateLayoutOfClosure(base: CFGNode, closure: Map<Variable.PrimitiveVariable, Int>) =
+    ClosureLayout(
+        closure
+            .map { (variable, offset) ->
+                variable to SimpleLayout(memoryAccess(base add integer(offset)), variable.holdsReference)
+            }.toMap(),
+    )
 
 fun getFunctionLayout(callerHandler: CallableHandler, calleeHandler: FunctionHandler) =
     FunctionLayout(

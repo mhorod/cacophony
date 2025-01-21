@@ -25,8 +25,6 @@ fun generateCallFrom(
     }
 }
 
-// private fun layoutMatchesType(layout: Layout, type: Type): Boolean = layout.matchesType(type)
-
 fun generateCall(
     // function: Definition.FunctionDeclaration,
     type: FunctionType,
@@ -35,17 +33,6 @@ fun generateCall(
     result: Layout?,
     callerFunctionStackSize: CFGNode.Constant,
 ): List<CFGNode> {
-//    val translator =
-//        TypeTranslator(
-//            object : Diagnostics {
-//                override fun report(message: DiagnosticMessage, range: Pair<Location, Location>): Unit =
-//                    throw IllegalArgumentException("Invalid type $message")
-//
-//                override fun fatal(): Throwable = throw IllegalArgumentException("Invalid type")
-//
-//                override fun getErrors(): List<String> = listOf()
-//            },
-//        )
     val argumentTypes = type.args
 
     var arguments =

@@ -106,6 +106,9 @@ internal class CFGGenerator(
                 require(destination is FunctionLayout) // by type checking
                 makeVerticesForAssignment(source.code, destination.code) + makeVerticesForAssignment(source.link, destination.link)
             }
+            is ClosureLayout -> {
+                error("Unexpected assignment to internal layout type ClosureLayout")
+            }
             is VoidLayout -> emptyList()
         }
 
@@ -171,47 +174,15 @@ internal class CFGGenerator(
             is EvalMode.Value -> {
                 val type = typeCheckingResult.expressionTypes[expression]!!
                 require(type is ReferentialType) // by type checking
-                val arguments =
-                    listOf(
-                        ensureExtracted(
-                            SubCFG.Immediate(dataLabel(objectOutlineLocation[type.type]!!), false),
-                            mode,
-                        ),
-                        ensureExtracted(
-                            SubCFG.Immediate(registerUse(rbp, false), false),
-                            mode,
-                        ),
-                    )
 
-                val resultPointerLayout = generateLayoutOfVirtualRegisters(type)
-                require(resultPointerLayout is SimpleLayout)
+                val outlineLocation = objectOutlineLocation[type.type]!!
 
-                val functionType = typeCheckingResult.definitionTypes[Builtin.allocStruct]!!
-                val functionLayout = getForeignFunctionLayout(Builtin.allocStruct)
-                println(functionType)
-                require(functionType is FunctionType) { "LHS of call should be callable but is $functionType" }
-                val call =
-                    generateCall(
-                        functionType,
-                        functionLayout,
-                        arguments.map { it.access },
-                        resultPointerLayout,
-                    )
-                val callWithArgs = arguments.reduce(SubCFG.Extracted::merge) merge call
-                val resultLayout = generateLayoutOfHeapObject(resultPointerLayout.access, type.type)
                 val callCFG =
-                    (
-                        callWithArgs merge
-                            assignLayoutWithValue(calcExpression.access, resultLayout, resultPointerLayout)
-                    )
-//                        .let {
-//                        SubCFG.Extracted(it.entry, it.exit, functionLayout)
-//                    }
-//                if (mode is EvalMode.Conditional) {
-//                    return extendWithConditional(fullCFG, mode)
-//                }
+                    allocAndCopy(
+                        outlineLocation,
+                        calcExpression.access,
+                    ) { pointerLayout -> generateLayoutOfHeapObject(pointerLayout.access, type.type) }
 
-//                val allocation = call merge
                 when (calcExpression) {
                     is SubCFG.Extracted -> calcExpression merge callCFG
                     is SubCFG.Immediate -> callCFG
@@ -315,10 +286,28 @@ internal class CFGGenerator(
         // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
         // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?
         return when (mode) {
-            is EvalMode.Value ->
-                handler.generateVariableAccess(handler.getClosureLink()).let { link ->
-                    SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(link)))
-                }
+            is EvalMode.Value -> {
+                val outlineLocation = lambdaOutlineLocation.getValue(lambda)
+                val offsets = handler.getCapturedVariableOffsets()
+                val sourceLayout =
+                    ClosureLayout(
+                        offsets.mapValues { (variable, _) ->
+                            SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
+                        },
+                    )
+
+                val allocCFG =
+                    allocAndCopy(outlineLocation, sourceLayout) { pointerLayout -> generateLayoutOfClosure(pointerLayout.access, offsets) }
+
+                val closureLink = allocCFG.access
+                require(closureLink is SimpleLayout)
+
+                SubCFG.Extracted(
+                    allocCFG.entry,
+                    allocCFG.exit,
+                    FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
+                )
+            }
             is EvalMode.SideEffect -> SubCFG.Immediate(noOpOrUnit(mode))
             is EvalMode.Conditional -> throw IllegalArgumentException("Lambda expression can not be used as condition")
         }
@@ -572,4 +561,40 @@ internal class CFGGenerator(
             is Definition.FunctionDefinition -> functionHandlers[function] ?: error("Function $function has no handler")
             is LambdaExpression -> lambdaHandlers[function] ?: error("Lambda $function has no handler")
         }
+
+    // sourceLayout opisuje gdzie są rzeczy, które chcemy przekopiować na stertę
+    // resultLayout opisuje obiekt na stercie
+    private fun allocAndCopy(outlineLocation: String, sourceLayout: Layout, makeResultLayout: (SimpleLayout) -> Layout): SubCFG.Extracted {
+        val arguments =
+            listOf(
+                ensureExtracted(
+                    SubCFG.Immediate(dataLabel(outlineLocation), false),
+                    EvalMode.Value,
+                ),
+                ensureExtracted(
+                    SubCFG.Immediate(registerUse(rbp, false), false),
+                    EvalMode.Value,
+                ),
+            )
+
+        val resultPointerLayout = SimpleLayout(registerUse(Register.VirtualRegister(true), true), true)
+
+        val functionType = typeCheckingResult.definitionTypes[Builtin.allocStruct]!!
+        val functionLayout = getForeignFunctionLayout(Builtin.allocStruct)
+        require(functionType is FunctionType) { "LHS of call should be callable but is $functionType" }
+        val call =
+            generateCall(
+                functionType,
+                functionLayout,
+                arguments.map { it.access },
+                resultPointerLayout,
+            )
+        val callWithArgs = arguments.reduce(SubCFG.Extracted::merge) merge call
+        val resultLayout = makeResultLayout(resultPointerLayout)
+
+        return (
+            callWithArgs merge
+                assignLayoutWithValue(sourceLayout, resultLayout, resultPointerLayout)
+        )
+    }
 }
