@@ -56,7 +56,7 @@ class LambdaHandlerImpl(
 
     private val prologueEpilogueHandler: PrologueEpilogueHandler
 
-    private val offsetsMap: Map<Variable, Int> =
+    private val offsetsMap: Map<Variable.PrimitiveVariable, Int> =
         closureAnalysisResult[function]!!
             .filterIsInstance<Variable.PrimitiveVariable>()
             .mapIndexed { index, it ->

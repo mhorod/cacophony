@@ -7,6 +7,24 @@ import cacophony.controlflow.generation.SimpleLayout
 import cacophony.controlflow.generation.generateSubLayout
 import cacophony.semantic.types.FunctionType
 
+/**
+ * Wrapper for generateCall that additionally fills staticLink to parent function.
+ */
+fun generateCallFrom(
+    callerFunction: CallableHandler,
+    type: FunctionType,
+    functionLayout: FunctionLayout,
+    arguments: List<Layout>,
+    result: Layout?,
+): List<CFGNode> {
+    // detect whether this is a foreign function
+    if (functionLayout.link == SimpleLayout(integer(0))) {
+        return generateCall(type, functionLayout, arguments, result, callerFunction.getStackSpace())
+    } else {
+        return generateCall(type, functionLayout, arguments + listOf(functionLayout.link), result, callerFunction.getStackSpace())
+    }
+}
+
 fun generateCall(
     type: FunctionType,
     functionLayout: FunctionLayout,

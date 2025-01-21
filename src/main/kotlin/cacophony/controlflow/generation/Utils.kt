@@ -26,6 +26,8 @@ fun generateLayoutOfVirtualRegisters(layout: Layout): Layout =
                 generateLayoutOfVirtualRegisters(layout.code) as SimpleLayout,
                 generateLayoutOfVirtualRegisters(layout.link) as SimpleLayout,
             )
+        is ClosureLayout ->
+            ClosureLayout(layout.vars.mapValues { (_, subLayout) -> generateLayoutOfVirtualRegisters(subLayout) as SimpleLayout })
         is VoidLayout -> VoidLayout()
     }
 
@@ -70,11 +72,6 @@ fun getVariableLayout(handler: CallableHandler, variable: Variable): Layout =
     when (variable) {
         is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
         is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(handler, subfield) })
-        is Variable.FunctionVariable ->
-            FunctionLayout(
-                getVariableLayout(handler, variable.code) as SimpleLayout,
-                getVariableLayout(handler, variable.link) as SimpleLayout,
-            )
         is Variable.Heap -> throw IllegalArgumentException("`Heap` is a special marker `Variable` and has no layout")
     }
 
@@ -106,6 +103,14 @@ private fun generateLayoutOfHeapObjectImpl(base: CFGNode, type: TypeExpr, offset
 }
 
 fun generateLayoutOfHeapObject(base: CFGNode, type: TypeExpr): Layout = generateLayoutOfHeapObjectImpl(base, type, 0)
+
+fun generateLayoutOfClosure(base: CFGNode, closure: Map<Variable.PrimitiveVariable, Int>) =
+    ClosureLayout(
+        closure
+            .map { (variable, offset) ->
+                variable to SimpleLayout(memoryAccess(base add integer(offset)), variable.holdsReference)
+            }.toMap(),
+    )
 
 fun getFunctionLayout(callerHandler: CallableHandler, calleeHandler: FunctionHandler) =
     FunctionLayout(
