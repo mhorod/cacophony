@@ -245,11 +245,13 @@ private class SymbolsTable {
 
         when (definition) {
             is VariableDeclaration -> {
-                blocks.last()[id] = arity?.let {
-                    val entity = MutableWithOverloads()
-                    entity.mutableOverloads[it] = definition
-                    entity
-                } ?: ResolvedEntity.Unambiguous(definition)
+                if (arity == null)
+                    blocks.last()[id] = ResolvedEntity.Unambiguous(definition)
+                else {
+                    val overloadSet = blocks.last().getOrPut(id) { MutableWithOverloads() }
+                    check(overloadSet is MutableWithOverloads)
+                    overloadSet.mutableOverloads[arity] = definition
+                }
             }
 
             is FunctionArgument -> {

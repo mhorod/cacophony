@@ -367,14 +367,16 @@ private class Typer(
                     val def = when (expectation) {
                         is Expectation.Arity -> when(val entity = resolvedEntities[expression]) {
                             is ResolvedEntity.Unambiguous -> entity.definition
-                            is ResolvedEntity.WithOverloads ->
-                                when(val def = entity.overloads[expectation.n]) {
+                            is ResolvedEntity.WithOverloads -> {
+                                when (val def = entity.overloads[expectation.n]) {
                                     null -> {
                                         error.expectedFunction(expression.range)
                                         return null
                                     }
+
                                     else -> def
                                 }
+                            }
 
                             null -> throw IllegalArgumentException("Entity not resolved :(")
                         }
