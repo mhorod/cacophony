@@ -1,8 +1,8 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.ResolvedVariables
 
 fun findStaticFunctionRelations(ast: AST, resolvedVariables: ResolvedVariables, variablesMap: VariablesMap): StaticFunctionRelationsMap {
     val visitor = StaticFunctionsRelationsVisitor(resolvedVariables, variablesMap)

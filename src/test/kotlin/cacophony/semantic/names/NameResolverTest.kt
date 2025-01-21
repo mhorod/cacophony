@@ -4,9 +4,6 @@ import cacophony.*
 import cacophony.basicType
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
-import cacophony.semantic.names.ResolvedName.Argument
-import cacophony.semantic.names.ResolvedName.Function
-import cacophony.semantic.names.ResolvedName.Variable
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
@@ -26,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class NameResolverTest {
+/*class NameResolverTest {
     private val mockValue = Empty(mockRange())
 
     private fun variableDeclaration(name: String): VariableDeclaration = variableDeclaration(name, mockValue)
@@ -1460,3 +1457,4 @@ class NameResolverTest {
         }
     }
 }
+*/

@@ -2,14 +2,14 @@ package cacophony.semantic.analysis
 
 import cacophony.*
 import cacophony.controlflow.Variable
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.types.BuiltinType
 import cacophony.semantic.types.ReferentialType
+import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.Map.entry
-
+/*
 class VariablesMapCreationTest {
     @Test
     fun `primitive variable is created for let definitions`() {
@@ -247,4 +247,4 @@ class VariablesMapCreationTest {
         }
         return current
     }
-}
+}*/

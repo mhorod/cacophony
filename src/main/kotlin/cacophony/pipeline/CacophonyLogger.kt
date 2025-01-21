@@ -15,8 +15,7 @@ import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.analysis.VariableUseType
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.NameResolutionResult
-import cacophony.semantic.names.ResolvedName
-import cacophony.semantic.names.ResolvedVariables
+import cacophony.semantic.names.ResolvedEntity
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.types.TypeCheckingResult
@@ -95,29 +94,33 @@ class CacophonyLogger(
         if (logNameRes) {
             logMaybeSave(
                 "Resolved names",
-                result.entries.joinToString("\n") { "${it.key.identifier} -> ${resolvedNameToString(it.value)}" },
+                "dfasd" // TODO: RESTORE
+//                result.entries.joinToString("\n") { "${it.key.identifier} -> ${resolvedNameToString(it.value)}" },
             )
         }
     }
 
-    private fun resolvedNameToString(resolvedName: ResolvedName) =
-        when (resolvedName) {
-            is ResolvedName.Variable -> "Variable ${resolvedName.def}"
-            is ResolvedName.Argument -> "Argument ${resolvedName.def}"
-            is ResolvedName.Function -> "Function ${resolvedName.def.toMap()}"
+    private fun resolvedNameToString(resolvedEntity: ResolvedEntity) =
+        when (resolvedEntity) {
+            is ResolvedEntity.Unambiguous -> {
+                val kind = when (resolvedEntity.definition) {
+                    is Definition.FunctionArgument -> "argument"
+                    is Definition.VariableDeclaration -> "variable"
+                    else -> "symbol"
+                }
+                "Unambiguous $kind ${resolvedEntity.definition.identifier}"
+            }
+            is ResolvedEntity.WithOverloads -> {
+                "Overloaded function-like"
+            }
         }
 
     override fun logFailedNameResolution() = printError("Name resolution failed :(")
 
-    override fun logSuccessfulOverloadResolution(result: ResolvedVariables) {
-        if (logOverloads) {
-            logMaybeSave("Resolved variables", result.entries.joinToString("\n") { "${it.key.identifier} -> ${it.value}" })
-        }
-    }
-
-    override fun logFailedOverloadResolution() = printError("Overload resolution failed :(")
-
     override fun logSuccessfulTypeChecking(result: TypeCheckingResult) {
+        if (logOverloads) {
+            logMaybeSave("Resolved variables", result.resolvedVariables.entries.joinToString("\n") { "${it.key.identifier} -> ${it.value}" })
+        }
         if (logTypes) {
             logMaybeSave("Types", result.expressionTypes.entries.joinToString("\n") { "${it.key} : ${it.value}" })
         }

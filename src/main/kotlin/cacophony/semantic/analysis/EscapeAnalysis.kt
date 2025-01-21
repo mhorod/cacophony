@@ -1,9 +1,9 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.types.ResolvedVariables
 import kotlin.math.min
 
 typealias EscapeAnalysisResult = Set<Variable>

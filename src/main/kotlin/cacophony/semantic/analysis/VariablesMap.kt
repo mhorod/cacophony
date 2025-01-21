@@ -1,7 +1,6 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Allocation
 import cacophony.semantic.syntaxtree.Assignable
@@ -18,10 +17,7 @@ import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.Struct
 import cacophony.semantic.syntaxtree.VariableUse
-import cacophony.semantic.types.ReferentialType
-import cacophony.semantic.types.StructType
-import cacophony.semantic.types.TypeCheckingResult
-import cacophony.semantic.types.TypeExpr
+import cacophony.semantic.types.*
 
 data class VariablesMap(
     val lvalues: Map<Assignable, Variable>,

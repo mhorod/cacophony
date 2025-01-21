@@ -62,4 +62,8 @@ class TypeCheckerDiagnostics {
     ) : DiagnosticMessage {
         override fun getMessage() = "Cannot allocate value of type $type"
     }
+
+    data object TooManyOverloads : DiagnosticMessage {
+        override fun getMessage() = "Too many possible overloads in assignment"
+    }
 }

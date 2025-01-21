@@ -2,8 +2,8 @@ package cacophony.semantic.analysis
 
 import cacophony.diagnostics.CallGraphDiagnostics
 import cacophony.diagnostics.Diagnostics
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.ResolvedVariables
 import kotlin.collections.mutableMapOf
 
 typealias CallGraph = Map<Definition.FunctionDefinition, Set<Definition.FunctionDefinition>>

@@ -3,8 +3,8 @@ package cacophony.semantic.analysis
 import cacophony.controlflow.Variable
 import cacophony.semantic.analysis.UseTypesForExpression.Companion.empty
 import cacophony.semantic.analysis.UseTypesForExpression.Companion.merge
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.ResolvedVariables
 import kotlin.error
 
 // Type of variables usage for each expression

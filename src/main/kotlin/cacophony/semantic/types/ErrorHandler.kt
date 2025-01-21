@@ -55,4 +55,8 @@ internal class ErrorHandler(
     fun invalidAllocation(range: Pair<Location, Location>, type: TypeExpr) {
         diagnostics.report(TypeCheckerDiagnostics.InvalidAllocation(type.toString()), range)
     }
+
+    fun tooManyOverloads(range: Pair<Location, Location>) {
+        diagnostics.report(TypeCheckerDiagnostics.TooManyOverloads, range)
+    }
 }

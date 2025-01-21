@@ -3,8 +3,8 @@ package cacophony.examples
 import cacophony.diagnostics.CacophonyDiagnostics
 import cacophony.pipeline.CacophonyPipeline
 import cacophony.semantic.analysis.FunctionAnalysisResult
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.utils.*
 import com.karumi.kotlinsnapshot.matchWithSnapshot
@@ -39,8 +39,7 @@ class ExamplesTest {
         try {
             result.ast = pipeline.generateAst(input)
             val nameResolutionResult = pipeline.resolveNames(result.ast!!)
-            result.resolvedVariables = pipeline.resolveOverloads(result.ast!!, nameResolutionResult)
-            result.types = pipeline.checkTypes(result.ast!!, result.resolvedVariables!!)
+            result.types = pipeline.checkTypes(result.ast!!, nameResolutionResult.entityResolution, nameResolutionResult.shapeResolution)
             val callGraph = pipeline.generateCallGraph(result.ast!!, result.resolvedVariables!!)
             val variablesMap = pipeline.createVariables(result.ast!!, result.resolvedVariables!!, result.types!!)
             result.analysisResult = pipeline.analyzeFunctions(result.ast!!, variablesMap, result.resolvedVariables!!, callGraph)

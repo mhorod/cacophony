@@ -28,9 +28,9 @@ import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.syntaxtree.generateAST
+import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.semantic.types.TypeExpr
-import cacophony.semantic.types.checkTypes
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
@@ -116,22 +116,10 @@ class CacophonyPipeline(
         return result
     }
 
-    fun resolveOverloads(ast: AST, nr: NameResolutionResult): ResolvedVariables {
-        val result =
-            try {
-                assertEmptyDiagnosticsAfter { resolveOverloads(ast, nr, diagnostics) }
-            } catch (e: CompileException) {
-                logger?.logFailedOverloadResolution()
-                throw e
-            }
-        logger?.logSuccessfulOverloadResolution(result)
-        return result
-    }
-
-    fun checkTypes(ast: AST, resolvedVariables: ResolvedVariables): TypeCheckingResult {
+    fun checkTypes(ast: AST, resolvedEntities: EntityResolutionResult, resolvedShapes: ShapeResolutionResult): TypeCheckingResult {
         val types =
             try {
-                assertEmptyDiagnosticsAfter { checkTypes(ast, resolvedVariables, diagnostics) }
+                assertEmptyDiagnosticsAfter { cacophony.semantic.types.checkTypes(ast, resolvedEntities, resolvedShapes, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedTypeChecking()
                 throw e
@@ -182,24 +170,24 @@ class CacophonyPipeline(
     }
 
     private fun filterForeignFunctions(nr: NameResolutionResult): Set<Definition.ForeignFunctionDeclaration> =
-        nr.values
-            .filterIsInstance<ResolvedName.Function>()
-            .flatMap {
-                it.def.toMap().values
-            }.filterIsInstance<Definition.ForeignFunctionDeclaration>()
+        nr.entityResolution
+            .values
+            .filterIsInstance<ResolvedEntity.WithOverloads>()
+            .flatMap { it.overloads.values }
+            .filterIsInstance<Definition.ForeignFunctionDeclaration>()
             .toSet()
 
     fun analyzeAst(ast: AST): AstAnalysisResult {
-        val resolvedNames = resolveNames(ast)
-        val resolvedVariables = resolveOverloads(ast, resolvedNames)
-        val types = checkTypes(ast, resolvedVariables)
+        val nr = resolveNames(ast)
+        val types = checkTypes(ast, nr.entityResolution, nr.shapeResolution)
+        val resolvedVariables = types.resolvedVariables
         val variablesMap = createVariables(ast, resolvedVariables, types)
         val callGraph = generateCallGraph(ast, resolvedVariables)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
         val analyzedClosures = analyseClosures()
         val functionHandlers = generateFunctionHandlers(analyzedFunctions, SystemVAMD64CallConvention, variablesMap, analyzedClosures)
-        val foreignFunctions = filterForeignFunctions(resolvedNames)
+        val foreignFunctions = filterForeignFunctions(nr)
         val escapeAnalysis = escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap)
         return AstAnalysisResult(
             resolvedVariables,
