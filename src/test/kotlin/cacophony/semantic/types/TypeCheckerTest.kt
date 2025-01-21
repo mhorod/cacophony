@@ -3,6 +3,7 @@ package cacophony.semantic.types
 import cacophony.*
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.TypeCheckerDiagnostics
+import cacophony.semantic.names.ResolvedEntity
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 import cacophony.utils.TreePrinter
@@ -57,7 +58,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - empty block`() {
         val ast = block()
-        val result = checkTypes(ast, emptyMap(), diagnostics)
+        val result = checkTypes(ast, emptyMap(), emptyMap(), diagnostics)
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[ast])
         verify { diagnostics wasNot called }
     }
@@ -65,7 +66,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - block with empty expression`() {
         val ast = block(empty())
-        val result = checkTypes(ast, emptyMap(), diagnostics)
+        val result = checkTypes(ast, emptyMap(), emptyMap(), diagnostics)
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[ast])
         verify { diagnostics wasNot called }
     }
@@ -74,7 +75,7 @@ class TypeCheckerTest {
     fun `ok - variable definition with type`() {
         val varDef = typedVariableDeclaration("x", testInt(), intLiteral)
         val ast = block(varDef)
-        val result = checkTypes(ast, emptyMap(), diagnostics)
+        val result = checkTypes(ast, emptyMap(), emptyMap(), diagnostics)
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[varDef])
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[ast])
         verify { diagnostics wasNot called }
@@ -84,7 +85,7 @@ class TypeCheckerTest {
     fun `ok - variable declaration without type`() {
         val varDef = typedVariableDeclaration("x", null, intLiteral)
         val ast = block(varDef)
-        val result = checkTypes(ast, emptyMap(), diagnostics)
+        val result = checkTypes(ast, emptyMap(), emptyMap(), diagnostics)
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[varDef])
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[ast])
         verify { diagnostics wasNot called }
@@ -95,7 +96,7 @@ class TypeCheckerTest {
         val varDef = typedVariableDeclaration("x", testInt(), intLiteral)
         val varUse = variableUse("x")
         val ast = block(varDef, varUse)
-        val result = checkTypes(ast, mapOf(varUse to varDef), diagnostics)
+        val result = checkTypes(ast, mapOf(varUse to ResolvedEntity.Unambiguous(varDef)), emptyMap(), diagnostics)
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[varDef])
         assertTypeEquals(BuiltinType.IntegerType, result.expressionTypes[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result.expressionTypes[ast])
@@ -107,7 +108,7 @@ class TypeCheckerTest {
         val varDef = typedVariableDeclaration("x", null, intLiteral)
         val varUse = variableUse("x")
         val ast = block(varDef, varUse)
-        val result = checkTypes(ast, mapOf(varUse to varDef), diagnostics)
+        val result = checkTypes(ast, mapOf(varUse to ResolvedEntity.Unambiguous(varDef)), emptyMap(), diagnostics)
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[varDef])
         assertTypeEquals(BuiltinType.IntegerType, result.expressionTypes[varUse])
         assertTypeEquals(BuiltinType.IntegerType, result.expressionTypes[ast])
@@ -1513,7 +1514,7 @@ class TypeCheckerTest {
                 structField("y") to lit(true),
             )
         val ast = variableDeclaration("x", struct)
-        val result = checkTypes(ast, emptyMap(), diagnostics)
+        val result = checkTypes(ast, emptyMap(), emptyMap(), diagnostics)
         assertTypeEquals(
             StructType(
                 mapOf("x" to BuiltinType.IntegerType, "y" to BuiltinType.BooleanType),
@@ -1538,7 +1539,7 @@ class TypeCheckerTest {
         val varUse = variableUse("a")
         val ast = block(decl, varUse)
         println(TreePrinter(StringBuilder()).printTree(ast))
-        val result = checkTypes(ast, mapOf(varUse to decl), diagnostics)
+        val result = checkTypes(ast, mapOf(varUse to ResolvedEntity.Unambiguous(decl)), emptyMap(), diagnostics)
         assertTypeEquals(
             StructType(
                 mapOf("x" to BuiltinType.IntegerType, "y" to BuiltinType.BooleanType),
