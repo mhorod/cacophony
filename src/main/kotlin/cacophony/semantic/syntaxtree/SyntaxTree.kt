@@ -162,17 +162,18 @@ sealed class Definition(
                 areEquivalentTypes(type, other.type)
     }
 
-    sealed class FunctionDeclaration(
+    class ForeignFunctionDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
-        val type: BaseType.Functional?,
+        val type: BaseType.Functional,
         val returnType: Type,
-    ) : Definition(range, identifier) {
-        abstract fun getLabel(): String
+    ) : Definition(range, identifier), LeafExpression {
+        fun getLabel() = identifier
 
-        override fun isEquivalent(other: SyntaxTree?): Boolean =
-            super.isEquivalent(other) &&
-                other is FunctionDeclaration &&
+        override fun toString() = "foreign $identifier: $type "
+
+        override fun isEquivalent(other: SyntaxTree?) =
+                other is ForeignFunctionDeclaration &&
                 areEquivalentTypes(type, other.type) &&
                 areEquivalentTypes(returnType, other.returnType)
     }
