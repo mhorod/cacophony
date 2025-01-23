@@ -5,10 +5,10 @@ import cacophony.controlflow.generation.*
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.syntaxtree.LambdaExpression
 
 class FunctionHandlerImpl(
-    private val function: FunctionDefinition,
+    private val function: LambdaExpression,
     private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
     private val ancestorFunctionHandlers: List<CallableHandler>,
@@ -36,7 +36,7 @@ class FunctionHandlerImpl(
         analyzedFunction.auxVariables.add(staticLink)
     }
 
-    override fun getFunctionDeclaration(): FunctionDefinition = function
+    override fun getFunctionDeclaration(): LambdaExpression = function
 
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {

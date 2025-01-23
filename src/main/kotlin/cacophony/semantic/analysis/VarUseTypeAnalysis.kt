@@ -107,7 +107,7 @@ private class VarUseVisitor(
         when (expr) {
             is Block -> visitBlock(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
-            is Definition.FunctionDefinition -> visitFunctionDeclaration(expr)
+            is LambdaExpression -> visitFunctionDeclaration(expr)
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
@@ -169,7 +169,7 @@ private class VarUseVisitor(
 
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]
-        if (definition is Definition.FunctionDefinition || definition is Definition.ForeignFunctionDeclaration)
+        if (definition is LambdaExpression || definition is Definition.ForeignFunctionDeclaration)
             return
         useTypeAnalysis[expr] = empty()
         gatherNestedVariables(variablesMap.lvalues[expr]!!).forEach {
@@ -272,7 +272,7 @@ private class VarUseVisitor(
 
         // variables used in called function:
         when (val calledFunction = resolvedVariables[expr.function]) {
-            is Definition.FunctionDefinition -> {
+            is LambdaExpression -> {
                 val map =
                     functionAnalysis[calledFunction]!!.outerVariables().associate {
                         it.origin to it.useType
@@ -286,7 +286,7 @@ private class VarUseVisitor(
         }
     }
 
-    private fun visitFunctionDeclaration(expr: Definition.FunctionDefinition) {
+    private fun visitFunctionDeclaration(expr: LambdaExpression) {
         // we don't want to merge with declaration body, as it need to be called to use the variables
         visitExpression(expr.body)
         useTypeAnalysis[expr] = empty()

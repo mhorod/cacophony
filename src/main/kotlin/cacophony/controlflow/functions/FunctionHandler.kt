@@ -50,7 +50,7 @@ interface LambdaHandler : CallableHandler {
 }
 
 interface FunctionHandler : CallableHandler {
-    fun getFunctionDeclaration(): Definition.FunctionDefinition // we probably want to delete this?
+    fun getFunctionDeclaration(): LambdaExpression // we probably want to delete this?
 
     // Returns static link to parent
     fun getStaticLink(): Variable.PrimitiveVariable

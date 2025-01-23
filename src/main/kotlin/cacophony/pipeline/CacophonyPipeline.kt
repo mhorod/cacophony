@@ -22,7 +22,6 @@ import cacophony.semantic.names.*
 import cacophony.semantic.rtti.*
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.syntaxtree.generateAST
 import cacophony.semantic.types.TypeCheckingResult
@@ -41,7 +40,7 @@ data class AstAnalysisResult(
     val types: TypeCheckingResult,
     val variablesMap: VariablesMap,
     val analyzedExpressions: UseTypeAnalysisResult,
-    val functionHandlers: Map<FunctionDefinition, FunctionHandler>,
+    val functionHandlers: Map<LambdaExpression, FunctionHandler>,
     val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
     val escapeAnalysisResult: EscapeAnalysisResult,
@@ -270,15 +269,15 @@ class CacophonyPipeline(
 
     private fun linearize(
         cfg: ProgramCFG,
-        functionHandlers: Map<FunctionDefinition, FunctionHandler>,
-    ): Pair<Map<FunctionDefinition, LoweredCFGFragment>, Map<FunctionDefinition, RegisterAllocation>> {
+        functionHandlers: Map<LambdaExpression, FunctionHandler>,
+    ): Pair<Map<LambdaExpression, LoweredCFGFragment>, Map<LambdaExpression, RegisterAllocation>> {
         val (covering, registerAllocation) = safeLinearize(cfg, functionHandlers, instructionCovering, allowedRegisters, backupRegs)
         logger?.logSuccessfulInstructionCovering(covering)
         logger?.logSuccessfulRegisterAllocation(registerAllocation)
         return Pair(covering, registerAllocation)
     }
 
-    fun process(input: Input): Pair<String, Map<FunctionDefinition, String>> {
+    fun process(input: Input): Pair<String, Map<LambdaExpression, String>> {
         val ast = generateAst(input)
         val semantics = analyzeAst(ast)
         val outlines =

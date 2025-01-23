@@ -173,7 +173,7 @@ sealed class Definition(
         override fun toString() = "foreign $identifier: $type "
 
         override fun isEquivalent(other: SyntaxTree?) =
-                other is ForeignFunctionDeclaration &&
+            other is ForeignFunctionDeclaration &&
                 areEquivalentTypes(type, other.type) &&
                 areEquivalentTypes(returnType, other.returnType)
     }

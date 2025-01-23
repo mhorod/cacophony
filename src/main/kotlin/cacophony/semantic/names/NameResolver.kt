@@ -6,9 +6,8 @@ import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.ForeignFunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
-import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.utils.CompileException
 
 class NameResolutionException(
@@ -91,11 +90,13 @@ private fun emptySymbolsTable(): SymbolsTable {
                         blocks.last()[id] = ResolvedName.Argument(definition)
                     }
 
+                    is ForeignFunctionDeclaration -> TODO()
+                    /*
                     is FunctionDeclaration -> {
                         val arity =
                             when (definition) {
-                                is FunctionDefinition -> definition.arguments.size
-                                is ForeignFunctionDeclaration ->
+                                is StaticFunction -> definition.body.arguments.size
+                                is ForeignFunction ->
                                     (definition.type ?: error("foreign function without a type")).argumentsType.size
                             }
 
@@ -113,7 +114,7 @@ private fun emptySymbolsTable(): SymbolsTable {
                                     )
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
@@ -138,6 +139,7 @@ private fun emptySymbolsTable(): SymbolsTable {
 
 typealias NameResolutionResult = Map<VariableUse, ResolvedName>
 
+// TODO: This has to get some mapping that contains static function
 fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
     val resolution = mutableMapOf<VariableUse, ResolvedName>()
     val symbolsTable = emptySymbolsTable()
@@ -178,11 +180,6 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
             is VariableDeclaration -> {
                 traverseAst(node.value, true)
                 symbolsTable.define(node.identifier, node)
-            }
-
-            is FunctionDefinition -> {
-                symbolsTable.define(node.identifier, node)
-                visitLambdaExpression(node.arguments, node.body)
             }
 
             is LambdaExpression -> {

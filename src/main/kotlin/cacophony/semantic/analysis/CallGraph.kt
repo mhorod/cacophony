@@ -6,7 +6,7 @@ import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import kotlin.collections.mutableMapOf
 
-typealias CallGraph = Map<Definition.FunctionDefinition, Set<Definition.FunctionDefinition>>
+typealias CallGraph = Map<LambdaExpression, Set<LambdaExpression>>
 
 fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables, diagnostics: Diagnostics): CallGraph =
     CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null)
@@ -15,9 +15,9 @@ private class CallGraphProvider(
     private val diagnostics: Diagnostics,
     private val resolvedVariables: ResolvedVariables,
 ) {
-    fun generateDirectCallGraph(node: Expression?, currentFn: Definition.FunctionDefinition?): CallGraph =
+    fun generateDirectCallGraph(node: Expression?, currentFn: LambdaExpression?): CallGraph =
         when (node) {
-            is Definition.FunctionDefinition -> generateDirectCallGraph(node.body, node)
+            is LambdaExpression -> generateDirectCallGraph(node.body, node)
             is FunctionCall ->
                 merge(
                     handleDirectFunctionCall(node.function, currentFn),
@@ -68,11 +68,11 @@ private class CallGraphProvider(
             null -> mutableMapOf()
         }
 
-    private fun handleDirectFunctionCall(fn: Expression, currentFn: Definition.FunctionDefinition?) =
+    private fun handleDirectFunctionCall(fn: Expression, currentFn: LambdaExpression?) =
         when (fn) {
             is VariableUse -> {
                 when (val decl = resolvedVariables[fn]) {
-                    is Definition.FunctionDefinition ->
+                    is LambdaExpression ->
                         currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
 
                     is Definition.ForeignFunctionDeclaration -> emptyMap()

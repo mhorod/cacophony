@@ -1,6 +1,6 @@
 package cacophony.codegen
 
-import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 
 data class BlockLabel(val name: String) {
     companion object {
@@ -10,4 +10,4 @@ data class BlockLabel(val name: String) {
     }
 }
 
-fun functionBodyLabel(function: Definition.FunctionDeclaration): BlockLabel = BlockLabel(function.getLabel())
+fun functionBodyLabel(function: LambdaExpression): BlockLabel = BlockLabel(function.getLabel())

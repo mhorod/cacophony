@@ -10,10 +10,10 @@ fun findStaticFunctionRelations(ast: AST, resolvedVariables: ResolvedVariables, 
     return visitor.getRelations()
 }
 
-typealias StaticFunctionRelationsMap = Map<Definition.FunctionDefinition, StaticFunctionRelations>
+typealias StaticFunctionRelationsMap = Map<LambdaExpression, StaticFunctionRelations>
 
 data class StaticFunctionRelations(
-    val parent: Definition.FunctionDefinition?,
+    val parent: LambdaExpression?,
     val staticDepth: Int,
     val declaredVariables: Set<Variable>,
     val usedVariables: Set<UsedVariable>,
@@ -38,7 +38,7 @@ enum class VariableUseType {
 }
 
 private data class MutableStaticFunctionRelations(
-    val parent: Definition.FunctionDefinition?,
+    val parent: LambdaExpression?,
     val staticDepth: Int,
     val declaredVariables: MutableSet<Variable>,
     val usedVariables: MutableSet<UsedVariable>,
@@ -52,7 +52,7 @@ private data class MutableStaticFunctionRelations(
         )
 
     companion object {
-        fun empty(parent: Definition.FunctionDefinition?, staticDepth: Int) =
+        fun empty(parent: LambdaExpression?, staticDepth: Int) =
             MutableStaticFunctionRelations(
                 parent,
                 staticDepth,
@@ -66,13 +66,12 @@ private class StaticFunctionsRelationsVisitor(
     val resolvedVariables: ResolvedVariables,
     val variablesMap: VariablesMap,
 ) {
-    private val relations = mutableMapOf<Definition.FunctionDefinition, MutableStaticFunctionRelations>()
-    private val functionStack = ArrayDeque<Definition.FunctionDefinition>()
+    private val relations = mutableMapOf<LambdaExpression, MutableStaticFunctionRelations>()
+    private val functionStack = ArrayDeque<LambdaExpression>()
 
     fun visit(ast: AST) = visitExpression(ast)
 
-    fun getRelations(): Map<Definition.FunctionDefinition, StaticFunctionRelations> =
-        relations.mapValues { it.value.toStaticFunctionRelations() }
+    fun getRelations(): Map<LambdaExpression, StaticFunctionRelations> = relations.mapValues { it.value.toStaticFunctionRelations() }
 
     private fun markNestedVariables(variable: Variable, useType: VariableUseType) {
         functionStack.lastOrNull()?.let {
@@ -100,7 +99,7 @@ private class StaticFunctionsRelationsVisitor(
             is FieldRef.LValue -> visitFieldRefLValue(expr)
             is FieldRef.RValue -> visitFieldRefRValue(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
-            is Definition.FunctionDefinition -> visitFunctionDeclaration(expr)
+            is LambdaExpression -> visitFunctionDeclaration(expr)
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
@@ -137,7 +136,7 @@ private class StaticFunctionsRelationsVisitor(
 
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]
-        if (definition is Definition.FunctionDefinition || definition is Definition.ForeignFunctionDeclaration)
+        if (definition is LambdaExpression || definition is Definition.ForeignFunctionDeclaration)
             return
         if (functionStack.isNotEmpty())
             markNestedVariables(variablesMap.lvalues[expr]!!, VariableUseType.READ)
@@ -199,7 +198,7 @@ private class StaticFunctionsRelationsVisitor(
         expr.arguments.forEach { visitExpression(it) }
     }
 
-    private fun visitFunctionDeclaration(expr: Definition.FunctionDefinition) {
+    private fun visitFunctionDeclaration(expr: LambdaExpression) {
         val parent = functionStack.lastOrNull()
         val depth = parent?.let { relations[it]?.staticDepth?.let { d -> d + 1 } } ?: 0
 

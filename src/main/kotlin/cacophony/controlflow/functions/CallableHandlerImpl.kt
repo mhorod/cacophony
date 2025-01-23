@@ -9,12 +9,12 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.FunctionalExpression
+import cacophony.semantic.syntaxtree.LambdaExpression
 import kotlin.math.max
 
 abstract class CallableHandlerImpl(
     private val analyzedFunction: AnalyzedFunction, // TODO: we need to change it so it also covers lambda expressions
-    private val function: FunctionalExpression, // TODO: and probably get rid of that, analyzedFunction should have all necessary info
+    private val function: LambdaExpression,
     private val variablesMap: VariablesMap,
     private val escapeAnalysisResult: EscapeAnalysisResult,
 ) : CallableHandler {

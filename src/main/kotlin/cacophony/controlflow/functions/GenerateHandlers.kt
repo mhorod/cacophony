@@ -3,7 +3,6 @@ package cacophony.controlflow.functions
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
-import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.utils.CompileException
 
@@ -12,11 +11,11 @@ fun generateFunctionHandlers(
     callConvention: CallConvention,
     variablesMap: VariablesMap,
     escapeAnalysis: EscapeAnalysisResult,
-): Map<Definition.FunctionDefinition, FunctionHandler> {
-    val handlers = mutableMapOf<Definition.FunctionDefinition, FunctionHandler>()
+): Map<LambdaExpression, FunctionHandler> {
+    val handlers = mutableMapOf<LambdaExpression, FunctionHandler>()
     val order = analyzedFunctions.entries.sortedBy { it.value.staticDepth }
 
-    val ancestorHandlers = mutableMapOf<Definition.FunctionDefinition, List<FunctionHandler>>()
+    val ancestorHandlers = mutableMapOf<LambdaExpression, List<FunctionHandler>>()
 
     for ((function, analyzedFunction) in order) {
         if (analyzedFunction.parentLink == null) {

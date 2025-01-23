@@ -52,13 +52,15 @@ private class Typer(
                     argType
                 }
 
-                is Definition.FunctionDefinition -> {
+                is LambdaExpression -> {
                     // does not type anything inside if argument or result types are incorrect
                     val argsType = parseArgs(expression.arguments) ?: return null
                     val returnType = translator.translateType(expression.returnType) ?: return null
                     val deducedType = FunctionType(argsType, returnType)
-                    val functionType = initializedType(expression.type, deducedType, expression.range) ?: return null
-                    typedVariables[expression] = functionType
+                    // val functionType = initializedType(expression.type, deducedType, expression.range) ?: return null
+                    // TODO: How to get type here? Maybe we don't need it?
+                    val functionType = initializedType(null, deducedType, expression.range) ?: return null
+                    result[expression] = functionType
                     functionContext.addLast(returnType)
                     val bodyType = typeExpression(expression.body) ?: return null
                     functionContext.removeLast()

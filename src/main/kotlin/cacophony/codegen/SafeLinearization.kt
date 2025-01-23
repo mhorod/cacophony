@@ -13,7 +13,7 @@ import cacophony.controlflow.functions.FunctionHandler
 import cacophony.controlflow.functions.SystemVAMD64CallConvention
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.graphs.FirstFitGraphColoring
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.syntaxtree.LambdaExpression
 
 /*
  * returns spill-free covering and register allocation
@@ -23,13 +23,13 @@ import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
  */
 fun safeLinearize(
     cfg: ProgramCFG,
-    functionHandlers: Map<FunctionDefinition, FunctionHandler>,
+    functionHandlers: Map<LambdaExpression, FunctionHandler>,
     instructionCovering: InstructionCovering,
     allowedRegisters: Set<HardwareRegister>,
     backupRegs: Set<Register.FixedRegister>,
 ): Pair<
-    Map<FunctionDefinition, LoweredCFGFragment>,
-    Map<FunctionDefinition, RegisterAllocation>,
+    Map<LambdaExpression, LoweredCFGFragment>,
+    Map<LambdaExpression, RegisterAllocation>,
     > {
     val cover = cfg.mapValues { (_, cfg) -> linearize(cfg, instructionCovering) }
     val registersInteractions = analyzeRegistersInteraction(cover)
@@ -48,7 +48,7 @@ fun safeLinearize(
     )
 }
 
-fun analyzeRegistersInteraction(covering: Map<FunctionDefinition, LoweredCFGFragment>): Map<FunctionDefinition, RegistersInteraction> {
+fun analyzeRegistersInteraction(covering: Map<LambdaExpression, LoweredCFGFragment>): Map<LambdaExpression, RegistersInteraction> {
     val registersInteraction =
         covering.mapValues { (_, loweredCFG) ->
             analyzeRegistersInteraction(
@@ -60,9 +60,9 @@ fun analyzeRegistersInteraction(covering: Map<FunctionDefinition, LoweredCFGFrag
 }
 
 fun allocateRegisters(
-    registersInteractions: Map<FunctionDefinition, RegistersInteraction>,
+    registersInteractions: Map<LambdaExpression, RegistersInteraction>,
     allowedRegisters: Set<HardwareRegister>,
-): Map<FunctionDefinition, RegisterAllocation> {
+): Map<LambdaExpression, RegisterAllocation> {
     val allocatedRegisters =
         registersInteractions.mapValues { (_, registersInteraction) ->
             cacophony.codegen.registers.allocateRegisters(registersInteraction, allowedRegisters)
@@ -71,15 +71,15 @@ fun allocateRegisters(
 }
 
 private fun handleSpills(
-    functionHandlers: Map<FunctionDefinition, FunctionHandler>,
-    covering: Map<FunctionDefinition, LoweredCFGFragment>,
-    registersInteractions: Map<FunctionDefinition, RegistersInteraction>,
+    functionHandlers: Map<LambdaExpression, FunctionHandler>,
+    covering: Map<LambdaExpression, LoweredCFGFragment>,
+    registersInteractions: Map<LambdaExpression, RegistersInteraction>,
     allowedRegisters: Set<HardwareRegister>,
     backupRegs: Set<Register.FixedRegister>,
     instructionCovering: InstructionCovering,
 ): Pair<
-    Map<FunctionDefinition, LoweredCFGFragment>,
-    Map<FunctionDefinition, RegisterAllocation>,
+    Map<LambdaExpression, LoweredCFGFragment>,
+    Map<LambdaExpression, RegisterAllocation>,
     > {
     val newRegisterAllocation =
         allocateRegisters(registersInteractions, allowedRegisters.minus(backupRegs.map { it.hardwareRegister }.toSet()))

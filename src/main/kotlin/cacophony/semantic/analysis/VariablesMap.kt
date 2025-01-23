@@ -50,7 +50,7 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
 
             is Block -> expression.expressions.forEach { visit(it) }
 
-            is Definition.FunctionDefinition -> visit(expression.body)
+            is LambdaExpression -> visit(expression.body)
             is Definition.VariableDeclaration -> visit(expression.value)
 
             is FieldRef.RValue -> visit(expression.obj)
@@ -125,7 +125,7 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
             is Block -> expression.expressions.forEach { visit(it) }
             is Definition.FunctionArgument -> visitFunctionArgument(expression)
 
-            is Definition.FunctionDefinition -> visitLambdaExpression(expression.arguments, expression.body)
+            is LambdaExpression -> visitLambdaExpression(expression.arguments, expression.body)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression)
 
             is FunctionCall -> expression.arguments.forEach { visit(it) }
@@ -148,8 +148,6 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
                 visit(expression.testExpression)
                 visit(expression.doExpression)
             }
-
-            is LambdaExpression -> visitLambdaExpression(expression.arguments, expression.body)
 
             is Struct -> expression.fields.values.forEach { visit(it) }
 

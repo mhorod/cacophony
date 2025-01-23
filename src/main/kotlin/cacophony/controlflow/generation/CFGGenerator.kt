@@ -4,7 +4,6 @@ import cacophony.controlflow.*
 import cacophony.controlflow.functions.Builtin
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.CallableHandler
-import cacophony.controlflow.functions.FunctionHandler
 import cacophony.controlflow.functions.LambdaHandler
 import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
@@ -22,8 +21,8 @@ import cacophony.semantic.types.TypeCheckingResult
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
     analyzedUseTypes: UseTypeAnalysisResult,
-    private val function: FunctionalExpression,
-    private val functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
+    private val function: LambdaExpression,
+    private val callableHandlers: Map<LambdaExpression, CallableHandler>,
     private val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
     val variablesMap: VariablesMap,
     private val typeCheckingResult: TypeCheckingResult,
@@ -98,17 +97,21 @@ internal class CFGGenerator(
                     listOf(cfg.addUnconditionalVertex(write))
                 }
             }
+
             is StructLayout -> {
                 require(destination is StructLayout) // by type checking
                 destination.fields.flatMap { (field, layout) -> makeVerticesForAssignment(source.fields[field]!!, layout) }
             }
+
             is FunctionLayout -> {
                 require(destination is FunctionLayout) // by type checking
                 makeVerticesForAssignment(source.code, destination.code) + makeVerticesForAssignment(source.link, destination.link)
             }
+
             is ClosureLayout -> {
                 error("Unexpected assignment to internal layout type ClosureLayout")
             }
+
             is VoidLayout -> emptyList()
         }
 
@@ -148,7 +151,6 @@ internal class CFGGenerator(
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
-            is Definition.FunctionDeclaration -> visitFunctionDeclaration(mode)
             is LambdaExpression -> visitLambdaExpression(expression, mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
@@ -195,9 +197,11 @@ internal class CFGGenerator(
                         val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
                         calcExpression merge SubCFG.Extracted(vertex, vertex, CFGNode.NoOp, false)
                     }
+
                     is SubCFG.Immediate -> SubCFG.Immediate(CFGNode.NoOp, false)
                 }
             }
+
             is EvalMode.Conditional -> throw IllegalArgumentException("Reference cannot be used as condition")
         }
     }
@@ -216,6 +220,7 @@ internal class CFGGenerator(
                     val vertex = cfg.addUnconditionalVertex(CFGNode.NoOp)
                     pointerGeneration merge SubCFG.Extracted(vertex, vertex, layout)
                 }
+
                 is SubCFG.Immediate -> SubCFG.Immediate(layout)
             }
         return if (mode is EvalMode.Conditional) extendWithConditional(dereference, mode)
@@ -308,6 +313,7 @@ internal class CFGGenerator(
                     FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
                 )
             }
+
             is EvalMode.SideEffect -> SubCFG.Immediate(noOpOrUnit(mode))
             is EvalMode.Conditional -> throw IllegalArgumentException("Lambda expression can not be used as condition")
         }
@@ -396,6 +402,7 @@ internal class CFGGenerator(
                     context,
                     true,
                 )
+
             is Dereference -> {
                 val pointer = visitDereference(expression.lhs, EvalMode.Value, context)
                 val assignment =
@@ -505,6 +512,7 @@ internal class CFGGenerator(
                     valueCFG.exit.connect(resultAssignment.entry.label)
                     valueCFG.entry
                 }
+
                 is SubCFG.Immediate -> resultAssignment.entry
             }
         return SubCFG.Extracted(entry, artificialExit, VoidLayout())
@@ -541,7 +549,7 @@ internal class CFGGenerator(
                 require(expression is VariableUse) { "Expected $expression to be instance of VariableUse" }
 
                 when (val function = resolvedVariables[expression]) {
-                    is Definition.FunctionDefinition -> getFunctionLayout(getCurrentCallableHandler(), functionHandlers[function]!!)
+                    // is LambdaExpression -> getFunctionLayout(getCurrentCallableHandler(), callableHandlers[function]!!) TODO: fix
                     is Definition.ForeignFunctionDeclaration -> getForeignFunctionLayout(function)
                     else -> error("Expected function declaration, but got $function")
                 }
@@ -556,11 +564,8 @@ internal class CFGGenerator(
 
     private fun getCurrentCallableHandler(): CallableHandler = getCallableHandler(function)
 
-    private fun getCallableHandler(callable: FunctionalExpression): CallableHandler =
-        when (callable) {
-            is Definition.FunctionDefinition -> functionHandlers[function] ?: error("Function $function has no handler")
-            is LambdaExpression -> lambdaHandlers[function] ?: error("Lambda $function has no handler")
-        }
+    private fun getCallableHandler(callable: LambdaExpression): CallableHandler =
+        callableHandlers[callable] ?: error("Callable $callable has no handler")
 
     // sourceLayout opisuje gdzie są rzeczy, które chcemy przekopiować na stertę
     // resultLayout opisuje obiekt na stercie

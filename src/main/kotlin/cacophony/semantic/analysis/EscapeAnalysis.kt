@@ -3,7 +3,7 @@ package cacophony.semantic.analysis
 import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.StructType
 import cacophony.semantic.types.TypeCheckingResult
@@ -70,6 +70,7 @@ fun escapeAnalysis(
             }
         }
 
+        // TODO: why are we using variablesMap on functions?
         functionAnalysis
             .filter { (function, _) -> variablesMap.definitions.containsKey(function) }
             .forEach { (function, analysis) ->
@@ -128,7 +129,6 @@ private class BaseEscapeAnalysisVisitor(
             is FieldRef.RValue -> visitExpression(expr.obj)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
             is LambdaExpression -> visitLambdaExpression(expr)
-            is FunctionDefinition -> visitFunctionDeclaration(expr)
             is FunctionCall -> {
                 visitExpression(expr.function)
                 expr.arguments.forEach { visitExpression(it) }
@@ -191,7 +191,7 @@ private class BaseEscapeAnalysisVisitor(
     private fun visitFunctionDeclaration(expr: Definition.FunctionDeclaration) {
         when (expr) {
             is Definition.ForeignFunctionDeclaration -> return
-            is FunctionDefinition -> {
+            is LambdaExpression -> {
                 val functionType = types.definitionTypes[expr]
                 if (functionType == null || functionType !is FunctionType) {
                     throw EscapeAnalysisException("Unexpected type $functionType of function $expr")
