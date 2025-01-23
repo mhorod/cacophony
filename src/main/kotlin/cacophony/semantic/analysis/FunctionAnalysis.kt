@@ -15,6 +15,8 @@ data class ParentLink(
     val used: Boolean,
 )
 
+// TODO: this needs a lambda expression analogue
+
 /**
  * Analyzed function properties
  *
@@ -25,6 +27,7 @@ data class ParentLink(
  * @property staticDepth Depth of the function - how deeply nested it is
  * @property variablesUsedInNestedFunctions Variables declared in this function that are used in nested functions
  */
+
 data class AnalyzedFunction(
     val function: LambdaExpression,
     val parentLink: ParentLink?,

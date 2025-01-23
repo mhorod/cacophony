@@ -101,10 +101,10 @@ class CacophonyPipeline(
         return ast
     }
 
-    fun resolveNames(ast: AST): NameResolutionResult {
+    fun resolveNames(ast: AST, namedFunctionInfo: NamedFunctionInfo): NameResolutionResult {
         val result =
             try {
-                assertEmptyDiagnosticsAfter { resolveNames(ast, diagnostics) }
+                assertEmptyDiagnosticsAfter { resolveNames(ast, namedFunctionInfo, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedNameResolution()
                 throw e
@@ -149,10 +149,15 @@ class CacophonyPipeline(
         return variableMap
     }
 
-    fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables): CallGraph {
+    fun generateCallGraph(
+        ast: AST,
+        resolvedVariables: ResolvedVariables,
+        types: TypeCheckingResult,
+        namedFunctionInfo: NamedFunctionInfo,
+    ): CallGraph {
         val callGraph =
             try {
-                assertEmptyDiagnosticsAfter { generateCallGraph(ast, resolvedVariables, diagnostics) }
+                assertEmptyDiagnosticsAfter { generateCallGraph(ast, resolvedVariables, types, namedFunctionInfo, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedCallGraphGeneration()
                 throw e
@@ -214,11 +219,12 @@ class CacophonyPipeline(
     }
 
     fun analyzeAst(ast: AST): AstAnalysisResult {
-        val resolvedNames = resolveNames(ast)
+        val namedFunctionInfo = getNamedFunctions(ast)
+        val resolvedNames = resolveNames(ast, namedFunctionInfo)
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
         val types = checkTypes(ast, resolvedVariables)
         val variablesMap = createVariables(ast, resolvedVariables, types)
-        val callGraph = generateCallGraph(ast, resolvedVariables)
+        val callGraph = generateCallGraph(ast, resolvedVariables, types, namedFunctionInfo)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
         val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types)

@@ -4,16 +4,26 @@ import cacophony.diagnostics.CallGraphDiagnostics
 import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.FunctionType
+import cacophony.semantic.types.TypeCheckingResult
 import kotlin.collections.mutableMapOf
 
+// Justyna: CallGraph powinien być ze statycznych w statyczne, prawda?
 typealias CallGraph = Map<LambdaExpression, Set<LambdaExpression>>
 
-fun generateCallGraph(ast: AST, resolvedVariables: ResolvedVariables, diagnostics: Diagnostics): CallGraph =
-    CallGraphProvider(diagnostics, resolvedVariables).generateDirectCallGraph(ast, null)
+fun generateCallGraph(
+    ast: AST,
+    resolvedVariables: ResolvedVariables,
+    types: TypeCheckingResult,
+    namedFunctionInfo: NamedFunctionInfo,
+    diagnostics: Diagnostics,
+): CallGraph = CallGraphProvider(diagnostics, resolvedVariables, types, namedFunctionInfo).generateDirectCallGraph(ast, null)
 
 private class CallGraphProvider(
     private val diagnostics: Diagnostics,
     private val resolvedVariables: ResolvedVariables,
+    private val types: TypeCheckingResult,
+    private val namedFunctionInfo: NamedFunctionInfo,
 ) {
     fun generateDirectCallGraph(node: Expression?, currentFn: LambdaExpression?): CallGraph =
         when (node) {
@@ -68,22 +78,30 @@ private class CallGraphProvider(
             null -> mutableMapOf()
         }
 
+    // TODO: fix
     private fun handleDirectFunctionCall(fn: Expression, currentFn: LambdaExpression?) =
         when (fn) {
             is VariableUse -> {
                 when (val decl = resolvedVariables[fn]) {
-                    is LambdaExpression ->
-                        currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
-
-                    is Definition.ForeignFunctionDeclaration -> emptyMap()
-
-                    is Definition -> {
-                        diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)
+                    null -> {
+                        diagnostics.report(CallGraphDiagnostics.CallingNonExistentIdentifier(fn.identifier), fn.range)
                         throw diagnostics.fatal()
                     }
 
-                    null -> {
-                        diagnostics.report(CallGraphDiagnostics.CallingNonExistentIdentifier(fn.identifier), fn.range)
+                    is Definition.ForeignFunctionDeclaration -> emptyMap()
+
+                    is Definition.VariableDeclaration ->
+                        if (declarationIsFunctionDeclaration(decl))
+                            currentFn?.let { mapOf(it to setOf(decl)) }.orEmpty()
+                        else if (types.definitionTypes[decl]!! is FunctionType) {
+                            emptyMap()
+                        } else {
+                            diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)
+                            throw diagnostics.fatal()
+                        }
+
+                    else -> {
+                        diagnostics.report(CallGraphDiagnostics.CallingNonFunction(fn.identifier), fn.range)
                         throw diagnostics.fatal()
                     }
                 }

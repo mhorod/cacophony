@@ -3,6 +3,7 @@ package cacophony.semantic.names
 import cacophony.controlflow.functions.Builtin
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
+import cacophony.semantic.analysis.NamedFunctionInfo
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.ForeignFunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
@@ -23,6 +24,7 @@ sealed interface ResolvedName {
         val def: FunctionArgument,
     ) : ResolvedName
 
+    // To musi zostać +- jak było
     class Function(
         val def: OverloadSet,
     ) : ResolvedName
@@ -139,8 +141,7 @@ private fun emptySymbolsTable(): SymbolsTable {
 
 typealias NameResolutionResult = Map<VariableUse, ResolvedName>
 
-// TODO: This has to get some mapping that contains static function
-fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
+fun resolveNames(root: AST, namedFunctionInfo: NamedFunctionInfo, diagnostics: Diagnostics): NameResolutionResult {
     val resolution = mutableMapOf<VariableUse, ResolvedName>()
     val symbolsTable = emptySymbolsTable()
 
