@@ -20,7 +20,6 @@ import cacophony.semantic.types.TypeCheckingResult
  */
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
-    analyzedUseTypes: UseTypeAnalysisResult,
     private val function: LambdaExpression,
     private val callableHandlers: Map<LambdaExpression, CallableHandler>,
     private val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
@@ -31,8 +30,7 @@ internal class CFGGenerator(
     private val lambdaOutlineLocation: LambdaOutlineLocation,
 ) {
     private val cfg = CFG()
-    private val sideEffectAnalyzer = SideEffectAnalyzer(analyzedUseTypes)
-    private val operatorHandler = OperatorHandler(cfg, this, sideEffectAnalyzer)
+    private val operatorHandler = OperatorHandler(cfg, this)
     private val assignmentHandler = AssignmentHandler(this)
     private val prologue = listOfNodesToExtracted(getCurrentCallableHandler().generatePrologue())
     private val epilogue = listOfNodesToExtracted(getCurrentCallableHandler().generateEpilogue())

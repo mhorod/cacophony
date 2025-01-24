@@ -36,7 +36,7 @@ private fun pruneParseTree(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnos
     return parseTree
 }
 
-private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Type =
+private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): BaseType =
     when (val symbol = getGrammarSymbol(parseTree)) {
         TYPE_IDENTIFIER -> {
             require(parseTree is ParseTree.Leaf) { "Unable to construct atomic type from non-leaf node $symbol" }
@@ -231,16 +231,27 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                 val declaration = parseTree.children[1] as ParseTree.Branch
                 when (getGrammarSymbol(declaration)) {
                     DECLARATION_TYPED, DECLARATION_UNTYPED -> {
-                        var type: Type? = null
+                        var type: BaseType? = null
                         if (getGrammarSymbol(declaration) == DECLARATION_TYPED) {
                             type = constructType(declaration.children[0], diagnostics)
                         }
-                        return Definition.VariableDeclaration(
-                            range,
-                            identifier.token.context,
-                            type as BaseType?,
-                            generateASTInternal(declaration.children.last(), diagnostics),
-                        )
+                        val value = generateASTInternal(declaration.children.last(), diagnostics)
+                        return when (value) {
+                            is LambdaExpression ->
+                                Definition.FunctionDefinition(
+                                    range,
+                                    identifier.token.context,
+                                    type,
+                                    value,
+                                )
+                            else ->
+                                Definition.VariableDefinition(
+                                    range,
+                                    identifier.token.context,
+                                    type,
+                                    value,
+                                )
+                        }
                     }
 
                     FOREIGN_DECLARATION -> {
@@ -386,7 +397,7 @@ private fun wrapInFunction(originalAST: AST): AST {
     val beforeStart = Location(-1)
     val behindEnd = Location(originalAST.range.second.value + 1)
     val program =
-        Definition.VariableDeclaration(
+        Definition.VariableDefinition(
             Pair(beforeStart, behindEnd),
             MAIN_FUNCTION_IDENTIFIER,
             BaseType.Functional(

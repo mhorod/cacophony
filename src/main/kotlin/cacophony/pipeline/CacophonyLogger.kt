@@ -31,7 +31,6 @@ class CacophonyLogger(
     private val logTypes: Boolean,
     private val logEscapeAnalysis: Boolean,
     private val logVariables: Boolean,
-    private val logCallGraph: Boolean,
     private val logFunctions: Boolean,
     private val logClosures: Boolean,
     private val logCFG: Boolean,
@@ -155,21 +154,6 @@ class CacophonyLogger(
     override fun logFailedVariableCreation() {
         printError("Variable creation failed :(")
     }
-
-    override fun logSuccessfulCallGraphGeneration(callGraph: CallGraph) {
-        if (logCallGraph) {
-            val content = StringBuilder()
-            callGraph.forEach { (caller, callees) ->
-                content.appendLine("$caller (${caller.getLabel()}/${caller.arguments.size}) calls:")
-                callees.forEach { callee ->
-                    content.appendLine("  $callee (${callee.getLabel()}/${callee.arguments.size})")
-                }
-            }
-            logMaybeSave("Calls", content.lines().joinToString("\n"))
-        }
-    }
-
-    override fun logFailedCallGraphGeneration() = printError("Call graph generation failed :(")
 
     override fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult) {
         if (logFunctions) {

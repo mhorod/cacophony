@@ -146,11 +146,11 @@ sealed class Definition(
             other is Definition &&
             identifier == other.identifier
 
-    class VariableDeclaration(
+    sealed class VariableDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type?,
-        val value: Expression,
+        open val value: Expression,
     ) : Definition(range, identifier) {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} "
 
@@ -161,6 +161,20 @@ sealed class Definition(
                 other is VariableDeclaration &&
                 areEquivalentTypes(type, other.type)
     }
+
+    class VariableDefinition(
+        range: Pair<Location, Location>,
+        identifier: String,
+        type: Type?,
+        value: Expression,
+    ) : VariableDeclaration(range, identifier, type, value)
+
+    class FunctionDefinition(
+        range: Pair<Location, Location>,
+        identifier: String,
+        type: Type?,
+        override val value: LambdaExpression,
+    ) : VariableDeclaration(range, identifier, type, value)
 
     class ForeignFunctionDeclaration(
         range: Pair<Location, Location>,
@@ -251,7 +265,7 @@ class Allocation(range: Pair<Location, Location>, val value: Expression) : BaseE
 }
 
 class StructField(range: Pair<Location, Location>, val name: String, val type: Type?) : BaseExpression(range), LeafExpression {
-    override fun toString() = "field ${name}${type?.let{": $it"} ?: ""}"
+    override fun toString() = "field ${name}${type?.let { ": $it" } ?: ""}"
 
     override fun isEquivalent(other: SyntaxTree?): Boolean =
         super<BaseExpression>.isEquivalent(other) &&

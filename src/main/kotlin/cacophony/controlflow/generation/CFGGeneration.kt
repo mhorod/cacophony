@@ -15,7 +15,6 @@ typealias ProgramCFG = Map<LambdaExpression, CFGFragment>
 
 fun generateCFG(
     resolvedVariables: ResolvedVariables,
-    analyzedUseTypes: UseTypeAnalysisResult,
     callableHandlers: Map<LambdaExpression, CallableHandler>,
     variablesMap: VariablesMap,
     typeCheckingResult: TypeCheckingResult,
@@ -29,7 +28,6 @@ fun generateCFG(
                 function,
                 callableHandlers,
                 resolvedVariables,
-                analyzedUseTypes,
                 variablesMap,
                 typeCheckingResult,
                 callGenerator,
@@ -44,7 +42,6 @@ internal fun generateFunctionCFG(
     function: LambdaExpression,
     callableHandlers: Map<LambdaExpression, CallableHandler>,
     resolvedVariables: ResolvedVariables,
-    analyzedUseTypes: UseTypeAnalysisResult,
     variablesMap: VariablesMap,
     typeCheckingResult: TypeCheckingResult,
     callGenerator: CallGenerator,
@@ -54,7 +51,6 @@ internal fun generateFunctionCFG(
     val generator =
         CFGGenerator(
             resolvedVariables,
-            analyzedUseTypes,
             function,
             callableHandlers,
             emptyMap(), // TODO: fill LambdaHandlers in

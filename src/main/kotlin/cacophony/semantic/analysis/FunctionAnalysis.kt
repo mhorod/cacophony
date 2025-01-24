@@ -49,27 +49,17 @@ data class AnalyzedVariable(
     val useType: VariableUseType,
 )
 
-fun analyzeFunctions(
-    ast: AST,
-    resolvedVariables: ResolvedVariables,
-    callGraph: CallGraph,
-    variablesMap: VariablesMap,
-): FunctionAnalysisResult {
+fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, variablesMap: VariablesMap): FunctionAnalysisResult {
     val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
     val variableFunctions = getVariableFunctions(relations, variablesMap)
     val parentGraph =
         relations.mapValues { (_, staticRelations) ->
             staticRelations.parent?.let { setOf(it) } ?: emptySet()
         }
-    val callGraphClosedRelations =
-        staticFunctionRelationsClosure(
-            relations,
-            callGraph,
-        )
     // we need information if children declaration uses outside variables because of static links
     val childrenGraphClosedRelations =
         staticFunctionRelationsClosure(
-            callGraphClosedRelations,
+            relations,
             reverseGraph(parentGraph),
         )
     val analyzedVariables =
@@ -204,6 +194,8 @@ private fun staticFunctionRelationsClosure(
     val newMap = staticFunctionRelations.toMutableMap()
     staticFunctionRelations.forEach {
         val newUsedVariables = it.value.usedVariables.toMutableSet()
+        // f => (g[]; h[];...; a;b;c;)
+        // f uses {a, b, c} + used[g] + used[h]
         closure[it.key]?.forEach { calledFunction ->
             newUsedVariables.addAll(staticFunctionRelations[calledFunction]!!.usedVariables)
         }

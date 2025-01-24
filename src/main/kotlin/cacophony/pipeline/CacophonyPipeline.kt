@@ -39,7 +39,6 @@ data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
     val types: TypeCheckingResult,
     val variablesMap: VariablesMap,
-    val analyzedExpressions: UseTypeAnalysisResult,
     val functionHandlers: Map<LambdaExpression, FunctionHandler>,
     val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
@@ -149,34 +148,11 @@ class CacophonyPipeline(
         return variableMap
     }
 
-    fun generateCallGraph(
-        ast: AST,
-        resolvedVariables: ResolvedVariables,
-        types: TypeCheckingResult,
-        namedFunctionInfo: NamedFunctionInfo,
-    ): CallGraph {
-        val callGraph =
-            try {
-                assertEmptyDiagnosticsAfter { generateCallGraph(ast, resolvedVariables, types, namedFunctionInfo, diagnostics) }
-            } catch (e: CompileException) {
-                logger?.logFailedCallGraphGeneration()
-                throw e
-            }
-        logger?.logSuccessfulCallGraphGeneration(callGraph)
-        return callGraph
-    }
-
-    fun analyzeFunctions(
-        ast: AST,
-        variablesMap: VariablesMap,
-        resolvedVariables: ResolvedVariables,
-        callGraph: CallGraph,
-    ): FunctionAnalysisResult {
+    fun analyzeFunctions(ast: AST, variablesMap: VariablesMap, resolvedVariables: ResolvedVariables): FunctionAnalysisResult {
         val result =
             analyzeFunctions(
                 ast,
                 resolvedVariables,
-                callGraph,
                 variablesMap,
             )
         logger?.logSuccessfulFunctionAnalysis(result)
@@ -206,7 +182,7 @@ class CacophonyPipeline(
         analyzedFunctions: FunctionAnalysisResult,
         variablesMap: VariablesMap,
         types: TypeCheckingResult,
-        namedFunctionInfo: NamedFunctionInfo
+        namedFunctionInfo: NamedFunctionInfo,
     ): EscapeAnalysisResult {
         val escapeAnalysisResult =
             try {
@@ -225,9 +201,7 @@ class CacophonyPipeline(
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
         val types = checkTypes(ast, resolvedVariables)
         val variablesMap = createVariables(ast, resolvedVariables, types)
-        val callGraph = generateCallGraph(ast, resolvedVariables, types, namedFunctionInfo)
-        val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
-        val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
+        val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables)
         val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types, namedFunctionInfo)
         val analyzedClosures = determineClosureSets(escapeAnalysis)
         val lambdaHandlers = generateLambdaHandlers()
@@ -243,7 +217,6 @@ class CacophonyPipeline(
             resolvedVariables,
             types,
             variablesMap,
-            analyzedExpressions,
             functionHandlers,
             lambdaHandlers,
             foreignFunctions,
@@ -262,7 +235,6 @@ class CacophonyPipeline(
         val cfg =
             generateCFG(
                 analyzedAst.resolvedVariables,
-                analyzedAst.analyzedExpressions,
                 analyzedAst.functionHandlers,
                 analyzedAst.variablesMap,
                 analyzedAst.types,

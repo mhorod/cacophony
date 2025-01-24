@@ -13,8 +13,10 @@ fun findStaticFunctionRelations(ast: AST, resolvedVariables: ResolvedVariables, 
 typealias StaticFunctionRelationsMap = Map<LambdaExpression, StaticFunctionRelations>
 
 data class StaticFunctionRelations(
+    // TODO: These two below don't make sense for lambdas
     val parent: LambdaExpression?,
     val staticDepth: Int,
+    // TODO: These two make sense both for lambdas and static functions
     val declaredVariables: Set<Variable>,
     val usedVariables: Set<UsedVariable>,
 )
@@ -103,7 +105,6 @@ private class StaticFunctionsRelationsVisitor(
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
-            is LambdaExpression -> visitExpression(expr.body)
             is Statement.ReturnStatement -> visitReturnStatement(expr)
             is OperatorUnary -> visitUnaryOperator(expr)
             is OperatorBinary -> visitBinaryOperator(expr)
@@ -136,7 +137,7 @@ private class StaticFunctionsRelationsVisitor(
 
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]
-        if (definition is LambdaExpression || definition is Definition.ForeignFunctionDeclaration)
+        if (definition is Definition.ForeignFunctionDeclaration)
             return
         if (functionStack.isNotEmpty())
             markNestedVariables(variablesMap.lvalues[expr]!!, VariableUseType.READ)
