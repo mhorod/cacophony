@@ -283,8 +283,6 @@ internal class CFGGenerator(
         }
     }
 
-    private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
-
     private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
         val handler = lambdaHandlers[lambda]!!
         val label = handler.getFunctionLabel()

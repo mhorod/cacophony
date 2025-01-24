@@ -29,6 +29,7 @@ private class CallGraphProvider(
         when (node) {
             is LambdaExpression -> generateDirectCallGraph(node.body, node)
             is FunctionCall ->
+                // TODO: fix
                 merge(
                     handleDirectFunctionCall(node.function, currentFn),
                     *node.arguments.map { generateDirectCallGraph(it, currentFn) }.toTypedArray(),

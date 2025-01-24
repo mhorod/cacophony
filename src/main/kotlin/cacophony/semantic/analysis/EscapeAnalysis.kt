@@ -20,6 +20,7 @@ fun escapeAnalysis(
     functionAnalysis: FunctionAnalysisResult,
     variablesMap: VariablesMap,
     types: TypeCheckingResult,
+    namedFunctionInfo: NamedFunctionInfo,
 ): EscapeAnalysisResult {
     val baseVisitor = BaseEscapeAnalysisVisitor(resolvedVariables, variablesMap, types)
     baseVisitor.visit(ast)
@@ -70,8 +71,9 @@ fun escapeAnalysis(
             }
         }
 
-        // TODO: why are we using variablesMap on functions?
         functionAnalysis
+            .filter { (function, _) -> namedFunctionInfo.containsKey(function) }
+            .mapKeys { (function, _) -> namedFunctionInfo[function]!! }
             .filter { (function, _) -> variablesMap.definitions.containsKey(function) }
             .forEach { (function, analysis) ->
                 analysis.variables
@@ -186,19 +188,6 @@ private class BaseEscapeAnalysisVisitor(
 
         functionTypeStack.removeLast()
         currentStaticDepth -= 1
-    }
-
-    private fun visitFunctionDeclaration(expr: Definition.FunctionDeclaration) {
-        when (expr) {
-            is Definition.ForeignFunctionDeclaration -> return
-            is LambdaExpression -> {
-                val functionType = types.definitionTypes[expr]
-                if (functionType == null || functionType !is FunctionType) {
-                    throw EscapeAnalysisException("Unexpected type $functionType of function $expr")
-                }
-                visitFunctionBody(expr.body, types.definitionTypes[expr] as FunctionType)
-            }
-        }
     }
 
     private fun visitLambdaExpression(expr: LambdaExpression) {

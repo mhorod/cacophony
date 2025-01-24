@@ -206,10 +206,11 @@ class CacophonyPipeline(
         analyzedFunctions: FunctionAnalysisResult,
         variablesMap: VariablesMap,
         types: TypeCheckingResult,
+        namedFunctionInfo: NamedFunctionInfo
     ): EscapeAnalysisResult {
         val escapeAnalysisResult =
             try {
-                escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
+                escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap, types, namedFunctionInfo)
             } catch (e: Exception) {
                 logger?.logFailedEscapeAnalysis()
                 throw e
@@ -227,7 +228,7 @@ class CacophonyPipeline(
         val callGraph = generateCallGraph(ast, resolvedVariables, types, namedFunctionInfo)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables, callGraph)
         val analyzedExpressions = analyzeVarUseTypes(ast, resolvedVariables, analyzedFunctions, variablesMap)
-        val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
+        val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types, namedFunctionInfo)
         val analyzedClosures = determineClosureSets(escapeAnalysis)
         val lambdaHandlers = generateLambdaHandlers()
         val functionHandlers =

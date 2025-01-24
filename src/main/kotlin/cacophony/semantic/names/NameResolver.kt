@@ -31,13 +31,13 @@ sealed interface ResolvedName {
 }
 
 private class OverloadSetImpl : OverloadSet {
-    private val overloads: MutableMap<Int, FunctionDeclaration> = mutableMapOf()
+    private val overloads: MutableMap<Int, Definition> = mutableMapOf()
 
-    override fun get(arity: Int): FunctionDeclaration? = overloads.get(arity)
+    override fun get(arity: Int): Definition? = overloads.get(arity)
 
-    override fun toMap(): Map<Int, FunctionDeclaration> = overloads
+    override fun toMap(): Map<Int, Definition> = overloads
 
-    override fun withDeclaration(arity: Int, declaration: FunctionDeclaration): OverloadSet {
+    override fun withDeclaration(arity: Int, declaration: Definition): OverloadSet {
         overloads[arity] = declaration
         return this
     }
