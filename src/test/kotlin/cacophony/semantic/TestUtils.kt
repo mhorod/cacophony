@@ -22,7 +22,6 @@ fun programFunctionAnalysis(ast: Block) =
             to analyzedFunction(program(ast), 0, emptySet())
     )
 
-
 fun analyzedFunction(function: Definition.FunctionDefinition, staticDepth: Int, variables: Set<AnalyzedVariable>) =
     AnalyzedFunction(
         function.value,

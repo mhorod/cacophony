@@ -20,22 +20,13 @@ object MockFunctionParts {
     val epilogue: CFGNode = CFGNode.Comment("epilogue")
 }
 
-
-private fun stubCallableHandlers(
-    callableHandlers: CallableHandlers,
-    realPrologue: Boolean,
-    realEpilogue: Boolean,
-): CallableHandlers =
+private fun stubCallableHandlers(callableHandlers: CallableHandlers, realPrologue: Boolean, realEpilogue: Boolean): CallableHandlers =
     CallableHandlers(
         callableHandlers.closureHandlers.mapValues { (_, handler) -> stubHandler(handler, realPrologue, realEpilogue) },
         callableHandlers.staticFunctionHandlers.mapValues { (_, handler) -> stubHandler(handler, realPrologue, realEpilogue) },
     )
 
-private inline fun <reified H : CallableHandler> stubHandler(
-    handler: H,
-    realPrologue: Boolean,
-    realEpilogue: Boolean,
-): H {
+private inline fun <reified H : CallableHandler> stubHandler(handler: H, realPrologue: Boolean, realEpilogue: Boolean): H {
     val stubbedHandler = spyk(handler)
     if (!realPrologue)
         every { stubbedHandler.generatePrologue() } returns listOf(MockFunctionParts.prologue)
@@ -43,7 +34,6 @@ private inline fun <reified H : CallableHandler> stubHandler(
         every { stubbedHandler.generateEpilogue() } returns listOf(MockFunctionParts.epilogue)
     return stubbedHandler
 }
-
 
 internal fun generateSimplifiedCFG(
     ast: AST,
@@ -68,8 +58,7 @@ internal fun generateSimplifiedCFG(
     return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator, mockk(), mockk())
 }
 
-fun singleFragmentCFG(function: LambdaExpression, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
-    cfg { fragment(function, body) }
+fun singleFragmentCFG(function: LambdaExpression, body: CFGFragmentBuilder.() -> Unit): ProgramCFG = cfg { fragment(function, body) }
 
 internal fun standaloneCFGFragment(function: LambdaExpression, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
     singleFragmentCFG(function, body)[function]!!

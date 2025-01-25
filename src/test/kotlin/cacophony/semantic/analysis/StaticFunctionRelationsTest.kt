@@ -5,7 +5,6 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.*
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
-import io.mockk.core.ValueClassSupport.boxedValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

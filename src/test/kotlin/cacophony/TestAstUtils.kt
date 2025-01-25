@@ -32,7 +32,7 @@ fun functionDefinition(identifier: String, args: List<Definition.FunctionArgumen
         mockRange(),
         identifier,
         BaseType.Functional(mockk(), args.map { it.type }, returnType),
-        LambdaExpression(mockRange(), args, returnType, body)
+        LambdaExpression(mockRange(), args, returnType, body),
     )
 
 fun unitFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, unitType())
@@ -63,7 +63,7 @@ fun typedFunctionDefinition(
     mockRange(),
     identifier,
     argsType,
-    LambdaExpression(mockRange(), arguments, outType, body)
+    LambdaExpression(mockRange(), arguments, outType, body),
 )
 
 fun functionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =

@@ -8,7 +8,7 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.LambdaExpression
 
-interface CallableHandler {
+sealed interface CallableHandler {
     fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
     fun hasVariableAllocation(variable: Variable.PrimitiveVariable): Boolean

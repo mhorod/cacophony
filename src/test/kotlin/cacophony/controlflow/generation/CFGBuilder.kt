@@ -1,7 +1,6 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
-import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.LambdaExpression
 
 class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {

@@ -1,10 +1,7 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
-import cacophony.controlflow.functions.Builtin
-import cacophony.controlflow.functions.CallGenerator
-import cacophony.controlflow.functions.CallableHandler
-import cacophony.controlflow.functions.CallableHandlers
+import cacophony.controlflow.functions.*
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation
@@ -21,7 +18,7 @@ internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
     private val function: LambdaExpression,
     private val callableHandlers: CallableHandlers,
-    val variablesMap: VariablesMap,
+    private val variablesMap: VariablesMap,
     private val typeCheckingResult: TypeCheckingResult,
     private val callGenerator: CallGenerator,
     private val objectOutlineLocation: ObjectOutlineLocation,
@@ -147,6 +144,8 @@ internal class CFGGenerator(
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
+            is Definition.FunctionDefinition -> visitFunctionDeclaration(mode)
+            is Definition.ForeignFunctionDeclaration -> visitFunctionDeclaration(mode)
             is LambdaExpression -> visitLambdaExpression(expression, mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
@@ -279,33 +278,45 @@ internal class CFGGenerator(
         }
     }
 
+    private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
+
     private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
-        val handler = callableHandlers.getClosureHandler(lambda)
-        val label = handler.getFunctionLabel()
         // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
         // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?
         return when (mode) {
             is EvalMode.Value -> {
-                val outlineLocation = lambdaOutlineLocation.getValue(lambda)
-                val offsets = handler.getCapturedVariableOffsets()
-                val sourceLayout =
-                    ClosureLayout(
-                        offsets.mapValues { (variable, _) ->
-                            SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
-                        },
-                    )
+                val handler = callableHandlers.getCallableHandler(lambda)
+                val label = handler.getFunctionLabel()
+                when (handler) {
+                    is ClosureHandler -> {
+                        val outlineLocation = lambdaOutlineLocation.getValue(lambda)
+                        val offsets = handler.getCapturedVariableOffsets()
+                        val sourceLayout =
+                            ClosureLayout(
+                                offsets.mapValues { (variable, _) ->
+                                    SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
+                                },
+                            )
 
-                val allocCFG =
-                    allocAndCopy(outlineLocation, sourceLayout) { pointerLayout -> generateLayoutOfClosure(pointerLayout.access, offsets) }
+                        val allocCFG =
+                            allocAndCopy(
+                                outlineLocation,
+                                sourceLayout,
+                            ) { pointerLayout -> generateLayoutOfClosure(pointerLayout.access, offsets) }
 
-                val closureLink = allocCFG.access
-                require(closureLink is SimpleLayout)
+                        val closureLink = allocCFG.access
+                        require(closureLink is SimpleLayout)
 
-                SubCFG.Extracted(
-                    allocCFG.entry,
-                    allocCFG.exit,
-                    FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
-                )
+                        SubCFG.Extracted(
+                            allocCFG.entry,
+                            allocCFG.exit,
+                            FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
+                        )
+                    }
+                    else -> {
+                        TODO("generate access to a function variable")
+                    }
+                }
             }
 
             is EvalMode.SideEffect -> SubCFG.Immediate(noOpOrUnit(mode))

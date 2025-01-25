@@ -79,14 +79,15 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(
-            ast,
-            resolvedVariables,
-            functionAnalysis,
-            variablesMap,
-            types,
-            emptyMap(),
-        )
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+                emptyMap(),
+            )
 
         // then
         assertThat(result.escapedVariables).containsExactlyInAnyOrder(gVar, xVar)
@@ -161,10 +162,15 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(
-            ast, resolvedVariables, functionAnalysis, variablesMap,
-            types, emptyMap(),
-        )
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+                emptyMap(),
+            )
 
         // then
         assertThat(result.escapedVariables).containsExactlyInAnyOrder(gVar, hVar, xVar)
@@ -244,11 +250,15 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(
-            ast, resolvedVariables,
-            functionAnalysis, variablesMap,
-            types, emptyMap(),
-        )
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+                emptyMap(),
+            )
 
         // then
         assertThat(result.escapedVariables).containsExactlyInAnyOrder(sVar, gVar, xVar)
@@ -327,10 +337,15 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(
-            ast, resolvedVariables, functionAnalysis,
-            variablesMap, types, emptyMap(),
-        )
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+                emptyMap(),
+            )
 
         // then
         assertThat(result.escapedVariables).containsExactlyInAnyOrder(gVar, xVar)
@@ -394,10 +409,15 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(
-            ast, resolvedVariables, functionAnalysis,
-            variablesMap, types, emptyMap(),
-        )
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+                emptyMap(),
+            )
 
         // then
         assertThat(result.escapedVariables).containsExactlyInAnyOrder(xVar)
@@ -440,11 +460,15 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(
-            ast, resolvedVariables,
-            functionAnalysis, variablesMap,
-            types, emptyMap(),
-        )
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+                emptyMap(),
+            )
 
         // then
         assertThat(result.escapedVariables).isEmpty()
@@ -491,11 +515,15 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(
-            ast, resolvedVariables,
-            functionAnalysis, variablesMap,
-            types, emptyMap()
-        )
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+                emptyMap(),
+            )
 
         // then
         assertThat(result.escapedVariables).isEmpty()
@@ -550,11 +578,15 @@ class EscapeAnalysisKtTest {
             )
 
         // when
-        val result = escapeAnalysis(
-            ast, resolvedVariables,
-            functionAnalysis, variablesMap,
-            types, emptyMap()
-        )
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+                emptyMap(),
+            )
 
         // then
         assertThat(result.escapedVariables).isEmpty()
