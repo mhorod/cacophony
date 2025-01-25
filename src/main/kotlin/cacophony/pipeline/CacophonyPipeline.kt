@@ -182,7 +182,7 @@ class CacophonyPipeline(
     ): EscapeAnalysisResult {
         val escapeAnalysisResult =
             try {
-                escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap, types, namedFunctionInfo)
+                escapeAnalysis(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
             } catch (e: Exception) {
                 logger?.logFailedEscapeAnalysis()
                 throw e
