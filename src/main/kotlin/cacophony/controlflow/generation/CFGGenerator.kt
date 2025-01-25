@@ -144,8 +144,8 @@ internal class CFGGenerator(
     internal fun visit(expression: Expression, mode: EvalMode, context: Context): SubCFG =
         when (expression) {
             is Block -> visitBlock(expression, mode, context)
-            is Definition.FunctionDefinition -> visitFunctionDeclaration(mode)
-            is Definition.ForeignFunctionDeclaration -> visitFunctionDeclaration(mode)
+            is Definition.FunctionDefinition -> visitFunctionDefinition(expression, mode, context)
+            is Definition.ForeignFunctionDeclaration -> visitForeignFunctionDeclaration(mode)
             is LambdaExpression -> visitLambdaExpression(expression, mode)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression, mode, context)
             is Empty -> visitEmpty(mode)
@@ -278,7 +278,20 @@ internal class CFGGenerator(
         }
     }
 
-    private fun visitFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
+    private fun visitForeignFunctionDeclaration(mode: EvalMode): SubCFG = SubCFG.Immediate(noOpOrUnit(mode))
+
+    private fun visitFunctionDefinition(expression: Definition.FunctionDefinition, mode: EvalMode, context: Context): SubCFG {
+        val body = expression.value
+        val handler = callableHandlers.getCallableHandler(body)
+        return when (handler) {
+            is StaticFunctionHandler -> {
+                SubCFG.Immediate(noOpOrUnit(mode))
+            }
+            is ClosureHandler -> {
+                visitVariableDeclaration(expression, mode, context)
+            }
+        }
+    }
 
     private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
         // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
@@ -314,7 +327,8 @@ internal class CFGGenerator(
                         )
                     }
                     else -> {
-                        TODO("generate access to a function variable")
+                        /* let f = ([x: Int] => x) */
+                        throw NotImplementedError("Anonymous functions cannot be called statically")
                     }
                 }
             }
@@ -546,6 +560,10 @@ internal class CFGGenerator(
         return SubCFG.Extracted(vertex, artificialExit, VoidLayout())
     }
 
+    /*
+        let f = [] => ()
+     */
+
     private fun visitAssignable(expression: Assignable, mode: EvalMode): SubCFG {
         val layout =
             variablesMap.lvalues[expression]?.let { variable ->
@@ -554,7 +572,11 @@ internal class CFGGenerator(
                 require(expression is VariableUse) { "Expected $expression to be instance of VariableUse" }
 
                 when (val function = resolvedVariables[expression]) {
-                    // is LambdaExpression -> getFunctionLayout(getCurrentCallableHandler(), callableHandlers[function]!!) TODO: fix
+                    is Definition.FunctionDefinition ->
+                        getFunctionLayout(
+                            getCurrentCallableHandler(),
+                            callableHandlers.getStaticFunctionHandler(function.value),
+                        )
                     is Definition.ForeignFunctionDeclaration -> getForeignFunctionLayout(function)
                     else -> error("Expected function declaration, but got $function")
                 }

@@ -73,6 +73,23 @@ private fun emptySymbolsTable(): SymbolsTable {
             }
         }
 
+        fun defineFunction(id: String, definition: Definition, arity: Int) {
+            when (blocks.last()[id]) {
+                is ResolvedName.Function -> {
+                    (blocks.last()[id] as ResolvedName.Function)
+                        .def
+                        .withDeclaration(arity, definition)
+                }
+
+                else -> {
+                    blocks.last()[id] =
+                        ResolvedName.Function(
+                            OverloadSetImpl().withDeclaration(arity, definition),
+                        )
+                }
+            }
+        }
+
         override fun define(id: String, definition: Definition) {
             if (blocks.isNotEmpty()) {
                 if (!idToBlocks.containsKey(id)) {
@@ -83,39 +100,23 @@ private fun emptySymbolsTable(): SymbolsTable {
                 }
 
                 when (definition) {
-                    is VariableDeclaration -> {
-                        blocks.last()[id] = ResolvedName.Variable(definition)
-                    }
-
                     is FunctionArgument -> {
                         blocks.last()[id] = ResolvedName.Argument(definition)
                     }
 
-                    is ForeignFunctionDeclaration -> TODO()
-                    /*
-                    is FunctionDeclaration -> {
-                        val arity =
-                            when (definition) {
-                                is StaticFunction -> definition.body.arguments.size
-                                is ForeignFunction ->
-                                    (definition.type ?: error("foreign function without a type")).argumentsType.size
-                            }
+                    is Definition.VariableDefinition -> {
+                        blocks.last()[id] = ResolvedName.Variable(definition)
+                    }
 
-                        when (blocks.last()[id]) {
-                            is ResolvedName.Function -> {
-                                (blocks.last()[id] as ResolvedName.Function)
-                                    .def
-                                    .withDeclaration(arity, definition)
-                            }
+                    is Definition.FunctionDefinition -> {
+                        val arity = definition.value.arguments.size
+                        defineFunction(id, definition, arity)
+                    }
 
-                            else -> {
-                                blocks.last()[id] =
-                                    ResolvedName.Function(
-                                        OverloadSetImpl().withDeclaration(arity, definition),
-                                    )
-                            }
-                        }
-                    }*/
+                    is ForeignFunctionDeclaration -> {
+                        val arity = definition.type.argumentsType.size
+                        defineFunction(id, definition, arity)
+                    }
                 }
             }
         }

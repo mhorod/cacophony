@@ -41,7 +41,7 @@ sealed interface CallableHandler {
     fun generateAccessToFramePointer(other: CallableHandler): CFGNode
 }
 
-interface ClosureHandler : CallableHandler {
+sealed interface ClosureHandler : CallableHandler {
     fun getBodyReference(): LambdaExpression
 
     fun getClosureLink(): Variable.PrimitiveVariable
@@ -49,7 +49,7 @@ interface ClosureHandler : CallableHandler {
     fun getCapturedVariableOffsets(): Map<Variable.PrimitiveVariable, Int>
 }
 
-interface StaticFunctionHandler : CallableHandler {
+sealed interface StaticFunctionHandler : CallableHandler {
     fun getFunctionDeclaration(): LambdaExpression // we probably want to delete this?
 
     // Returns static link to parent

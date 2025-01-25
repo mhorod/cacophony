@@ -11,7 +11,7 @@ import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.LambdaExpression
 import kotlin.math.max
 
-abstract class CallableHandlerImpl(
+sealed class CallableHandlerImpl(
     private val analyzedFunction: AnalyzedFunction,
     private val function: LambdaExpression,
     private val variablesMap: VariablesMap,
