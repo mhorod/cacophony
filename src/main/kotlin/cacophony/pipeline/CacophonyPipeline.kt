@@ -99,10 +99,10 @@ class CacophonyPipeline(
         return ast
     }
 
-    fun resolveNames(ast: AST, namedFunctionInfo: NamedFunctionInfo): NameResolutionResult {
+    fun resolveNames(ast: AST): NameResolutionResult {
         val result =
             try {
-                assertEmptyDiagnosticsAfter { resolveNames(ast, namedFunctionInfo, diagnostics) }
+                assertEmptyDiagnosticsAfter { resolveNames(ast, diagnostics) }
             } catch (e: CompileException) {
                 logger?.logFailedNameResolution()
                 throw e
@@ -166,8 +166,8 @@ class CacophonyPipeline(
             }.filterIsInstance<Definition.ForeignFunctionDeclaration>()
             .toSet()
 
-    private fun getClosureAnalysis(escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
-        val analyzedClosures = analyseClosures(escapeAnalysis)
+    private fun getClosureAnalysis(escapeAnalysis: EscapeAnalysisResult, namedFunctionInfo: NamedFunctionInfo): ClosureAnalysisResult {
+        val analyzedClosures = analyseClosures(escapeAnalysis, namedFunctionInfo)
         logger?.logSuccessfulClosureAnalysis(analyzedClosures)
         return analyzedClosures
     }
@@ -193,13 +193,13 @@ class CacophonyPipeline(
 
     fun analyzeAst(ast: AST): AstAnalysisResult {
         val namedFunctionInfo = getNamedFunctions(ast)
-        val resolvedNames = resolveNames(ast, namedFunctionInfo)
+        val resolvedNames = resolveNames(ast)
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
         val types = checkTypes(ast, resolvedVariables)
         val variablesMap = createVariables(ast, resolvedVariables, types)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables)
         val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types, namedFunctionInfo)
-        val closureAnalysis = getClosureAnalysis(escapeAnalysis)
+        val closureAnalysis = getClosureAnalysis(escapeAnalysis, namedFunctionInfo)
         val handlers =
             generateCallableHandlers(
                 analyzedFunctions,
@@ -243,9 +243,9 @@ class CacophonyPipeline(
 
     private fun linearize(
         cfg: ProgramCFG,
-        functionHandlers: Map<LambdaExpression, FunctionHandler>,
+        staticFunctionHandlers: Map<LambdaExpression, StaticFunctionHandler>,
     ): Pair<Map<LambdaExpression, LoweredCFGFragment>, Map<LambdaExpression, RegisterAllocation>> {
-        val (covering, registerAllocation) = safeLinearize(cfg, functionHandlers, instructionCovering, allowedRegisters, backupRegs)
+        val (covering, registerAllocation) = safeLinearize(cfg, staticFunctionHandlers, instructionCovering, allowedRegisters, backupRegs)
         logger?.logSuccessfulInstructionCovering(covering)
         logger?.logSuccessfulRegisterAllocation(registerAllocation)
         return Pair(covering, registerAllocation)
@@ -257,8 +257,8 @@ class CacophonyPipeline(
         val outlines =
             OutlineCollection(
                 createObjectOutlines(getUsedTypes(semantics.types)),
-                generateClosureOutlines(semantics.callableHandlers.lambdaHandlers),
-                generateStackFrameOutlines(semantics.callableHandlers.functionHandlers.values),
+                generateClosureOutlines(semantics.callableHandlers.closureHandlers),
+                generateStackFrameOutlines(semantics.callableHandlers.staticFunctionHandlers.values),
             )
         val cfg =
             generateControlFlowGraph(
@@ -267,7 +267,7 @@ class CacophonyPipeline(
                 outlines.objectOutlines.locations,
                 outlines.closureOutlines,
             )
-        val (covering, registerAllocation) = linearize(cfg, semantics.callableHandlers.functionHandlers)
+        val (covering, registerAllocation) = linearize(cfg, semantics.callableHandlers.staticFunctionHandlers)
         val asm =
             covering.mapValues { (function, loweredCFG) ->
                 run {

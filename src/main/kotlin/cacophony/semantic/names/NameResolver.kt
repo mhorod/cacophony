@@ -3,7 +3,6 @@ package cacophony.semantic.names
 import cacophony.controlflow.functions.Builtin
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
-import cacophony.semantic.analysis.NamedFunctionInfo
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.ForeignFunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument

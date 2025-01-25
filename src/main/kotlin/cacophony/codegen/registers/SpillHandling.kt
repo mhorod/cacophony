@@ -12,7 +12,7 @@ import cacophony.controlflow.Register
 import cacophony.controlflow.Register.FixedRegister
 import cacophony.controlflow.Register.VirtualRegister
 import cacophony.controlflow.Variable
-import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.StaticFunctionHandler
 import cacophony.graphs.GraphColoring
 
 class SpillHandlingException(reason: String) : Exception(reason)
@@ -27,7 +27,7 @@ class SpillHandlingException(reason: String) : Exception(reason)
  */
 fun adjustLoweredCFGToHandleSpills(
     instructionCovering: InstructionCovering,
-    functionHandler: FunctionHandler,
+    staticFunctionHandler: StaticFunctionHandler,
     loweredCfg: LoweredCFGFragment,
     registersInteraction: RegistersInteraction,
     registerAllocation: RegisterAllocation,
@@ -57,7 +57,7 @@ fun adjustLoweredCFGToHandleSpills(
             }.toSet()
 
     val spillsColoring = colorSpills(spills, registersInteraction, graphColoring)
-    val spillsFrameAllocation = allocateFrameMemoryForSpills(functionHandler, spillsColoring)
+    val spillsFrameAllocation = allocateFrameMemoryForSpills(staticFunctionHandler, spillsColoring)
 
     fun loadSpillIntoReg(spill: VirtualRegister, reg: Register): List<Instruction> =
         instructionCovering.coverWithInstructionsWithoutTemporaryRegisters(
@@ -183,14 +183,14 @@ private fun colorSpills(
 }
 
 private fun allocateFrameMemoryForSpills(
-    functionHandler: FunctionHandler,
+    staticFunctionHandler: StaticFunctionHandler,
     spillsColoring: Map<VirtualRegister, Int>,
 ): Map<VirtualRegister, CFGNode.LValue> {
     val colorToFrameMemory =
         mutableMapOf<Int, CFGNode.LValue>().apply {
             spillsColoring.forEach { (reg, color) ->
                 if (get(color) == null) {
-                    put(color, functionHandler.allocateFrameVariable(Variable.PrimitiveVariable(reg.holdsReference)))
+                    put(color, staticFunctionHandler.allocateFrameVariable(Variable.PrimitiveVariable(reg.holdsReference)))
                 }
             }
         }

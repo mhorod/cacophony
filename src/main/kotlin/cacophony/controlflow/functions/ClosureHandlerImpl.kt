@@ -7,13 +7,13 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
 
-class LambdaHandlerImpl(
+class ClosureHandlerImpl(
     callConvention: CallConvention,
     private val function: LambdaExpression,
     private val analyzedFunction: AnalyzedFunction,
     private val variablesMap: VariablesMap,
     escapeAnalysisResult: Set<Variable>,
-) : LambdaHandler, CallableHandlerImpl(
+) : ClosureHandler, CallableHandlerImpl(
         analyzedFunction,
         function,
         variablesMap,

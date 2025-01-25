@@ -9,7 +9,7 @@ import cacophony.codegen.registers.adjustLoweredCFGToHandleSpills
 import cacophony.codegen.registers.analyzeRegistersInteraction
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
-import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.StaticFunctionHandler
 import cacophony.controlflow.functions.SystemVAMD64CallConvention
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.graphs.FirstFitGraphColoring
@@ -23,7 +23,7 @@ import cacophony.semantic.syntaxtree.LambdaExpression
  */
 fun safeLinearize(
     cfg: ProgramCFG,
-    functionHandlers: Map<LambdaExpression, FunctionHandler>,
+    staticFunctionHandlers: Map<LambdaExpression, StaticFunctionHandler>,
     instructionCovering: InstructionCovering,
     allowedRegisters: Set<HardwareRegister>,
     backupRegs: Set<Register.FixedRegister>,
@@ -39,7 +39,7 @@ fun safeLinearize(
     }
 
     return handleSpills(
-        functionHandlers,
+        staticFunctionHandlers,
         cover,
         registersInteractions,
         allowedRegisters,
@@ -71,7 +71,7 @@ fun allocateRegisters(
 }
 
 private fun handleSpills(
-    functionHandlers: Map<LambdaExpression, FunctionHandler>,
+    staticFunctionHandlers: Map<LambdaExpression, StaticFunctionHandler>,
     covering: Map<LambdaExpression, LoweredCFGFragment>,
     registersInteractions: Map<LambdaExpression, RegistersInteraction>,
     allowedRegisters: Set<HardwareRegister>,
@@ -100,7 +100,7 @@ private fun handleSpills(
                 functionDeclaration to
                     adjustLoweredCFGToHandleSpills(
                         instructionCovering,
-                        functionHandlers[functionDeclaration]!!,
+                        staticFunctionHandlers[functionDeclaration]!!,
                         loweredCfg,
                         registersInteractions[functionDeclaration]!!,
                         newRegisterAllocation[functionDeclaration]!!,

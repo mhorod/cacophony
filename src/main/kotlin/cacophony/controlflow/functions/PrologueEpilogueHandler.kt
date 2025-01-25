@@ -25,7 +25,7 @@ class PrologueEpilogueHandler(
         val nodes = mutableListOf<CFGNode>()
         nodes.add(registerUse(rsp) subeq integer(REGISTER_SIZE))
         // TODO: how to cover lambdas here?
-        nodes.add(pushLabel(getStackFrameLocation((handler as FunctionHandler).getFunctionDeclaration())))
+        nodes.add(pushLabel(getStackFrameLocation((handler as StaticFunctionHandler).getFunctionDeclaration())))
         nodes.add(pushRegister(rbp, false))
         nodes.add(registerUse(rbp, false) assign registerUse(rsp, false))
         nodes.add(registerUse(rsp, false) subeq stackSpace)

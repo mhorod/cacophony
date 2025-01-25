@@ -7,7 +7,7 @@ import cacophony.codegen.linearization.LoweredCFGFragment
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
-import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.StaticFunctionHandler
 import cacophony.graphs.GraphColoring
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -51,8 +51,8 @@ class SpillHandlingTest {
 
         val spillSlotA = mockk<CFGNode.LValue>()
         val spillSlotB = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlotA andThen spillSlotB
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlotA andThen spillSlotB
 
         val prologueInstructionA = mockk<Instruction>()
         val prologueInstructionB = mockk<Instruction>()
@@ -80,7 +80,7 @@ class SpillHandlingTest {
         val adjustedLoweredCFG =
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -125,8 +125,8 @@ class SpillHandlingTest {
 
         val spillSlotA = mockk<CFGNode.LValue>()
         val spillSlotB = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlotA andThen spillSlotB
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlotA andThen spillSlotB
 
         val epilogueInstructionA = mockk<Instruction>()
         val epilogueInstructionB = mockk<Instruction>()
@@ -154,7 +154,7 @@ class SpillHandlingTest {
         val adjustedLoweredCFG =
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -199,8 +199,8 @@ class SpillHandlingTest {
 
         val spillSlotA = mockk<CFGNode.LValue>()
         val spillSlotB = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlotA andThen spillSlotB
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlotA andThen spillSlotB
 
         val prologueInstruction = mockk<Instruction>()
         val epilogueInstruction = mockk<Instruction>()
@@ -228,7 +228,7 @@ class SpillHandlingTest {
         val adjustedLoweredCFG =
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -274,8 +274,8 @@ class SpillHandlingTest {
         val spilledReg = Register.VirtualRegister()
 
         val spillSlot = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlot
 
         val prologueInstruction = mockk<Instruction>()
         val instructionCovering = mockk<InstructionCovering>()
@@ -293,7 +293,7 @@ class SpillHandlingTest {
         val adjustedLoweredCFG =
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block, block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -315,8 +315,8 @@ class SpillHandlingTest {
         val spilledReg = Register.VirtualRegister()
 
         val spillSlot = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlot
 
         val instructionCovering = mockk<InstructionCovering>()
         val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledReg))
@@ -330,7 +330,7 @@ class SpillHandlingTest {
         val adjustedLoweredCFG =
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -351,8 +351,8 @@ class SpillHandlingTest {
         val spilledReg = Register.VirtualRegister()
 
         val spillSlot = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlot
 
         val prologueInstruction = mockk<Instruction>()
         var capturedNode: CFGNode? = null
@@ -375,7 +375,7 @@ class SpillHandlingTest {
         val adjustedLoweredCFG =
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -404,7 +404,7 @@ class SpillHandlingTest {
     fun `throws if spare register is used in provided register allocation`() {
         // given
         val spareReg = Register.FixedRegister(HardwareRegister.RAX)
-        val functionHandler = mockk<FunctionHandler>()
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
         val instructionCovering = mockk<InstructionCovering>()
         val registerAllocation = RegisterAllocation(mapOf(Register.VirtualRegister() to HardwareRegister.RAX), setOf())
         val instruction = mockInstruction(setOf(), setOf())
@@ -414,7 +414,7 @@ class SpillHandlingTest {
         assertThrows<SpillHandlingException> {
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -428,7 +428,7 @@ class SpillHandlingTest {
     fun `throws if fixed register has spilled in register allocation`() {
         // given
         val spareReg = Register.FixedRegister(HardwareRegister.RAX)
-        val functionHandler = mockk<FunctionHandler>()
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
         val instructionCovering = mockk<InstructionCovering>()
         val registerAllocation = RegisterAllocation(mapOf(), setOf(spareReg))
         val instruction = mockInstruction(setOf(), setOf())
@@ -438,7 +438,7 @@ class SpillHandlingTest {
         assertThrows<SpillHandlingException> {
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -457,8 +457,8 @@ class SpillHandlingTest {
 
         val spillSlotA = mockk<CFGNode.LValue>()
         val spillSlotB = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlotA andThen spillSlotB
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlotA andThen spillSlotB
 
         val prologueInstructionA = mockk<Instruction>()
         val prologueInstructionB = mockk<Instruction>()
@@ -478,7 +478,7 @@ class SpillHandlingTest {
         assertThrows<SpillHandlingException> {
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -495,8 +495,8 @@ class SpillHandlingTest {
         val spilledReg = Register.VirtualRegister()
 
         val spillSlot = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlot
 
         val instructionCovering = mockk<InstructionCovering>()
         val registerAllocation = RegisterAllocation(mapOf(), setOf(spilledReg))
@@ -507,7 +507,7 @@ class SpillHandlingTest {
         assertThrows<SpillHandlingException> {
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 listOf(block),
                 mockRegistersInteraction,
                 registerAllocation,
@@ -529,8 +529,8 @@ class SpillHandlingTest {
 
         val spillSlot1 = mockk<CFGNode.LValue>()
         val spillSlot2 = mockk<CFGNode.LValue>()
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns spillSlot1 andThen spillSlot2 andThen mockk<CFGNode.LValue>()
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns spillSlot1 andThen spillSlot2 andThen mockk<CFGNode.LValue>()
 
         val prologueInstructionA = mockk<Instruction>()
         val prologueInstructionB = mockk<Instruction>()
@@ -596,7 +596,7 @@ class SpillHandlingTest {
         // when
         adjustLoweredCFGToHandleSpills(
             instructionCovering,
-            functionHandler,
+            staticFunctionHandler,
             listOf(block),
             registersInteraction,
             registerAllocation,
@@ -624,7 +624,7 @@ class SpillHandlingTest {
         assertThat(setOf(dest1, dest2, dest3)).containsExactly(CFGNode.RegisterUse(spareRegA), CFGNode.RegisterUse(spareRegB))
         assertThat(setOf(val1, val2, val3)).containsExactly(spillSlot1, spillSlot2)
 
-        verify(exactly = 2) { functionHandler.allocateFrameVariable(any()) }
+        verify(exactly = 2) { staticFunctionHandler.allocateFrameVariable(any()) }
     }
 
     @Test
@@ -635,7 +635,7 @@ class SpillHandlingTest {
         val spilledRegA = Register.VirtualRegister(true)
         val spilledRegB = Register.VirtualRegister(false)
 
-        val functionHandler = mockk<FunctionHandler>()
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
         val instructionCovering = mockk<InstructionCovering>()
         val loweredCFGFragment = mockk<LoweredCFGFragment>()
 
@@ -665,7 +665,7 @@ class SpillHandlingTest {
         assertThrows<SpillHandlingException> {
             adjustLoweredCFGToHandleSpills(
                 instructionCovering,
-                functionHandler,
+                staticFunctionHandler,
                 loweredCFGFragment,
                 registersInteraction,
                 registerAllocation,
@@ -685,8 +685,8 @@ class SpillHandlingTest {
         val spilledWithNoRefA = Register.VirtualRegister(false)
         val spilledWithNoRefB = Register.VirtualRegister(false)
 
-        val functionHandler = mockk<FunctionHandler>()
-        every { functionHandler.allocateFrameVariable(any()) } returns mockk<CFGNode.LValue>()
+        val staticFunctionHandler = mockk<StaticFunctionHandler>()
+        every { staticFunctionHandler.allocateFrameVariable(any()) } returns mockk<CFGNode.LValue>()
 
         val instructionCovering = mockk<InstructionCovering>()
         val loweredCFGFragment = listOf(mockBlock(emptyList()))
@@ -718,7 +718,7 @@ class SpillHandlingTest {
         // when
         adjustLoweredCFGToHandleSpills(
             instructionCovering,
-            functionHandler,
+            staticFunctionHandler,
             loweredCFGFragment,
             registersInteraction,
             registerAllocation,
@@ -727,7 +727,7 @@ class SpillHandlingTest {
         )
 
         // then
-        verify(exactly = 1) { functionHandler.allocateFrameVariable(match { it.holdsReference }) }
-        verify(exactly = 2) { functionHandler.allocateFrameVariable(match { !it.holdsReference }) }
+        verify(exactly = 1) { staticFunctionHandler.allocateFrameVariable(match { it.holdsReference }) }
+        verify(exactly = 2) { staticFunctionHandler.allocateFrameVariable(match { !it.holdsReference }) }
     }
 }

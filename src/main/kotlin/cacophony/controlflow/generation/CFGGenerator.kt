@@ -280,7 +280,7 @@ internal class CFGGenerator(
     }
 
     private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
-        val handler = callableHandlers.getLambdaHandler(lambda)
+        val handler = callableHandlers.getClosureHandler(lambda)
         val label = handler.getFunctionLabel()
         // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
         // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?

@@ -2,24 +2,27 @@ package cacophony.controlflow.functions
 
 import cacophony.semantic.syntaxtree.LambdaExpression
 
+/**
+ * Callable handlers split for closures and static functions
+ */
 class CallableHandlers(
-    val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
-    val functionHandlers: Map<LambdaExpression, FunctionHandler>,
+    val closureHandlers: Map<LambdaExpression, ClosureHandler>,
+    val staticFunctionHandlers: Map<LambdaExpression, StaticFunctionHandler>,
 ) {
     fun getCallableHandler(callable: LambdaExpression): CallableHandler =
-        if (lambdaHandlers.containsKey(callable)) {
-            lambdaHandlers[callable] ?: error("value was just in map")
-        } else if (functionHandlers.containsKey(callable)) {
-            functionHandlers[callable] ?: error("value was just in map")
+        if (closureHandlers.containsKey(callable)) {
+            closureHandlers[callable] ?: error("value was just in map")
+        } else if (staticFunctionHandlers.containsKey(callable)) {
+            staticFunctionHandlers[callable] ?: error("value was just in map")
         } else {
             error("No handler found for callable $callable")
         }
 
-    fun getLambdaHandler(callable: LambdaExpression): LambdaHandler =
-        lambdaHandlers[callable] ?: error("No lambda handler found for callable $callable")
+    fun getClosureHandler(callable: LambdaExpression): ClosureHandler =
+        closureHandlers[callable] ?: error("No closure handler found for callable $callable")
 
-    fun getFunctionHandler(callable: LambdaExpression): FunctionHandler =
-        functionHandlers[callable] ?: error("No function handler found for callable $callable")
+    fun getStaticFunctionHandler(callable: LambdaExpression): StaticFunctionHandler =
+        staticFunctionHandlers[callable] ?: error("No static function handler found for callable $callable")
 
-    fun getAllCallables() = lambdaHandlers.keys + functionHandlers.keys
+    fun getAllCallables() = closureHandlers.keys + staticFunctionHandlers.keys
 }

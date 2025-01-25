@@ -25,16 +25,16 @@ private fun generateFunctionHandlers(
     callConvention: CallConvention,
     variablesMap: VariablesMap,
     escapedVariables: Set<Variable>,
-): Map<LambdaExpression, FunctionHandler> {
-    val handlers = mutableMapOf<LambdaExpression, FunctionHandler>()
+): Map<LambdaExpression, StaticFunctionHandler> {
+    val handlers = mutableMapOf<LambdaExpression, StaticFunctionHandler>()
     val order = analyzedFunctions.filter { staticLinkCallables.contains(it.key) }.entries.sortedBy { it.value.staticDepth }
 
-    val ancestorHandlers = mutableMapOf<LambdaExpression, List<FunctionHandler>>()
+    val ancestorHandlers = mutableMapOf<LambdaExpression, List<StaticFunctionHandler>>()
 
     for ((function, analyzedFunction) in order) {
         if (analyzedFunction.parentLink == null) {
             handlers[function] =
-                FunctionHandlerImpl(
+                StaticFunctionHandlerImpl(
                     function,
                     analyzedFunction,
                     emptyList(),
@@ -49,7 +49,7 @@ private fun generateFunctionHandlers(
             val functionAncestorHandlers =
                 listOf(parentHandler) + (ancestorHandlers[analyzedFunction.parentLink.parent] ?: emptyList())
             handlers[function] =
-                FunctionHandlerImpl(
+                StaticFunctionHandlerImpl(
                     function,
                     analyzedFunction,
                     functionAncestorHandlers,
@@ -70,11 +70,11 @@ private fun generateLambdaHandlers(
     callConvention: CallConvention,
     variablesMap: VariablesMap,
     escapeAnalysisResult: EscapeAnalysisResult,
-): Map<LambdaExpression, LambdaHandler> {
-    val handlers = mutableMapOf<LambdaExpression, LambdaHandler>()
+): Map<LambdaExpression, ClosureHandler> {
+    val handlers = mutableMapOf<LambdaExpression, ClosureHandler>()
     for (lambda in closureCallables) {
         handlers[lambda] =
-            LambdaHandlerImpl(
+            ClosureHandlerImpl(
                 callConvention,
                 lambda,
                 analyzedFunctions[lambda]!!,

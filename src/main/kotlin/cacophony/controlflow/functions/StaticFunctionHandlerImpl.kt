@@ -6,7 +6,7 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
 
-class FunctionHandlerImpl(
+class StaticFunctionHandlerImpl(
     private val function: LambdaExpression,
     private val analyzedFunction: AnalyzedFunction,
     // List of parents' handlers ordered from immediate parent.
@@ -14,7 +14,7 @@ class FunctionHandlerImpl(
     callConvention: CallConvention,
     private val variablesMap: VariablesMap,
     escapeAnalysisResult: Set<Variable>,
-) : FunctionHandler, CallableHandlerImpl(
+) : StaticFunctionHandler, CallableHandlerImpl(
         analyzedFunction,
         function,
         variablesMap,

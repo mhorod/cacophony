@@ -2,7 +2,7 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallableHandler
-import cacophony.controlflow.functions.FunctionHandler
+import cacophony.controlflow.functions.StaticFunctionHandler
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Type
@@ -112,7 +112,7 @@ fun generateLayoutOfClosure(base: CFGNode, closure: Map<Variable.PrimitiveVariab
             }.toMap(),
     )
 
-fun getFunctionLayout(callerHandler: CallableHandler, calleeHandler: FunctionHandler) =
+fun getFunctionLayout(callerHandler: CallableHandler, calleeHandler: StaticFunctionHandler) =
     FunctionLayout(
         SimpleLayout(dataLabel(calleeHandler.getFunctionDeclaration().getLabel())),
         SimpleLayout(calleeHandler.generateStaticLinkVariable(callerHandler), true),
