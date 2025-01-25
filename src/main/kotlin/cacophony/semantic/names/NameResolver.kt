@@ -141,7 +141,7 @@ private fun emptySymbolsTable(): SymbolsTable {
 
 typealias NameResolutionResult = Map<VariableUse, ResolvedName>
 
-fun resolveNames(root: AST, namedFunctionInfo: NamedFunctionInfo, diagnostics: Diagnostics): NameResolutionResult {
+fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
     val resolution = mutableMapOf<VariableUse, ResolvedName>()
     val symbolsTable = emptySymbolsTable()
 

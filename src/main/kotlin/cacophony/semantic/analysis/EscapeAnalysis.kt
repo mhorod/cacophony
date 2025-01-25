@@ -75,6 +75,7 @@ fun escapeAnalysis(
             }
         }
 
+        // TODO: Do we need to use namedFunctionInfo? Shouldn't it work for all lambda expressions?
         functionAnalysis
             .filter { (function, _) -> namedFunctionInfo.containsKey(function) }
             .mapKeys { (function, _) -> namedFunctionInfo[function]!! }

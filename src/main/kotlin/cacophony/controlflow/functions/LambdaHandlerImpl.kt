@@ -9,7 +9,7 @@ import cacophony.semantic.syntaxtree.LambdaExpression
 
 class LambdaHandlerImpl(
     callConvention: CallConvention,
-    private val function: LambdaExpression, // TODO: it can be FunctionalExpression
+    private val function: LambdaExpression,
     private val analyzedFunction: AnalyzedFunction,
     private val variablesMap: VariablesMap,
     escapeAnalysisResult: Set<Variable>,

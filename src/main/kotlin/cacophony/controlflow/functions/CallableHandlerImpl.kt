@@ -12,7 +12,7 @@ import cacophony.semantic.syntaxtree.LambdaExpression
 import kotlin.math.max
 
 abstract class CallableHandlerImpl(
-    private val analyzedFunction: AnalyzedFunction, // TODO: we need to change it so it also covers lambda expressions
+    private val analyzedFunction: AnalyzedFunction,
     private val function: LambdaExpression,
     private val variablesMap: VariablesMap,
     private val escapedVariables: Set<Variable>,

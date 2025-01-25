@@ -43,7 +43,7 @@ data class AnalyzedFunction(
 
 data class AnalyzedVariable(
     val origin: Variable,
-    val definedIn: LambdaExpression, // TODO: change to FunctionalExpression
+    val definedIn: LambdaExpression,
     val useType: VariableUseType,
 )
 
