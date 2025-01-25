@@ -1,9 +1,8 @@
 package cacophony.semantic.rtti
 
-import cacophony.*
 import cacophony.controlflow.CFGNode
 import cacophony.controlflow.functions.StaticFunctionHandler
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.semantic.syntaxtree.LambdaExpression
 import io.mockk.*
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.AfterEach
@@ -14,12 +13,12 @@ import kotlin.collections.emptyList
 class StackFrameOutlineTest {
     val staticFunctionHandler: StaticFunctionHandler = mockk()
 
-    val functionDefinition: FunctionDefinition = mockk()
+    val function: LambdaExpression = mockk()
 
     @BeforeEach
     fun setUp() {
-        every { staticFunctionHandler.getFunctionDeclaration() } returns functionDefinition
-        every { functionDefinition.getLabel() } returns "f"
+        every { staticFunctionHandler.getFunctionDeclaration() } returns function
+        every { function.getLabel() } returns "f"
     }
 
     @AfterEach

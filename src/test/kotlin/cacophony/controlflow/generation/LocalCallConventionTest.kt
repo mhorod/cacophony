@@ -18,11 +18,11 @@ class LocalCallConventionTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef]!!
+        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef.value]!!
 
         // then
         val expectedFragment =
-            standaloneWrappedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef.value) {
                 "bodyEntry" does jump("save static link") { registerUse(virtualRegister("label")) assign dataLabel("funLabel") }
                 "save static link" does jump("decrement rsp") { writeRegister(virtualRegister("staticLink"), registerUse(rbp)) }
                 "decrement rsp" does jump("write rdi") { registerUse(rsp) subeq integer(0) }
@@ -36,8 +36,8 @@ class LocalCallConventionTest {
         print(
             programCfgToGraphviz(
                 mapOf(
-                    Pair(intFunctionDefinition("actual", lit(17)), actualFragment),
-                    Pair(intFunctionDefinition("expected", lit(18)), expectedFragment),
+                    intFunctionDefinition("actual", lit(17)).value to actualFragment,
+                    intFunctionDefinition("expected", lit(18)).value to expectedFragment,
                 ),
             ),
         )
@@ -64,11 +64,11 @@ class LocalCallConventionTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef]!!
+        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef.value]!!
 
         // then
         val expectedFragment =
-            standaloneWrappedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef.value) {
                 "bodyEntry" does
                     jump("saveStaticLink") {
                         registerUse(virtualRegister("reg13")) assign CFGNode.DataLabel("callerLabel")
@@ -114,7 +114,7 @@ class LocalCallConventionTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef]!!
+        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef.value]!!
 
         // then
         val expectedFragment =
@@ -342,7 +342,7 @@ class LocalCallConventionTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef]!!
+        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef.value]!!
 
         val expectedFragment =
             standaloneWrappedCFGFragment(callerDef) {
@@ -471,7 +471,7 @@ class LocalCallConventionTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef]!!
+        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef.value]!!
 
         // then
         val expectedFragment =

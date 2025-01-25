@@ -17,7 +17,7 @@ class ForeignCallConventionTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef]!!
+        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef.value]!!
 
         val expectedFragment =
             standaloneWrappedCFGFragment(callerDef) {
@@ -86,10 +86,10 @@ class ForeignCallConventionTest {
         val program = block(calleeDef, callerDef)
 
         // when
-        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef]!!
+        val actualFragment = generateSimplifiedCFG(program, fullCallSequences = true)[callerDef.value]!!
 
         val expectedFragment =
-            standaloneWrappedCFGFragment(callerDef) {
+            standaloneWrappedCFGFragment(callerDef.value) {
                 "bodyEntry" does
                     jump("v@5b9bb3ef") {
                         registerUse(virtualRegister("reg6")) assign CFGNode.DataLabel("calleeLabel")

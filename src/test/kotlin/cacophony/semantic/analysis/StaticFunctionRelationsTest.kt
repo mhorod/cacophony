@@ -5,6 +5,7 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.*
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import io.mockk.core.ValueClassSupport.boxedValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -28,10 +29,10 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to programStaticRelation(),
-                    funF to
+                    program.value to programStaticRelation(),
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             setOf(aVariable),
                             emptySet(),
@@ -60,10 +61,10 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to programStaticRelation(),
-                    funF to
+                    program.value to programStaticRelation(),
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             setOf(aVariable),
                             setOf(UsedVariable(aVariable, VariableUseType.READ)),
@@ -93,10 +94,10 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to programStaticRelation(),
-                    funF to
+                    program.value to programStaticRelation(),
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             setOf(aVariable),
                             setOf(UsedVariable(aVariable, VariableUseType.WRITE)),
@@ -135,10 +136,10 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to programStaticRelation(),
-                    funF to
+                    program.value to programStaticRelation(),
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             setOf(aVariable),
                             setOf(
@@ -180,10 +181,10 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to programStaticRelation(),
-                    funF to
+                    program.value to programStaticRelation(),
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             setOf(aVariable, bVariable, cVariable),
                             emptySet(),
@@ -277,10 +278,10 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to programStaticRelation(),
-                    funF to
+                    program.value to programStaticRelation(),
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             setOf(sVariable, aVariable, bVariable, cVariable, dVariable, eVariable, fVariable),
                             setOf(
@@ -315,17 +316,17 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to programStaticRelation(),
-                    funF to
+                    program.value to programStaticRelation(),
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             emptySet(),
                             emptySet(),
                         ),
-                    funG to
+                    funG.value to
                         StaticFunctionRelations(
-                            funF,
+                            funF.value,
                             2,
                             emptySet(),
                             emptySet(),
@@ -353,24 +354,24 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to programStaticRelation(),
-                    funF to
+                    program.value to programStaticRelation(),
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             emptySet(),
                             emptySet(),
                         ),
-                    funG to
+                    funG.value to
                         StaticFunctionRelations(
-                            funF,
+                            funF.value,
                             2,
                             emptySet(),
                             emptySet(),
                         ),
-                    funH to
+                    funH.value to
                         StaticFunctionRelations(
-                            funF,
+                            funF.value,
                             2,
                             emptySet(),
                             emptySet(),
@@ -398,16 +399,16 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program to
+                    program.value to
                         StaticFunctionRelations(
                             null,
                             0,
                             setOf(aVariable),
                             emptySet(),
                         ),
-                    funF to
+                    funF.value to
                         StaticFunctionRelations(
-                            program,
+                            program.value,
                             1,
                             emptySet(),
                             emptySet(),
@@ -448,24 +449,24 @@ class StaticFunctionRelationsTest {
         // then
         assertThat(relations).containsExactlyInAnyOrderEntriesOf(
             mapOf(
-                program to programStaticRelation(),
-                funF to
+                program.value to programStaticRelation(),
+                funF.value to
                     StaticFunctionRelations(
-                        program,
+                        program.value,
                         1,
                         setOf(aVariable),
                         emptySet(),
                     ),
-                funG to
+                funG.value to
                     StaticFunctionRelations(
-                        funF,
+                        funF.value,
                         2,
                         setOf(bVariable),
                         emptySet(),
                     ),
-                funH to
+                funH.value to
                     StaticFunctionRelations(
-                        funG,
+                        funG.value,
                         3,
                         setOf(cVariable),
                         emptySet(),
@@ -501,45 +502,45 @@ class StaticFunctionRelationsTest {
         // then
         assertThat(relations).containsExactlyInAnyOrderEntriesOf(
             mapOf(
-                program to programStaticRelation(),
-                funFoo to
+                program.value to programStaticRelation(),
+                funFoo.value to
                     StaticFunctionRelations(
-                        program,
+                        program.value,
                         1,
                         setOf(aVariable),
                         emptySet(),
                     ),
-                funG to
+                funG.value to
                     StaticFunctionRelations(
-                        funFoo,
+                        funFoo.value,
                         2,
                         emptySet(),
                         emptySet(),
                     ),
-                funH to
+                funH.value to
                     StaticFunctionRelations(
-                        funG,
+                        funG.value,
                         3,
                         setOf(),
                         setOf(UsedVariable(aVariable, VariableUseType.READ)),
                     ),
-                funI to
+                funI.value to
                     StaticFunctionRelations(
-                        funFoo,
+                        funFoo.value,
                         2,
                         emptySet(),
                         emptySet(),
                     ),
-                funJ to
+                funJ.value to
                     StaticFunctionRelations(
-                        funI,
+                        funI.value,
                         3,
                         emptySet(),
                         emptySet(),
                     ),
-                funMain to
+                funMain.value to
                     StaticFunctionRelations(
-                        program,
+                        program.value,
                         1,
                         emptySet(),
                         emptySet(),

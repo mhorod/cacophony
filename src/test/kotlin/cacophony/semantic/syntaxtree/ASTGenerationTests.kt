@@ -51,7 +51,7 @@ class ASTGenerationTests {
 
     private fun mockWrapInFunction(originalAST: AST): AST {
         val program =
-            Definition.VariableDeclaration(
+            Definition.VariableDefinition(
                 anyLocation(),
                 MAIN_FUNCTION_IDENTIFIER,
                 BaseType.Functional(
@@ -95,7 +95,7 @@ class ASTGenerationTests {
 
     // a bit convoluted, but gets the job done
     private fun getInnerBlock(ast: AST): AST { // unwrap AST
-        val mainFunction = ast.children().filterIsInstance<Definition.VariableDeclaration>().first()
+        val mainFunction = ast.children().filterIsInstance<Definition.VariableDefinition>().first()
         return mainFunction
             .children()
             .first()
@@ -105,7 +105,7 @@ class ASTGenerationTests {
 
     private fun computeType(type: String): Type? {
         val ast = computeAST("let x:$type=()") // that would fail type check, but here we don't care
-        val definition = getInnerBlock(ast).children().first() as Definition.VariableDeclaration
+        val definition = getInnerBlock(ast).children().first() as Definition.VariableDefinition
         return definition.type
     }
 
@@ -220,7 +220,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         basicType("Bool"),
@@ -241,7 +241,7 @@ class ASTGenerationTests {
     fun `recursive function`() {
         val actual = computeAST("let f = [x: Int] -> Int => f[f[x]]")
         val expected =
-            Definition.VariableDeclaration(
+            Definition.VariableDefinition(
                 anyLocation(),
                 "f",
                 null,
@@ -367,7 +367,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -399,7 +399,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -431,7 +431,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -463,7 +463,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -495,7 +495,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -603,7 +603,7 @@ class ASTGenerationTests {
     fun `if else expression`() {
         val actual = computeAST("let x = if false then 1 else 2")
         val expected =
-            Definition.VariableDeclaration(
+            Definition.VariableDefinition(
                 anyLocation(),
                 "x",
                 null,
@@ -621,7 +621,7 @@ class ASTGenerationTests {
     fun `return statement`() {
         val actual = computeAST("let f = [x: Int] -> Int => return x")
         val expected =
-            Definition.VariableDeclaration(
+            Definition.VariableDefinition(
                 anyLocation(),
                 "f",
                 null,

@@ -25,4 +25,6 @@ class CallableHandlers(
         staticFunctionHandlers[callable] ?: error("No static function handler found for callable $callable")
 
     fun getAllCallables() = closureHandlers.keys + staticFunctionHandlers.keys
+
+    fun getAll() = closureHandlers + staticFunctionHandlers
 }

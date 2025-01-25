@@ -32,9 +32,7 @@ fun functionDefinition(identifier: String, args: List<Definition.FunctionArgumen
         mockRange(),
         identifier,
         BaseType.Functional(mockk(), args.map { it.type }, returnType),
-        args,
-        returnType,
-        body,
+        LambdaExpression(mockRange(), args, returnType, body)
     )
 
 fun unitFunctionDefinition(identifier: String, body: Expression) = functionDefinition(identifier, emptyList(), body, unitType())
@@ -65,9 +63,7 @@ fun typedFunctionDefinition(
     mockRange(),
     identifier,
     argsType,
-    arguments,
-    outType,
-    body,
+    LambdaExpression(mockRange(), arguments, outType, body)
 )
 
 fun functionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
@@ -87,8 +83,8 @@ fun foreignFunctionDeclaration(identifier: String, argumentsType: List<Type>, re
         returnType,
     )
 
-fun typedVariableDeclaration(identifier: String, type: BaseType.Basic?, value: Expression) =
-    Definition.VariableDeclaration(
+fun typedVariableDefinition(identifier: String, type: BaseType.Basic?, value: Expression) =
+    Definition.VariableDefinition(
         mockRange(),
         identifier,
         type,
@@ -109,15 +105,15 @@ fun lvalueFieldRef(lhs: Assignable, field: String) = FieldRef.LValue(mockRange()
 
 fun rvalueFieldRef(lhs: Expression, field: String) = FieldRef.RValue(mockRange(), lhs, field)
 
-fun typedVariableDeclaration(identifier: String, type: NonFunctionalType?, value: Expression) =
-    Definition.VariableDeclaration(
+fun typedVariableDefinition(identifier: String, type: NonFunctionalType?, value: Expression) =
+    Definition.VariableDefinition(
         mockRange(),
         identifier,
         type,
         value,
     )
 
-fun variableDeclaration(identifier: String, value: Expression) = typedVariableDeclaration(identifier, null, value)
+fun variableDeclaration(identifier: String, value: Expression) = typedVariableDefinition(identifier, null, value)
 
 fun variableDeclaration(identifier: String) = variableDeclaration(identifier, empty())
 
