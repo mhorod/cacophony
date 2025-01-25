@@ -79,7 +79,7 @@ private fun generateLambdaHandlers(
                 lambda,
                 analyzedFunctions[lambda]!!,
                 variablesMap,
-                escapeAnalysisResult.escapedVariables,
+                escapeAnalysisResult,
             )
     }
     return handlers

@@ -10,11 +10,7 @@ import cacophony.semantic.types.TypeCheckingResult
 import cacophony.semantic.types.TypeExpr
 import kotlin.math.min
 
-data class EscapeAnalysisResult(
-    val escapedVariables: Set<Variable>,
-    val closureCallables: Set<LambdaExpression>,
-    val staticLinkCallables: Set<LambdaExpression>,
-)
+typealias EscapeAnalysisResult = Set<Variable>
 
 class EscapeAnalysisException(reason: String) : Exception(reason)
 
@@ -94,11 +90,7 @@ fun escapeAnalysis(
     }
 
     // The result are all variables with usageDepth smaller than definitionDepth
-    return EscapeAnalysisResult(
-        usageDepth.keys.filter { usageDepth[it]!! < definitionDepth[it]!! }.toSet(),
-        emptySet(), // TODO
-        emptySet(),
-    )
+    return usageDepth.keys.filter { usageDepth[it]!! < definitionDepth[it]!! }.toSet()
 }
 
 /**

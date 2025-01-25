@@ -90,7 +90,7 @@ class EscapeAnalysisKtTest {
             )
 
         // then
-        assertThat(result.escapedVariables).containsExactlyInAnyOrder(gVar, xVar)
+        assertThat(result).containsExactlyInAnyOrder(gVar, xVar)
     }
 
     /*
@@ -173,7 +173,7 @@ class EscapeAnalysisKtTest {
             )
 
         // then
-        assertThat(result.escapedVariables).containsExactlyInAnyOrder(gVar, hVar, xVar)
+        assertThat(result).containsExactlyInAnyOrder(gVar, hVar, xVar)
     }
 
     /*
@@ -261,7 +261,7 @@ class EscapeAnalysisKtTest {
             )
 
         // then
-        assertThat(result.escapedVariables).containsExactlyInAnyOrder(sVar, gVar, xVar)
+        assertThat(result).containsExactlyInAnyOrder(sVar, gVar, xVar)
     }
 
     /*
@@ -348,7 +348,7 @@ class EscapeAnalysisKtTest {
             )
 
         // then
-        assertThat(result.escapedVariables).containsExactlyInAnyOrder(gVar, xVar)
+        assertThat(result).containsExactlyInAnyOrder(gVar, xVar)
     }
 
     /*
@@ -420,7 +420,7 @@ class EscapeAnalysisKtTest {
             )
 
         // then
-        assertThat(result.escapedVariables).containsExactlyInAnyOrder(xVar)
+        assertThat(result).containsExactlyInAnyOrder(xVar)
     }
 
     /*
@@ -471,7 +471,7 @@ class EscapeAnalysisKtTest {
             )
 
         // then
-        assertThat(result.escapedVariables).isEmpty()
+        assertThat(result).isEmpty()
     }
 
     /*
@@ -526,7 +526,7 @@ class EscapeAnalysisKtTest {
             )
 
         // then
-        assertThat(result.escapedVariables).isEmpty()
+        assertThat(result).isEmpty()
     }
 
     /*
@@ -589,6 +589,6 @@ class EscapeAnalysisKtTest {
             )
 
         // then
-        assertThat(result.escapedVariables).isEmpty()
+        assertThat(result).isEmpty()
     }
 }
