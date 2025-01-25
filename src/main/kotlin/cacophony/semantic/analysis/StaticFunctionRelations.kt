@@ -78,20 +78,14 @@ private class StaticFunctionsRelationsVisitor(
         functionStack.lastOrNull()?.let {
             relations[it]?.usedVariables?.add(UsedVariable(variable, useType))
         }
-        if (variable is Variable.StructVariable) {
-            variable.fields.forEach {
-                markNestedVariables(it.value, useType)
-            }
-        }
+        variable.getNested().forEach { markNestedVariables(it, useType) }
     }
 
     private fun addVariableDeclaration(variable: Variable) {
         functionStack.lastOrNull()?.let {
             relations[it]?.declaredVariables?.add(variable)
         }
-        if (variable is Variable.StructVariable) {
-            variable.fields.values.forEach { addVariableDeclaration(it) }
-        }
+        variable.getNested().forEach(this::addVariableDeclaration)
     }
 
     private fun visitExpression(expr: Expression) {

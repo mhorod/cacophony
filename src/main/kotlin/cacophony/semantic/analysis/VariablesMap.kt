@@ -18,6 +18,7 @@ import cacophony.semantic.syntaxtree.OperatorUnary
 import cacophony.semantic.syntaxtree.Statement
 import cacophony.semantic.syntaxtree.Struct
 import cacophony.semantic.syntaxtree.VariableUse
+import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.StructType
 import cacophony.semantic.types.TypeCheckingResult
@@ -55,7 +56,10 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
 
             is FieldRef.RValue -> visit(expression.obj)
 
-            is FunctionCall -> expression.arguments.forEach { visit(it) }
+            is FunctionCall -> {
+                visit(expression.function)
+                expression.arguments.forEach { visit(it) }
+            }
 
             is OperatorBinary -> {
                 visit(expression.lhs)
@@ -128,7 +132,10 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
             is Definition.FunctionDefinition -> visitLambdaExpression(expression.arguments, expression.body)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression)
 
-            is FunctionCall -> expression.arguments.forEach { visit(it) }
+            is FunctionCall -> {
+                visit(expression.function)
+                expression.arguments.forEach { visit(it) }
+            }
 
             is OperatorBinary -> {
                 visit(expression.lhs)
@@ -163,21 +170,22 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
     }
 
     private fun visitFunctionArgument(expression: Definition.FunctionArgument) {
-        val type = types.definitionTypes[expression]
-        val variable = createVariable(type!!)
+        val type = types.definitionTypes.getValue(expression)
+        val variable = createVariable(type)
         definitions[expression] = variable
     }
 
     private fun visitVariableDeclaration(expression: Definition.VariableDeclaration) {
         visit(expression.value)
-        val type = types.definitionTypes[expression]
-        val variable = createVariable(type!!)
+        val type = types.definitionTypes.getValue(expression)
+        val variable = createVariable(type)
         definitions[expression] = variable
     }
 
     private fun createVariable(type: TypeExpr): Variable =
         when (type) {
             is StructType -> Variable.StructVariable(type.fields.mapValues { createVariable(it.value) })
+            is FunctionType -> Variable.FunctionVariable(Variable.PrimitiveVariable(false), Variable.PrimitiveVariable(true))
             else -> Variable.PrimitiveVariable(type is ReferentialType)
         }
 }

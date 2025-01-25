@@ -1,6 +1,7 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
+import cacophony.controlflow.getAllNestedVariables
 import cacophony.semantic.analysis.UseTypesForExpression.Companion.empty
 import cacophony.semantic.analysis.UseTypesForExpression.Companion.merge
 import cacophony.semantic.names.ResolvedVariables
@@ -74,16 +75,7 @@ private class VarUseVisitor(
 
     fun getAnalysisResult(): UseTypeAnalysisResult = useTypeAnalysis.mapValues { it.value.getMap() }
 
-    private fun gatherNestedVariables(variable: Variable): Set<Variable> {
-        val result = HashSet<Variable>()
-        result.add(variable)
-        if (variable is Variable.StructVariable) {
-            variable.fields.values.forEach {
-                result.addAll(gatherNestedVariables(it))
-            }
-        }
-        return result
-    }
+    private fun gatherNestedVariables(variable: Variable) = getAllNestedVariables(variable).toSet()
 
     private fun gatherAffectedVariables(expr: Assignable): Set<Variable> {
         val result = HashSet<Variable>()
