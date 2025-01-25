@@ -4,7 +4,6 @@ import cacophony.controlflow.*
 import cacophony.controlflow.generation.flattenLayout
 import cacophony.controlflow.generation.getVariableLayout
 import cacophony.semantic.analysis.AnalyzedFunction
-import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
 
@@ -14,7 +13,6 @@ class LambdaHandlerImpl(
     private val analyzedFunction: AnalyzedFunction,
     private val variablesMap: VariablesMap,
     escapeAnalysisResult: Set<Variable>,
-    closureAnalysisResult: ClosureAnalysisResult,
 ) : LambdaHandler, CallableHandlerImpl(
         analyzedFunction,
         function,
@@ -56,7 +54,7 @@ class LambdaHandlerImpl(
     private val prologueEpilogueHandler: PrologueEpilogueHandler
 
     private val offsetsMap: Map<Variable.PrimitiveVariable, Int> =
-        closureAnalysisResult[function]!!
+        analyzedFunction.outerVariables()
             .filterIsInstance<Variable.PrimitiveVariable>()
             .mapIndexed { index, it ->
                 it to index * REGISTER_SIZE

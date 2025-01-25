@@ -191,14 +191,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult) {
         if (logClosures) {
-            val content = StringBuilder()
-            result.forEach { (lambda, closure) ->
-                content.appendLine("Lambda $lambda has closure variables:")
-                closure.forEach {
-                    content.appendLine("  $it")
-                }
-            }
-            logMaybeSave("Closure analysis", content.lines().joinToString("\n"))
+            TODO()
         }
     }
 

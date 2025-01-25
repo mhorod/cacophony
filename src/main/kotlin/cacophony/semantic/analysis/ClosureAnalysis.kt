@@ -1,16 +1,19 @@
 package cacophony.semantic.analysis
 
-import cacophony.controlflow.Variable
 import cacophony.semantic.syntaxtree.LambdaExpression
 
 /**
- * Set of captured variables
+ * Distinction between functions that are semantically closures and static functions
+ *
+ * @property closures Set of `LambdaExpression` that are semantically closures
+ * @property staticFunctions Set of `LambdaExpression` that are semantically static
  */
-typealias ClosureAnalysisResult = Map<LambdaExpression, Set<Variable>>
+class ClosureAnalysisResult(val closures: Set<LambdaExpression>, val staticFunctions: Set<LambdaExpression>)
 
-fun analyseClosures(escapeAnalysis: EscapeAnalysisResult /*, lambdaAnalysis: LambdaAnalysisResult */): ClosureAnalysisResult {
-//    return lambdaAnalysis.mapValues { (_, analysis) ->
-//        analysis.declaredVariables().map { it.origin }.filter { escapeAnalysis.contains(it) }.toSet()
-//    }
-    return emptyMap()
+// TODO: Implement distinction between closures and static functions
+//  Static functions are the ones that:
+//      - are syntactically static i.e. let f = [] => ();
+//      - don't escape i.e. it makes sense to use static link
+fun analyseClosures(escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
+    return ClosureAnalysisResult(emptySet(), emptySet())
 }

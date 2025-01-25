@@ -4,6 +4,8 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 
+// TODO: Adjust this code so it works for all LambdaExpressions (function bodies)
+//  We don't have to distinguish between named and anonymous functions here, since for both we need to know about "captured" variables
 fun findStaticFunctionRelations(ast: AST, resolvedVariables: ResolvedVariables, variablesMap: VariablesMap): StaticFunctionRelationsMap {
     val visitor = StaticFunctionsRelationsVisitor(resolvedVariables, variablesMap)
     visitor.visit(ast)
@@ -13,10 +15,8 @@ fun findStaticFunctionRelations(ast: AST, resolvedVariables: ResolvedVariables, 
 typealias StaticFunctionRelationsMap = Map<LambdaExpression, StaticFunctionRelations>
 
 data class StaticFunctionRelations(
-    // TODO: These two below don't make sense for lambdas
     val parent: LambdaExpression?,
     val staticDepth: Int,
-    // TODO: These two make sense both for lambdas and static functions
     val declaredVariables: Set<Variable>,
     val usedVariables: Set<UsedVariable>,
 )

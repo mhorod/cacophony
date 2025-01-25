@@ -2,7 +2,7 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.functions.CallGenerator
-import cacophony.controlflow.functions.CallableHandler
+import cacophony.controlflow.functions.CallableHandlers
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation
@@ -14,7 +14,7 @@ typealias ProgramCFG = Map<LambdaExpression, CFGFragment>
 
 fun generateCFG(
     resolvedVariables: ResolvedVariables,
-    callableHandlers: Map<LambdaExpression, CallableHandler>,
+    callableHandlers: CallableHandlers,
     variablesMap: VariablesMap,
     typeCheckingResult: TypeCheckingResult,
     callGenerator: CallGenerator,
@@ -22,24 +22,25 @@ fun generateCFG(
     lambdaOutlineLocation: LambdaOutlineLocation,
 ): ProgramCFG {
     val result =
-        callableHandlers.mapValues { (function, _) ->
-            generateFunctionCFG(
-                function,
-                callableHandlers,
-                resolvedVariables,
-                variablesMap,
-                typeCheckingResult,
-                callGenerator,
-                objectOutlineLocation,
-                lambdaOutlineLocation,
-            )
-        }
+        callableHandlers.getAllCallables().map { function ->
+            function to
+                generateFunctionCFG(
+                    function,
+                    callableHandlers,
+                    resolvedVariables,
+                    variablesMap,
+                    typeCheckingResult,
+                    callGenerator,
+                    objectOutlineLocation,
+                    lambdaOutlineLocation,
+                )
+        }.toMap()
     return result
 }
 
 internal fun generateFunctionCFG(
     function: LambdaExpression,
-    callableHandlers: Map<LambdaExpression, CallableHandler>,
+    callableHandlers: CallableHandlers,
     resolvedVariables: ResolvedVariables,
     variablesMap: VariablesMap,
     typeCheckingResult: TypeCheckingResult,
@@ -52,7 +53,6 @@ internal fun generateFunctionCFG(
             resolvedVariables,
             function,
             callableHandlers,
-            emptyMap(), // TODO: fill LambdaHandlers in
             variablesMap,
             typeCheckingResult,
             callGenerator,

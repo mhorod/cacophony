@@ -15,8 +15,6 @@ data class ParentLink(
     val used: Boolean,
 )
 
-// TODO: this needs a lambda expression analogue
-
 /**
  * Analyzed function properties
  *
@@ -49,6 +47,8 @@ data class AnalyzedVariable(
     val useType: VariableUseType,
 )
 
+// TODO: Adjust this code so it works for all LambdaExpressions. We're only interested in the static analysis of the body
+//  so there should be no distinction between named and anonymous functions.
 fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, variablesMap: VariablesMap): FunctionAnalysisResult {
     val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
     val variableFunctions = getVariableFunctions(relations, variablesMap)

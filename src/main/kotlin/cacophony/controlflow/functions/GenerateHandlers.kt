@@ -8,7 +8,18 @@ import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.utils.CompileException
 
-fun generateFunctionHandlers(
+fun generateCallableHandlers(
+    analyzedFunctions: FunctionAnalysisResult,
+    escapeAnalysis: EscapeAnalysisResult,
+    callConvention: CallConvention,
+    variablesMap: VariablesMap,
+    closureAnalysis: ClosureAnalysisResult,
+): CallableHandlers {
+    // TODO: use closure analysis to generate lambda and function handlers separately
+    TODO()
+}
+
+private fun generateFunctionHandlers(
     analyzedFunctions: FunctionAnalysisResult,
     staticLinkCallables: Set<LambdaExpression>,
     callConvention: CallConvention,
@@ -53,13 +64,12 @@ fun generateFunctionHandlers(
     return handlers
 }
 
-fun generateLambdaHandlers(
+private fun generateLambdaHandlers(
     analyzedFunctions: FunctionAnalysisResult,
     closureCallables: Set<LambdaExpression>,
     callConvention: CallConvention,
     variablesMap: VariablesMap,
     escapeAnalysisResult: EscapeAnalysisResult,
-    closureAnalysisResult: ClosureAnalysisResult,
 ): Map<LambdaExpression, LambdaHandler> {
     val handlers = mutableMapOf<LambdaExpression, LambdaHandler>()
     for (lambda in closureCallables) {
@@ -70,7 +80,6 @@ fun generateLambdaHandlers(
                 analyzedFunctions[lambda]!!,
                 variablesMap,
                 escapeAnalysisResult.escapedVariables,
-                closureAnalysisResult,
             )
     }
     return handlers

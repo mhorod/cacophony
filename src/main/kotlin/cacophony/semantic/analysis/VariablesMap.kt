@@ -76,8 +76,6 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
                 visit(expression.doExpression)
             }
 
-            is LambdaExpression -> visit(expression.body)
-
             is Struct -> expression.fields.values.forEach { visit(it) }
             is Allocation -> visit(expression.value)
             is Dereference -> {

@@ -39,8 +39,7 @@ data class AstAnalysisResult(
     val resolvedVariables: ResolvedVariables,
     val types: TypeCheckingResult,
     val variablesMap: VariablesMap,
-    val functionHandlers: Map<LambdaExpression, FunctionHandler>,
-    val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
+    val callableHandlers: CallableHandlers,
     val foreignFunctions: Set<Definition.ForeignFunctionDeclaration>,
     val escapeAnalysisResult: EscapeAnalysisResult,
 )
@@ -167,10 +166,7 @@ class CacophonyPipeline(
             }.filterIsInstance<Definition.ForeignFunctionDeclaration>()
             .toSet()
 
-    private fun determineClosureSets(
-        escapeAnalysis: EscapeAnalysisResult,
-        /*, lambdaAnalysis: LambdaAnalysisResult */
-    ): ClosureAnalysisResult {
+    private fun getClosureAnalysis(escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
         val analyzedClosures = analyseClosures(escapeAnalysis)
         logger?.logSuccessfulClosureAnalysis(analyzedClosures)
         return analyzedClosures
@@ -203,31 +199,21 @@ class CacophonyPipeline(
         val variablesMap = createVariables(ast, resolvedVariables, types)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables)
         val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types, namedFunctionInfo)
-        val lambdaHandlers =
-            generateLambdaHandlers(
+        val closureAnalysis = getClosureAnalysis(escapeAnalysis)
+        val handlers =
+            generateCallableHandlers(
                 analyzedFunctions,
-                escapeAnalysis.staticLinkCallables,
-                SystemVAMD64CallConvention,
-                variablesMap,
                 escapeAnalysis,
-                // TODO - closureAnalysis
-                emptyMap(),
-            )
-        val functionHandlers =
-            generateFunctionHandlers(
-                analyzedFunctions,
-                escapeAnalysis.staticLinkCallables,
                 SystemVAMD64CallConvention,
                 variablesMap,
-                escapeAnalysis.escapedVariables,
+                closureAnalysis,
             )
         val foreignFunctions = filterForeignFunctions(resolvedNames)
         return AstAnalysisResult(
             resolvedVariables,
             types,
             variablesMap,
-            functionHandlers,
-            lambdaHandlers,
+            handlers,
             foreignFunctions,
             escapeAnalysis,
         )
@@ -244,7 +230,7 @@ class CacophonyPipeline(
         val cfg =
             generateCFG(
                 analyzedAst.resolvedVariables,
-                analyzedAst.functionHandlers,
+                analyzedAst.callableHandlers,
                 analyzedAst.variablesMap,
                 analyzedAst.types,
                 callGenerator,
@@ -271,8 +257,8 @@ class CacophonyPipeline(
         val outlines =
             OutlineCollection(
                 createObjectOutlines(getUsedTypes(semantics.types)),
-                generateClosureOutlines(semantics.lambdaHandlers),
-                generateStackFrameOutlines(semantics.functionHandlers.values),
+                generateClosureOutlines(semantics.callableHandlers.lambdaHandlers),
+                generateStackFrameOutlines(semantics.callableHandlers.functionHandlers.values),
             )
         val cfg =
             generateControlFlowGraph(
@@ -281,7 +267,7 @@ class CacophonyPipeline(
                 outlines.objectOutlines.locations,
                 outlines.closureOutlines,
             )
-        val (covering, registerAllocation) = linearize(cfg, semantics.functionHandlers)
+        val (covering, registerAllocation) = linearize(cfg, semantics.callableHandlers.functionHandlers)
         val asm =
             covering.mapValues { (function, loweredCFG) ->
                 run {

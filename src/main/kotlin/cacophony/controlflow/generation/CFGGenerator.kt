@@ -4,7 +4,7 @@ import cacophony.controlflow.*
 import cacophony.controlflow.functions.Builtin
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.CallableHandler
-import cacophony.controlflow.functions.LambdaHandler
+import cacophony.controlflow.functions.CallableHandlers
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation
@@ -20,8 +20,7 @@ import cacophony.semantic.types.TypeCheckingResult
 internal class CFGGenerator(
     private val resolvedVariables: ResolvedVariables,
     private val function: LambdaExpression,
-    private val callableHandlers: Map<LambdaExpression, CallableHandler>,
-    private val lambdaHandlers: Map<LambdaExpression, LambdaHandler>,
+    private val callableHandlers: CallableHandlers,
     val variablesMap: VariablesMap,
     private val typeCheckingResult: TypeCheckingResult,
     private val callGenerator: CallGenerator,
@@ -281,7 +280,7 @@ internal class CFGGenerator(
     }
 
     private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
-        val handler = lambdaHandlers[lambda]!!
+        val handler = callableHandlers.getLambdaHandler(lambda)
         val label = handler.getFunctionLabel()
         // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
         // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?
@@ -559,8 +558,7 @@ internal class CFGGenerator(
 
     private fun getCurrentCallableHandler(): CallableHandler = getCallableHandler(function)
 
-    private fun getCallableHandler(callable: LambdaExpression): CallableHandler =
-        callableHandlers[callable] ?: error("Callable $callable has no handler")
+    private fun getCallableHandler(callable: LambdaExpression): CallableHandler = callableHandlers.getCallableHandler(callable)
 
     // sourceLayout opisuje gdzie są rzeczy, które chcemy przekopiować na stertę
     // resultLayout opisuje obiekt na stercie
