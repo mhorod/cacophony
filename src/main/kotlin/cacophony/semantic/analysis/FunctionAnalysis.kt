@@ -1,6 +1,7 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
+import cacophony.controlflow.getAllNestedVariables
 import cacophony.graphs.getProperTransitiveClosure
 import cacophony.graphs.reverseGraph
 import cacophony.semantic.names.ResolvedVariables
@@ -123,17 +124,12 @@ fun makeAnalyzedVariable(usedVariable: UsedVariable, variableFunctions: Map<Vari
     )
 }
 
-private fun getAllNestedVariables(v: Variable): List<Variable> =
-    when (v) {
-        is Variable.StructVariable -> {
-            listOf(v) + v.fields.values.flatMap { getAllNestedVariables(it) }
-        }
 
-        is Variable.PrimitiveVariable -> listOf(v)
-        is Variable.Heap -> listOf(v)
-    }
 
-private fun getVariableFunctions(relations: StaticFunctionRelationsMap, variablesMap: VariablesMap): Map<Variable, LambdaExpression> =
+private fun getVariableFunctions(
+    relations: StaticFunctionRelationsMap,
+    variablesMap: VariablesMap,
+): Map<Variable, LambdaExpression> =
     relations
         .flatMap { (function, _) ->
             function.arguments.flatMap { argument ->

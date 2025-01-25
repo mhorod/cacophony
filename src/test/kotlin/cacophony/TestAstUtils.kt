@@ -1,6 +1,7 @@
 package cacophony
 
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.StructType
 import cacophony.semantic.types.TypeExpr
 import cacophony.utils.Location
@@ -227,6 +228,8 @@ fun structType(vararg fields: Pair<String, Type>) = BaseType.Structural(mockRang
 fun referentialType(type: Type) = BaseType.Referential(mockRange(), type)
 
 fun structTypeExpr(vararg fields: Pair<String, TypeExpr>) = StructType(fields.toMap())
+
+fun functionTypeExpr(vararg args: TypeExpr, result: TypeExpr) = FunctionType(args.toList(), result)
 
 infix fun Assignable.dot(field: String): Assignable = lvalueFieldRef(this, field)
 

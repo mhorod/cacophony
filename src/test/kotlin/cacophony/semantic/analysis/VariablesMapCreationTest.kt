@@ -4,6 +4,7 @@ import cacophony.*
 import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.types.BuiltinType
+import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.TypeCheckingResult
 import org.assertj.core.api.Assertions.assertThat
@@ -34,7 +35,7 @@ class VariablesMapCreationTest {
     }
 
     @Test
-    fun `primitive variable is created for function argument`() {
+    fun `primitive variable is created for primitive function argument`() {
         // given
         val xArg = intArg("x")
         val xUse = variableUse("x")
@@ -53,6 +54,56 @@ class VariablesMapCreationTest {
         // then
         assertThat(variables.definitions).containsKeys(xArg)
         assertThat(variables.lvalues).contains(entry(xUse, variables.definitions[xArg]))
+    }
+
+    @Test
+    fun `function variable is created for functional function argument`() {
+        // given
+        val xArg = typedArg("x", functionalType(listOf(intType()), intType()))
+        val xUse = variableUse("x")
+        val xCall = call(xUse, lit(1))
+        val fDef = intFunctionDefinition("f", listOf(xArg), xCall)
+
+        val resolvedVariables = mapOf(xUse to xArg)
+
+        val fType = functionTypeExpr(BuiltinType.IntegerType, result = BuiltinType.IntegerType)
+        val types =
+            TypeCheckingResult(
+                mapOf(xArg to fType, xUse to fType, xCall to BuiltinType.IntegerType),
+                mapOf(xArg to fType),
+            )
+
+        // when
+        val variables = createVariablesMap(fDef, resolvedVariables, types)
+
+        // then
+        assertThat(variables.definitions).containsKeys(xArg)
+        assertThat(variables.definitions[xArg]).isExactlyInstanceOf(Variable.FunctionVariable::class.java)
+        assertThat(variables.lvalues).contains(entry(xUse, variables.definitions[xArg]))
+    }
+
+    @Test
+    fun `function variable is created for lambda definition`() {
+        // given
+        val lam = lambda(emptyList(), lit(1))
+        val xDef = variableDeclaration("x", lam)
+        val xUse = variableUse("x")
+        val ast = block(xDef, xUse)
+
+        val resolvedVariables = mapOf(xUse to xDef)
+        val types =
+            TypeCheckingResult(
+                mapOf(xDef to BuiltinType.UnitType, xUse to FunctionType(emptyList(), BuiltinType.IntegerType)),
+                mapOf(xDef to FunctionType(emptyList(), BuiltinType.IntegerType)),
+            )
+
+        // when
+        val variables = createVariablesMap(ast, resolvedVariables, types)
+
+        // then
+        assertThat(variables.definitions).containsKeys(xDef)
+        assertThat(variables.definitions[xDef]).isExactlyInstanceOf(Variable.FunctionVariable::class.java)
+        assertThat(variables.lvalues).contains(entry(xUse, variables.definitions[xDef]))
     }
 
     @Test
