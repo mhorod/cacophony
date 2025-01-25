@@ -3,7 +3,6 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.CallableHandler
-import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation

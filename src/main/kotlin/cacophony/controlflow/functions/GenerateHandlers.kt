@@ -1,5 +1,7 @@
 package cacophony.controlflow.functions
 
+import cacophony.controlflow.Variable
+import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
@@ -8,12 +10,13 @@ import cacophony.utils.CompileException
 
 fun generateFunctionHandlers(
     analyzedFunctions: FunctionAnalysisResult,
+    staticLinkCallables: Set<LambdaExpression>,
     callConvention: CallConvention,
     variablesMap: VariablesMap,
-    escapeAnalysis: EscapeAnalysisResult,
+    escapedVariables: Set<Variable>,
 ): Map<LambdaExpression, FunctionHandler> {
     val handlers = mutableMapOf<LambdaExpression, FunctionHandler>()
-    val order = analyzedFunctions.entries.sortedBy { it.value.staticDepth }
+    val order = analyzedFunctions.filter { staticLinkCallables.contains(it.key) }.entries.sortedBy { it.value.staticDepth }
 
     val ancestorHandlers = mutableMapOf<LambdaExpression, List<FunctionHandler>>()
 
@@ -26,7 +29,7 @@ fun generateFunctionHandlers(
                     emptyList(),
                     callConvention,
                     variablesMap,
-                    escapeAnalysis,
+                    escapedVariables,
                 )
         } else {
             val parentHandler =
@@ -41,7 +44,7 @@ fun generateFunctionHandlers(
                     functionAncestorHandlers,
                     callConvention,
                     variablesMap,
-                    escapeAnalysis,
+                    escapedVariables,
                 )
             ancestorHandlers[function] = functionAncestorHandlers
         }
@@ -50,7 +53,25 @@ fun generateFunctionHandlers(
     return handlers
 }
 
-fun generateLambdaHandlers(): Map<LambdaExpression, LambdaHandler> {
-    // TODO
-    return emptyMap()
+fun generateLambdaHandlers(
+    analyzedFunctions: FunctionAnalysisResult,
+    closureCallables: Set<LambdaExpression>,
+    callConvention: CallConvention,
+    variablesMap: VariablesMap,
+    escapeAnalysisResult: EscapeAnalysisResult,
+    closureAnalysisResult: ClosureAnalysisResult,
+): Map<LambdaExpression, LambdaHandler> {
+    val handlers = mutableMapOf<LambdaExpression, LambdaHandler>()
+    for (lambda in closureCallables) {
+        handlers[lambda] =
+            LambdaHandlerImpl(
+                callConvention,
+                lambda,
+                analyzedFunctions[lambda]!!,
+                variablesMap,
+                escapeAnalysisResult.escapedVariables,
+                closureAnalysisResult,
+            )
+    }
+    return handlers
 }

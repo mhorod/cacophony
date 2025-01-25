@@ -5,7 +5,6 @@ import cacophony.controlflow.generation.flattenLayout
 import cacophony.controlflow.generation.getVariableLayout
 import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.ClosureAnalysisResult
-import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
 
@@ -14,7 +13,7 @@ class LambdaHandlerImpl(
     private val function: LambdaExpression, // TODO: it can be FunctionalExpression
     private val analyzedFunction: AnalyzedFunction,
     private val variablesMap: VariablesMap,
-    escapeAnalysisResult: EscapeAnalysisResult,
+    escapeAnalysisResult: Set<Variable>,
     closureAnalysisResult: ClosureAnalysisResult,
 ) : LambdaHandler, CallableHandlerImpl(
         analyzedFunction,

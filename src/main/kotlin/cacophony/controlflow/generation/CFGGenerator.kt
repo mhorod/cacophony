@@ -5,7 +5,6 @@ import cacophony.controlflow.functions.Builtin
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.CallableHandler
 import cacophony.controlflow.functions.LambdaHandler
-import cacophony.semantic.analysis.UseTypeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation

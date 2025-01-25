@@ -128,8 +128,13 @@ class CacophonyLogger(
             val variableToDefinition = variableMap.definitions.entries.associate { (k, v) -> v to k }
             logMaybeSave(
                 "Escaping variables",
-                result
+                result.escapedVariables
                     .joinToString("\n") { "$it (${variableToDefinition.getOrDefault(it, "no declaration")})" },
+            )
+            logMaybeSave(
+                "Static link callables",
+                result.staticLinkCallables
+                    .joinToString("\n") { "${it.range.first.value}-${it.range.second.value}" },
             )
         }
     }

@@ -203,14 +203,23 @@ class CacophonyPipeline(
         val variablesMap = createVariables(ast, resolvedVariables, types)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables)
         val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types, namedFunctionInfo)
-        val analyzedClosures = determineClosureSets(escapeAnalysis)
-        val lambdaHandlers = generateLambdaHandlers()
-        val functionHandlers =
-            generateFunctionHandlers(
+        val lambdaHandlers =
+            generateLambdaHandlers(
                 analyzedFunctions,
+                escapeAnalysis.staticLinkCallables,
                 SystemVAMD64CallConvention,
                 variablesMap,
                 escapeAnalysis,
+                // TODO - closureAnalysis
+                emptyMap(),
+            )
+        val functionHandlers =
+            generateFunctionHandlers(
+                analyzedFunctions,
+                escapeAnalysis.staticLinkCallables,
+                SystemVAMD64CallConvention,
+                variablesMap,
+                escapeAnalysis.escapedVariables,
             )
         val foreignFunctions = filterForeignFunctions(resolvedNames)
         return AstAnalysisResult(
