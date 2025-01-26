@@ -45,7 +45,10 @@ class VariablesMapCreationTest {
         val types =
             TypeCheckingResult(
                 mapOf(xArg to BuiltinType.IntegerType, xUse to BuiltinType.IntegerType),
-                mapOf(xArg to BuiltinType.IntegerType),
+                mapOf(
+                    xArg to BuiltinType.IntegerType,
+                    fDef to functionTypeExpr(BuiltinType.IntegerType, result = BuiltinType.IntegerType),
+                ),
             )
 
         // when
@@ -66,11 +69,14 @@ class VariablesMapCreationTest {
 
         val resolvedVariables = mapOf(xUse to xArg)
 
-        val fType = functionTypeExpr(BuiltinType.IntegerType, result = BuiltinType.IntegerType)
+        val xType = functionTypeExpr(BuiltinType.IntegerType, result = BuiltinType.IntegerType)
         val types =
             TypeCheckingResult(
-                mapOf(xArg to fType, xUse to fType, xCall to BuiltinType.IntegerType),
-                mapOf(xArg to fType),
+                mapOf(xArg to xType, xUse to xType, xCall to BuiltinType.IntegerType),
+                mapOf(
+                    xArg to xType,
+                    fDef to functionTypeExpr(xType, result = BuiltinType.IntegerType),
+                ),
             )
 
         // when
@@ -83,9 +89,32 @@ class VariablesMapCreationTest {
     }
 
     @Test
+    fun `function variable is created for named function definition`() {
+        // given
+        val xDef = intFunctionDefinition("x", lit(1))
+        val xUse = variableUse("x")
+        val ast = block(xDef, xUse)
+
+        val resolvedVariables = mapOf(xUse to xDef)
+        val types =
+            TypeCheckingResult(
+                mapOf(xDef to BuiltinType.UnitType, xUse to FunctionType(emptyList(), BuiltinType.IntegerType)),
+                mapOf(xDef to FunctionType(emptyList(), BuiltinType.IntegerType)),
+            )
+
+        // when
+        val variables = createVariablesMap(ast, resolvedVariables, types)
+
+        // then
+        assertThat(variables.definitions).containsKeys(xDef)
+        assertThat(variables.definitions[xDef]).isExactlyInstanceOf(Variable.FunctionVariable::class.java)
+        assertThat(variables.lvalues).contains(entry(xUse, variables.definitions[xDef]))
+    }
+
+    @Test
     fun `function variable is created for lambda definition`() {
         // given
-        val lam = lambda(emptyList(), lit(1))
+        val lam = lambda(emptyList(), intType(), lit(1))
         val xDef = variableDeclaration("x", lam)
         val xUse = variableUse("x")
         val ast = block(xDef, xUse)
@@ -115,10 +144,11 @@ class VariablesMapCreationTest {
         val fDef = intFunctionDefinition("f", listOf(xArg), aUse)
 
         val resolvedVariables = mapOf(xUse to xArg)
+        val xType = structTypeExpr("a" to BuiltinType.IntegerType)
         val types =
             TypeCheckingResult(
-                mapOf(xArg to structTypeExpr("a" to BuiltinType.IntegerType), xUse to BuiltinType.IntegerType),
-                mapOf(xArg to structTypeExpr("a" to BuiltinType.IntegerType)),
+                mapOf(xArg to xType, xUse to BuiltinType.IntegerType),
+                mapOf(xArg to xType, fDef to functionTypeExpr(xType, result = BuiltinType.IntegerType)),
             )
 
         // when
