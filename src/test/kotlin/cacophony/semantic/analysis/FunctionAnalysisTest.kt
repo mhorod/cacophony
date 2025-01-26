@@ -349,7 +349,8 @@ class FunctionAnalysisTest {
                             setOf(
                                 AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
-                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
+                            ),
                         ),
                     funF.value to
                         AnalyzedFunction(
@@ -361,7 +362,8 @@ class FunctionAnalysisTest {
                             setOf(
                                 AnalyzedVariable(gVariable, funF.value, VariableUseType.READ),
                                 AnalyzedVariable(gCode, funF.value, VariableUseType.READ),
-                                AnalyzedVariable(gLink, funF.value, VariableUseType.READ),),
+                                AnalyzedVariable(gLink, funF.value, VariableUseType.READ),
+                            ),
                             emptyList(),
                             mutableSetOf(),
                             1,
@@ -427,7 +429,8 @@ class FunctionAnalysisTest {
                             setOf(
                                 AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
-                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
+                            ),
                             emptyList(),
                             mutableSetOf(),
                             0,
@@ -631,7 +634,7 @@ class FunctionAnalysisTest {
                                 AnalyzedVariable(fooVariable, program.value, VariableUseType.READ),
                                 AnalyzedVariable(fooCode, program.value, VariableUseType.READ),
                                 AnalyzedVariable(fooLink, program.value, VariableUseType.READ),
-                                ),
+                            ),
                             emptyList(),
                             mutableSetOf(),
                             1,
@@ -705,7 +708,7 @@ class FunctionAnalysisTest {
                                 AnalyzedVariable(fooVariable, program.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(fooCode, program.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(fooLink, program.value, VariableUseType.UNUSED),
-                                ),
+                            ),
                             emptyList(),
                             mutableSetOf(),
                             0,
@@ -805,7 +808,7 @@ class FunctionAnalysisTest {
                             AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
                             AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
                             AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
-                            ),
+                        ),
                     ),
                 funF.value to
                     AnalyzedFunction(
