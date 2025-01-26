@@ -166,8 +166,8 @@ class CacophonyPipeline(
             }.filterIsInstance<Definition.ForeignFunctionDeclaration>()
             .toSet()
 
-    private fun getClosureAnalysis(escapeAnalysis: EscapeAnalysisResult, namedFunctionInfo: NamedFunctionInfo): ClosureAnalysisResult {
-        val analyzedClosures = analyseClosures(escapeAnalysis, namedFunctionInfo)
+    private fun getClosureAnalysis(ast: AST, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
+        val analyzedClosures = analyseClosures(ast, escapeAnalysis)
         logger?.logSuccessfulClosureAnalysis(analyzedClosures)
         return analyzedClosures
     }
@@ -178,7 +178,6 @@ class CacophonyPipeline(
         analyzedFunctions: FunctionAnalysisResult,
         variablesMap: VariablesMap,
         types: TypeCheckingResult,
-        namedFunctionInfo: NamedFunctionInfo,
     ): EscapeAnalysisResult {
         val escapeAnalysisResult =
             try {
@@ -192,14 +191,13 @@ class CacophonyPipeline(
     }
 
     fun analyzeAst(ast: AST): AstAnalysisResult {
-        val namedFunctionInfo = getNamedFunctions(ast)
         val resolvedNames = resolveNames(ast)
         val resolvedVariables = resolveOverloads(ast, resolvedNames)
         val types = checkTypes(ast, resolvedVariables)
         val variablesMap = createVariables(ast, resolvedVariables, types)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables)
-        val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types, namedFunctionInfo)
-        val closureAnalysis = getClosureAnalysis(escapeAnalysis, namedFunctionInfo)
+        val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
+        val closureAnalysis = getClosureAnalysis(ast, escapeAnalysis)
         val handlers =
             generateCallableHandlers(
                 analyzedFunctions,

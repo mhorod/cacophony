@@ -16,7 +16,7 @@ sealed class CallableHandlerImpl(
     private val analyzedFunction: AnalyzedFunction,
     private val function: LambdaExpression,
     private val variablesMap: VariablesMap,
-    private val escapedVariables: EscapeAnalysisResult
+    private val escapedVariables: EscapeAnalysisResult,
 ) : CallableHandler {
     private var stackSpace = REGISTER_SIZE
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()

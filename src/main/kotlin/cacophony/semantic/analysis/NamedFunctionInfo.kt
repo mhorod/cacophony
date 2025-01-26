@@ -5,7 +5,7 @@ import cacophony.semantic.syntaxtree.*
 /**
  * For each lambda expression that was defined as part of syntactically static function store this function
  */
-typealias NamedFunctionInfo = Map<LambdaExpression, Definition.FunctionDefinition>
+internal typealias NamedFunctionInfo = Map<LambdaExpression, Definition.FunctionDefinition>
 
 private class NamedFunctionVisitor {
     private val namedFunctions: MutableMap<LambdaExpression, Definition.FunctionDefinition> = mutableMapOf()
@@ -54,7 +54,7 @@ private class NamedFunctionVisitor {
     }
 }
 
-fun getNamedFunctions(ast: AST): NamedFunctionInfo {
+internal fun getNamedFunctions(ast: AST): NamedFunctionInfo {
     val visitor = NamedFunctionVisitor()
     visitor.visit(ast)
     return visitor.getNamedFunctions()
