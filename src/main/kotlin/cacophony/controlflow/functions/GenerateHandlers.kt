@@ -70,17 +70,13 @@ private fun generateLambdaHandlers(
     callConvention: CallConvention,
     variablesMap: VariablesMap,
     escapeAnalysisResult: EscapeAnalysisResult,
-): Map<LambdaExpression, ClosureHandler> {
-    val handlers = mutableMapOf<LambdaExpression, ClosureHandler>()
-    for (lambda in closureCallables) {
-        handlers[lambda] =
-            ClosureHandlerImpl(
-                callConvention,
-                lambda,
-                analyzedFunctions[lambda]!!,
-                variablesMap,
-                escapeAnalysisResult,
-            )
+): Map<LambdaExpression, ClosureHandler> =
+    closureCallables.associateWith { lambda ->
+        ClosureHandlerImpl(
+            callConvention,
+            lambda,
+            analyzedFunctions[lambda]!!,
+            variablesMap,
+            escapeAnalysisResult,
+        )
     }
-    return handlers
-}

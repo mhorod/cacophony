@@ -560,10 +560,6 @@ internal class CFGGenerator(
         return SubCFG.Extracted(vertex, artificialExit, VoidLayout())
     }
 
-    /*
-        let f = [] => ()
-     */
-
     private fun visitAssignable(expression: Assignable, mode: EvalMode): SubCFG {
         val layout =
             variablesMap.lvalues[expression]?.let { variable ->

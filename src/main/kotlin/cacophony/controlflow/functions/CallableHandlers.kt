@@ -10,13 +10,7 @@ class CallableHandlers(
     val staticFunctionHandlers: Map<LambdaExpression, StaticFunctionHandler>,
 ) {
     fun getCallableHandler(callable: LambdaExpression): CallableHandler =
-        if (closureHandlers.containsKey(callable)) {
-            closureHandlers[callable] ?: error("value was just in map")
-        } else if (staticFunctionHandlers.containsKey(callable)) {
-            staticFunctionHandlers[callable] ?: error("value was just in map")
-        } else {
-            error("No handler found for callable $callable")
-        }
+        closureHandlers[callable] ?: staticFunctionHandlers[callable] ?: error("No handler found for callable $callable")
 
     fun getClosureHandler(callable: LambdaExpression): ClosureHandler =
         closureHandlers[callable] ?: error("No closure handler found for callable $callable")

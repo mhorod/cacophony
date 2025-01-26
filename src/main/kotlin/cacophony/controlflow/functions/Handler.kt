@@ -50,7 +50,7 @@ sealed interface ClosureHandler : CallableHandler {
 }
 
 sealed interface StaticFunctionHandler : CallableHandler {
-    fun getFunctionDeclaration(): LambdaExpression // we probably want to delete this?
+    fun getFunctionDeclaration(): LambdaExpression
 
     // Returns static link to parent
     fun getStaticLink(): Variable.PrimitiveVariable

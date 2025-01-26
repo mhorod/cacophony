@@ -7,12 +7,6 @@ import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.ForeignFunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
-import cacophony.semantic.syntaxtree.LambdaExpression
-import cacophony.utils.CompileException
-
-class NameResolutionException(
-    reason: String,
-) : CompileException(reason)
 
 sealed interface ResolvedName {
     class Variable(

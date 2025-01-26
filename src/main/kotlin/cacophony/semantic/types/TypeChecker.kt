@@ -55,8 +55,6 @@ private class Typer(
                 is LambdaExpression -> {
                     val argsType = parseArgs(expression.arguments) ?: return null
                     val returnType = translator.translateType(expression.returnType) ?: return null
-//                    val deducedType = FunctionType(argsType, returnType)
-//                    val functionType = initializedType(null, deducedType, expression.range) ?: return null
                     functionContext.addLast(returnType)
                     val bodyType = typeExpression(expression.body) ?: return null
                     functionContext.removeLast()
