@@ -1,5 +1,6 @@
 package cacophony
 
+import cacophony.controlflow.Variable
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.StructType
@@ -139,6 +140,8 @@ fun variableWrite(variableUse: VariableUse, value: Expression) =
         variableUse,
         value,
     )
+
+fun primVar(name: String = "") = Variable.PrimitiveVariable(name)
 
 fun allocation(value: Expression) = Allocation(mockRange(), value)
 
