@@ -102,6 +102,95 @@ class EscapeAnalysisKtTest {
     /*
      * let f = [] -> [] -> Int => (
      *   let x = 5;
+     *   let y = x;
+     *   let g = [] -> Int => y;
+     *   g
+     * )
+     * EXPECTED: {g, x, y} escape
+     */
+    @Test
+    fun `detects variables escaping transitively`() {
+        // given
+        val xDef = variableDeclaration("x", lit(5))
+        val xUse = variableUse("x")
+        val yDef = variableDeclaration("y", xUse)
+        val yUse = variableUse("y")
+        val gUse = variableUse("g")
+        val gDef = functionDefinition("g", listOf(), yUse)
+        val fDef = functionDefinition("f", listOf(), block(xDef, yDef, gDef, gUse))
+        val ast = block(fDef)
+
+        val fType = FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType))
+        val gType = FunctionType(listOf(), BuiltinType.IntegerType)
+
+        val types =
+            TypeCheckingResult(
+                mapOf(
+                    fDef.value to fType,
+                    gDef.value to gType,
+                    xUse to BuiltinType.IntegerType
+                ),
+                mapOf(
+                    yDef to BuiltinType.IntegerType,
+                    xDef to BuiltinType.IntegerType,
+                    fDef to fType,
+                    gDef to gType,
+                ),
+            )
+
+        val resolvedVariables =
+            mapOf(
+                yUse to yDef,
+                xUse to xDef,
+                gUse to gDef,
+            )
+
+        val xVar = Variable.PrimitiveVariable()
+        val yVar = Variable.PrimitiveVariable()
+        val gVar = Variable.PrimitiveVariable()
+        val fVar = Variable.PrimitiveVariable()
+
+        val xAVar = AnalyzedVariable(xVar, fDef.value, VariableUseType.READ_WRITE)
+        val gAVar = AnalyzedVariable(gVar, fDef.value, VariableUseType.READ_WRITE)
+        val yAVar = AnalyzedVariable(yVar, fDef.value, VariableUseType.READ_WRITE)
+
+        val gA = AnalyzedFunction(gDef.value, null, setOf(yAVar), listOf(), mutableSetOf(), 1, setOf())
+        val fA = AnalyzedFunction(fDef.value, null, setOf(xAVar, gAVar, yAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
+
+        val functionAnalysis =
+            mapOf(
+                gDef.value to gA,
+                fDef.value to fA,
+            )
+
+        val variablesMap =
+            VariablesMap(
+                mapOf(),
+                mapOf(
+                    xDef to xVar,
+                    fDef to fVar,
+                    gDef to gVar,
+                    yDef to yVar,
+                ),
+            )
+
+        // when
+        val result =
+            escapeAnalysis(
+                ast,
+                resolvedVariables,
+                functionAnalysis,
+                variablesMap,
+                types,
+            )
+
+        // then
+        assertThat(result).containsExactlyInAnyOrder(gVar, yVar, xVar)
+    }
+
+    /*
+     * let f = [] -> [] -> Int => (
+     *   let x = 5;
      *   let g = [] -> Int => x;
      *   let h = g;
      *   h
@@ -109,7 +198,7 @@ class EscapeAnalysisKtTest {
      * EXPECTED: {h, g, x} escape
      */
     @Test
-    fun `detects variables escaping transitively`() {
+    fun `detects functional variables escaping transitively`() {
         // given
         val xDef = variableDeclaration("x", lit(5))
         val xUse = variableUse("x")

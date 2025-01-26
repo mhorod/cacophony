@@ -76,14 +76,14 @@ fun escapeAnalysis(
         }
     }
 
-    // Iterate updating usageDepth using assignments and relation of variables
+    // Iterate updating usageDepth using functional assignments and relation of variables
     // used by functions until fixed point is obtained
     var fixedPointObtained = false
 
     while (!fixedPointObtained) {
         fixedPointObtained = true
 
-        baseResult.assigned.forEach { (lhs, rhs) ->
+        baseResult.assignedFunctionalEntities.forEach { (lhs, rhs) ->
             val minOfLhsDepths = lhs.minOf { usageDepth[it]!! }
             rhs.forEach {
                 if (usageDepth[it]!! > minOfLhsDepths) {
@@ -114,28 +114,51 @@ fun escapeAnalysis(
         baseResult.allFunctionalEntities
             .filter { usageDepth[it]!! < definitionDepth[it]!! }
 
-    // The escaping variables are all escaping Functional Variables and variables used by escaping lambdas
-    return escapingFunctionalEntities
+    // We mark all variables used by escaping lambdas as escaping
+    val escapingVariables = (escapingFunctionalEntities
         .filterIsInstance<FunctionalEntity.FunctionalVariable>()
         .map { it.variable }.toSet() union
-        escapingFunctionalEntities.filterIsInstance<FunctionalEntity.Lambda>()
+        escapingFunctionalEntities
+            .filterIsInstance<FunctionalEntity.Lambda>()
             .map { functionAnalysis[it.lambdaExpression]!! }
             .flatMap {
                 it.variables.minus(it.declaredVariables().toSet())
             }
-            .map { it.origin }
+            .map { it.origin }).toMutableSet()
+
+
+    // At the end, we enclose escapingVariables by relation of variable assignments
+    fixedPointObtained = false
+
+    while (!fixedPointObtained) {
+        fixedPointObtained = true
+
+        baseResult.assignedVariables.forEach { (lhs, rhs) ->
+            // If any variable in LHS escapes, we deduce that all variables in rhs escape too.
+            if (lhs.any { escapingVariables.contains(it) }) {
+                if (rhs.any { !escapingVariables.contains(it) }) {
+                    fixedPointObtained = false
+                    escapingVariables.addAll(rhs)
+                }
+            }
+        }
+    }
+
+    return escapingVariables.toSet()
 }
 
 /**
  * @property allFunctionalEntities set of all Functional Entities found in the AST
  * @property definingLambda map of Functional Entities to LambdaExpression in which they are defined
- * @property assigned list pairs of sets consisting of Functional Entities used in assignments (in the LHS and RHS)
+ * @property assignedFunctionalEntities list pairs of sets consisting of Functional Entities used in assignments (in the LHS and RHS)
+ * @property assignedVariables same as assignedFunctionalEntities, but containing variables (of not necessarily functional types)
  * @property returned map LambdaExpression -> Set of Functional Entities occurring in return expression in it
  */
 private data class BaseEscapeAnalysisResult(
     val allFunctionalEntities: Set<FunctionalEntity>,
     val definingLambda: Map<FunctionalEntity, LambdaExpression>,
-    val assigned: List<Pair<Set<FunctionalEntity.FunctionalVariable>, Set<FunctionalEntity>>>,
+    val assignedFunctionalEntities: List<Pair<Set<FunctionalEntity.FunctionalVariable>, Set<FunctionalEntity>>>,
+    val assignedVariables: List<Pair<Set<Variable>, Set<Variable>>>,
     val returned: Map<LambdaExpression, Set<FunctionalEntity>>,
 )
 
@@ -146,13 +169,16 @@ private class BaseEscapeAnalysisVisitor(
 ) {
     private var lambdaExpressionsStack = ArrayDeque<LambdaExpression>()
     private var functionTypeStack = ArrayDeque<FunctionType>()
-    private val assignmentLhsStack = ArrayDeque<MutableSet<FunctionalEntity.FunctionalVariable>>()
-    private val assignmentRhsStack = ArrayDeque<MutableSet<FunctionalEntity>>()
+    private val assignmentFunctionalLhsStack = ArrayDeque<MutableSet<FunctionalEntity.FunctionalVariable>>()
+    private val assignmentFunctionalRhsStack = ArrayDeque<MutableSet<FunctionalEntity>>()
+    private val assignmentVariableLhsStack = ArrayDeque<MutableSet<Variable>>()
+    private val assignmentVariableRhsStack = ArrayDeque<MutableSet<Variable>>()
     private val returnStack = ArrayDeque<MutableSet<FunctionalEntity>>()
 
     private val allFunctionalEntities = mutableSetOf<FunctionalEntity>()
     private val definingLambda = mutableMapOf<FunctionalEntity, LambdaExpression>()
-    private val assigned = mutableListOf<Pair<Set<FunctionalEntity.FunctionalVariable>, Set<FunctionalEntity>>>()
+    private val assignedFunctionalEntities = mutableListOf<Pair<Set<FunctionalEntity.FunctionalVariable>, Set<FunctionalEntity>>>()
+    private val assignedVariables = mutableListOf<Pair<Set<Variable>, Set<Variable>>>()
     private val returned = mutableMapOf<LambdaExpression, MutableSet<FunctionalEntity>>()
 
     fun visit(ast: AST) {
@@ -163,7 +189,8 @@ private class BaseEscapeAnalysisVisitor(
         BaseEscapeAnalysisResult(
             allFunctionalEntities,
             definingLambda,
-            assigned,
+            assignedFunctionalEntities,
+            assignedVariables,
             returned,
         )
 
@@ -212,10 +239,16 @@ private class BaseEscapeAnalysisVisitor(
         val type = types.definitionTypes[definition]
 
         if (canEscapeViaExpressionOfType(type) && variable != null) {
-            // Add Variable to all currently open LHS/RSH of assignments and return statements.
-            assignmentLhsStack.forEach { it.add(FunctionalEntity.from(variable)) }
-            assignmentRhsStack.forEach { it.add(FunctionalEntity.from(variable)) }
+            // Add Variable to all currently open LHS/RHS of functional assignments and return statements
+            assignmentFunctionalLhsStack.forEach { it.add(FunctionalEntity.from(variable)) }
+            assignmentFunctionalRhsStack.forEach { it.add(FunctionalEntity.from(variable)) }
             returnStack.forEach { it.add(FunctionalEntity.from(variable)) }
+        }
+
+        if (variable != null) {
+            // Add Variable to all currently open LHS/RHS of variable assignments
+            assignmentVariableLhsStack.forEach { it.add(variable) }
+            assignmentVariableRhsStack.forEach { it.add(variable) }
         }
     }
 
@@ -254,20 +287,27 @@ private class BaseEscapeAnalysisVisitor(
             return
         }
 
-        assignmentRhsStack.add(mutableSetOf())
+        assignmentFunctionalRhsStack.add(mutableSetOf())
+        assignmentVariableRhsStack.add(mutableSetOf())
         visitExpression(expr.rhs)
+        val functionalRhs = assignmentFunctionalRhsStack.last().toSet()
+        val variableRhs = assignmentVariableRhsStack.last().toSet()
+        assignmentFunctionalRhsStack.removeLast()
+        assignmentVariableRhsStack.removeLast()
 
-        val rhs = assignmentRhsStack.last().toSet()
-        assignmentRhsStack.removeLast()
-
-        assignmentLhsStack.add(mutableSetOf())
+        assignmentFunctionalLhsStack.add(mutableSetOf())
+        assignmentVariableLhsStack.add(mutableSetOf())
         visitExpression(expr.lhs)
+        val functionalLhs = assignmentFunctionalLhsStack.last().toSet()
+        val variableLhs = assignmentVariableLhsStack.last().toSet()
+        assignmentFunctionalLhsStack.removeLast()
+        assignmentVariableLhsStack.removeLast()
 
-        val lhs = assignmentLhsStack.last().toSet()
-        assignmentLhsStack.removeLast()
-
-        if (rhs.isNotEmpty() && lhs.isNotEmpty()) {
-            assigned.add(lhs to rhs)
+        if (functionalLhs.isNotEmpty() && functionalRhs.isNotEmpty()) {
+            assignedFunctionalEntities.add(functionalLhs to functionalRhs)
+        }
+        if (variableLhs.isNotEmpty() && variableRhs.isNotEmpty()) {
+            assignedVariables.add(variableLhs to variableRhs)
         }
     }
 
@@ -284,8 +324,8 @@ private class BaseEscapeAnalysisVisitor(
             throw EscapeAnalysisException("Unexpected type $lambdaType of lambda expression $expr")
         }
 
-        // Add LambdaExpression to all currently open RSH of assignments and return statements.
-        assignmentRhsStack.forEach { it.add(functionalEntity) }
+        // Add LambdaExpression to all currently open RSH of functional assignments and return statements.
+        assignmentFunctionalRhsStack.forEach { it.add(functionalEntity) }
         returnStack.forEach { it.add(functionalEntity) }
 
         lambdaExpressionsStack.add(expr)
@@ -298,34 +338,39 @@ private class BaseEscapeAnalysisVisitor(
     }
 
     private fun visitVariableDeclaration(expr: Definition.VariableDeclaration) {
-        // Set definitionDepth for the new variable
         val variable = variablesMap.definitions[expr]!!
         val variableType =
             types.definitionTypes[expr]
                 ?: throw EscapeAnalysisException("Missing type of variable declaration: $expr")
 
-        if (!canEscapeViaExpressionOfType(variableType)) {
-            visitExpression(expr.value)
-            return
+        var functionalEntity: FunctionalEntity.FunctionalVariable? = null;
+        if (canEscapeViaExpressionOfType(variableType)) {
+            functionalEntity = FunctionalEntity.from(variable)
+            allFunctionalEntities.add(functionalEntity)
+            if (lambdaExpressionsStack.isNotEmpty()) {
+                definingLambda[functionalEntity] = lambdaExpressionsStack.last()
+            }
         }
 
-        // In case the variable is functional, we treat the definition like an assignment
-        val functionalEntity = FunctionalEntity.from(variable)
-        allFunctionalEntities.add(functionalEntity)
+        // We treat a definition with value like an assignment with only one variable in LHS
+        assignmentFunctionalRhsStack.add(mutableSetOf())
+        assignmentVariableRhsStack.add(mutableSetOf())
 
-        if (lambdaExpressionsStack.isNotEmpty()) {
-            definingLambda[functionalEntity] = lambdaExpressionsStack.last()
-        }
-
-        assignmentRhsStack.add(mutableSetOf())
         visitExpression(expr.value)
-        val rhs = assignmentRhsStack.last().toSet()
-        assignmentRhsStack.removeLast()
 
-        val lhs = setOf(functionalEntity)
+        val functionalRhs = assignmentFunctionalRhsStack.last().toSet()
+        val variableRhs = assignmentVariableRhsStack.last().toSet()
+        assignmentFunctionalRhsStack.removeLast()
+        assignmentVariableRhsStack.removeLast()
 
-        if (rhs.isNotEmpty()) {
-            assigned.add(lhs to rhs)
+        val functionalLhs = if (functionalEntity != null) setOf(functionalEntity) else emptySet()
+        val variableLhs = setOf(variable)
+
+        if (functionalLhs.isNotEmpty() && functionalRhs.isNotEmpty()) {
+            assignedFunctionalEntities.add(functionalLhs to functionalRhs)
+        }
+        if (variableRhs.isNotEmpty()) {
+            assignedVariables.add(variableLhs to variableRhs)
         }
     }
 }
