@@ -2,6 +2,7 @@ package cacophony.semantic.analysis
 
 import cacophony.*
 import cacophony.controlflow.Variable
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.types.BuiltinType
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.StructType
@@ -32,14 +33,20 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, gUse))
         val ast = block(fDef)
 
+        val fType = FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType))
+        val gType = FunctionType(listOf(), BuiltinType.IntegerType)
+
         val types =
             TypeCheckingResult(
-                mapOf(),
+                mapOf(
+                    fDef.value to fType,
+                    gDef.value to gType,
+                ),
                 mapOf(
                     xDef to BuiltinType.IntegerType,
                     yDef to BuiltinType.IntegerType,
-                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
-                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                    fDef to fType,
+                    gDef to gType,
                 ),
             )
 
@@ -86,7 +93,6 @@ class EscapeAnalysisKtTest {
                 functionAnalysis,
                 variablesMap,
                 types,
-                emptyMap(),
             )
 
         // then
@@ -114,14 +120,20 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, hDef, hUse))
         val ast = block(fDef)
 
+        val fType = FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType))
+        val gType = FunctionType(listOf(), BuiltinType.IntegerType)
+
         val types =
             TypeCheckingResult(
-                mapOf(),
+                mapOf(
+                    fDef.value to fType,
+                    gDef.value to gType,
+                ),
                 mapOf(
                     xDef to BuiltinType.IntegerType,
                     hDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
-                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
-                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                    fDef to fType,
+                    gDef to gType,
                 ),
             )
 
@@ -169,7 +181,6 @@ class EscapeAnalysisKtTest {
                 functionAnalysis,
                 variablesMap,
                 types,
-                emptyMap(),
             )
 
         // then
@@ -198,18 +209,19 @@ class EscapeAnalysisKtTest {
         val ast = block(fDef)
 
         val sType = StructType(mapOf("h" to FunctionType(listOf(), BuiltinType.IntegerType)))
+        val fType = FunctionType(listOf(), FunctionType(listOf(), sType))
+        val gType = FunctionType(listOf(), BuiltinType.IntegerType)
         val types =
             TypeCheckingResult(
-                mapOf(),
+                mapOf(
+                    fDef.value to fType,
+                    gDef.value to gType,
+                ),
                 mapOf(
                     xDef to BuiltinType.IntegerType,
                     sDef to sType,
-                    fDef to
-                        FunctionType(
-                            listOf(),
-                            FunctionType(listOf(), sType),
-                        ),
-                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                    fDef to fType,
+                    gDef to gType,
                 ),
             )
 
@@ -257,7 +269,6 @@ class EscapeAnalysisKtTest {
                 functionAnalysis,
                 variablesMap,
                 types,
-                emptyMap(),
             )
 
         // then
@@ -265,7 +276,7 @@ class EscapeAnalysisKtTest {
     }
 
     /*
-     * let h = [] -> Int => 10;
+     * let h = ([] -> Int => 10);
      * let f = [] -> () => (
      *   let x = 5;
      *   let g = [] -> Int => x;
@@ -276,7 +287,7 @@ class EscapeAnalysisKtTest {
     @Test
     fun `detects variables escaping via assignment to variable in upper scope`() {
         // given
-        val hDef = functionDefinition("h", listOf(), lit(10))
+        val hDef = variableDeclaration("h", lambda(listOf(), intType(), lit(10)))
         val hUse = variableUse("h")
         val xDef = variableDeclaration("x", lit(5))
         val xUse = variableUse("x")
@@ -285,17 +296,24 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, gDef, hUse assign gUse))
         val ast = block(hDef, fDef)
 
+        val hType = FunctionType(listOf(), BuiltinType.IntegerType)
+        val fType = FunctionType(listOf(), BuiltinType.UnitType)
+        val gType = FunctionType(listOf(), BuiltinType.IntegerType)
+
         val types =
             TypeCheckingResult(
                 mapOf(
+                    hDef.value to hType,
+                    fDef.value to fType,
+                    gDef.value to gType,
                     hUse to FunctionType(listOf(), BuiltinType.IntegerType),
                     gUse to FunctionType(listOf(), BuiltinType.IntegerType),
                 ),
                 mapOf(
                     xDef to BuiltinType.IntegerType,
-                    hDef to FunctionType(listOf(), BuiltinType.IntegerType),
-                    fDef to FunctionType(listOf(), BuiltinType.UnitType),
-                    gDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                    hDef to hType,
+                    fDef to fType,
+                    gDef to gType,
                 ),
             )
 
@@ -314,7 +332,7 @@ class EscapeAnalysisKtTest {
         val xAVar = AnalyzedVariable(xVar, fDef.value, VariableUseType.READ_WRITE)
         val gAVar = AnalyzedVariable(gVar, fDef.value, VariableUseType.READ_WRITE)
 
-        val hA = AnalyzedFunction(hDef.value, null, setOf(), listOf(), mutableSetOf(), 0, setOf())
+        val hA = AnalyzedFunction(hDef.value as LambdaExpression, null, setOf(), listOf(), mutableSetOf(), 0, setOf())
         val gA = AnalyzedFunction(gDef.value, null, setOf(xAVar), listOf(), mutableSetOf(), 1, setOf())
         val fA = AnalyzedFunction(fDef.value, null, setOf(xAVar, gAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
@@ -322,7 +340,7 @@ class EscapeAnalysisKtTest {
             mapOf(
                 gDef.value to gA,
                 fDef.value to fA,
-                hDef.value to hA,
+                hDef.value as LambdaExpression to hA,
             )
 
         val variablesMap =
@@ -344,7 +362,6 @@ class EscapeAnalysisKtTest {
                 functionAnalysis,
                 variablesMap,
                 types,
-                emptyMap(),
             )
 
         // then
@@ -364,19 +381,21 @@ class EscapeAnalysisKtTest {
         val xDef = variableDeclaration("x", lit(5))
         val yDef = variableDeclaration("y", lit(15))
         val xUse = variableUse("x")
-        val lambda = lambda(listOf(), block(yDef, xUse))
+        val lambda = lambda(listOf(), intType(), block(yDef, xUse))
         val fDef = functionDefinition("f", listOf(), block(xDef, lambda))
         val ast = block(fDef)
 
+        val fType = FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType))
         val types =
             TypeCheckingResult(
                 mapOf(
                     lambda to FunctionType(listOf(), BuiltinType.IntegerType),
+                    fDef.value to fType,
                 ),
                 mapOf(
                     yDef to BuiltinType.IntegerType,
                     xDef to BuiltinType.IntegerType,
-                    fDef to FunctionType(listOf(), FunctionType(listOf(), BuiltinType.IntegerType)),
+                    fDef to fType,
                 ),
             )
 
@@ -390,12 +409,15 @@ class EscapeAnalysisKtTest {
         val fVar = Variable.PrimitiveVariable()
 
         val xAVar = AnalyzedVariable(xVar, fDef.value, VariableUseType.READ_WRITE)
+        val yAVar = AnalyzedVariable(yVar, lambda, VariableUseType.READ_WRITE)
 
+        val lambdaAnalyzed = AnalyzedFunction(lambda, null, setOf(xAVar, yAVar), listOf(), mutableSetOf(), 1, setOf())
         val fA = AnalyzedFunction(fDef.value, null, setOf(xAVar), listOf(), mutableSetOf(), 0, setOf(xVar))
 
         val functionAnalysis =
             mapOf(
                 fDef.value to fA,
+                lambda to lambdaAnalyzed,
             )
 
         val variablesMap =
@@ -416,7 +438,6 @@ class EscapeAnalysisKtTest {
                 functionAnalysis,
                 variablesMap,
                 types,
-                emptyMap(),
             )
 
         // then
@@ -435,20 +456,24 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(xDef), xUse)
         val ast = block(fDef)
 
+        val fType = FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType)
+
         val types =
             TypeCheckingResult(
-                mapOf(),
                 mapOf(
-                    fDef to FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType),
+                    fDef.value to fType,
+                ),
+                mapOf(
+                    fDef to fType,
                 ),
             )
 
         val resolvedVariables = mapOf(xUse to xDef)
 
+        val fVar = Variable.PrimitiveVariable()
         val xVar = Variable.PrimitiveVariable()
 
         val xAVar = AnalyzedVariable(xVar, fDef.value, VariableUseType.READ_WRITE)
-
         val fA = AnalyzedFunction(fDef.value, null, setOf(xAVar), listOf(), mutableSetOf(), 0, emptySet())
 
         val functionAnalysis = mapOf(fDef.value to fA)
@@ -456,7 +481,10 @@ class EscapeAnalysisKtTest {
         val variablesMap =
             VariablesMap(
                 mapOf(),
-                mapOf(xDef to xVar),
+                mapOf(
+                    fDef to fVar,
+                    xDef to xVar,
+                ),
             )
 
         // when
@@ -467,7 +495,6 @@ class EscapeAnalysisKtTest {
                 functionAnalysis,
                 variablesMap,
                 types,
-                emptyMap(),
             )
 
         // then
@@ -489,21 +516,23 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, xUse))
         val ast = block(fDef)
 
+        val fType = FunctionType(listOf(), BuiltinType.IntegerType)
         val types =
             TypeCheckingResult(
-                mapOf(),
+                mapOf(
+                    fDef.value to fType,
+                ),
                 mapOf(
                     xDef to BuiltinType.IntegerType,
-                    fDef to FunctionType(listOf(), BuiltinType.IntegerType),
+                    fDef to fType,
                 ),
             )
 
         val resolvedVariables = mapOf(xUse to xDef)
 
+        val fVar = Variable.PrimitiveVariable()
         val xVar = Variable.PrimitiveVariable()
-
         val xAVar = AnalyzedVariable(xVar, fDef.value, VariableUseType.READ_WRITE)
-
         val fA = AnalyzedFunction(fDef.value, null, setOf(xAVar), listOf(), mutableSetOf(), 0, emptySet())
 
         val functionAnalysis = mapOf(fDef.value to fA)
@@ -511,7 +540,10 @@ class EscapeAnalysisKtTest {
         val variablesMap =
             VariablesMap(
                 mapOf(),
-                mapOf(xDef to xVar),
+                mapOf(
+                    fDef to fVar,
+                    xDef to xVar,
+                ),
             )
 
         // when
@@ -522,7 +554,6 @@ class EscapeAnalysisKtTest {
                 functionAnalysis,
                 variablesMap,
                 types,
-                emptyMap(),
             )
 
         // then
@@ -547,26 +578,29 @@ class EscapeAnalysisKtTest {
         val fDef = functionDefinition("f", listOf(), block(xDef, yUse assign xUse))
         val ast = block(fDef)
 
+        val fType = FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType)
+
         val types =
             TypeCheckingResult(
                 mapOf(
+                    fDef.value to fType,
                     yUse to BuiltinType.IntegerType,
                     xUse to BuiltinType.IntegerType,
                 ),
                 mapOf(
                     yDef to BuiltinType.IntegerType,
                     xDef to BuiltinType.IntegerType,
-                    fDef to FunctionType(listOf(BuiltinType.IntegerType), BuiltinType.IntegerType),
+                    fDef to fType,
                 ),
             )
 
         val resolvedVariables = mapOf(xUse to xDef, yUse to yDef)
 
+        val fVar = Variable.PrimitiveVariable()
         val yVar = Variable.PrimitiveVariable()
         val xVar = Variable.PrimitiveVariable()
 
         val xAVar = AnalyzedVariable(xVar, fDef.value, VariableUseType.READ_WRITE)
-
         val fA = AnalyzedFunction(fDef.value, null, setOf(xAVar), listOf(), mutableSetOf(), 0, emptySet())
 
         val functionAnalysis = mapOf(fDef.value to fA)
@@ -574,7 +608,7 @@ class EscapeAnalysisKtTest {
         val variablesMap =
             VariablesMap(
                 mapOf(),
-                mapOf(xDef to xVar, yDef to yVar),
+                mapOf(fDef to fVar, xDef to xVar, yDef to yVar),
             )
 
         // when
@@ -585,7 +619,6 @@ class EscapeAnalysisKtTest {
                 functionAnalysis,
                 variablesMap,
                 types,
-                emptyMap(),
             )
 
         // then

@@ -14,54 +14,76 @@ typealias EscapeAnalysisResult = Set<Variable>
 
 class EscapeAnalysisException(reason: String) : Exception(reason)
 
+private fun canEscapeViaExpressionOfType(type: TypeExpr?): Boolean =
+    when (type) {
+        is FunctionType -> true
+        is StructType -> type.fields.values.any { canEscapeViaExpressionOfType(it) }
+        else -> false
+    }
+
+private sealed class FunctionalEntity {
+    // NOTE: Variables of structural types with functional fields are treated like
+    //   functional variables in the Escape Analysis algorithm. In other words, FunctionalVariables
+    //   are all variables whose type satisfies the canEscapeViaExpressionOfType(*) predicate.
+    data class FunctionalVariable(val variable: Variable) : FunctionalEntity()
+
+    data class Lambda(val lambdaExpression: LambdaExpression) : FunctionalEntity()
+
+    companion object {
+        fun from(variable: Variable) = FunctionalVariable(variable)
+
+        fun from(lambdaExpression: LambdaExpression) = Lambda(lambdaExpression)
+    }
+}
+
 fun escapeAnalysis(
     ast: AST,
     resolvedVariables: ResolvedVariables,
     functionAnalysis: FunctionAnalysisResult,
     variablesMap: VariablesMap,
     types: TypeCheckingResult,
-    namedFunctionInfo: NamedFunctionInfo,
 ): EscapeAnalysisResult {
     val baseVisitor = BaseEscapeAnalysisVisitor(resolvedVariables, variablesMap, types)
     baseVisitor.visit(ast)
     val baseResult = baseVisitor.getResult()
 
-    val usageDepth = mutableMapOf<Variable, Int>()
-    val definitionDepth = mutableMapOf<Variable, Int>()
+    // Set definitionDepth of all Functional Entities of static depth of lambda expressions
+    // defining them, or -1 if they are defined globally.
+    val definitionDepth: Map<FunctionalEntity, Int> =
+        baseResult.allFunctionalEntities
+            .associateWith {
+                baseResult.definingLambda[it]?.let { parentLambda -> functionAnalysis[parentLambda]!!.staticDepth }
+                    ?: -1
+            }
+    val usageDepth = definitionDepth.toMutableMap()
 
-    // Find all escaping closures, these are exactly variables of function type with usageDepth smaller than definitionDepth.
-    val variableToDefinition = variablesMap.definitions.map { (variable, def) -> def to variable }.toMap()
+    // Auxiliary maps of Lambda Expressions and Functional Variables to their corresponding Functional Entities
+    val lambdaToFunctionalEntity: Map<LambdaExpression, FunctionalEntity> =
+        baseResult
+            .allFunctionalEntities
+            .filterIsInstance<FunctionalEntity.Lambda>()
+            .associateBy { it.lambdaExpression }
+    val variableToFunctionalEntity: Map<Variable, FunctionalEntity> =
+        baseResult
+            .allFunctionalEntities
+            .filterIsInstance<FunctionalEntity.FunctionalVariable>()
+            .associateBy { it.variable }
 
-    // Initialize usageDepth and definitionDepth for each non-global variable to static depth of function declaring it.
-    functionAnalysis.forEach { (_, analysis) ->
-        analysis.declaredVariables().forEach {
-            definitionDepth[it.origin] = analysis.staticDepth
-            usageDepth[it.origin] = analysis.staticDepth
+    // Update usageDepth for Functional Entities in return statements.
+    baseResult.returned.forEach { (fromLambda, returnedEntities) ->
+        returnedEntities.forEach {
+            usageDepth[it] = min(usageDepth[it]!!, functionAnalysis[fromLambda]!!.staticDepth - 1)
         }
     }
 
-    // Initialize usageDepth and definitionDepth for global variables.
-    variableToDefinition.keys
-        .filter { !usageDepth.containsKey(it) }
-        .forEach {
-            usageDepth[it] = -1
-            definitionDepth[it] = -1
-        }
-
-    // Update usageDepth for variables in return statements.
-    baseResult.returnVariables.forEach { (returnDepth, returnedVariables) ->
-        returnedVariables.forEach {
-            usageDepth[it] = min(usageDepth[it]!!, returnDepth - 1)
-        }
-    }
-
-    // Iterate updating usageDepth using assignments and relation of variables used by functions until fixed point is obtained.
+    // Iterate updating usageDepth using assignments and relation of variables
+    // used by functions until fixed point is obtained
     var fixedPointObtained = false
 
     while (!fixedPointObtained) {
         fixedPointObtained = true
 
-        baseResult.assignmentVariables.forEach { (lhs, rhs) ->
+        baseResult.assigned.forEach { (lhs, rhs) ->
             val minOfLhsDepths = lhs.minOf { usageDepth[it]!! }
             rhs.forEach {
                 if (usageDepth[it]!! > minOfLhsDepths) {
@@ -71,35 +93,50 @@ fun escapeAnalysis(
             }
         }
 
-        // TODO: Do we need to use namedFunctionInfo? Shouldn't it work for all lambda expressions?
-        functionAnalysis
-            .filter { (function, _) -> namedFunctionInfo.containsKey(function) }
-            .mapKeys { (function, _) -> namedFunctionInfo[function]!! }
-            .filter { (function, _) -> variablesMap.definitions.containsKey(function) }
-            .forEach { (function, analysis) ->
-                analysis.variables
-                    .filter { !analysis.declaredVariables().contains(it) }
-                    .forEach {
-                        val functionUsageDepth = usageDepth[variablesMap.definitions[function]!!]!!
-                        if (usageDepth[it.origin]!! > functionUsageDepth) {
-                            fixedPointObtained = false
-                            usageDepth[it.origin] = functionUsageDepth
-                        }
+        functionAnalysis.forEach { (lambda, analyzedFunction) ->
+            val lambdaUsageDepth = usageDepth[lambdaToFunctionalEntity[lambda]!!]!!
+            analyzedFunction.variables
+                .filterNot { analyzedFunction.declaredVariables().contains(it) }
+                .map { it.origin }
+                .filter { variableToFunctionalEntity.containsKey(it) }
+                .forEach {
+                    val functionalEntity = variableToFunctionalEntity[it]!!
+                    if (lambdaUsageDepth < usageDepth[functionalEntity]!!) {
+                        fixedPointObtained = false
+                        usageDepth[functionalEntity] = lambdaUsageDepth
                     }
-            }
+                }
+        }
     }
 
-    // The result are all variables with usageDepth smaller than definitionDepth
-    return usageDepth.keys.filter { usageDepth[it]!! < definitionDepth[it]!! }.toSet()
+    // The escaping Functional Entities are those with usageDepth < definitionDepth
+    val escapingFunctionalEntities =
+        baseResult.allFunctionalEntities
+            .filter { usageDepth[it]!! < definitionDepth[it]!! }
+
+    // The escaping variables are all escaping Functional Variables and variables used by escaping lambdas
+    return escapingFunctionalEntities
+        .filterIsInstance<FunctionalEntity.FunctionalVariable>()
+        .map { it.variable }.toSet() union
+        escapingFunctionalEntities.filterIsInstance<FunctionalEntity.Lambda>()
+            .map { functionAnalysis[it.lambdaExpression]!! }
+            .flatMap {
+                it.variables.minus(it.declaredVariables().toSet())
+            }
+            .map { it.origin }
 }
 
 /**
- * @property assignmentVariables list pairs of sets (L, R) consisting of variables used in assignments
- * @property returnVariables map of functions to sets of variables used in return statements
+ * @property allFunctionalEntities set of all Functional Entities found in the AST
+ * @property definingLambda map of Functional Entities to LambdaExpression in which they are defined
+ * @property assigned list pairs of sets consisting of Functional Entities used in assignments (in the LHS and RHS)
+ * @property returned map LambdaExpression -> Set of Functional Entities occurring in return expression in it
  */
 private data class BaseEscapeAnalysisResult(
-    val assignmentVariables: List<Pair<Set<Variable>, Set<Variable>>>,
-    val returnVariables: Map<Int, Set<Variable>>,
+    val allFunctionalEntities: Set<FunctionalEntity>,
+    val definingLambda: Map<FunctionalEntity, LambdaExpression>,
+    val assigned: List<Pair<Set<FunctionalEntity.FunctionalVariable>, Set<FunctionalEntity>>>,
+    val returned: Map<LambdaExpression, Set<FunctionalEntity>>,
 )
 
 private class BaseEscapeAnalysisVisitor(
@@ -107,21 +144,28 @@ private class BaseEscapeAnalysisVisitor(
     val variablesMap: VariablesMap,
     val types: TypeCheckingResult,
 ) {
-    private var currentStaticDepth = -1
+    private var lambdaExpressionsStack = ArrayDeque<LambdaExpression>()
     private var functionTypeStack = ArrayDeque<FunctionType>()
-    private val assignmentLhsStack = ArrayDeque<MutableSet<Variable>>()
-    private val assignmentRhsStack = ArrayDeque<MutableSet<Variable>>()
-    private val returnStack = ArrayDeque<MutableSet<Variable>>()
+    private val assignmentLhsStack = ArrayDeque<MutableSet<FunctionalEntity.FunctionalVariable>>()
+    private val assignmentRhsStack = ArrayDeque<MutableSet<FunctionalEntity>>()
+    private val returnStack = ArrayDeque<MutableSet<FunctionalEntity>>()
 
-    private val assignmentVariables = mutableListOf<Pair<Set<Variable>, Set<Variable>>>()
-    private val returnVariables = mutableMapOf<Int, MutableSet<Variable>>()
+    private val allFunctionalEntities = mutableSetOf<FunctionalEntity>()
+    private val definingLambda = mutableMapOf<FunctionalEntity, LambdaExpression>()
+    private val assigned = mutableListOf<Pair<Set<FunctionalEntity.FunctionalVariable>, Set<FunctionalEntity>>>()
+    private val returned = mutableMapOf<LambdaExpression, MutableSet<FunctionalEntity>>()
 
     fun visit(ast: AST) {
-        currentStaticDepth = -1
         visitExpression(ast)
     }
 
-    fun getResult(): BaseEscapeAnalysisResult = BaseEscapeAnalysisResult(assignmentVariables, returnVariables)
+    fun getResult(): BaseEscapeAnalysisResult =
+        BaseEscapeAnalysisResult(
+            allFunctionalEntities,
+            definingLambda,
+            assigned,
+            returned,
+        )
 
     private fun visitExpression(expr: Expression?) {
         if (expr == null) return
@@ -147,11 +191,11 @@ private class BaseEscapeAnalysisVisitor(
             }
             is Statement.ReturnStatement -> visitReturnedExpression(expr.value)
             is OperatorBinary.Assignment -> visitAssignment(expr)
-            is OperatorUnary -> visitExpression(expr.expression)
             is OperatorBinary -> {
                 visitExpression(expr.rhs)
                 visitExpression(expr.lhs)
             }
+            is OperatorUnary -> visitExpression(expr.expression)
             is VariableUse -> visitVariableUse(expr)
             is Struct -> expr.fields.values.forEach { visit(it) }
             is Allocation -> visitExpression(expr.value)
@@ -164,21 +208,18 @@ private class BaseEscapeAnalysisVisitor(
 
     private fun visitVariableUse(expr: VariableUse) {
         val definition = resolvedVariables[expr]!!
-
         val variable = variablesMap.definitions[definition]
+        val type = types.definitionTypes[definition]
 
-        if (variable != null) {
+        if (canEscapeViaExpressionOfType(type) && variable != null) {
             // Add Variable to all currently open LHS/RSH of assignments and return statements.
-            assignmentLhsStack.forEach { it.add(variable) }
-            assignmentRhsStack.forEach { it.add(variable) }
-            returnStack.forEach { it.add(variable) }
+            assignmentLhsStack.forEach { it.add(FunctionalEntity.from(variable)) }
+            assignmentRhsStack.forEach { it.add(FunctionalEntity.from(variable)) }
+            returnStack.forEach { it.add(FunctionalEntity.from(variable)) }
         }
     }
 
-    private fun visitFunctionBody(expr: Expression, functionType: FunctionType) {
-        currentStaticDepth += 1
-        functionTypeStack.add(functionType)
-
+    private fun visitFunctionBody(expr: Expression) {
         val lastBodyExpression = if (expr is Block) expr.expressions.lastOrNull() else expr
 
         if (expr is Block) {
@@ -186,32 +227,17 @@ private class BaseEscapeAnalysisVisitor(
         }
 
         if (lastBodyExpression != null) visitReturnedExpression(lastBodyExpression)
-
-        functionTypeStack.removeLast()
-        currentStaticDepth -= 1
     }
-
-    private fun visitLambdaExpression(expr: LambdaExpression) {
-        val lambdaType = types.expressionTypes[expr]
-        if (lambdaType == null || lambdaType !is FunctionType) {
-            throw EscapeAnalysisException("Unexpected type $lambdaType of lambda expression $expr")
-        }
-        visitFunctionBody(expr.body, types.expressionTypes[expr] as FunctionType)
-    }
-
-    private fun canEscapeViaExpressionOfType(type: TypeExpr?): Boolean =
-        when (type) {
-            is FunctionType -> true
-            is StructType -> type.fields.values.any { canEscapeViaExpressionOfType(it) }
-            else -> false
-        }
 
     private fun visitReturnedExpression(expr: Expression) {
         returnStack.add(mutableSetOf())
         visitExpression(expr)
 
-        if (returnStack.last().isNotEmpty() && canEscapeViaExpressionOfType(functionTypeStack.last().result)) {
-            returnVariables.getOrPut(currentStaticDepth) { mutableSetOf() }.addAll(returnStack.last())
+        if (lambdaExpressionsStack.isNotEmpty() &&
+            returnStack.last().isNotEmpty() &&
+            canEscapeViaExpressionOfType(functionTypeStack.last().result)
+        ) {
+            returned.getOrPut(lambdaExpressionsStack.last()) { mutableSetOf() }.addAll(returnStack.last())
         }
 
         returnStack.removeLast()
@@ -241,12 +267,39 @@ private class BaseEscapeAnalysisVisitor(
         assignmentLhsStack.removeLast()
 
         if (rhs.isNotEmpty() && lhs.isNotEmpty()) {
-            assignmentVariables.add(lhs to rhs)
+            assigned.add(lhs to rhs)
         }
     }
 
-    // We treat variable declaration with value similarly to assignments.
+    private fun visitLambdaExpression(expr: LambdaExpression) {
+        val functionalEntity = FunctionalEntity.from(expr)
+        allFunctionalEntities.add(functionalEntity)
+
+        if (lambdaExpressionsStack.isNotEmpty()) {
+            definingLambda[functionalEntity] = lambdaExpressionsStack.last()
+        }
+
+        val lambdaType = types.expressionTypes[expr]
+        if (lambdaType == null || lambdaType !is FunctionType) {
+            throw EscapeAnalysisException("Unexpected type $lambdaType of lambda expression $expr")
+        }
+
+        // Add LambdaExpression to all currently open RSH of assignments and return statements.
+        assignmentRhsStack.forEach { it.add(functionalEntity) }
+        returnStack.forEach { it.add(functionalEntity) }
+
+        lambdaExpressionsStack.add(expr)
+        functionTypeStack.add(types.expressionTypes[expr] as FunctionType)
+
+        visitFunctionBody(expr.body)
+
+        functionTypeStack.removeLast()
+        lambdaExpressionsStack.removeLast()
+    }
+
     private fun visitVariableDeclaration(expr: Definition.VariableDeclaration) {
+        // Set definitionDepth for the new variable
+        val variable = variablesMap.definitions[expr]!!
         val variableType =
             types.definitionTypes[expr]
                 ?: throw EscapeAnalysisException("Missing type of variable declaration: $expr")
@@ -256,16 +309,23 @@ private class BaseEscapeAnalysisVisitor(
             return
         }
 
+        // In case the variable is functional, we treat the definition like an assignment
+        val functionalEntity = FunctionalEntity.from(variable)
+        allFunctionalEntities.add(functionalEntity)
+
+        if (lambdaExpressionsStack.isNotEmpty()) {
+            definingLambda[functionalEntity] = lambdaExpressionsStack.last()
+        }
+
         assignmentRhsStack.add(mutableSetOf())
         visitExpression(expr.value)
-
         val rhs = assignmentRhsStack.last().toSet()
         assignmentRhsStack.removeLast()
 
-        val lhs = setOf(variablesMap.definitions[expr]!!)
+        val lhs = setOf(functionalEntity)
 
         if (rhs.isNotEmpty()) {
-            assignmentVariables.add(lhs to rhs)
+            assigned.add(lhs to rhs)
         }
     }
 }
