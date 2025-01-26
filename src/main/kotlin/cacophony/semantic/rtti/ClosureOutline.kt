@@ -1,14 +1,14 @@
 package cacophony.semantic.rtti
 
-import cacophony.controlflow.functions.LambdaHandler
+import cacophony.controlflow.functions.ClosureHandler
 import cacophony.semantic.syntaxtree.LambdaExpression
 
 typealias LambdaOutlineLocation = Map<LambdaExpression, String>
 
-fun generateClosureOutlines(lambdaHandlers: Map<LambdaExpression, LambdaHandler>): LambdaOutlineLocation =
-    lambdaHandlers.mapValues { generateClosureOutline(it.value) }
+fun generateClosureOutlines(closureHandlers: Map<LambdaExpression, ClosureHandler>): LambdaOutlineLocation =
+    closureHandlers.mapValues { generateClosureOutline(it.value) }
 
-fun generateClosureOutline(handler: LambdaHandler): String {
+fun generateClosureOutline(handler: ClosureHandler): String {
     val closureVariables = handler.getCapturedVariableOffsets()
     val outlineSize = closureVariables.maxOfOrNull { (variable, offset) -> offset + variable.size() } ?: 0
     val label = getLambdaClosureLabel(handler.getBodyReference())

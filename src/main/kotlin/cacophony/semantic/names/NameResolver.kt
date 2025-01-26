@@ -6,14 +6,7 @@ import cacophony.diagnostics.NRDiagnostics
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.ForeignFunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
-import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
-import cacophony.utils.CompileException
-
-class NameResolutionException(
-    reason: String,
-) : CompileException(reason)
 
 sealed interface ResolvedName {
     class Variable(
@@ -24,19 +17,20 @@ sealed interface ResolvedName {
         val def: FunctionArgument,
     ) : ResolvedName
 
+    // To musi zostać +- jak było
     class Function(
         val def: OverloadSet,
     ) : ResolvedName
 }
 
 private class OverloadSetImpl : OverloadSet {
-    private val overloads: MutableMap<Int, FunctionDeclaration> = mutableMapOf()
+    private val overloads: MutableMap<Int, Definition> = mutableMapOf()
 
-    override fun get(arity: Int): FunctionDeclaration? = overloads.get(arity)
+    override fun get(arity: Int): Definition? = overloads.get(arity)
 
-    override fun toMap(): Map<Int, FunctionDeclaration> = overloads
+    override fun toMap(): Map<Int, Definition> = overloads
 
-    override fun withDeclaration(arity: Int, declaration: FunctionDeclaration): OverloadSet {
+    override fun withDeclaration(arity: Int, declaration: Definition): OverloadSet {
         overloads[arity] = declaration
         return this
     }
@@ -73,6 +67,23 @@ private fun emptySymbolsTable(): SymbolsTable {
             }
         }
 
+        fun defineFunction(id: String, definition: Definition, arity: Int) {
+            when (blocks.last()[id]) {
+                is ResolvedName.Function -> {
+                    (blocks.last()[id] as ResolvedName.Function)
+                        .def
+                        .withDeclaration(arity, definition)
+                }
+
+                else -> {
+                    blocks.last()[id] =
+                        ResolvedName.Function(
+                            OverloadSetImpl().withDeclaration(arity, definition),
+                        )
+                }
+            }
+        }
+
         override fun define(id: String, definition: Definition) {
             if (blocks.isNotEmpty()) {
                 if (!idToBlocks.containsKey(id)) {
@@ -83,36 +94,22 @@ private fun emptySymbolsTable(): SymbolsTable {
                 }
 
                 when (definition) {
-                    is VariableDeclaration -> {
-                        blocks.last()[id] = ResolvedName.Variable(definition)
-                    }
-
                     is FunctionArgument -> {
                         blocks.last()[id] = ResolvedName.Argument(definition)
                     }
 
-                    is FunctionDeclaration -> {
-                        val arity =
-                            when (definition) {
-                                is FunctionDefinition -> definition.arguments.size
-                                is ForeignFunctionDeclaration ->
-                                    (definition.type ?: error("foreign function without a type")).argumentsType.size
-                            }
+                    is Definition.VariableDefinition -> {
+                        blocks.last()[id] = ResolvedName.Variable(definition)
+                    }
 
-                        when (blocks.last()[id]) {
-                            is ResolvedName.Function -> {
-                                (blocks.last()[id] as ResolvedName.Function)
-                                    .def
-                                    .withDeclaration(arity, definition)
-                            }
+                    is Definition.FunctionDefinition -> {
+                        val arity = definition.value.arguments.size
+                        defineFunction(id, definition, arity)
+                    }
 
-                            else -> {
-                                blocks.last()[id] =
-                                    ResolvedName.Function(
-                                        OverloadSetImpl().withDeclaration(arity, definition),
-                                    )
-                            }
-                        }
+                    is ForeignFunctionDeclaration -> {
+                        val arity = definition.type.argumentsType.size
+                        defineFunction(id, definition, arity)
                     }
                 }
             }
@@ -178,11 +175,6 @@ fun resolveNames(root: AST, diagnostics: Diagnostics): NameResolutionResult {
             is VariableDeclaration -> {
                 traverseAst(node.value, true)
                 symbolsTable.define(node.identifier, node)
-            }
-
-            is FunctionDefinition -> {
-                symbolsTable.define(node.identifier, node)
-                visitLambdaExpression(node.arguments, node.body)
             }
 
             is LambdaExpression -> {

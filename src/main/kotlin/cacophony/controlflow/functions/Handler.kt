@@ -8,7 +8,7 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.LambdaExpression
 
-interface CallableHandler {
+sealed interface CallableHandler {
     fun generateVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue
 
     fun hasVariableAllocation(variable: Variable.PrimitiveVariable): Boolean
@@ -41,7 +41,7 @@ interface CallableHandler {
     fun generateAccessToFramePointer(other: CallableHandler): CFGNode
 }
 
-interface LambdaHandler : CallableHandler {
+sealed interface ClosureHandler : CallableHandler {
     fun getBodyReference(): LambdaExpression
 
     fun getClosureLink(): Variable.PrimitiveVariable
@@ -49,8 +49,8 @@ interface LambdaHandler : CallableHandler {
     fun getCapturedVariableOffsets(): Map<Variable.PrimitiveVariable, Int>
 }
 
-interface FunctionHandler : CallableHandler {
-    fun getFunctionDeclaration(): Definition.FunctionDefinition // we probably want to delete this?
+sealed interface StaticFunctionHandler : CallableHandler {
+    fun getFunctionDeclaration(): LambdaExpression
 
     // Returns static link to parent
     fun getStaticLink(): Variable.PrimitiveVariable

@@ -26,6 +26,7 @@ internal class OperatorHandler(
                 // If there are clashing side effects, lhs must be extracted to a separate vertex
                 cfgGenerator.ensureExtracted(lhsCFG, mode)
             } else {
+                // If there are no clashing side effects, lhs and rhs can be accessed in any order, so we can leave the node as it is
                 lhsCFG
             }
         val lhsAccess = safeLhs.access

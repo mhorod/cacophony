@@ -41,12 +41,12 @@ class AccessTest {
         val outerDef = unitFunctionDefinition("outer", listOf(arg("x")), block(innerDef, call("inner")))
 
         // when
-        val actualFragment = generateSimplifiedCFG(outerDef)[innerDef]!!
-        println(cfgFragmentToBuilder(innerDef, actualFragment))
+        val actualFragment = generateSimplifiedCFG(outerDef)[innerDef.value]!!
+        println(cfgFragmentToBuilder(innerDef.value, actualFragment))
 
         // then
         val expectedFragment =
-            standaloneWrappedCFGFragment(innerDef) {
+            standaloneWrappedCFGFragment(innerDef.value) {
                 "bodyEntry" does
                     jump("bodyExit") {
                         writeRegister(
@@ -82,11 +82,11 @@ class AccessTest {
             )
 
         // when
-        val actualFragment = generateSimplifiedCFG(outerDef)[innerDef]!!
+        val actualFragment = generateSimplifiedCFG(outerDef)[innerDef.value]!!
 
         // then
         val expectedFragment =
-            standaloneWrappedCFGFragment(innerDef) {
+            standaloneWrappedCFGFragment(innerDef.value) {
                 "bodyEntry" does
                     jump("bodyExit") {
                         writeRegister(

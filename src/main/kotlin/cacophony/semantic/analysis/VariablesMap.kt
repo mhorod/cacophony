@@ -51,7 +51,7 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
 
             is Block -> expression.expressions.forEach { visit(it) }
 
-            is Definition.FunctionDefinition -> visit(expression.body)
+            is LambdaExpression -> visit(expression.body)
             is Definition.VariableDeclaration -> visit(expression.value)
 
             is FieldRef.RValue -> visit(expression.obj)
@@ -79,8 +79,6 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
                 visit(expression.testExpression)
                 visit(expression.doExpression)
             }
-
-            is LambdaExpression -> visit(expression.body)
 
             is Struct -> expression.fields.values.forEach { visit(it) }
             is Allocation -> visit(expression.value)
@@ -129,7 +127,7 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
             is Block -> expression.expressions.forEach { visit(it) }
             is Definition.FunctionArgument -> visitFunctionArgument(expression)
 
-            is Definition.FunctionDefinition -> visitLambdaExpression(expression.arguments, expression.body)
+            is LambdaExpression -> visitLambdaExpression(expression.arguments, expression.body)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expression)
 
             is FunctionCall -> {
@@ -155,8 +153,6 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
                 visit(expression.testExpression)
                 visit(expression.doExpression)
             }
-
-            is LambdaExpression -> visitLambdaExpression(expression.arguments, expression.body)
 
             is Struct -> expression.fields.values.forEach { visit(it) }
 
@@ -184,6 +180,7 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
 
     private fun createVariable(type: TypeExpr): Variable =
         when (type) {
+            // TODO(Tomasz) - create function variables
             is StructType -> Variable.StructVariable(type.fields.mapValues { createVariable(it.value) })
             is FunctionType -> Variable.FunctionVariable(Variable.PrimitiveVariable(false), Variable.PrimitiveVariable(true))
             else -> Variable.PrimitiveVariable(type is ReferentialType)

@@ -1,14 +1,14 @@
 package cacophony.semantic.rtti
 
-import cacophony.controlflow.functions.FunctionHandler
-import cacophony.semantic.syntaxtree.Definition.FunctionDefinition
+import cacophony.controlflow.functions.StaticFunctionHandler
+import cacophony.semantic.syntaxtree.LambdaExpression
 
-typealias StackFrameOutlineLocation = Map<FunctionDefinition, String>
+typealias StackFrameOutlineLocation = Map<LambdaExpression, String>
 
-fun generateStackFrameOutlines(functionHandlers: Collection<FunctionHandler>): List<String> =
-    functionHandlers.map { generateStackFrameOutline(it) }
+fun generateStackFrameOutlines(staticFunctionHandlers: Collection<StaticFunctionHandler>): List<String> =
+    staticFunctionHandlers.map { generateStackFrameOutline(it) }
 
-fun generateStackFrameOutline(handler: FunctionHandler): String {
+fun generateStackFrameOutline(handler: StaticFunctionHandler): String {
     val frameSize =
         handler.getStackSpace().value.let {
             require(it % 8 == 0)
@@ -26,4 +26,4 @@ fun generateStackFrameOutline(handler: FunctionHandler): String {
     }
 }
 
-fun getStackFrameLocation(fn: FunctionDefinition) = "frame_${fn.getLabel()}"
+fun getStackFrameLocation(fn: LambdaExpression) = "frame_${fn.getLabel()}"

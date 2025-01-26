@@ -1,7 +1,7 @@
 package cacophony.controlflow.generation
 
 import cacophony.controlflow.*
-import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 
 class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
     private val labels: MutableMap<String, CFGLabel> = mutableMapOf()
@@ -41,10 +41,10 @@ class CFGFragmentBuilder(private val registers: MutableMap<String, Register>) {
 }
 
 class CFGBuilder {
-    private val programCFG = mutableMapOf<Definition.FunctionDefinition, CFGFragment>()
+    private val programCFG = mutableMapOf<LambdaExpression, CFGFragment>()
     private val registers: MutableMap<String, Register> = mutableMapOf()
 
-    fun fragment(function: Definition.FunctionDefinition, init: CFGFragmentBuilder.() -> Unit) {
+    fun fragment(function: LambdaExpression, init: CFGFragmentBuilder.() -> Unit) {
         val builder = CFGFragmentBuilder(registers)
         builder.init()
         programCFG[function] = builder.build()

@@ -3,10 +3,13 @@ package cacophony.controlflow.generation
 import cacophony.*
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallGenerator
+import cacophony.controlflow.functions.CallableHandler
+import cacophony.controlflow.functions.CallableHandlers
 import cacophony.controlflow.functions.SimpleCallGenerator
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.syntaxtree.Struct
 import io.mockk.every
 import io.mockk.mockk
@@ -17,6 +20,21 @@ object MockFunctionParts {
     val epilogue: CFGNode = CFGNode.Comment("epilogue")
 }
 
+private fun stubCallableHandlers(callableHandlers: CallableHandlers, realPrologue: Boolean, realEpilogue: Boolean): CallableHandlers =
+    CallableHandlers(
+        callableHandlers.closureHandlers.mapValues { (_, handler) -> stubHandler(handler, realPrologue, realEpilogue) },
+        callableHandlers.staticFunctionHandlers.mapValues { (_, handler) -> stubHandler(handler, realPrologue, realEpilogue) },
+    )
+
+private inline fun <reified H : CallableHandler> stubHandler(handler: H, realPrologue: Boolean, realEpilogue: Boolean): H {
+    val stubbedHandler = spyk(handler)
+    if (!realPrologue)
+        every { stubbedHandler.generatePrologue() } returns listOf(MockFunctionParts.prologue)
+    if (!realEpilogue)
+        every { stubbedHandler.generateEpilogue() } returns listOf(MockFunctionParts.epilogue)
+    return stubbedHandler
+}
+
 internal fun generateSimplifiedCFG(
     ast: AST,
     realPrologue: Boolean = false,
@@ -25,17 +43,8 @@ internal fun generateSimplifiedCFG(
 ): ProgramCFG {
     val pipeline = testPipeline()
     val analyzedAST = pipeline.analyzeAst(ast)
-    val stubbedFunctionHandlers =
-        analyzedAST.functionHandlers.mapValues { (_, handler) ->
-            val stubbedHandler = spyk(handler)
-            if (!realPrologue)
-                every { stubbedHandler.generatePrologue() } returns listOf(MockFunctionParts.prologue)
-            if (!realEpilogue)
-                every { stubbedHandler.generateEpilogue() } returns listOf(MockFunctionParts.epilogue)
-            stubbedHandler
-        }
     val mockAnalyzedAST = spyk(analyzedAST)
-    every { mockAnalyzedAST.functionHandlers } returns stubbedFunctionHandlers
+    every { mockAnalyzedAST.callableHandlers } returns stubCallableHandlers(analyzedAST.callableHandlers, realPrologue, realEpilogue)
     val callGenerator =
         if (fullCallSequences)
             SimpleCallGenerator()
@@ -49,25 +58,30 @@ internal fun generateSimplifiedCFG(
     return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator, mockk(), mockk())
 }
 
-fun singleFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
-    cfg { fragment(definition, body) }
+fun singleFragmentCFG(function: LambdaExpression, body: CFGFragmentBuilder.() -> Unit): ProgramCFG = cfg { fragment(function, body) }
 
-internal fun standaloneCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
-    singleFragmentCFG(definition, body)[definition]!!
+internal fun standaloneCFGFragment(function: LambdaExpression, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+    singleFragmentCFG(function, body)[function]!!
 
-internal fun singleWrappedFragmentCFG(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
-    cfg { wrappedCFGFragment(definition, body) }
+internal fun singleWrappedFragmentCFG(function: LambdaExpression, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
+    cfg { wrappedCFGFragment(function, body) }
 
-internal fun CFGBuilder.wrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit) =
-    fragment(definition) {
+internal fun singleWrappedFragmentCFG(function: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): ProgramCFG =
+    cfg { wrappedCFGFragment(function.value, body) }
+
+internal fun CFGBuilder.wrappedCFGFragment(function: LambdaExpression, body: CFGFragmentBuilder.() -> Unit) =
+    fragment(function) {
         "entry" does jump("bodyEntry") { MockFunctionParts.prologue }
         body()
         "bodyExit" does jump("exit") { MockFunctionParts.epilogue }
-        "exit" does final { returnNode(definition.returnType.size()) }
+        "exit" does final { returnNode(function.returnType.size()) }
     }
 
-internal fun standaloneWrappedCFGFragment(definition: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
-    singleWrappedFragmentCFG(definition, body)[definition]!!
+internal fun standaloneWrappedCFGFragment(function: LambdaExpression, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+    singleWrappedFragmentCFG(function, body)[function]!!
+
+internal fun standaloneWrappedCFGFragment(function: Definition.FunctionDefinition, body: CFGFragmentBuilder.() -> Unit): CFGFragment =
+    singleWrappedFragmentCFG(function.value, body)[function.value]!!
 
 // {a = 7, b = true}
 fun simpleStruct(int: Int = 7, bool: Boolean = true): Struct =

@@ -2,21 +2,19 @@ package cacophony.controlflow.generation
 
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.functions.CallGenerator
-import cacophony.controlflow.functions.FunctionHandler
-import cacophony.semantic.analysis.UseTypeAnalysisResult
+import cacophony.controlflow.functions.CallableHandlers
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
-import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.types.TypeCheckingResult
 
-typealias ProgramCFG = Map<Definition.FunctionDefinition, CFGFragment>
+typealias ProgramCFG = Map<LambdaExpression, CFGFragment>
 
 fun generateCFG(
     resolvedVariables: ResolvedVariables,
-    analyzedUseTypes: UseTypeAnalysisResult,
-    functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
+    callableHandlers: CallableHandlers,
     variablesMap: VariablesMap,
     typeCheckingResult: TypeCheckingResult,
     callGenerator: CallGenerator,
@@ -24,27 +22,26 @@ fun generateCFG(
     lambdaOutlineLocation: LambdaOutlineLocation,
 ): ProgramCFG {
     val result =
-        functionHandlers.mapValues { (function, _) ->
-            generateFunctionCFG(
-                function,
-                functionHandlers,
-                resolvedVariables,
-                analyzedUseTypes,
-                variablesMap,
-                typeCheckingResult,
-                callGenerator,
-                objectOutlineLocation,
-                lambdaOutlineLocation,
-            )
-        }
+        callableHandlers.getAllCallables().map { function ->
+            function to
+                generateFunctionCFG(
+                    function,
+                    callableHandlers,
+                    resolvedVariables,
+                    variablesMap,
+                    typeCheckingResult,
+                    callGenerator,
+                    objectOutlineLocation,
+                    lambdaOutlineLocation,
+                )
+        }.toMap()
     return result
 }
 
 internal fun generateFunctionCFG(
-    function: Definition.FunctionDefinition,
-    functionHandlers: Map<Definition.FunctionDefinition, FunctionHandler>,
+    function: LambdaExpression,
+    callableHandlers: CallableHandlers,
     resolvedVariables: ResolvedVariables,
-    analyzedUseTypes: UseTypeAnalysisResult,
     variablesMap: VariablesMap,
     typeCheckingResult: TypeCheckingResult,
     callGenerator: CallGenerator,
@@ -54,10 +51,8 @@ internal fun generateFunctionCFG(
     val generator =
         CFGGenerator(
             resolvedVariables,
-            analyzedUseTypes,
             function,
-            functionHandlers,
-            emptyMap(), // TODO: fill LambdaHandlers in
+            callableHandlers,
             variablesMap,
             typeCheckingResult,
             callGenerator,

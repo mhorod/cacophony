@@ -36,7 +36,7 @@ private fun pruneParseTree(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnos
     return parseTree
 }
 
-private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): Type =
+private fun constructType(parseTree: ParseTree<CacophonyGrammarSymbol>, diagnostics: Diagnostics): BaseType =
     when (val symbol = getGrammarSymbol(parseTree)) {
         TYPE_IDENTIFIER -> {
             require(parseTree is ParseTree.Leaf) { "Unable to construct atomic type from non-leaf node $symbol" }
@@ -231,41 +231,26 @@ private fun generateASTInternal(parseTree: ParseTree<CacophonyGrammarSymbol>, di
                 val declaration = parseTree.children[1] as ParseTree.Branch
                 when (getGrammarSymbol(declaration)) {
                     DECLARATION_TYPED, DECLARATION_UNTYPED -> {
-                        val declarationPosition: Int
-                        var type: Type? = null
+                        var type: BaseType? = null
                         if (getGrammarSymbol(declaration) == DECLARATION_TYPED) {
                             type = constructType(declaration.children[0], diagnostics)
-                            declarationPosition = 2
-                        } else {
-                            declarationPosition = 1
                         }
-                        var declarationKind = declaration.children[declarationPosition]
-                        if (getGrammarSymbol(declarationKind) == LAMBDA_EXPRESSION) {
-                            declarationKind = declarationKind as ParseTree.Branch
-                            val branchesNum = declarationKind.children.size
-                            val returnType = declarationKind.children[branchesNum - 2]
-                            val body = declarationKind.children[branchesNum - 1]
-                            var arguments: List<Definition.FunctionArgument> = listOf()
-                            if (branchesNum >= 3) {
-                                val unparsedArguments = declarationKind.children.subList(0, branchesNum - 2)
-                                arguments =
-                                    unparsedArguments.map { constructFunctionArgument(it, diagnostics) } // non-empty function argument list
-                            }
-                            return Definition.FunctionDefinition(
-                                range,
-                                identifier.token.context,
-                                type as BaseType.Functional?,
-                                arguments,
-                                constructType(returnType, diagnostics),
-                                generateASTInternal(body, diagnostics),
-                            )
-                        } else { // VARIABLE_DECLARATION, which was pruned
-                            return Definition.VariableDeclaration(
-                                range,
-                                identifier.token.context,
-                                type as BaseType?,
-                                generateASTInternal(declaration.children.last(), diagnostics),
-                            )
+                        val value = generateASTInternal(declaration.children.last(), diagnostics)
+                        return when (value) {
+                            is LambdaExpression ->
+                                Definition.FunctionDefinition(
+                                    range,
+                                    identifier.token.context,
+                                    type,
+                                    value,
+                                )
+                            else ->
+                                Definition.VariableDefinition(
+                                    range,
+                                    identifier.token.context,
+                                    type,
+                                    value,
+                                )
                         }
                     }
 
@@ -412,7 +397,7 @@ private fun wrapInFunction(originalAST: AST): AST {
     val beforeStart = Location(-1)
     val behindEnd = Location(originalAST.range.second.value + 1)
     val program =
-        Definition.FunctionDefinition(
+        Definition.VariableDefinition(
             Pair(beforeStart, behindEnd),
             MAIN_FUNCTION_IDENTIFIER,
             BaseType.Functional(
@@ -420,13 +405,16 @@ private fun wrapInFunction(originalAST: AST): AST {
                 emptyList(),
                 BaseType.Basic(Pair(beforeStart, beforeStart), "Int"),
             ),
-            emptyList(),
-            BaseType.Basic(Pair(beforeStart, beforeStart), "Int"),
-            Block(
+            LambdaExpression(
                 Pair(Location(0), behindEnd),
-                listOf(
-                    originalAST,
-                    Statement.ReturnStatement(Pair(behindEnd, behindEnd), Literal.IntLiteral(Pair(behindEnd, behindEnd), 0)),
+                emptyList(),
+                BaseType.Basic(Pair(beforeStart, beforeStart), "Int"),
+                Block(
+                    Pair(Location(0), behindEnd),
+                    listOf(
+                        originalAST,
+                        Statement.ReturnStatement(Pair(behindEnd, behindEnd), Literal.IntLiteral(Pair(behindEnd, behindEnd), 0)),
+                    ),
                 ),
             ),
         )

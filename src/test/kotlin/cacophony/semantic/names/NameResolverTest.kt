@@ -9,7 +9,6 @@ import cacophony.semantic.names.ResolvedName.Function
 import cacophony.semantic.names.ResolvedName.Variable
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
-import cacophony.semantic.syntaxtree.Definition.FunctionDeclaration
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
 import cacophony.utils.Location
 import io.mockk.Called
@@ -36,7 +35,7 @@ class NameResolverTest {
 
         fun hasArgument(binding: Pair<VariableUse, FunctionArgument>): ResolvedNamesAssert
 
-        fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, FunctionDeclaration>>): ResolvedNamesAssert
+        fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, Definition>>): ResolvedNamesAssert
 
         fun andNothingElse()
     }
@@ -63,7 +62,7 @@ class NameResolverTest {
                 return this
             }
 
-            override fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, FunctionDeclaration>>): ResolvedNamesAssert {
+            override fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, Definition>>): ResolvedNamesAssert {
                 val overloadSet = resolvedNames[binding.first]
                 assert(overloadSet !== null)
                 assert(overloadSet is Function)

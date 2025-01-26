@@ -1,7 +1,7 @@
 package cacophony.semantic.rtti
 
 import cacophony.controlflow.Variable
-import cacophony.controlflow.functions.LambdaHandler
+import cacophony.controlflow.functions.ClosureHandler
 import cacophony.semantic.syntaxtree.LambdaExpression
 import io.mockk.every
 import io.mockk.mockk
@@ -12,13 +12,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ClosureOutlineTest {
-    val lambdaHandler: LambdaHandler = mockk()
+    val closureHandler: ClosureHandler = mockk()
 
     val lambdaExpression: LambdaExpression = mockk()
 
     @BeforeEach
     fun setUp() {
-        every { lambdaHandler.getBodyReference() } returns lambdaExpression
+        every { closureHandler.getBodyReference() } returns lambdaExpression
         every { lambdaExpression.getLabel() } returns "f"
     }
 
@@ -29,9 +29,9 @@ class ClosureOutlineTest {
 
     @Test
     fun `empty closure`() {
-        every { lambdaHandler.getCapturedVariableOffsets() } returns emptyMap()
+        every { closureHandler.getCapturedVariableOffsets() } returns emptyMap()
 
-        val outline = generateClosureOutline(lambdaHandler)
+        val outline = generateClosureOutline(closureHandler)
 
         assertThat(outline).isEqualTo("closure_f: dq 0")
     }
@@ -40,13 +40,13 @@ class ClosureOutlineTest {
     fun `simple closure`() {
         val varA = Variable.PrimitiveVariable("a")
         val varB = Variable.PrimitiveVariable("b", true)
-        every { lambdaHandler.getCapturedVariableOffsets() } returns
+        every { closureHandler.getCapturedVariableOffsets() } returns
             mapOf(
                 varA to 0,
                 varB to 1,
             )
 
-        val outline = generateClosureOutline(lambdaHandler)
+        val outline = generateClosureOutline(closureHandler)
 
         assertThat(outline).isEqualTo("closure_f: dq 2, 2")
     }
@@ -89,7 +89,7 @@ class ClosureOutlineTest {
         val varD = Variable.PrimitiveVariable("d")
         val varE = Variable.PrimitiveVariable("e", true)
         val varF = Variable.PrimitiveVariable("f", true)
-        every { lambdaHandler.getCapturedVariableOffsets() } returns
+        every { closureHandler.getCapturedVariableOffsets() } returns
             mapOf(
                 varA to 0,
                 varB to 1,
@@ -99,7 +99,7 @@ class ClosureOutlineTest {
                 varF to 6,
             )
 
-        val outline = generateClosureOutline(lambdaHandler)
+        val outline = generateClosureOutline(closureHandler)
 
         assertThat(outline).isEqualTo("closure_f: dq 7, ${6 + 16 + 64}")
     }
@@ -111,9 +111,9 @@ class ClosureOutlineTest {
             val variable = Variable.PrimitiveVariable("x$i", true)
             variableOffsets[variable] = i
         }
-        every { lambdaHandler.getCapturedVariableOffsets() } returns variableOffsets
+        every { closureHandler.getCapturedVariableOffsets() } returns variableOffsets
 
-        val outline = generateClosureOutline(lambdaHandler)
+        val outline = generateClosureOutline(closureHandler)
 
         assertThat(outline).isEqualTo("closure_f: dq 71, ${ULong.MAX_VALUE}, 127")
     }
