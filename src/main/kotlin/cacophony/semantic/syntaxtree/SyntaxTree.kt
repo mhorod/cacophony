@@ -137,14 +137,6 @@ class VariableUse(
             identifier == other.identifier
 }
 
-sealed interface FunctionalExpression {
-    val arguments: List<Definition.FunctionArgument>
-    val returnType: Type
-    val body: Expression
-
-    fun getLabel(): String
-}
-
 sealed class Definition(
     range: Pair<Location, Location>,
     val identifier: String,
@@ -154,11 +146,11 @@ sealed class Definition(
             other is Definition &&
             identifier == other.identifier
 
-    class VariableDeclaration(
+    sealed class VariableDeclaration(
         range: Pair<Location, Location>,
         identifier: String,
         val type: Type?,
-        val value: Expression,
+        open val value: Expression,
     ) : Definition(range, identifier) {
         override fun toString() = "let $identifier${if (type == null) "" else ": $type"} "
 
@@ -170,64 +162,34 @@ sealed class Definition(
                 areEquivalentTypes(type, other.type)
     }
 
-    sealed class FunctionDeclaration(
+    class VariableDefinition(
         range: Pair<Location, Location>,
         identifier: String,
-        val type: BaseType.Functional?,
-        val returnType: Type,
-    ) : Definition(range, identifier) {
-        abstract fun getLabel(): String
-
-        override fun isEquivalent(other: SyntaxTree?): Boolean =
-            super.isEquivalent(other) &&
-                other is FunctionDeclaration &&
-                areEquivalentTypes(type, other.type) &&
-                areEquivalentTypes(returnType, other.returnType)
-    }
-
-    class ForeignFunctionDeclaration(
-        range: Pair<Location, Location>,
-        identifier: String,
-        type: BaseType.Functional,
-        returnType: Type,
-    ) : FunctionDeclaration(range, identifier, type, returnType), LeafExpression {
-        override fun getLabel() = identifier
-
-        override fun toString() = "foreign $identifier: $type "
-
-        override fun isEquivalent(other: SyntaxTree?) =
-            super<FunctionDeclaration>.isEquivalent(other) &&
-                other is ForeignFunctionDeclaration &&
-                areEquivalentTypes(type, other.type) &&
-                areEquivalentTypes(returnType, other.returnType)
-    }
+        type: Type?,
+        value: Expression,
+    ) : VariableDeclaration(range, identifier, type, value)
 
     class FunctionDefinition(
         range: Pair<Location, Location>,
         identifier: String,
-        type: BaseType.Functional?,
-        override val arguments: List<FunctionArgument>,
-        returnType: Type,
-        override val body: Expression,
-    ) : FunctionDeclaration(range, identifier, type, returnType),
-        FunctionalExpression {
-        override fun getLabel() =
-            when (identifier) {
-                MAIN_FUNCTION_IDENTIFIER -> "main"
-                else -> "${identifier}_${arguments.size}_${hashCode().toULong()}"
-            }
+        type: Type?,
+        override val value: LambdaExpression,
+    ) : VariableDeclaration(range, identifier, type, value)
 
-        override fun toString() = "let $identifier${if (type == null) "" else ": $type"} = [${arguments.joinToString(", ")}] -> $returnType"
+    class ForeignFunctionDeclaration(
+        range: Pair<Location, Location>,
+        identifier: String,
+        val type: BaseType.Functional,
+        val returnType: Type,
+    ) : Definition(range, identifier), LeafExpression {
+        fun getLabel() = identifier
 
-        override fun children() = listOf(body)
+        override fun toString() = "foreign $identifier: $type "
 
-        override fun isEquivalent(other: SyntaxTree?): Boolean =
-            super.isEquivalent(other) &&
-                other is FunctionDefinition &&
+        override fun isEquivalent(other: SyntaxTree?) =
+            other is ForeignFunctionDeclaration &&
                 areEquivalentTypes(type, other.type) &&
-                areEquivalentExpressions(arguments, other.arguments) &&
-                areEquivalentTypes(returnType, other.returnType) &&
-                areEquivalentExpressions(body, other.body)
+                areEquivalentTypes(returnType, other.returnType)
     }
 
     class FunctionArgument(
@@ -246,14 +208,13 @@ sealed class Definition(
 
 class LambdaExpression(
     range: Pair<Location, Location>,
-    override val arguments: List<Definition.FunctionArgument>,
-    override val returnType: Type,
-    override val body: Expression,
-) : BaseExpression(range),
-    FunctionalExpression {
+    val arguments: List<Definition.FunctionArgument>,
+    val returnType: Type,
+    val body: Expression,
+) : BaseExpression(range) {
     override fun toString() = "[${arguments.joinToString(", ")}] -> $returnType"
 
-    override fun getLabel() = "Lambda_${arguments.size}_${hashCode().toULong()}"
+    fun getLabel() = "Lambda_${arguments.size}_${hashCode().toULong()}"
 
     override fun children() = arguments + listOf(body)
 
@@ -304,7 +265,7 @@ class Allocation(range: Pair<Location, Location>, val value: Expression) : BaseE
 }
 
 class StructField(range: Pair<Location, Location>, val name: String, val type: Type?) : BaseExpression(range), LeafExpression {
-    override fun toString() = "field ${name}${type?.let{": $it"} ?: ""}"
+    override fun toString() = "field ${name}${type?.let { ": $it" } ?: ""}"
 
     override fun isEquivalent(other: SyntaxTree?): Boolean =
         super<BaseExpression>.isEquivalent(other) &&

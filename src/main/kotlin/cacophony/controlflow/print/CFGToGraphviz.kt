@@ -2,16 +2,16 @@ package cacophony.controlflow.print
 
 import cacophony.controlflow.CFGFragment
 import cacophony.controlflow.CFGVertex
-import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 
-fun programCfgToGraphviz(cfg: Map<Definition.FunctionDefinition, CFGFragment>): String {
+fun programCfgToGraphviz(cfg: Map<LambdaExpression, CFGFragment>): String {
     var nextNodeId = 0
     var clusterId = 0
     val builder = StringBuilder()
     builder.append("strict digraph {\n")
     cfg.entries.forEach { (function, cfg) ->
         builder.append("subgraph cluster_$clusterId {\n")
-        builder.append("label=\"${function.identifier}\"\n")
+        builder.append("label=\"${function.getLabel()}\"\n")
         builder.append("color=black\n")
 
         builder.append(cfgGraphvizVertices(cfg, nextNodeId))

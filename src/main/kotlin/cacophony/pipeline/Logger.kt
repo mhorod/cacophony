@@ -11,7 +11,7 @@ import cacophony.parser.CacophonyGrammarSymbol
 import cacophony.semantic.analysis.*
 import cacophony.semantic.names.*
 import cacophony.semantic.syntaxtree.AST
-import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
@@ -50,27 +50,23 @@ interface Logger {
 
     fun logSuccessfulEscapeAnalysis(result: EscapeAnalysisResult, variableMap: VariablesMap)
 
-    fun logSuccessfulCallGraphGeneration(callGraph: CallGraph)
-
-    fun logFailedCallGraphGeneration()
-
     fun logSuccessfulFunctionAnalysis(result: FunctionAnalysisResult)
 
     fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult)
 
-    fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<Definition.FunctionDefinition, RegisterAllocation>)
+    fun logSuccessfulRegisterAllocation(allocatedRegisters: Map<LambdaExpression, RegisterAllocation>)
 
-    fun logSuccessfulControlFlowGraphGeneration(cfg: Map<Definition.FunctionDefinition, CFGFragment>)
+    fun logSuccessfulControlFlowGraphGeneration(cfg: Map<LambdaExpression, CFGFragment>)
 
-    fun logSuccessfulInstructionCovering(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>)
+    fun logSuccessfulInstructionCovering(covering: Map<LambdaExpression, List<BasicBlock>>)
 
-    fun logSuccessfulRegistersInteractionGeneration(registersInteractions: Map<Definition.FunctionDefinition, RegistersInteraction>)
+    fun logSuccessfulRegistersInteractionGeneration(registersInteractions: Map<LambdaExpression, RegistersInteraction>)
 
     fun logSpillHandlingAttempt(spareRegisters: Set<Register.FixedRegister>)
 
-    fun logSuccessfulSpillHandling(covering: Map<Definition.FunctionDefinition, List<BasicBlock>>)
+    fun logSuccessfulSpillHandling(covering: Map<LambdaExpression, List<BasicBlock>>)
 
-    fun logSuccessfulAsmGeneration(functions: Map<Definition.FunctionDefinition, String>)
+    fun logSuccessfulAsmGeneration(functions: Map<LambdaExpression, String>)
 
     fun logSuccessfulAssembling(dest: Path)
 

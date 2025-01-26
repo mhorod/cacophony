@@ -392,8 +392,8 @@ class StructTest {
 
         // when
         val actualCFG = generateSimplifiedCFG(fDef)
-        val fCFG = actualCFG[fDef]!!
-        val gCFG = actualCFG[gDef]!!
+        val fCFG = actualCFG[fDef.value]!!
+        val gCFG = actualCFG[gDef.value]!!
 
         // then
 

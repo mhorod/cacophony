@@ -9,14 +9,14 @@ import cacophony.semantic.analysis.AnalyzedFunction
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.FunctionalExpression
+import cacophony.semantic.syntaxtree.LambdaExpression
 import kotlin.math.max
 
-abstract class CallableHandlerImpl(
-    private val analyzedFunction: AnalyzedFunction, // TODO: we need to change it so it also covers lambda expressions
-    private val function: FunctionalExpression, // TODO: and probably get rid of that, analyzedFunction should have all necessary info
+sealed class CallableHandlerImpl(
+    private val analyzedFunction: AnalyzedFunction,
+    private val function: LambdaExpression,
     private val variablesMap: VariablesMap,
-    private val escapeAnalysisResult: EscapeAnalysisResult,
+    private val escapedVariables: EscapeAnalysisResult,
 ) : CallableHandler {
     private var stackSpace = REGISTER_SIZE
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
@@ -28,7 +28,7 @@ abstract class CallableHandlerImpl(
             .map {
                 it.origin
             }.filter {
-                escapeAnalysisResult.contains(it)
+                escapedVariables.contains(it)
             }.filterIsInstance<Variable.PrimitiveVariable>()
             .associateWith { Variable.PrimitiveVariable(true) }
 

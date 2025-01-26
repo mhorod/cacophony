@@ -6,7 +6,7 @@ import cacophony.controlflow.CFGNode
 import cacophony.controlflow.CFGVertex
 import cacophony.controlflow.Register
 import cacophony.controlflow.generation.ProgramCFG
-import cacophony.semantic.syntaxtree.Definition
+import cacophony.semantic.syntaxtree.LambdaExpression
 
 fun programCfgToBuilder(cfg: ProgramCFG): String {
     val builder = StringBuilder()
@@ -18,9 +18,9 @@ fun programCfgToBuilder(cfg: ProgramCFG): String {
     return builder.toString()
 }
 
-fun cfgFragmentToBuilder(def: Definition.FunctionDefinition, fragment: CFGFragment): String {
+fun cfgFragmentToBuilder(def: LambdaExpression, fragment: CFGFragment): String {
     val builder = StringBuilder()
-    builder.append("  fragment(${def.identifier}Def) {\n")
+    builder.append("  fragment(${def.getLabel()}Def) {\n")
 
     val labels = mutableMapOf<CFGLabel, String>()
     fragment.vertices.keys.forEach { labels[it] = "v$it" }

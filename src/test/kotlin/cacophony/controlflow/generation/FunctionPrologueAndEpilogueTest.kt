@@ -21,7 +21,7 @@ class FunctionPrologueAndEpilogueTest {
 
         // then
         val expectedCFG =
-            singleFragmentCFG(fDef) {
+            singleFragmentCFG(fDef.value) {
                 setupStackFrame("entry", "clean references")
                 "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store static link")
@@ -53,7 +53,7 @@ class FunctionPrologueAndEpilogueTest {
 
         // then
         val expectedCFG =
-            singleFragmentCFG(fDef) {
+            singleFragmentCFG(fDef.value) {
                 setupStackFrame("entry", "clean references")
                 "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store argument")
@@ -98,7 +98,7 @@ class FunctionPrologueAndEpilogueTest {
 
         // then
         val expectedCFG =
-            singleFragmentCFG(fDef) {
+            singleFragmentCFG(fDef.value) {
                 setupStackFrame("entry", "clean references")
                 "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store 0th argument")
@@ -151,11 +151,11 @@ class FunctionPrologueAndEpilogueTest {
             )
 
         // when
-        val actualFragment = generateCFGWithSimplifiedCalls(fDef)[fDef]!!
+        val actualFragment = generateCFGWithSimplifiedCalls(fDef)[fDef.value]!!
 
         // then
         val expectedFragment =
-            standaloneCFGFragment(fDef) {
+            standaloneCFGFragment(fDef.value) {
                 setupStackFrame("entry", "clean references", allocatedSpace = 8)
                 "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
                 savePreservedRegisters("save preserved", "store argument")

@@ -72,7 +72,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - variable definition with type`() {
-        val varDef = typedVariableDeclaration("x", testInt(), intLiteral)
+        val varDef = typedVariableDefinition("x", testInt(), intLiteral)
         val ast = block(varDef)
         val result = checkTypes(ast, emptyMap(), diagnostics)
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[varDef])
@@ -82,7 +82,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - variable declaration without type`() {
-        val varDef = typedVariableDeclaration("x", null, intLiteral)
+        val varDef = typedVariableDefinition("x", null, intLiteral)
         val ast = block(varDef)
         val result = checkTypes(ast, emptyMap(), diagnostics)
         assertTypeEquals(BuiltinType.UnitType, result.expressionTypes[varDef])
@@ -92,7 +92,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - simple variable use with type`() {
-        val varDef = typedVariableDeclaration("x", testInt(), intLiteral)
+        val varDef = typedVariableDefinition("x", testInt(), intLiteral)
         val varUse = variableUse("x")
         val ast = block(varDef, varUse)
         val result = checkTypes(ast, mapOf(varUse to varDef), diagnostics)
@@ -104,7 +104,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - simple variable use without type`() {
-        val varDef = typedVariableDeclaration("x", null, intLiteral)
+        val varDef = typedVariableDefinition("x", null, intLiteral)
         val varUse = variableUse("x")
         val ast = block(varDef, varUse)
         val result = checkTypes(ast, mapOf(varUse to varDef), diagnostics)
@@ -116,7 +116,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - simple variable use with semicolon`() {
-        val varDef = typedVariableDeclaration("x", testInt(), intLiteral)
+        val varDef = typedVariableDefinition("x", testInt(), intLiteral)
         val varUse = variableUse("x")
         val ast = block(varDef, varUse, empty())
         val result = checkTypes(ast, mapOf(varUse to varDef), diagnostics)
@@ -224,7 +224,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - function declaration - () to Int with outer scope `() {
-        val varDec = typedVariableDeclaration("x", null, intLiteral)
+        val varDec = typedVariableDefinition("x", null, intLiteral)
         val varUse = variableUse("x")
         val funDef = typedFunctionDefinition("f", null, emptyList(), testInt(), varUse)
         val ast = block(varDec, funDef)
@@ -318,7 +318,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - function call (Int) to Int with VariableUse`() {
-        val varDef = typedVariableDeclaration("a", null, intLiteral)
+        val varDef = typedVariableDefinition("a", null, intLiteral)
         val varUse = variableUse("a")
         val funArg = typedArg("x", testInt())
         val funDef = typedFunctionDefinition("f", null, listOf(funArg), testInt(), intLiteral)
@@ -423,7 +423,7 @@ class TypeCheckerTest {
     @Test
     fun `ok - if with else, both Int - Literal and VariableUse`() {
         val branch1 = lit(1)
-        val varDef = typedVariableDeclaration("x", null, intLiteral)
+        val varDef = typedVariableDefinition("x", null, intLiteral)
         val branch2 = variableUse("x")
         val statement = ifThenElse(booleanLiteral, branch1, branch2)
         val ast = block(varDef, statement)
@@ -451,7 +451,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - if without else, true branch Unit, VariableUse at test`() {
-        val varDef = typedVariableDeclaration("flag", null, lit(true))
+        val varDef = typedVariableDefinition("flag", null, lit(true))
         val varUse = variableUse("flag")
         val branch = empty()
         val statement = ifThenElse(varUse, branch, empty())
@@ -466,9 +466,9 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - if without else, true branch Int then Empty, VariableUse at test and branch`() {
-        val flagDef = typedVariableDeclaration("flag", null, booleanLiteral)
+        val flagDef = typedVariableDefinition("flag", null, booleanLiteral)
         val flagUse = variableUse("flag")
-        val branchDef = typedVariableDeclaration("x", null, intLiteral)
+        val branchDef = typedVariableDefinition("x", null, intLiteral)
         val branchUse = variableUse("x")
         val statement = ifThenElse(flagUse, block(branchUse, empty()), empty())
         val ast = block(flagDef, branchDef, statement)
@@ -492,7 +492,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - empty while, variable test`() {
-        val varDef = typedVariableDeclaration("x", null, booleanLiteral)
+        val varDef = typedVariableDefinition("x", null, booleanLiteral)
         val varUse = variableUse("x")
         val statement = whileLoop(varUse, empty())
         val ast = block(varDef, statement)
@@ -504,7 +504,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - non-empty while, variable test`() {
-        val varDef = typedVariableDeclaration("x", null, booleanLiteral)
+        val varDef = typedVariableDefinition("x", null, booleanLiteral)
         val varUse1 = variableUse("x")
         val varUse2 = variableUse("x")
         val body = block(varUse2)
@@ -698,7 +698,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - negation of variable`() {
-        val varDef = typedVariableDeclaration("x", null, booleanLiteral)
+        val varDef = typedVariableDefinition("x", null, booleanLiteral)
         val varUse = variableUse("x")
         val body = lnot(varUse)
         val ast = block(varDef, body)
@@ -720,7 +720,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - unary minus of variable`() {
-        val varDef = typedVariableDeclaration("x", null, intLiteral)
+        val varDef = typedVariableDefinition("x", null, intLiteral)
         val varUse = variableUse("x")
         val body = minus(varUse)
         val ast = block(varDef, body)
@@ -732,7 +732,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - add`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse add intLiteral
         val ast = block(varDef, body)
@@ -744,7 +744,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - sub`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse sub intLiteral
         val ast = block(varDef, body)
@@ -756,7 +756,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - mul`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse mul intLiteral
         val ast = block(varDef, body)
@@ -768,7 +768,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - div`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse div intLiteral
         val ast = block(varDef, body)
@@ -780,7 +780,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - mod`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse mod intLiteral
         val ast = block(varDef, body)
@@ -792,7 +792,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - add=`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse1 = variableUse("x")
         val varUse2 = variableUse("x")
         val body = varUse1 addeq varUse2
@@ -805,7 +805,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - sub=`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse1 = variableUse("x")
         val varUse2 = variableUse("x")
         val body = varUse1 subeq varUse2
@@ -818,7 +818,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - mul=`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse1 = variableUse("x")
         val varUse2 = variableUse("x")
         val body = varUse1 muleq varUse2
@@ -831,7 +831,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - div=`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse1 = variableUse("x")
         val varUse2 = variableUse("x")
         val body = varUse1 diveq varUse2
@@ -844,7 +844,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - mod=`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse1 = variableUse("x")
         val varUse2 = variableUse("x")
         val body = varUse1 modeq varUse2
@@ -857,7 +857,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - or`() {
-        val varDef = typedVariableDeclaration("x", null, lit(true))
+        val varDef = typedVariableDefinition("x", null, lit(true))
         val varUse = variableUse("x")
         val body = varUse lor booleanLiteral
         val ast = block(varDef, body)
@@ -869,7 +869,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - and`() {
-        val varDef = typedVariableDeclaration("x", null, lit(true))
+        val varDef = typedVariableDefinition("x", null, lit(true))
         val varUse = variableUse("x")
         val body = varUse land booleanLiteral
         val ast = block(varDef, body)
@@ -881,7 +881,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - less`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse lt intLiteral
         val ast = block(varDef, body)
@@ -894,7 +894,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - less=`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse leq intLiteral
         val ast = block(varDef, body)
@@ -907,7 +907,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - greater`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse gt intLiteral
         val ast = block(varDef, body)
@@ -920,7 +920,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - greater=`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse geq intLiteral
         val ast = block(varDef, body)
@@ -933,7 +933,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - eq Int`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse eq intLiteral
         val ast = block(varDef, body)
@@ -946,7 +946,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - eq Bool`() {
-        val varDef = typedVariableDeclaration("x", null, lit(true))
+        val varDef = typedVariableDefinition("x", null, lit(true))
         val varUse = variableUse("x")
         val body = varUse eq booleanLiteral
         val ast = block(varDef, body)
@@ -959,7 +959,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - neq Int`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = varUse neq intLiteral
         val ast = block(varDef, body)
@@ -972,7 +972,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - neq Bool`() {
-        val varDef = typedVariableDeclaration("x", null, lit(true))
+        val varDef = typedVariableDefinition("x", null, lit(true))
         val varUse = variableUse("x")
         val body = varUse neq booleanLiteral
         val ast = block(varDef, body)
@@ -985,9 +985,9 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - assignment from variable`() {
-        val var1Def = typedVariableDeclaration("x", null, lit(3))
+        val var1Def = typedVariableDefinition("x", null, lit(3))
         val var1Use = variableUse("x")
-        val var2Def = typedVariableDeclaration("y", null, lit(2))
+        val var2Def = typedVariableDefinition("y", null, lit(2))
         val var2Use = variableUse("y")
         val body = variableWrite(var1Use, var2Use)
         val ast = block(var1Def, var2Def, body)
@@ -1001,7 +1001,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - assignment from literal`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val body = variableWrite(varUse, intLiteral)
         val ast = block(varDef, body)
@@ -1014,7 +1014,7 @@ class TypeCheckerTest {
 
     @Test
     fun `ok - assignment from Void`() {
-        val varDef = typedVariableDeclaration("x", null, lit(3))
+        val varDef = typedVariableDefinition("x", null, lit(3))
         val varUse = variableUse("x")
         val res = returnStatement(empty())
         val body = variableWrite(varUse, res)
@@ -1031,7 +1031,7 @@ class TypeCheckerTest {
 
     @Test
     fun `error - unknown type at variable declaration`() {
-        val varDec = typedVariableDeclaration("x", basicType("Type"), empty())
+        val varDec = typedVariableDefinition("x", basicType("Type"), empty())
         val ast = block(varDec)
         checkTypes(ast, emptyMap(), diagnostics)
         verify(exactly = 1) { diagnostics.report(TypeCheckerDiagnostics.UnknownType, any<Pair<Location, Location>>()) }
@@ -1106,7 +1106,7 @@ class TypeCheckerTest {
 
     @Test
     fun `error - mismatch init vs declared`() {
-        val varDec = typedVariableDeclaration("x", testBoolean(), intLiteral)
+        val varDec = typedVariableDefinition("x", testBoolean(), intLiteral)
         val ast = block(varDec)
         checkTypes(ast, emptyMap(), diagnostics)
         verify(exactly = 1) {
@@ -1186,7 +1186,7 @@ class TypeCheckerTest {
 
     @Test
     fun `error - mismatch assignment`() {
-        val varDec = typedVariableDeclaration("x", testBoolean(), booleanLiteral)
+        val varDec = typedVariableDefinition("x", testBoolean(), booleanLiteral)
         val varUse = variableUse("x")
         val body = variableWrite(varUse, intLiteral)
         val ast = block(varDec, body)
@@ -1377,7 +1377,7 @@ class TypeCheckerTest {
 
     @Test
     fun `error - operator assignment on wrong type rhs`() {
-        val varDec = typedVariableDeclaration("x", null, intLiteral)
+        val varDec = typedVariableDefinition("x", null, intLiteral)
         val varUse = variableUse("x")
         val body = varUse addeq booleanLiteral
         val ast = block(varDec, body)
@@ -1393,7 +1393,7 @@ class TypeCheckerTest {
 
     @Test
     fun `error - operator assignment on wrong type lhs`() {
-        val varDec = typedVariableDeclaration("x", null, booleanLiteral)
+        val varDec = typedVariableDefinition("x", null, booleanLiteral)
         val varUse = variableUse("x")
         val body = varUse add intLiteral
         val ast = block(varDec, body)
@@ -1565,7 +1565,7 @@ class TypeCheckerTest {
                 structField("x") to lit(1),
                 structField("y") to lit(true),
             )
-        val decl = typedVariableDeclaration("a", structType("x" to basicType("Int")), struct)
+        val decl = typedVariableDefinition("a", structType("x" to basicType("Int")), struct)
         val varUse = variableUse("a")
         val ast = block(decl, varUse)
         println(TreePrinter(StringBuilder()).printTree(ast))
@@ -1707,7 +1707,7 @@ class TypeCheckerTest {
             structDeclaration(
                 structField("x") to lit(1),
             )
-        val ast = typedVariableDeclaration("a", structType("x" to basicType("Bool")), struct)
+        val ast = typedVariableDefinition("a", structType("x" to basicType("Bool")), struct)
         checkTypes(ast, emptyMap(), diagnostics)
         verify(exactly = 1) {
             diagnostics.report(
@@ -1757,7 +1757,7 @@ class TypeCheckerTest {
     @Test
     fun `error - assignment of allocation result to non-referential type`() {
         val allocation = allocation(lit(5))
-        val decl = typedVariableDeclaration("a", testInt(), allocation)
+        val decl = typedVariableDefinition("a", testInt(), allocation)
         val ast = block(decl)
 
         checkTypes(ast, emptyMap(), diagnostics)
@@ -1775,7 +1775,7 @@ class TypeCheckerTest {
     @Test
     fun `error - assignment of allocation result to wrong referential type`() {
         val allocation = allocation(lit(5))
-        val decl = typedVariableDeclaration("a", referentialType(testBoolean()), allocation)
+        val decl = typedVariableDefinition("a", referentialType(testBoolean()), allocation)
         val ast = block(decl)
 
         checkTypes(ast, emptyMap(), diagnostics)

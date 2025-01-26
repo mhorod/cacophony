@@ -185,7 +185,7 @@ class DebugRegressionTest {
                 pipeline.analyzeAst(ast),
                 SimpleCallGenerator(),
                 objectOutlines.locations,
-                generateClosureOutlines(semantics.lambdaHandlers),
+                generateClosureOutlines(semantics.callableHandlers.closureHandlers),
             )
         val covering = cfg.mapValues { (_, cfg) -> linearize(cfg, Params.instructionCovering) }
         val registersInteractions = analyzeRegistersInteraction(covering)

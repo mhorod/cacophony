@@ -4,19 +4,17 @@ import cacophony.controlflow.*
 import cacophony.controlflow.generation.flattenLayout
 import cacophony.controlflow.generation.getVariableLayout
 import cacophony.semantic.analysis.AnalyzedFunction
-import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
 
-class LambdaHandlerImpl(
+class ClosureHandlerImpl(
     callConvention: CallConvention,
-    private val function: LambdaExpression, // TODO: it can be FunctionalExpression
+    private val function: LambdaExpression,
     private val analyzedFunction: AnalyzedFunction,
     private val variablesMap: VariablesMap,
     escapeAnalysisResult: EscapeAnalysisResult,
-    closureAnalysisResult: ClosureAnalysisResult,
-) : LambdaHandler, CallableHandlerImpl(
+) : ClosureHandler, CallableHandlerImpl(
         analyzedFunction,
         function,
         variablesMap,
@@ -29,7 +27,7 @@ class LambdaHandlerImpl(
 
     override fun getFlattenedArguments() =
         function.arguments
-            .map { variablesMap.definitions[it]!! }
+            .map { variablesMap.definitions[it] ?: error("Variable not found for $it") }
             .map {
                 getVariableLayout(
                     this,
@@ -57,7 +55,7 @@ class LambdaHandlerImpl(
     private val prologueEpilogueHandler: PrologueEpilogueHandler
 
     private val offsetsMap: Map<Variable.PrimitiveVariable, Int> =
-        closureAnalysisResult[function]!!
+        analyzedFunction.outerVariables()
             .filterIsInstance<Variable.PrimitiveVariable>()
             .mapIndexed { index, it ->
                 it to index * REGISTER_SIZE

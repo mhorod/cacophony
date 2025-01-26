@@ -51,23 +51,23 @@ class ASTGenerationTests {
 
     private fun mockWrapInFunction(originalAST: AST): AST {
         val program =
-            Definition.FunctionDefinition(
+            Definition.VariableDefinition(
                 anyLocation(),
-                "<program>",
+                MAIN_FUNCTION_IDENTIFIER,
                 BaseType.Functional(
                     anyLocation(),
                     emptyList(),
                     BaseType.Basic(anyLocation(), "Int"),
                 ),
-                emptyList(),
-                BaseType.Basic(anyLocation(), "Int"),
-                Block(
+                LambdaExpression(
                     anyLocation(),
-                    listOf(
-                        originalAST,
-                        Statement.ReturnStatement(
-                            anyLocation(),
-                            Literal.IntLiteral(anyLocation(), 0),
+                    emptyList(),
+                    BaseType.Basic(anyLocation(), "Int"),
+                    Block(
+                        anyLocation(),
+                        listOf(
+                            originalAST,
+                            Statement.ReturnStatement(anyLocation(), Literal.IntLiteral(anyLocation(), 0)),
                         ),
                     ),
                 ),
@@ -75,7 +75,7 @@ class ASTGenerationTests {
         val programCall =
             FunctionCall(
                 anyLocation(),
-                VariableUse(anyLocation(), "<program>"),
+                VariableUse(anyLocation(), MAIN_FUNCTION_IDENTIFIER),
                 emptyList(),
             )
         return Block(
@@ -93,14 +93,19 @@ class ASTGenerationTests {
         return ast ?: throw exc!!
     }
 
+    // a bit convoluted, but gets the job done
     private fun getInnerBlock(ast: AST): AST { // unwrap AST
-        val mainFunction = ast.children().filterIsInstance<Definition.FunctionDefinition>().first()
-        return mainFunction.children().first() as Block
+        val mainFunction = ast.children().filterIsInstance<Definition.VariableDefinition>().first()
+        return mainFunction
+            .children()
+            .first()
+            .children()
+            .first() as Block
     }
 
     private fun computeType(type: String): Type? {
         val ast = computeAST("let x:$type=()") // that would fail type check, but here we don't care
-        val definition = getInnerBlock(ast).children().first() as Definition.VariableDeclaration
+        val definition = getInnerBlock(ast).children().first() as Definition.VariableDefinition
         return definition.type
     }
 
@@ -215,7 +220,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         basicType("Bool"),
@@ -236,35 +241,38 @@ class ASTGenerationTests {
     fun `recursive function`() {
         val actual = computeAST("let f = [x: Int] -> Int => f[f[x]]")
         val expected =
-            Definition.FunctionDefinition(
+            Definition.VariableDefinition(
                 anyLocation(),
                 "f",
                 null,
-                listOf(
-                    Definition.FunctionArgument(
-                        anyLocation(),
-                        "x",
-                        basicType("Int"),
-                    ),
-                ),
-                basicType("Int"),
-                FunctionCall(
+                LambdaExpression(
                     anyLocation(),
-                    VariableUse(
-                        anyLocation(),
-                        "f",
-                    ),
                     listOf(
-                        FunctionCall(
+                        Definition.FunctionArgument(
                             anyLocation(),
-                            VariableUse(
+                            "x",
+                            basicType("Int"),
+                        ),
+                    ),
+                    basicType("Int"),
+                    FunctionCall(
+                        anyLocation(),
+                        VariableUse(
+                            anyLocation(),
+                            "f",
+                        ),
+                        listOf(
+                            FunctionCall(
                                 anyLocation(),
-                                "f",
-                            ),
-                            listOf(
                                 VariableUse(
                                     anyLocation(),
-                                    "x",
+                                    "f",
+                                ),
+                                listOf(
+                                    VariableUse(
+                                        anyLocation(),
+                                        "x",
+                                    ),
                                 ),
                             ),
                         ),
@@ -359,7 +367,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -391,7 +399,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -423,7 +431,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -455,7 +463,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -487,7 +495,7 @@ class ASTGenerationTests {
             Block(
                 anyLocation(),
                 listOf(
-                    Definition.VariableDeclaration(
+                    Definition.VariableDefinition(
                         anyLocation(),
                         "x",
                         null,
@@ -595,7 +603,7 @@ class ASTGenerationTests {
     fun `if else expression`() {
         val actual = computeAST("let x = if false then 1 else 2")
         val expected =
-            Definition.VariableDeclaration(
+            Definition.VariableDefinition(
                 anyLocation(),
                 "x",
                 null,
@@ -613,23 +621,26 @@ class ASTGenerationTests {
     fun `return statement`() {
         val actual = computeAST("let f = [x: Int] -> Int => return x")
         val expected =
-            Definition.FunctionDefinition(
+            Definition.VariableDefinition(
                 anyLocation(),
                 "f",
                 null,
-                listOf(
-                    Definition.FunctionArgument(
-                        anyLocation(),
-                        "x",
-                        basicType("Int"),
-                    ),
-                ),
-                basicType("Int"),
-                Statement.ReturnStatement(
+                LambdaExpression(
                     anyLocation(),
-                    VariableUse(
+                    listOf(
+                        Definition.FunctionArgument(
+                            anyLocation(),
+                            "x",
+                            basicType("Int"),
+                        ),
+                    ),
+                    basicType("Int"),
+                    Statement.ReturnStatement(
                         anyLocation(),
-                        "x",
+                        VariableUse(
+                            anyLocation(),
+                            "x",
+                        ),
                     ),
                 ),
             )
