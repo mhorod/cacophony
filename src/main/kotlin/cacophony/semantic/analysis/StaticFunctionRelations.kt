@@ -77,20 +77,14 @@ private class StaticFunctionsRelationsVisitor(
         functionStack.lastOrNull()?.let {
             relations[it]?.usedVariables?.add(UsedVariable(variable, useType))
         }
-        if (variable !is Variable.FunctionVariable) {
-            // Primitives inside FunctionVariable are not variables present in the compiled code
-            variable.getNested().forEach { markNestedVariables(it, useType) }
-        }
+        variable.getNested().forEach { markNestedVariables(it, useType) }
     }
 
     private fun addVariableDeclaration(variable: Variable) {
         functionStack.lastOrNull()?.let {
             relations[it]?.declaredVariables?.add(variable)
         }
-        if (variable !is Variable.FunctionVariable) {
-            // Primitives inside FunctionVariable are not variables present in the compiled code
-            variable.getNested().forEach(this::addVariableDeclaration)
-        }
+        variable.getNested().forEach(this::addVariableDeclaration)
     }
 
     private fun visitExpression(expr: Expression) {

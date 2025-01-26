@@ -5,7 +5,6 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.*
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
-import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -14,14 +13,19 @@ class StaticFunctionRelationsTest {
     fun `should find variable in function`() {
         // given
         // f => let a
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val funF = unitFunctionDefinition("f", aDeclaration)
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to mockk(), aDeclaration to aVariable, funF to fVariable))
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to progVariable, aDeclaration to aVariable, funF to fVariable))
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -34,7 +38,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable),
+                            setOf(fVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
@@ -52,17 +56,22 @@ class StaticFunctionRelationsTest {
     fun `should find variable read`() {
         // given
         // f => let a, a
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funF = unitFunctionDefinition("f", block(aDeclaration, varAUse))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), aDeclaration to aVariable, funF to fVariable),
+                mapOf(program to progVariable, aDeclaration to aVariable, funF to fVariable),
                 mapOf(varAUse to aVariable),
             )
 
@@ -77,7 +86,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable),
+                            setOf(fVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
@@ -95,18 +104,23 @@ class StaticFunctionRelationsTest {
     fun `should find variable write`() {
         // given
         // f => (let a; a = ())
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val varAWrite = variableWrite(varAUse)
         val funF = unitFunctionDefinition("f", block(aDeclaration, varAWrite))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), aDeclaration to aVariable, funF to fVariable),
+                mapOf(program to progVariable, aDeclaration to aVariable, funF to fVariable),
                 mapOf(varAUse to aVariable),
             )
 
@@ -121,7 +135,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable),
+                            setOf(fVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
@@ -139,6 +153,9 @@ class StaticFunctionRelationsTest {
     fun `should find variable read and write`() {
         // given
         // f => (let a; a = (); a)
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse1 = variableUse("a")
@@ -146,13 +163,15 @@ class StaticFunctionRelationsTest {
 
         val varAUse2 = variableUse("a")
         val funF = unitFunctionDefinition("f", block(aDeclaration, varAWrite, varAUse2))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse1 to aDeclaration, varAUse2 to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), aDeclaration to aVariable, funF to fVariable),
+                mapOf(program to progVariable, aDeclaration to aVariable, funF to fVariable),
                 mapOf(
                     varAUse1 to aVariable,
                     varAUse2 to aVariable,
@@ -170,7 +189,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable),
+                            setOf(fVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
@@ -191,6 +210,9 @@ class StaticFunctionRelationsTest {
     fun `should find multiple variables in block`() {
         // given
         // f => ( let a; let b; let c )
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val bDeclaration = variableDeclaration("b", Empty(mockRange()))
         val cDeclaration = variableDeclaration("c", Empty(mockRange()))
@@ -198,14 +220,16 @@ class StaticFunctionRelationsTest {
         val bVariable = Variable.PrimitiveVariable()
         val cVariable = Variable.PrimitiveVariable()
         val funF = unitFunctionDefinition("f", block(aDeclaration, bDeclaration, cDeclaration))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
-                    program to mockk(),
+                    program to progVariable,
                     funF to fVariable,
                     aDeclaration to aVariable,
                     bDeclaration to bVariable,
@@ -224,7 +248,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable),
+                            setOf(fVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
@@ -252,6 +276,9 @@ class StaticFunctionRelationsTest {
         //
         //
         // f => ( let s, s.a = s.b.d)
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val sDeclaration = variableDeclaration("s", Empty(mockRange()))
         val fVariable = Variable.PrimitiveVariable()
         val eVariable = Variable.PrimitiveVariable()
@@ -295,7 +322,9 @@ class StaticFunctionRelationsTest {
                     ),
                 ),
             )
-        val funFVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val funFVariable = Variable.FunctionVariable("f", fCode, fLink)
 
         val ast = astOf(funF)
         val program = program(ast)
@@ -307,7 +336,7 @@ class StaticFunctionRelationsTest {
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
-                    program to mockk(),
+                    program to progVariable,
                     funF to funFVariable,
                     sDeclaration to sVariable,
                 ),
@@ -331,7 +360,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(funFVariable),
+                            setOf(funFVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
@@ -357,14 +386,21 @@ class StaticFunctionRelationsTest {
     fun `should find nested function`() {
         // given
         // f => ( g => () )
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val funG = unitFunctionDefinition("g", Empty(mockRange()))
-        val gVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val funF = unitFunctionDefinition("f", funG)
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to mockk(), funF to fVariable, funG to gVariable))
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to progVariable, funF to fVariable, funG to gVariable))
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -377,14 +413,14 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable),
+                            setOf(fVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
                             1,
-                            setOf(gVariable),
+                            setOf(gVariable, gCode, gLink),
                             emptySet(),
                         ),
                     funG.value to
@@ -402,17 +438,26 @@ class StaticFunctionRelationsTest {
     fun `should find multiple nested functions in block`() {
         // given
         // f => ( g => (); h => () )
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val funG = unitFunctionDefinition("g", Empty(mockRange()))
-        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val funH = unitFunctionDefinition("h", Empty(mockRange()))
-        val hVariable = Variable.FunctionVariable("h", mockk(), mockk())
+        val hCode = primVar()
+        val hLink = primVar()
+        val hVariable = Variable.FunctionVariable("h", hCode, hLink)
         val funF = unitFunctionDefinition("f", block(funG, funH))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
         val variablesMap: VariablesMap =
-            createVariablesMap(mapOf(program to mockk(), funF to fVariable, funG to gVariable, funH to hVariable))
+            createVariablesMap(mapOf(program to progVariable, funF to fVariable, funG to gVariable, funH to hVariable))
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -425,14 +470,14 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable),
+                            setOf(fVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
                             1,
-                            setOf(gVariable, hVariable),
+                            setOf(gVariable, hVariable, gCode, gLink, hCode, hLink),
                             emptySet(),
                         ),
                     funG.value to
@@ -457,14 +502,19 @@ class StaticFunctionRelationsTest {
     fun `should analyze top level variables`() {
         // given
         // (let a; f => ())
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val funF = unitFunctionDefinition("f", Empty(mockRange()))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(aDeclaration, funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to mockk(), funF to fVariable, aDeclaration to aVariable))
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to progVariable, funF to fVariable, aDeclaration to aVariable))
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -477,7 +527,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable, aVariable),
+                            setOf(fVariable, fCode, fLink, aVariable),
                             emptySet(),
                         ),
                     funF.value to
@@ -495,6 +545,9 @@ class StaticFunctionRelationsTest {
     fun `should find variables and functions in nested functions`() {
         // given
         // f => (let a; g => ( let b; h => ( let c ) ) )
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val bDeclaration = variableDeclaration("b", Empty(mockRange()))
         val cDeclaration = variableDeclaration("C", Empty(mockRange()))
@@ -502,11 +555,17 @@ class StaticFunctionRelationsTest {
         val bVariable = Variable.PrimitiveVariable()
         val cVariable = Variable.PrimitiveVariable()
         val funH = unitFunctionDefinition("h", block(cDeclaration))
-        val hVariable = Variable.FunctionVariable("h", mockk(), mockk())
+        val hCode = primVar()
+        val hLink = primVar()
+        val hVariable = Variable.FunctionVariable("h", hCode, hLink)
         val funG = unitFunctionDefinition("g", block(bDeclaration, funH))
-        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val funF = unitFunctionDefinition("f", block(aDeclaration, funG))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
 
         val ast = astOf(funF)
         val program = program(ast)
@@ -514,7 +573,7 @@ class StaticFunctionRelationsTest {
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
-                    program to mockk(),
+                    program to progVariable,
                     funF to fVariable,
                     funG to gVariable,
                     funH to hVariable,
@@ -534,21 +593,21 @@ class StaticFunctionRelationsTest {
                     StaticFunctionRelations(
                         null,
                         0,
-                        setOf(fVariable),
+                        setOf(fVariable, fCode, fLink),
                         emptySet(),
                     ),
                 funF.value to
                     StaticFunctionRelations(
                         program.value,
                         1,
-                        setOf(gVariable, aVariable),
+                        setOf(gVariable, gCode, gLink, aVariable),
                         emptySet(),
                     ),
                 funG.value to
                     StaticFunctionRelations(
                         funF.value,
                         2,
-                        setOf(hVariable, bVariable),
+                        setOf(hVariable, hCode, hLink, bVariable),
                         emptySet(),
                     ),
                 funH.value to
@@ -566,23 +625,38 @@ class StaticFunctionRelationsTest {
     fun `should find relations in complex nested functions`() {
         // given
         // (foo => (let a; g => h => a; i => (j => (); g())); main => foo())
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funH = unitFunctionDefinition("h", varAUse)
-        val hVariable = Variable.FunctionVariable("h", mockk(), mockk())
+        val hCode = primVar()
+        val hLink = primVar()
+        val hVariable = Variable.FunctionVariable("h", hCode, hLink)
         val funG = unitFunctionDefinition("g", funH)
-        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val funJ = unitFunctionDefinition("j", block())
-        val jVariable = Variable.FunctionVariable("j", mockk(), mockk())
+        val jCode = primVar()
+        val jLink = primVar()
+        val jVariable = Variable.FunctionVariable("j", jCode, jLink)
         val varGUse = variableUse("g")
         val funI = unitFunctionDefinition("i", block(funJ, call(varGUse)))
-        val iVariable = Variable.FunctionVariable("i", mockk(), mockk())
+        val iCode = primVar()
+        val iLink = primVar()
+        val iVariable = Variable.FunctionVariable("i", iCode, iLink)
         val funFoo = unitFunctionDefinition("foo", block(aDeclaration, funG, funI))
-        val fooVariable = Variable.FunctionVariable("foo", mockk(), mockk())
+        val fooCode = primVar()
+        val fooLink = primVar()
+        val fooVariable = Variable.FunctionVariable("foo", fooCode, fooLink)
         val varFooUse = variableUse("foo")
         val funMain = unitFunctionDefinition("main", call(varFooUse))
-        val mainVariable = Variable.FunctionVariable("main", mockk(), mockk())
+        val mainCode = primVar()
+        val mainLink = primVar()
+        val mainVariable = Variable.FunctionVariable("main", mainCode, mainLink)
 
         val ast = astOf(funFoo, funMain)
         val program = program(ast)
@@ -590,7 +664,7 @@ class StaticFunctionRelationsTest {
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
-                    program to mockk(),
+                    program to progVariable,
                     funH to hVariable,
                     funG to gVariable,
                     funJ to jVariable,
@@ -616,21 +690,21 @@ class StaticFunctionRelationsTest {
                     StaticFunctionRelations(
                         null,
                         0,
-                        setOf(fooVariable, mainVariable),
+                        setOf(fooVariable, fooCode, fooLink, mainVariable, mainCode, mainLink),
                         emptySet(),
                     ),
                 funFoo.value to
                     StaticFunctionRelations(
                         program.value,
                         1,
-                        setOf(gVariable, iVariable, aVariable),
+                        setOf(gVariable, gCode, gLink, iVariable, iCode, iLink, aVariable),
                         emptySet(),
                     ),
                 funG.value to
                     StaticFunctionRelations(
                         funFoo.value,
                         2,
-                        setOf(hVariable),
+                        setOf(hVariable, hCode, hLink),
                         emptySet(),
                     ),
                 funH.value to
@@ -644,8 +718,12 @@ class StaticFunctionRelationsTest {
                     StaticFunctionRelations(
                         funFoo.value,
                         2,
-                        setOf(jVariable),
-                        setOf(UsedVariable(gVariable, VariableUseType.READ)),
+                        setOf(jVariable, jCode, jLink),
+                        setOf(
+                            UsedVariable(gVariable, VariableUseType.READ),
+                            UsedVariable(gCode, VariableUseType.READ),
+                            UsedVariable(gLink, VariableUseType.READ),
+                        ),
                     ),
                 funJ.value to
                     StaticFunctionRelations(
@@ -659,7 +737,11 @@ class StaticFunctionRelationsTest {
                         program.value,
                         1,
                         emptySet(),
-                        setOf(UsedVariable(fooVariable, VariableUseType.READ)),
+                        setOf(
+                            UsedVariable(fooVariable, VariableUseType.READ),
+                            UsedVariable(fooCode, VariableUseType.READ),
+                            UsedVariable(fooLink, VariableUseType.READ),
+                        ),
                     ),
             ),
         )
@@ -669,19 +751,26 @@ class StaticFunctionRelationsTest {
     fun `variable defined and used in inner is not visible in outer`() {
         // given
         // f => ( g => (let a; a;) )
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funG = unitFunctionDefinition("g", block(aDeclaration, varAUse))
-        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val funF = unitFunctionDefinition("f", funG)
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), funF to fVariable, funG to gVariable, aDeclaration to aVariable),
+                mapOf(program to progVariable, funF to fVariable, funG to gVariable, aDeclaration to aVariable),
                 mapOf(varAUse to aVariable),
             )
 
@@ -696,14 +785,14 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable),
+                            setOf(fVariable, fCode, fLink),
                             emptySet(),
                         ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
                             1,
-                            setOf(gVariable),
+                            setOf(gVariable, gCode, gLink),
                             emptySet(),
                         ),
                     funG.value to
@@ -722,6 +811,9 @@ class StaticFunctionRelationsTest {
         // given
         // let a; let b;
         // let f = if true then ([] -> Unit => a) else ([] -> Unit => b)
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
@@ -733,13 +825,15 @@ class StaticFunctionRelationsTest {
 
         val condition = ifThenElse(lit(true), lambdaA, lambdaB)
         val fDeclaration = variableDeclaration("f", condition)
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(aDeclaration, bDeclaration, fDeclaration)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), fDeclaration to fVariable, aDeclaration to aVariable, bDeclaration to bVariable),
+                mapOf(program to progVariable, fDeclaration to fVariable, aDeclaration to aVariable, bDeclaration to bVariable),
                 mapOf(varAUse to aVariable, varBUse to bVariable),
             )
 
@@ -754,7 +848,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(fVariable, aVariable, bVariable),
+                            setOf(fVariable, fCode, fLink, aVariable, bVariable),
                             emptySet(),
                         ),
                     lambdaA to

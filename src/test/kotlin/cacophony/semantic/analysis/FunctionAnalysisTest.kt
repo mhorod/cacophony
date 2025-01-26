@@ -5,7 +5,6 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.*
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
-import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -14,12 +13,17 @@ class FunctionAnalysisTest {
     fun `should analyze empty function`() {
         // given
         // f => {}
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val funF = unitFunctionDefinition("f", block())
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to mockk(), funF to fVariable))
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to progVariable, funF to fVariable))
 
         // when
         val results = analyzeFunctions(ast, resolvedVariables, variablesMap)
@@ -33,7 +37,11 @@ class FunctionAnalysisTest {
                         analyzedFunction(
                             program,
                             0,
-                            setOf(AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED)),
+                            setOf(
+                                AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
+                            ),
                         ),
                     funF.value to
                         AnalyzedFunction(
@@ -53,14 +61,19 @@ class FunctionAnalysisTest {
     fun `should analyze function with unused variable`() {
         // given
         // f => let a
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val funF = unitFunctionDefinition("f", block(aDeclaration))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to mockk(), funF to fVariable, aDeclaration to aVariable))
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to progVariable, funF to fVariable, aDeclaration to aVariable))
 
         // when
         val results = analyzeFunctions(ast, resolvedVariables, variablesMap)
@@ -74,7 +87,11 @@ class FunctionAnalysisTest {
                         analyzedFunction(
                             program,
                             0,
-                            setOf(AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED)),
+                            setOf(
+                                AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
+                            ),
                         ),
                     funF.value to
                         AnalyzedFunction(
@@ -94,17 +111,22 @@ class FunctionAnalysisTest {
     fun `should analyze function with read variable`() {
         // given
         // f => (let a; a)
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funF = unitFunctionDefinition("f", block(varAUse))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(aDeclaration, funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), funF to fVariable, aDeclaration to aVariable),
+                mapOf(program to progVariable, funF to fVariable, aDeclaration to aVariable),
                 mapOf(varAUse to aVariable),
             )
 
@@ -127,6 +149,8 @@ class FunctionAnalysisTest {
                             setOf(
                                 AnalyzedVariable(aVariable, program(ast).value, VariableUseType.READ),
                                 AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
                             ),
                             emptyList(),
                             mutableSetOf(),
@@ -151,18 +175,23 @@ class FunctionAnalysisTest {
     fun `should analyze function with written variable`() {
         // given
         // f => (let a; a = ())
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val varAWrite = variableWrite(varAUse)
         val funF = unitFunctionDefinition("f", block(varAWrite))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(aDeclaration, funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), funF to fVariable, aDeclaration to aVariable),
+                mapOf(program to progVariable, funF to fVariable, aDeclaration to aVariable),
                 mapOf(varAUse to aVariable),
             )
 
@@ -185,6 +214,8 @@ class FunctionAnalysisTest {
                             setOf(
                                 AnalyzedVariable(aVariable, program.value, VariableUseType.WRITE),
                                 AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
                             ),
                             emptyList(),
                             mutableSetOf(),
@@ -209,13 +240,18 @@ class FunctionAnalysisTest {
     fun `should analyze function with read and written variable`() {
         // given
         // f => (let a; a = (); a)
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse1 = variableUse("a")
         val varAWrite = variableWrite(varAUse1)
         val varAUse2 = variableUse("a")
         val funF = unitFunctionDefinition("f", block(varAWrite, varAUse2))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(aDeclaration, funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables =
@@ -225,7 +261,7 @@ class FunctionAnalysisTest {
             )
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), funF to fVariable, aDeclaration to aVariable),
+                mapOf(program to progVariable, funF to fVariable, aDeclaration to aVariable),
                 mapOf(varAUse1 to aVariable, varAUse2 to aVariable),
             )
 
@@ -247,6 +283,8 @@ class FunctionAnalysisTest {
                             null,
                             setOf(
                                 AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(aVariable, program.value, VariableUseType.READ_WRITE),
                             ),
                             emptyList(),
@@ -275,17 +313,24 @@ class FunctionAnalysisTest {
     fun `should analyze function with nested function`() {
         // given
         // f => (g => (); g())
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val funG = unitFunctionDefinition("g", block())
-        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val varGUse = variableUse("g")
         val funF = unitFunctionDefinition("f", block(funG, call(varGUse)))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varGUse to funG)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), funF to fVariable, funG to gVariable),
+                mapOf(program to progVariable, funF to fVariable, funG to gVariable),
                 mapOf(varGUse to gVariable),
             )
 
@@ -301,7 +346,10 @@ class FunctionAnalysisTest {
                         analyzedFunction(
                             program,
                             0,
-                            setOf(AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED)),
+                            setOf(
+                                AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),),
                         ),
                     funF.value to
                         AnalyzedFunction(
@@ -310,7 +358,10 @@ class FunctionAnalysisTest {
                                 program.value,
                                 false,
                             ),
-                            setOf(AnalyzedVariable(gVariable, funF.value, VariableUseType.READ)),
+                            setOf(
+                                AnalyzedVariable(gVariable, funF.value, VariableUseType.READ),
+                                AnalyzedVariable(gCode, funF.value, VariableUseType.READ),
+                                AnalyzedVariable(gLink, funF.value, VariableUseType.READ),),
                             emptyList(),
                             mutableSetOf(),
                             1,
@@ -334,19 +385,26 @@ class FunctionAnalysisTest {
     fun `should analyze function with nested function using parent variable`() {
         // given
         // f => (let a; g => a)
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funG = unitFunctionDefinition("g", varAUse)
-        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val funF = unitFunctionDefinition("f", block(aDeclaration, funG))
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), funF to fVariable, funG to gVariable, aDeclaration to aVariable),
+                mapOf(program to progVariable, funF to fVariable, funG to gVariable, aDeclaration to aVariable),
                 mapOf(varAUse to aVariable),
             )
 
@@ -366,7 +424,10 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             program.value,
                             null,
-                            setOf(AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED)),
+                            setOf(
+                                AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),),
                             emptyList(),
                             mutableSetOf(),
                             0,
@@ -378,6 +439,8 @@ class FunctionAnalysisTest {
                             ParentLink(program.value, false),
                             setOf(
                                 AnalyzedVariable(gVariable, funF.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(gCode, funF.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(gLink, funF.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(aVariable, funF.value, VariableUseType.READ),
                             ),
                             emptyList(),
@@ -403,25 +466,40 @@ class FunctionAnalysisTest {
     fun `should find transitive parent link usages`() {
         // given
         // (foo => (let a; g => (h => a; h()); i => (j => (); g())); main => foo())
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funH = unitFunctionDefinition("h", varAUse)
-        val hVariable = Variable.FunctionVariable("h", mockk(), mockk())
+        val hCode = primVar()
+        val hLink = primVar()
+        val hVariable = Variable.FunctionVariable("h", hCode, hLink)
         val funHUse = variableUse("h")
         val funHCall = call(funHUse)
         val funG = unitFunctionDefinition("g", block(funH, funHCall))
-        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val funGUse = variableUse("g")
         val funJ = unitFunctionDefinition("j", block())
-        val jVariable = Variable.FunctionVariable("j", mockk(), mockk())
+        val jCode = primVar()
+        val jLink = primVar()
+        val jVariable = Variable.FunctionVariable("j", jCode, jLink)
         val funI = unitFunctionDefinition("i", block(funJ, call(funGUse)))
-        val iVariable = Variable.FunctionVariable("i", mockk(), mockk())
+        val iCode = primVar()
+        val iLink = primVar()
+        val iVariable = Variable.FunctionVariable("i", iCode, iLink)
         val funFoo = unitFunctionDefinition("foo", block(aDeclaration, funG, funI))
-        val fooVariable = Variable.FunctionVariable("foo", mockk(), mockk())
+        val fooCode = primVar()
+        val fooLink = primVar()
+        val fooVariable = Variable.FunctionVariable("foo", fooCode, fooLink)
         val funFooUse = variableUse("foo")
         val funMain = unitFunctionDefinition("main", call(funFooUse))
-        val mainVariable = Variable.FunctionVariable("main", mockk(), mockk())
+        val mainCode = primVar()
+        val mainLink = primVar()
+        val mainVariable = Variable.FunctionVariable("main", mainCode, mainLink)
 
         val ast = astOf(funFoo, funMain)
         val program = program(ast)
@@ -429,7 +507,7 @@ class FunctionAnalysisTest {
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
-                    program to mockk(),
+                    program to progVariable,
                     funH to hVariable,
                     funG to gVariable,
                     funJ to jVariable,
@@ -464,12 +542,16 @@ class FunctionAnalysisTest {
                             null,
                             setOf(
                                 AnalyzedVariable(mainVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(mainCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(mainLink, program.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(fooVariable, program.value, VariableUseType.READ),
+                                AnalyzedVariable(fooCode, program.value, VariableUseType.READ),
+                                AnalyzedVariable(fooLink, program.value, VariableUseType.READ),
                             ),
                             emptyList(),
                             mutableSetOf(),
                             0,
-                            setOf(fooVariable),
+                            setOf(fooVariable, fooCode, fooLink),
                         ),
                     funFoo.value to
                         AnalyzedFunction(
@@ -477,13 +559,17 @@ class FunctionAnalysisTest {
                             ParentLink(program.value, false),
                             setOf(
                                 AnalyzedVariable(gVariable, funFoo.value, VariableUseType.READ),
+                                AnalyzedVariable(gCode, funFoo.value, VariableUseType.READ),
+                                AnalyzedVariable(gLink, funFoo.value, VariableUseType.READ),
                                 AnalyzedVariable(iVariable, funFoo.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(iCode, funFoo.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(iLink, funFoo.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(aVariable, funFoo.value, VariableUseType.READ),
                             ),
                             emptyList(),
                             mutableSetOf(),
                             1,
-                            setOf(aVariable, gVariable),
+                            setOf(aVariable, gVariable, gCode, gLink),
                         ),
                     funG.value to
                         AnalyzedFunction(
@@ -491,6 +577,8 @@ class FunctionAnalysisTest {
                             ParentLink(funFoo.value, true),
                             setOf(
                                 AnalyzedVariable(hVariable, funG.value, VariableUseType.READ),
+                                AnalyzedVariable(hCode, funG.value, VariableUseType.READ),
+                                AnalyzedVariable(hLink, funG.value, VariableUseType.READ),
                                 AnalyzedVariable(aVariable, funFoo.value, VariableUseType.READ),
                             ),
                             emptyList(),
@@ -524,7 +612,11 @@ class FunctionAnalysisTest {
                             ParentLink(funFoo.value, true),
                             setOf(
                                 AnalyzedVariable(gVariable, funFoo.value, VariableUseType.READ),
+                                AnalyzedVariable(gCode, funFoo.value, VariableUseType.READ),
+                                AnalyzedVariable(gLink, funFoo.value, VariableUseType.READ),
                                 AnalyzedVariable(jVariable, funI.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(jCode, funI.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(jLink, funI.value, VariableUseType.UNUSED),
                             ),
                             emptyList(),
                             mutableSetOf(),
@@ -535,7 +627,11 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             funMain.value,
                             ParentLink(program.value, true), // main uses parent link to access foo
-                            setOf(AnalyzedVariable(fooVariable, program.value, VariableUseType.READ)),
+                            setOf(
+                                AnalyzedVariable(fooVariable, program.value, VariableUseType.READ),
+                                AnalyzedVariable(fooCode, program.value, VariableUseType.READ),
+                                AnalyzedVariable(fooLink, program.value, VariableUseType.READ),
+                                ),
                             emptyList(),
                             mutableSetOf(),
                             1,
@@ -549,6 +645,9 @@ class FunctionAnalysisTest {
     fun `should return separate results for distinct variables with equal names`() {
         // given
         // foo => (let a; bar => (let a; a = ()); a)
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val fooDeclarationA = variableDeclaration("a", Empty(mockRange()))
         val fooVariableA = Variable.PrimitiveVariable()
         val fooVariableAUse = variableUse("a")
@@ -557,9 +656,13 @@ class FunctionAnalysisTest {
         val barVariableAUse = variableUse("a")
 
         val funBar = unitFunctionDefinition("bar", block(barDeclarationA, variableWrite(barVariableAUse)))
-        val barVariable = Variable.FunctionVariable("bar", mockk(), mockk())
+        val barCode = primVar()
+        val barLink = primVar()
+        val barVariable = Variable.FunctionVariable("bar", barCode, barLink)
         val funFoo = unitFunctionDefinition("foo", block(fooDeclarationA, funBar, fooVariableAUse))
-        val fooVariable = Variable.FunctionVariable("foo", mockk(), mockk())
+        val fooCode = primVar()
+        val fooLink = primVar()
+        val fooVariable = Variable.FunctionVariable("foo", fooCode, fooLink)
         val ast = astOf(funFoo)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables =
@@ -570,7 +673,7 @@ class FunctionAnalysisTest {
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
-                    program to mockk(),
+                    program to progVariable,
                     funFoo to fooVariable,
                     funBar to barVariable,
                     fooDeclarationA to fooVariableA,
@@ -598,7 +701,11 @@ class FunctionAnalysisTest {
                         AnalyzedFunction(
                             program.value,
                             null,
-                            setOf(AnalyzedVariable(fooVariable, program.value, VariableUseType.UNUSED)),
+                            setOf(
+                                AnalyzedVariable(fooVariable, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fooCode, program.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(fooLink, program.value, VariableUseType.UNUSED),
+                                ),
                             emptyList(),
                             mutableSetOf(),
                             0,
@@ -613,6 +720,8 @@ class FunctionAnalysisTest {
                             ),
                             setOf(
                                 AnalyzedVariable(barVariable, funFoo.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(barCode, funFoo.value, VariableUseType.UNUSED),
+                                AnalyzedVariable(barLink, funFoo.value, VariableUseType.UNUSED),
                                 AnalyzedVariable(fooVariableA, funFoo.value, VariableUseType.READ),
                             ),
                             emptyList(),
@@ -640,6 +749,9 @@ class FunctionAnalysisTest {
     fun `should find uses of parent function argument`() {
         // given
         // f[a, b] => (g => (a; b = ()))
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val argADeclaration = arg("a")
         val argBDeclaration = arg("b")
         val variableA = Variable.PrimitiveVariable()
@@ -647,9 +759,13 @@ class FunctionAnalysisTest {
         val varAUse = variableUse("a")
         val varBUse = variableUse("b")
         val funG = unitFunctionDefinition("g", block(varAUse, variableWrite(varBUse)))
-        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val gCode = primVar()
+        val gLink = primVar()
+        val gVariable = Variable.FunctionVariable("g", gCode, gLink)
         val funF = unitFunctionDefinition("f", listOf(argADeclaration, argBDeclaration), funG)
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
 
         val ast = astOf(funF)
         val program = program(ast)
@@ -657,7 +773,7 @@ class FunctionAnalysisTest {
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
-                    program to mockk(),
+                    program to progVariable,
                     funF to fVariable,
                     funG to gVariable,
                     argADeclaration to variableA,
@@ -685,7 +801,11 @@ class FunctionAnalysisTest {
                     analyzedFunction(
                         program,
                         0,
-                        setOf(AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED)),
+                        setOf(
+                            AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                            AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                            AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
+                            ),
                     ),
                 funF.value to
                     AnalyzedFunction(
@@ -693,6 +813,8 @@ class FunctionAnalysisTest {
                         ParentLink(program.value, false),
                         setOf(
                             AnalyzedVariable(gVariable, funF.value, VariableUseType.UNUSED),
+                            AnalyzedVariable(gCode, funF.value, VariableUseType.UNUSED),
+                            AnalyzedVariable(gLink, funF.value, VariableUseType.UNUSED),
                             AnalyzedVariable(variableA, funF.value, VariableUseType.READ),
                             AnalyzedVariable(variableB, funF.value, VariableUseType.WRITE),
                         ),
@@ -723,6 +845,9 @@ class FunctionAnalysisTest {
         // given
         // let a; let b;
         // let f = if true then ([] -> Unit => a) else ([] -> Unit => b)
+        val progCode = primVar()
+        val progLink = primVar()
+        val progVariable = Variable.FunctionVariable("program", progCode, progLink)
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
@@ -734,13 +859,15 @@ class FunctionAnalysisTest {
 
         val condition = ifThenElse(lit(true), lambdaA, lambdaB)
         val fDeclaration = variableDeclaration("f", condition)
-        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val fCode = primVar()
+        val fLink = primVar()
+        val fVariable = Variable.FunctionVariable("f", fCode, fLink)
         val ast = astOf(aDeclaration, bDeclaration, fDeclaration)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(program to mockk(), fDeclaration to fVariable, aDeclaration to aVariable, bDeclaration to bVariable),
+                mapOf(program to progVariable, fDeclaration to fVariable, aDeclaration to aVariable, bDeclaration to bVariable),
                 mapOf(varAUse to aVariable, varBUse to bVariable),
             )
 
@@ -761,6 +888,8 @@ class FunctionAnalysisTest {
                         null,
                         setOf(
                             AnalyzedVariable(fVariable, program.value, VariableUseType.UNUSED),
+                            AnalyzedVariable(fCode, program.value, VariableUseType.UNUSED),
+                            AnalyzedVariable(fLink, program.value, VariableUseType.UNUSED),
                             AnalyzedVariable(aVariable, program.value, VariableUseType.READ),
                             AnalyzedVariable(bVariable, program.value, VariableUseType.READ),
                         ),
