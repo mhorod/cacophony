@@ -12,6 +12,7 @@ import cacophony.semantic.syntaxtree.OperatorUnary
 internal class OperatorHandler(
     private val cfg: CFG,
     private val cfgGenerator: CFGGenerator,
+    private val sideEffectAnalyzer: SideEffectAnalyzer,
 ) {
     internal fun visitArithmeticOperator(expression: OperatorBinary.ArithmeticOperator, mode: EvalMode, context: Context): SubCFG =
         visitBinaryOperator(expression, mode, context)
@@ -20,7 +21,14 @@ internal class OperatorHandler(
         val lhsCFG = cfgGenerator.visit(expression.lhs, mode, context)
         val rhsCFG = cfgGenerator.visit(expression.rhs, mode, context)
 
-        val safeLhs = cfgGenerator.ensureExtracted(lhsCFG, mode)
+        val safeLhs =
+            if (sideEffectAnalyzer.hasClashingSideEffects(expression.lhs, expression.rhs)) {
+                // If there are clashing side effects, lhs must be extracted to a separate vertex
+                cfgGenerator.ensureExtracted(lhsCFG, mode)
+            } else {
+                // If there are no clashing side effects, lhs and rhs can be accessed in any order, so we can leave the node as it is
+                lhsCFG
+            }
         val lhsAccess = safeLhs.access
         val rhsAccess = rhsCFG.access
         // by type checking

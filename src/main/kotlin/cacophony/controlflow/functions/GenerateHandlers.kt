@@ -1,6 +1,5 @@
 package cacophony.controlflow.functions
 
-import cacophony.controlflow.Variable
 import cacophony.semantic.analysis.ClosureAnalysisResult
 import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.FunctionAnalysisResult
@@ -24,13 +23,14 @@ private fun generateFunctionHandlers(
     staticLinkCallables: Set<LambdaExpression>,
     callConvention: CallConvention,
     variablesMap: VariablesMap,
-    escapedVariables: Set<Variable>,
+    escapeAnalysis: EscapeAnalysisResult,
 ): Map<LambdaExpression, StaticFunctionHandler> {
     val handlers = mutableMapOf<LambdaExpression, StaticFunctionHandler>()
     val order = analyzedFunctions.filter { staticLinkCallables.contains(it.key) }.entries.sortedBy { it.value.staticDepth }
 
-    val ancestorHandlers = mutableMapOf<LambdaExpression, List<StaticFunctionHandler>>()
+    val ancestorHandlers = mutableMapOf<LambdaExpression, List<CallableHandler>>()
 
+    // TODO: Lambda can also be a parent, take that into consideration here
     for ((function, analyzedFunction) in order) {
         if (analyzedFunction.parentLink == null) {
             handlers[function] =
@@ -40,7 +40,7 @@ private fun generateFunctionHandlers(
                     emptyList(),
                     callConvention,
                     variablesMap,
-                    escapedVariables,
+                    escapeAnalysis,
                 )
         } else {
             val parentHandler =
@@ -55,7 +55,7 @@ private fun generateFunctionHandlers(
                     functionAncestorHandlers,
                     callConvention,
                     variablesMap,
-                    escapedVariables,
+                    escapeAnalysis,
                 )
             ancestorHandlers[function] = functionAncestorHandlers
         }

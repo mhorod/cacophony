@@ -6,6 +6,7 @@ import cacophony.controlflow.CFGNode.RegisterUse
 import cacophony.controlflow.generation.Layout
 import cacophony.controlflow.generation.generateLayoutOfVirtualRegisters
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.LambdaExpression
@@ -15,7 +16,7 @@ sealed class CallableHandlerImpl(
     private val analyzedFunction: AnalyzedFunction,
     private val function: LambdaExpression,
     private val variablesMap: VariablesMap,
-    private val escapedVariables: Set<Variable>,
+    private val escapedVariables: EscapeAnalysisResult
 ) : CallableHandler {
     private var stackSpace = REGISTER_SIZE
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()

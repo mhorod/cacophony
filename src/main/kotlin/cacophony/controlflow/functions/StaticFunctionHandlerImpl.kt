@@ -3,6 +3,7 @@ package cacophony.controlflow.functions
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.*
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
 
@@ -13,7 +14,7 @@ class StaticFunctionHandlerImpl(
     private val ancestorFunctionHandlers: List<CallableHandler>,
     callConvention: CallConvention,
     private val variablesMap: VariablesMap,
-    escapeAnalysisResult: Set<Variable>,
+    escapeAnalysisResult: EscapeAnalysisResult,
 ) : StaticFunctionHandler, CallableHandlerImpl(
         analyzedFunction,
         function,

@@ -7,10 +7,10 @@ import cacophony.semantic.syntaxtree.*
  */
 typealias NamedFunctionInfo = Map<LambdaExpression, Definition.FunctionDefinition>
 
-private class GetNamedFunctionsVisitor {
-    private val accum: MutableMap<LambdaExpression, Definition.FunctionDefinition> = mutableMapOf()
+private class NamedFunctionVisitor {
+    private val namedFunctions: MutableMap<LambdaExpression, Definition.FunctionDefinition> = mutableMapOf()
 
-    fun getResult(): NamedFunctionInfo = accum.toMap()
+    fun getNamedFunctions(): NamedFunctionInfo = namedFunctions.toMap()
 
     fun visit(ast: AST) {
         when (ast) {
@@ -20,7 +20,7 @@ private class GetNamedFunctionsVisitor {
             is Allocation -> visit(ast.value)
             is Block -> ast.children().forEach { visit(it) }
             is Definition.FunctionDefinition -> {
-                accum[ast.value] = ast
+                namedFunctions[ast.value] = ast
                 visit(ast.value)
             }
             is Definition.VariableDefinition -> visit(ast.value)
@@ -55,7 +55,7 @@ private class GetNamedFunctionsVisitor {
 }
 
 fun getNamedFunctions(ast: AST): NamedFunctionInfo {
-    val visitor = GetNamedFunctionsVisitor()
+    val visitor = NamedFunctionVisitor()
     visitor.visit(ast)
-    return visitor.getResult()
+    return visitor.getNamedFunctions()
 }

@@ -25,7 +25,8 @@ internal class CFGGenerator(
     private val lambdaOutlineLocation: LambdaOutlineLocation,
 ) {
     private val cfg = CFG()
-    private val operatorHandler = OperatorHandler(cfg, this)
+    private val sideEffectAnalyzer = SideEffectAnalyzer()
+    private val operatorHandler = OperatorHandler(cfg, this, sideEffectAnalyzer)
     private val assignmentHandler = AssignmentHandler(this)
     private val prologue = listOfNodesToExtracted(getCurrentCallableHandler().generatePrologue())
     private val epilogue = listOfNodesToExtracted(getCurrentCallableHandler().generateEpilogue())
@@ -287,6 +288,7 @@ internal class CFGGenerator(
             is StaticFunctionHandler -> {
                 SubCFG.Immediate(noOpOrUnit(mode))
             }
+
             is ClosureHandler -> {
                 visitVariableDeclaration(expression, mode, context)
             }
@@ -326,6 +328,7 @@ internal class CFGGenerator(
                             FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
                         )
                     }
+
                     else -> {
                         /* let f = ([x: Int] => x) */
                         throw NotImplementedError("Anonymous functions cannot be called statically")
@@ -573,6 +576,7 @@ internal class CFGGenerator(
                             getCurrentCallableHandler(),
                             callableHandlers.getStaticFunctionHandler(function.value),
                         )
+
                     is Definition.ForeignFunctionDeclaration -> getForeignFunctionLayout(function)
                     else -> error("Expected function declaration, but got $function")
                 }
@@ -585,9 +589,7 @@ internal class CFGGenerator(
         }
     }
 
-    private fun getCurrentCallableHandler(): CallableHandler = getCallableHandler(function)
-
-    private fun getCallableHandler(callable: LambdaExpression): CallableHandler = callableHandlers.getCallableHandler(callable)
+    private fun getCurrentCallableHandler(): CallableHandler = callableHandlers.getCallableHandler(function)
 
     // sourceLayout opisuje gdzie są rzeczy, które chcemy przekopiować na stertę
     // resultLayout opisuje obiekt na stercie

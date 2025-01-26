@@ -4,6 +4,7 @@ import cacophony.controlflow.*
 import cacophony.controlflow.generation.flattenLayout
 import cacophony.controlflow.generation.getVariableLayout
 import cacophony.semantic.analysis.AnalyzedFunction
+import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
 
@@ -12,7 +13,7 @@ class ClosureHandlerImpl(
     private val function: LambdaExpression,
     private val analyzedFunction: AnalyzedFunction,
     private val variablesMap: VariablesMap,
-    escapeAnalysisResult: Set<Variable>,
+    escapeAnalysisResult: EscapeAnalysisResult,
 ) : ClosureHandler, CallableHandlerImpl(
         analyzedFunction,
         function,
@@ -26,7 +27,7 @@ class ClosureHandlerImpl(
 
     override fun getFlattenedArguments() =
         function.arguments
-            .map { variablesMap.definitions[it]!! }
+            .map { variablesMap.definitions[it] ?: error("Variable not found for $it") }
             .map {
                 getVariableLayout(
                     this,
