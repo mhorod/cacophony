@@ -7,6 +7,7 @@ import cacophony.semantic.types.BuiltinType
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.TypeCheckingResult
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.Map.entry
@@ -85,7 +86,7 @@ class VariablesMapCreationTest {
     @Test
     fun `function variable is created for lambda definition`() {
         // given
-        val lam = lambda(emptyList(), lit(1))
+        val lam = lambda(emptyList(), mockk(), lit(1))
         val xDef = variableDeclaration("x", lam)
         val xUse = variableUse("x")
         val ast = block(xDef, xUse)

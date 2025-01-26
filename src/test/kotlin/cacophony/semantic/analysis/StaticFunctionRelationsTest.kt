@@ -5,6 +5,7 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.*
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -16,10 +17,11 @@ class StaticFunctionRelationsTest {
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val funF = unitFunctionDefinition("f", aDeclaration)
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable))
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to mockk(), aDeclaration to aVariable, funF to fVariable))
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -28,7 +30,13 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program.value to programStaticRelation(),
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable),
+                            emptySet(),
+                        ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
@@ -48,10 +56,15 @@ class StaticFunctionRelationsTest {
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funF = unitFunctionDefinition("f", block(aDeclaration, varAUse))
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable), mapOf(varAUse to aVariable))
+        val variablesMap: VariablesMap =
+            createVariablesMap(
+                mapOf(program to mockk(), aDeclaration to aVariable, funF to fVariable),
+                mapOf(varAUse to aVariable),
+            )
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -60,7 +73,13 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program.value to programStaticRelation(),
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable),
+                            emptySet(),
+                        ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
@@ -81,10 +100,15 @@ class StaticFunctionRelationsTest {
         val varAUse = variableUse("a")
         val varAWrite = variableWrite(varAUse)
         val funF = unitFunctionDefinition("f", block(aDeclaration, varAWrite))
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable), mapOf(varAUse to aVariable))
+        val variablesMap: VariablesMap =
+            createVariablesMap(
+                mapOf(program to mockk(), aDeclaration to aVariable, funF to fVariable),
+                mapOf(varAUse to aVariable),
+            )
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -93,7 +117,13 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program.value to programStaticRelation(),
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable),
+                            emptySet(),
+                        ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
@@ -116,12 +146,13 @@ class StaticFunctionRelationsTest {
 
         val varAUse2 = variableUse("a")
         val funF = unitFunctionDefinition("f", block(aDeclaration, varAWrite, varAUse2))
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse1 to aDeclaration, varAUse2 to aDeclaration)
         val variablesMap: VariablesMap =
             createVariablesMap(
-                mapOf(aDeclaration to aVariable),
+                mapOf(program to mockk(), aDeclaration to aVariable, funF to fVariable),
                 mapOf(
                     varAUse1 to aVariable,
                     varAUse2 to aVariable,
@@ -135,7 +166,13 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program.value to programStaticRelation(),
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable),
+                            emptySet(),
+                        ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
@@ -161,12 +198,15 @@ class StaticFunctionRelationsTest {
         val bVariable = Variable.PrimitiveVariable()
         val cVariable = Variable.PrimitiveVariable()
         val funF = unitFunctionDefinition("f", block(aDeclaration, bDeclaration, cDeclaration))
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
+                    program to mockk(),
+                    funF to fVariable,
                     aDeclaration to aVariable,
                     bDeclaration to bVariable,
                     cDeclaration to cVariable,
@@ -180,7 +220,13 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program.value to programStaticRelation(),
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable),
+                            emptySet(),
+                        ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
@@ -249,6 +295,8 @@ class StaticFunctionRelationsTest {
                     ),
                 ),
             )
+        val funFVariable = Variable.FunctionVariable("f", mockk(), mockk())
+
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables =
@@ -259,6 +307,8 @@ class StaticFunctionRelationsTest {
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
+                    program to mockk(),
+                    funF to funFVariable,
                     sDeclaration to sVariable,
                 ),
                 mapOf(
@@ -277,7 +327,13 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program.value to programStaticRelation(),
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(funFVariable),
+                            emptySet(),
+                        ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
@@ -302,11 +358,13 @@ class StaticFunctionRelationsTest {
         // given
         // f => ( g => () )
         val funG = unitFunctionDefinition("g", Empty(mockRange()))
+        val gVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val funF = unitFunctionDefinition("f", funG)
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(emptyMap())
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to mockk(), funF to fVariable, funG to gVariable))
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -315,12 +373,18 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program.value to programStaticRelation(),
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable),
+                            emptySet(),
+                        ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
                             1,
-                            emptySet(),
+                            setOf(gVariable),
                             emptySet(),
                         ),
                     funG.value to
@@ -339,12 +403,16 @@ class StaticFunctionRelationsTest {
         // given
         // f => ( g => (); h => () )
         val funG = unitFunctionDefinition("g", Empty(mockRange()))
+        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
         val funH = unitFunctionDefinition("h", Empty(mockRange()))
+        val hVariable = Variable.FunctionVariable("h", mockk(), mockk())
         val funF = unitFunctionDefinition("f", block(funG, funH))
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val ast = astOf(funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(emptyMap())
+        val variablesMap: VariablesMap =
+            createVariablesMap(mapOf(program to mockk(), funF to fVariable, funG to gVariable, funH to hVariable))
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -353,12 +421,18 @@ class StaticFunctionRelationsTest {
         assertThat(relations)
             .containsExactlyInAnyOrderEntriesOf(
                 mapOf(
-                    program.value to programStaticRelation(),
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable),
+                            emptySet(),
+                        ),
                     funF.value to
                         StaticFunctionRelations(
                             program.value,
                             1,
-                            emptySet(),
+                            setOf(gVariable, hVariable),
                             emptySet(),
                         ),
                     funG.value to
@@ -386,10 +460,11 @@ class StaticFunctionRelationsTest {
         val aDeclaration = variableDeclaration("a", Empty(mockRange()))
         val aVariable = Variable.PrimitiveVariable()
         val funF = unitFunctionDefinition("f", Empty(mockRange()))
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
         val ast = astOf(aDeclaration, funF)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = emptyMap()
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable))
+        val variablesMap: VariablesMap = createVariablesMap(mapOf(program to mockk(), funF to fVariable, aDeclaration to aVariable))
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -402,7 +477,7 @@ class StaticFunctionRelationsTest {
                         StaticFunctionRelations(
                             null,
                             0,
-                            setOf(aVariable),
+                            setOf(fVariable, aVariable),
                             emptySet(),
                         ),
                     funF.value to
@@ -427,8 +502,11 @@ class StaticFunctionRelationsTest {
         val bVariable = Variable.PrimitiveVariable()
         val cVariable = Variable.PrimitiveVariable()
         val funH = unitFunctionDefinition("h", block(cDeclaration))
+        val hVariable = Variable.FunctionVariable("h", mockk(), mockk())
         val funG = unitFunctionDefinition("g", block(bDeclaration, funH))
+        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
         val funF = unitFunctionDefinition("f", block(aDeclaration, funG))
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
 
         val ast = astOf(funF)
         val program = program(ast)
@@ -436,6 +514,10 @@ class StaticFunctionRelationsTest {
         val variablesMap: VariablesMap =
             createVariablesMap(
                 mapOf(
+                    program to mockk(),
+                    funF to fVariable,
+                    funG to gVariable,
+                    funH to hVariable,
                     aDeclaration to aVariable,
                     bDeclaration to bVariable,
                     cDeclaration to cVariable,
@@ -448,19 +530,25 @@ class StaticFunctionRelationsTest {
         // then
         assertThat(relations).containsExactlyInAnyOrderEntriesOf(
             mapOf(
-                program.value to programStaticRelation(),
+                program.value to
+                    StaticFunctionRelations(
+                        null,
+                        0,
+                        setOf(fVariable),
+                        emptySet(),
+                    ),
                 funF.value to
                     StaticFunctionRelations(
                         program.value,
                         1,
-                        setOf(aVariable),
+                        setOf(gVariable, aVariable),
                         emptySet(),
                     ),
                 funG.value to
                     StaticFunctionRelations(
                         funF.value,
                         2,
-                        setOf(bVariable),
+                        setOf(hVariable, bVariable),
                         emptySet(),
                     ),
                 funH.value to
@@ -482,18 +570,41 @@ class StaticFunctionRelationsTest {
         val aVariable = Variable.PrimitiveVariable()
         val varAUse = variableUse("a")
         val funH = unitFunctionDefinition("h", varAUse)
+        val hVariable = Variable.FunctionVariable("h", mockk(), mockk())
         val funG = unitFunctionDefinition("g", funH)
+        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
         val funJ = unitFunctionDefinition("j", block())
+        val jVariable = Variable.FunctionVariable("j", mockk(), mockk())
         val varGUse = variableUse("g")
         val funI = unitFunctionDefinition("i", block(funJ, call(varGUse)))
+        val iVariable = Variable.FunctionVariable("i", mockk(), mockk())
         val funFoo = unitFunctionDefinition("foo", block(aDeclaration, funG, funI))
+        val fooVariable = Variable.FunctionVariable("foo", mockk(), mockk())
         val varFooUse = variableUse("foo")
         val funMain = unitFunctionDefinition("main", call(varFooUse))
+        val mainVariable = Variable.FunctionVariable("main", mockk(), mockk())
 
         val ast = astOf(funFoo, funMain)
         val program = program(ast)
         val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration, varGUse to funG, varFooUse to funFoo)
-        val variablesMap: VariablesMap = createVariablesMap(mapOf(aDeclaration to aVariable), mapOf(varAUse to aVariable))
+        val variablesMap: VariablesMap =
+            createVariablesMap(
+                mapOf(
+                    program to mockk(),
+                    funH to hVariable,
+                    funG to gVariable,
+                    funJ to jVariable,
+                    funI to iVariable,
+                    funFoo to fooVariable,
+                    funMain to mainVariable,
+                    aDeclaration to aVariable,
+                ),
+                mapOf(
+                    varAUse to aVariable,
+                    varGUse to gVariable,
+                    varFooUse to fooVariable,
+                ),
+            )
 
         // when
         val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
@@ -501,19 +612,25 @@ class StaticFunctionRelationsTest {
         // then
         assertThat(relations).containsExactlyInAnyOrderEntriesOf(
             mapOf(
-                program.value to programStaticRelation(),
+                program.value to
+                    StaticFunctionRelations(
+                        null,
+                        0,
+                        setOf(fooVariable, mainVariable),
+                        emptySet(),
+                    ),
                 funFoo.value to
                     StaticFunctionRelations(
                         program.value,
                         1,
-                        setOf(aVariable),
+                        setOf(gVariable, iVariable, aVariable),
                         emptySet(),
                     ),
                 funG.value to
                     StaticFunctionRelations(
                         funFoo.value,
                         2,
-                        emptySet(),
+                        setOf(hVariable),
                         emptySet(),
                     ),
                 funH.value to
@@ -527,8 +644,8 @@ class StaticFunctionRelationsTest {
                     StaticFunctionRelations(
                         funFoo.value,
                         2,
-                        emptySet(),
-                        emptySet(),
+                        setOf(jVariable),
+                        setOf(UsedVariable(gVariable, VariableUseType.READ)),
                     ),
                 funJ.value to
                     StaticFunctionRelations(
@@ -542,9 +659,119 @@ class StaticFunctionRelationsTest {
                         program.value,
                         1,
                         emptySet(),
-                        emptySet(),
+                        setOf(UsedVariable(fooVariable, VariableUseType.READ)),
                     ),
             ),
         )
+    }
+
+    @Test
+    fun `variable defined and used in inner is not visible in outer`() {
+        // given
+        // f => ( g => (let a; a;) )
+        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
+        val aVariable = Variable.PrimitiveVariable()
+        val varAUse = variableUse("a")
+        val funG = unitFunctionDefinition("g", block(aDeclaration, varAUse))
+        val gVariable = Variable.FunctionVariable("g", mockk(), mockk())
+        val funF = unitFunctionDefinition("f", funG)
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val ast = astOf(funF)
+        val program = program(ast)
+        val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
+        val variablesMap: VariablesMap =
+            createVariablesMap(
+                mapOf(program to mockk(), funF to fVariable, funG to gVariable, aDeclaration to aVariable),
+                mapOf(varAUse to aVariable),
+            )
+
+        // when
+        val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
+
+        // then
+        assertThat(relations)
+            .containsExactlyInAnyOrderEntriesOf(
+                mapOf(
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable),
+                            emptySet(),
+                        ),
+                    funF.value to
+                        StaticFunctionRelations(
+                            program.value,
+                            1,
+                            setOf(gVariable),
+                            emptySet(),
+                        ),
+                    funG.value to
+                        StaticFunctionRelations(
+                            funF.value,
+                            2,
+                            setOf(aVariable),
+                            setOf(UsedVariable(aVariable, VariableUseType.READ)),
+                        ),
+                ),
+            )
+    }
+
+    @Test
+    fun `should find anonymous lambdas`() {
+        // given
+        // let a; let b;
+        // let f = if true then ([] -> Unit => a) else ([] -> Unit => b)
+        val aDeclaration = variableDeclaration("a", Empty(mockRange()))
+        val aVariable = Variable.PrimitiveVariable()
+        val varAUse = variableUse("a")
+        val bDeclaration = variableDeclaration("b", Empty(mockRange()))
+        val bVariable = Variable.PrimitiveVariable()
+        val varBUse = variableUse("b")
+        val lambdaA = lambda(emptyList(), basicType("Unit"), varAUse)
+        val lambdaB = lambda(emptyList(), basicType("Unit"), varBUse)
+
+        val condition = ifThenElse(lit(true), lambdaA, lambdaB)
+        val fDeclaration = variableDeclaration("f", condition)
+        val fVariable = Variable.FunctionVariable("f", mockk(), mockk())
+        val ast = astOf(aDeclaration, bDeclaration, fDeclaration)
+        val program = program(ast)
+        val resolvedVariables: ResolvedVariables = mapOf(varAUse to aDeclaration)
+        val variablesMap: VariablesMap =
+            createVariablesMap(
+                mapOf(program to mockk(), fDeclaration to fVariable, aDeclaration to aVariable, bDeclaration to bVariable),
+                mapOf(varAUse to aVariable, varBUse to bVariable),
+            )
+
+        // when
+        val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
+
+        // then
+        assertThat(relations)
+            .containsExactlyInAnyOrderEntriesOf(
+                mapOf(
+                    program.value to
+                        StaticFunctionRelations(
+                            null,
+                            0,
+                            setOf(fVariable, aVariable, bVariable),
+                            emptySet(),
+                        ),
+                    lambdaA to
+                        StaticFunctionRelations(
+                            program.value,
+                            1,
+                            emptySet(),
+                            setOf(UsedVariable(aVariable, VariableUseType.READ)),
+                        ),
+                    lambdaB to
+                        StaticFunctionRelations(
+                            program.value,
+                            1,
+                            emptySet(),
+                            setOf(UsedVariable(bVariable, VariableUseType.READ)),
+                        ),
+                ),
+            )
     }
 }

@@ -124,12 +124,7 @@ fun makeAnalyzedVariable(usedVariable: UsedVariable, variableFunctions: Map<Vari
     )
 }
 
-
-
-private fun getVariableFunctions(
-    relations: StaticFunctionRelationsMap,
-    variablesMap: VariablesMap,
-): Map<Variable, LambdaExpression> =
+private fun getVariableFunctions(relations: StaticFunctionRelationsMap, variablesMap: VariablesMap): Map<Variable, LambdaExpression> =
     relations
         .flatMap { (function, _) ->
             function.arguments.flatMap { argument ->

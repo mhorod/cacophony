@@ -78,6 +78,11 @@ fun getVariableLayout(handler: CallableHandler, variable: Variable): Layout =
                 getVariableLayout(handler, variable.link) as SimpleLayout,
             )
         is Variable.Heap -> throw IllegalArgumentException("`Heap` is a special marker `Variable` and has no layout")
+        is Variable.FunctionVariable ->
+            FunctionLayout(
+                getVariableLayout(handler, variable.code) as SimpleLayout,
+                getVariableLayout(handler, variable.link) as SimpleLayout,
+            )
     }
 
 fun flattenLayout(layout: Layout): List<CFGNode> = layout.flatten().map { it.access }

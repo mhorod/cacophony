@@ -4,8 +4,6 @@ import cacophony.controlflow.Variable
 import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 
-// TODO: Adjust this code so it works for all LambdaExpressions (function bodies)
-//  We don't have to distinguish between named and anonymous functions here, since for both we need to know about "captured" variables
 fun findStaticFunctionRelations(ast: AST, resolvedVariables: ResolvedVariables, variablesMap: VariablesMap): StaticFunctionRelationsMap {
     val visitor = StaticFunctionsRelationsVisitor(resolvedVariables, variablesMap)
     visitor.visit(ast)
@@ -79,14 +77,20 @@ private class StaticFunctionsRelationsVisitor(
         functionStack.lastOrNull()?.let {
             relations[it]?.usedVariables?.add(UsedVariable(variable, useType))
         }
-        variable.getNested().forEach { markNestedVariables(it, useType) }
+        if (variable !is Variable.FunctionVariable) {
+            // Primitives inside FunctionVariable are not variables present in the compiled code
+            variable.getNested().forEach { markNestedVariables(it, useType) }
+        }
     }
 
     private fun addVariableDeclaration(variable: Variable) {
         functionStack.lastOrNull()?.let {
             relations[it]?.declaredVariables?.add(variable)
         }
-        variable.getNested().forEach(this::addVariableDeclaration)
+        if (variable !is Variable.FunctionVariable) {
+            // Primitives inside FunctionVariable are not variables present in the compiled code
+            variable.getNested().forEach(this::addVariableDeclaration)
+        }
     }
 
     private fun visitExpression(expr: Expression) {
@@ -95,7 +99,7 @@ private class StaticFunctionsRelationsVisitor(
             is FieldRef.LValue -> visitFieldRefLValue(expr)
             is FieldRef.RValue -> visitFieldRefRValue(expr)
             is Definition.VariableDeclaration -> visitVariableDeclaration(expr)
-            is LambdaExpression -> visitFunctionDeclaration(expr)
+            is LambdaExpression -> visitLambdaExpression(expr)
             is FunctionCall -> visitFunctionCall(expr)
             is Statement.IfElseStatement -> visitIfElseStatement(expr)
             is Statement.WhileStatement -> visitWhileStatement(expr)
@@ -193,7 +197,7 @@ private class StaticFunctionsRelationsVisitor(
         expr.arguments.forEach { visitExpression(it) }
     }
 
-    private fun visitFunctionDeclaration(expr: LambdaExpression) {
+    private fun visitLambdaExpression(expr: LambdaExpression) {
         val parent = functionStack.lastOrNull()
         val depth = parent?.let { relations[it]?.staticDepth?.let { d -> d + 1 } } ?: 0
 
