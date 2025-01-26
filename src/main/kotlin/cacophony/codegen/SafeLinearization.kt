@@ -9,7 +9,7 @@ import cacophony.codegen.registers.adjustLoweredCFGToHandleSpills
 import cacophony.codegen.registers.analyzeRegistersInteraction
 import cacophony.controlflow.HardwareRegister
 import cacophony.controlflow.Register
-import cacophony.controlflow.functions.StaticFunctionHandler
+import cacophony.controlflow.functions.CallableHandler
 import cacophony.controlflow.functions.SystemVAMD64CallConvention
 import cacophony.controlflow.generation.ProgramCFG
 import cacophony.graphs.FirstFitGraphColoring
@@ -23,7 +23,7 @@ import cacophony.semantic.syntaxtree.LambdaExpression
  */
 fun safeLinearize(
     cfg: ProgramCFG,
-    staticFunctionHandlers: Map<LambdaExpression, StaticFunctionHandler>,
+    callableHandlers: Map<LambdaExpression, CallableHandler>,
     instructionCovering: InstructionCovering,
     allowedRegisters: Set<HardwareRegister>,
     backupRegs: Set<Register.FixedRegister>,
@@ -39,7 +39,7 @@ fun safeLinearize(
     }
 
     return handleSpills(
-        staticFunctionHandlers,
+        callableHandlers,
         cover,
         registersInteractions,
         allowedRegisters,
@@ -71,7 +71,7 @@ fun allocateRegisters(
 }
 
 private fun handleSpills(
-    staticFunctionHandlers: Map<LambdaExpression, StaticFunctionHandler>,
+    callableHandlers: Map<LambdaExpression, CallableHandler>,
     covering: Map<LambdaExpression, LoweredCFGFragment>,
     registersInteractions: Map<LambdaExpression, RegistersInteraction>,
     allowedRegisters: Set<HardwareRegister>,
@@ -96,14 +96,14 @@ private fun handleSpills(
 
     val newCovering =
         covering
-            .map { (functionDeclaration, loweredCfg) ->
-                functionDeclaration to
+            .map { (callable, loweredCfg) ->
+                callable to
                     adjustLoweredCFGToHandleSpills(
                         instructionCovering,
-                        staticFunctionHandlers[functionDeclaration]!!,
+                        callableHandlers[callable]!!,
                         loweredCfg,
-                        registersInteractions[functionDeclaration]!!,
-                        newRegisterAllocation[functionDeclaration]!!,
+                        registersInteractions[callable]!!,
+                        newRegisterAllocation[callable]!!,
                         backupRegs,
                         FirstFitGraphColoring(),
                     )

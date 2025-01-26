@@ -243,9 +243,9 @@ class CacophonyPipeline(
 
     private fun linearize(
         cfg: ProgramCFG,
-        staticFunctionHandlers: Map<LambdaExpression, StaticFunctionHandler>,
+        callableHandlers: Map<LambdaExpression, CallableHandler>,
     ): Pair<Map<LambdaExpression, LoweredCFGFragment>, Map<LambdaExpression, RegisterAllocation>> {
-        val (covering, registerAllocation) = safeLinearize(cfg, staticFunctionHandlers, instructionCovering, allowedRegisters, backupRegs)
+        val (covering, registerAllocation) = safeLinearize(cfg, callableHandlers, instructionCovering, allowedRegisters, backupRegs)
         logger?.logSuccessfulInstructionCovering(covering)
         logger?.logSuccessfulRegisterAllocation(registerAllocation)
         return Pair(covering, registerAllocation)
@@ -267,7 +267,7 @@ class CacophonyPipeline(
                 outlines.objectOutlines.locations,
                 outlines.closureOutlines,
             )
-        val (covering, registerAllocation) = linearize(cfg, semantics.callableHandlers.staticFunctionHandlers)
+        val (covering, registerAllocation) = linearize(cfg, semantics.callableHandlers.getAll())
         val asm =
             covering.mapValues { (function, loweredCFG) ->
                 run {
