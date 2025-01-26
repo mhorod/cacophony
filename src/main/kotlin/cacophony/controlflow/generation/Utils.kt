@@ -49,7 +49,11 @@ fun generateLayoutOfVirtualRegisters(type: Type): Layout =
         is BaseType.Basic -> SimpleLayout(registerUse(Register.VirtualRegister(), false), false)
         is BaseType.Referential -> SimpleLayout(registerUse(Register.VirtualRegister(true), true), true)
         is BaseType.Structural -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
-        is BaseType.Functional -> throw IllegalArgumentException("No layout for function types")
+        is BaseType.Functional ->
+            FunctionLayout(
+                SimpleLayout(registerUse(Register.VirtualRegister(), false), false),
+                SimpleLayout(registerUse(Register.VirtualRegister(), true), true),
+            )
     }
 
 fun generateSubLayout(layout: Layout, type: TypeExpr): Layout {
@@ -72,6 +76,11 @@ fun getVariableLayout(handler: CallableHandler, variable: Variable): Layout =
     when (variable) {
         is Variable.PrimitiveVariable -> SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
         is Variable.StructVariable -> StructLayout(variable.fields.mapValues { (_, subfield) -> getVariableLayout(handler, subfield) })
+        is Variable.FunctionVariable ->
+            FunctionLayout(
+                getVariableLayout(handler, variable.code) as SimpleLayout,
+                getVariableLayout(handler, variable.link) as SimpleLayout,
+            )
         is Variable.Heap -> throw IllegalArgumentException("`Heap` is a special marker `Variable` and has no layout")
     }
 

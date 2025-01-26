@@ -1,7 +1,6 @@
 package cacophony.semantic.rtti
 
 import cacophony.semantic.types.*
-import kotlin.math.absoluteValue
 
 typealias ObjectOutlineLocation = Map<TypeExpr, String>
 
@@ -29,6 +28,7 @@ fun createObjectOutlines(types: List<TypeExpr>): ObjectOutlines {
 
 internal class ObjectOutlinesCreator {
     private val locations: MutableMap<TypeExpr, String> = mutableMapOf()
+    private val labels: MutableSet<String> = mutableSetOf()
     private val asmDataSectionEntries = mutableListOf<String>()
 
     private fun getReferenceDepth(type: TypeExpr): Int =
@@ -45,32 +45,40 @@ internal class ObjectOutlinesCreator {
 
     private fun typeToLabel(type: TypeExpr): String =
         when (type) {
-            is StructType -> "S${type.hashCode().absoluteValue}"
-            is BuiltinType.BooleanType -> "B${type.hashCode().absoluteValue}"
-            is BuiltinType.IntegerType -> "I${type.hashCode().absoluteValue}"
-            is BuiltinType.UnitType -> "U${type.hashCode().absoluteValue}"
-            is FunctionType -> "F${type.hashCode().absoluteValue}"
+            is StructType -> "S${type.hashCode().toUInt()}"
+            is BuiltinType.BooleanType -> "B${type.hashCode().toUInt()}"
+            is BuiltinType.IntegerType -> "I${type.hashCode().toUInt()}"
+            is BuiltinType.UnitType -> "U${type.hashCode().toUInt()}"
+            is FunctionType -> "F"
             is ReferentialType -> "${getReferenceDepth(type)}R${typeToLabel(getReferenceBase(type))}"
-            is TypeExpr.VoidType -> "V${type.hashCode().absoluteValue}"
+            is TypeExpr.VoidType -> "V${type.hashCode().toUInt()}"
         }
 
     private fun toIsPointerList(type: TypeExpr): List<Boolean> =
         when (type) {
-            is StructType -> type.fields.entries.sortedBy { it.key }.map { it.value }.flatMap { toIsPointerList(it) }.toList()
+            is StructType ->
+                type.fields.entries
+                    .sortedBy { it.key }
+                    .map { it.value }
+                    .flatMap { toIsPointerList(it) }
+                    .toList()
             is ReferentialType -> listOf(true)
             is BuiltinType -> listOf(false)
-            is FunctionType -> listOf(true) // maybe update in the future
+            is FunctionType -> listOf(false, true)
             is TypeExpr.VoidType -> emptyList()
         }
 
     private fun add(type: TypeExpr) {
         if (locations.containsKey(type)) return
-        if (type is FunctionType) return // functional types not supported for now
 
         val label = "outline_${typeToLabel(type)}"
-        val asmEntry = toAsm(label, toIsPointerList(type))
-
         locations[type] = label
+
+        if (!labels.add(label)) {
+            return
+        }
+
+        val asmEntry = toAsm(label, toIsPointerList(type))
         asmDataSectionEntries.add(asmEntry)
     }
 

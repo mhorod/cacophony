@@ -305,6 +305,7 @@ class CacophonyLogger(
                     variable.fields.entries.joinToString(", ") { (k, v) -> "$k -> ${variableToString(v)}" } + " }"
 
             is Variable.Heap -> variable.toString()
+            is Variable.FunctionVariable -> variable.toString()
         }
 
     private fun shortRegisterName(register: Register?) =
