@@ -22,6 +22,7 @@ data class ParentLink(
  * @property function Function definition
  * @property parentLink Link to wrapping function
  * @property variables All variables read, written, or declared in the function
+ * @property arguments Function arguments
  * @property auxVariables All auxiliary variables created in the function
  * @property staticDepth Depth of the function - how deeply nested it is
  * @property variablesUsedInNestedFunctions Variables declared in this function that are used in nested functions
@@ -31,7 +32,6 @@ data class AnalyzedFunction(
     val function: LambdaExpression,
     val parentLink: ParentLink?,
     val variables: Set<AnalyzedVariable>,
-    // TODO: probably need to change, but we needed it for prologueHandler to compile
     val arguments: List<Definition.FunctionArgument>,
     val auxVariables: MutableSet<Variable>,
     val staticDepth: Int,
@@ -48,8 +48,6 @@ data class AnalyzedVariable(
     val useType: VariableUseType,
 )
 
-// TODO: Adjust this code so it works for all LambdaExpressions. We're only interested in the static analysis of the body
-//  so there should be no distinction between named and anonymous functions.
 fun analyzeFunctions(ast: AST, resolvedVariables: ResolvedVariables, variablesMap: VariablesMap): FunctionAnalysisResult {
     val relations = findStaticFunctionRelations(ast, resolvedVariables, variablesMap)
     val variableFunctions = getVariableFunctions(relations, variablesMap)
