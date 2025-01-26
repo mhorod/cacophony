@@ -180,7 +180,6 @@ private class VariableDefinitionMapBuilder(val types: TypeCheckingResult) {
 
     private fun createVariable(type: TypeExpr): Variable =
         when (type) {
-            // TODO(Tomasz) - create function variables
             is StructType -> Variable.StructVariable(type.fields.mapValues { createVariable(it.value) })
             is FunctionType -> Variable.FunctionVariable(Variable.PrimitiveVariable(false), Variable.PrimitiveVariable(true))
             else -> Variable.PrimitiveVariable(type is ReferentialType)
