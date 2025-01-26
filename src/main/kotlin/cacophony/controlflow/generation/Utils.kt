@@ -49,7 +49,11 @@ fun generateLayoutOfVirtualRegisters(type: Type): Layout =
         is BaseType.Basic -> SimpleLayout(registerUse(Register.VirtualRegister(), false), false)
         is BaseType.Referential -> SimpleLayout(registerUse(Register.VirtualRegister(true), true), true)
         is BaseType.Structural -> StructLayout(type.fields.mapValues { (_, fieldType) -> generateLayoutOfVirtualRegisters(fieldType) })
-        is BaseType.Functional -> throw IllegalArgumentException("No layout for function types")
+        is BaseType.Functional ->
+            FunctionLayout(
+                SimpleLayout(registerUse(Register.VirtualRegister(), false), false),
+                SimpleLayout(registerUse(Register.VirtualRegister(), true), true),
+            )
     }
 
 fun generateSubLayout(layout: Layout, type: TypeExpr): Layout {
