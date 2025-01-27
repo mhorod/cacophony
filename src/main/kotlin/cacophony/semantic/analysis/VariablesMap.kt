@@ -94,8 +94,10 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
 
     private fun visitVariableUse(expression: VariableUse) {
         val definition = resolvedVariables.getValue(expression)
-        val variable = definitions.getValue(definition)
-        lvalues[expression] = variable
+        if (definition !is Definition.ForeignFunctionDeclaration) {
+            val variable = definitions.getValue(definition)
+            lvalues[expression] = variable
+        }
     }
 
     private fun visitFieldRefLValue(expression: FieldRef.LValue) {
