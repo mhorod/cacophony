@@ -5,7 +5,6 @@ import cacophony.semantic.analysis.EscapeAnalysisResult
 import cacophony.semantic.analysis.FunctionAnalysisResult
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.syntaxtree.LambdaExpression
-import cacophony.utils.CompileException
 
 fun generateCallableHandlers(
     analyzedFunctions: FunctionAnalysisResult,
@@ -14,69 +13,42 @@ fun generateCallableHandlers(
     variablesMap: VariablesMap,
     closureAnalysis: ClosureAnalysisResult,
 ): CallableHandlers {
-    // TODO: use closure analysis to generate lambda and function handlers separately
-    TODO()
-}
+    val closureHandlers = mutableMapOf<LambdaExpression, ClosureHandler>()
+    val staticFunctionHandlers = mutableMapOf<LambdaExpression, StaticFunctionHandler>()
 
-private fun generateFunctionHandlers(
-    analyzedFunctions: FunctionAnalysisResult,
-    staticLinkCallables: Set<LambdaExpression>,
-    callConvention: CallConvention,
-    variablesMap: VariablesMap,
-    escapeAnalysis: EscapeAnalysisResult,
-): Map<LambdaExpression, StaticFunctionHandler> {
-    val handlers = mutableMapOf<LambdaExpression, StaticFunctionHandler>()
-    val order = analyzedFunctions.filter { staticLinkCallables.contains(it.key) }.entries.sortedBy { it.value.staticDepth }
+    fun getHandler(lambda: LambdaExpression): CallableHandler =
+        closureHandlers[lambda] ?: staticFunctionHandlers[lambda] ?: error("Handler for $lambda not found")
 
     val ancestorHandlers = mutableMapOf<LambdaExpression, List<CallableHandler>>()
 
-    // TODO: Lambda can also be a parent, take that into consideration here
-    for ((function, analyzedFunction) in order) {
-        if (analyzedFunction.parentLink == null) {
-            handlers[function] =
-                StaticFunctionHandlerImpl(
-                    function,
-                    analyzedFunction,
-                    emptyList(),
-                    callConvention,
-                    variablesMap,
-                    escapeAnalysis,
-                )
+    analyzedFunctions.entries.sortedBy { it.value.staticDepth }.forEach { (lambda, analyzed) ->
+        if (closureAnalysis.staticFunctions.contains(lambda)) {
+            closureHandlers[lambda] = ClosureHandlerImpl(
+                callConvention,
+                lambda,
+                analyzed,
+                variablesMap,
+                escapeAnalysis
+            )
+        } else if (closureAnalysis.closures.contains(lambda)) {
+            val handlerChain = analyzed.parentLink?.let { link ->
+                val parent = link.parent
+                val parentHandler = getHandler(parent)
+                listOf(parentHandler) + (ancestorHandlers[parent] ?: emptyList())
+            } ?: emptyList()
+            staticFunctionHandlers[lambda] = StaticFunctionHandlerImpl(
+                lambda,
+                analyzed,
+                handlerChain,
+                callConvention,
+                variablesMap,
+                escapeAnalysis
+            )
+            ancestorHandlers[lambda] = handlerChain
         } else {
-            val parentHandler =
-                handlers[analyzedFunction.parentLink.parent]
-                    ?: throw CompileException("Parent function handler not found")
-            val functionAncestorHandlers =
-                listOf(parentHandler) + (ancestorHandlers[analyzedFunction.parentLink.parent] ?: emptyList())
-            handlers[function] =
-                StaticFunctionHandlerImpl(
-                    function,
-                    analyzedFunction,
-                    functionAncestorHandlers,
-                    callConvention,
-                    variablesMap,
-                    escapeAnalysis,
-                )
-            ancestorHandlers[function] = functionAncestorHandlers
+            error("Lambda expression $lambda is neither a closure nor a static function")
         }
     }
 
-    return handlers
+    return CallableHandlers(closureHandlers, staticFunctionHandlers)
 }
-
-private fun generateLambdaHandlers(
-    analyzedFunctions: FunctionAnalysisResult,
-    closureCallables: Set<LambdaExpression>,
-    callConvention: CallConvention,
-    variablesMap: VariablesMap,
-    escapeAnalysisResult: EscapeAnalysisResult,
-): Map<LambdaExpression, ClosureHandler> =
-    closureCallables.associateWith { lambda ->
-        ClosureHandlerImpl(
-            callConvention,
-            lambda,
-            analyzedFunctions[lambda]!!,
-            variablesMap,
-            escapeAnalysisResult,
-        )
-    }

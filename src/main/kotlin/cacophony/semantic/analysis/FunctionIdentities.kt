@@ -5,12 +5,16 @@ import cacophony.semantic.syntaxtree.*
 /**
  * For each lambda expression that was defined as part of syntactically static function store this function
  */
-internal typealias NamedFunctionInfo = Map<LambdaExpression, Definition.FunctionDefinition>
+internal data class FunctionIdentities(
+    val namedFunctions: Map<LambdaExpression, Definition.FunctionDefinition>,
+    val anonymousFunctions: Set<LambdaExpression>,
+)
 
-private class NamedFunctionVisitor {
+private class FunctionIdentityVisitor {
     private val namedFunctions: MutableMap<LambdaExpression, Definition.FunctionDefinition> = mutableMapOf()
+    private val anonymousFunctions: MutableSet<LambdaExpression> = mutableSetOf()
 
-    fun getNamedFunctions(): NamedFunctionInfo = namedFunctions.toMap()
+    fun getIdentities(): FunctionIdentities = FunctionIdentities(namedFunctions, anonymousFunctions)
 
     fun visit(ast: AST) {
         when (ast) {
@@ -29,7 +33,10 @@ private class NamedFunctionVisitor {
                 visit(ast.function)
                 ast.arguments.forEach { visit(it) }
             }
-            is LambdaExpression -> visit(ast.body)
+            is LambdaExpression -> {
+                anonymousFunctions.add(ast)
+                visit(ast.body)
+            }
             is OperatorBinary -> {
                 visit(ast.lhs)
                 visit(ast.rhs)
@@ -54,8 +61,8 @@ private class NamedFunctionVisitor {
     }
 }
 
-internal fun getNamedFunctions(ast: AST): NamedFunctionInfo {
-    val visitor = NamedFunctionVisitor()
+internal fun getFunctionIdentities(ast: AST): FunctionIdentities {
+    val visitor = FunctionIdentityVisitor()
     visitor.visit(ast)
-    return visitor.getNamedFunctions()
+    return visitor.getIdentities()
 }
