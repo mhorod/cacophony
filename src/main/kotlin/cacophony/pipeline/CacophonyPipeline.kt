@@ -168,7 +168,6 @@ class CacophonyPipeline(
 
     private fun getClosureAnalysis(ast: AST, variablesMap: VariablesMap, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
         val analyzedClosures = analyzeClosures(ast, variablesMap, escapeAnalysis)
-        println(analyzedClosures)
         logger?.logSuccessfulClosureAnalysis(analyzedClosures)
         return analyzedClosures
     }

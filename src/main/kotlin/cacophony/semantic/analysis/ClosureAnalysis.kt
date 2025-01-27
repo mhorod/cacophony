@@ -9,7 +9,7 @@ import cacophony.semantic.syntaxtree.LambdaExpression
  * @property closures Set of `LambdaExpression` that are semantically closures
  * @property staticFunctions Set of `LambdaExpression` that are semantically static
  */
-class ClosureAnalysisResult(val closures: Set<LambdaExpression>, val staticFunctions: Set<LambdaExpression>)
+data class ClosureAnalysisResult(val closures: Set<LambdaExpression>, val staticFunctions: Set<LambdaExpression>)
 
 fun analyzeClosures(ast: AST, variablesMap: VariablesMap, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
     val functionIdentities = getFunctionIdentities(ast)

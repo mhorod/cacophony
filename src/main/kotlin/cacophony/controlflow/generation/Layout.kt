@@ -34,6 +34,6 @@ class ClosureLayout(val vars: Map<Variable.PrimitiveVariable, SimpleLayout>) : L
             .flatMap(Layout::flatten)
 }
 
-class VoidLayout : Layout() {
+data object VoidLayout : Layout() {
     override fun flatten(): List<LayoutAccessInfo> = emptyList()
 }
