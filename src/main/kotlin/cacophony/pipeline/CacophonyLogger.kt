@@ -185,7 +185,8 @@ class CacophonyLogger(
 
     override fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult) {
         if (logClosures) {
-            TODO("Log closure analysis")
+            val content = "found ${result.staticFunctions.size} static functions and ${result.closures.size} closures"
+            logMaybeSave("Closure analysis", content)
         }
     }
 

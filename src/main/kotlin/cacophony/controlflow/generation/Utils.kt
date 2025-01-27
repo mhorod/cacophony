@@ -28,7 +28,7 @@ fun generateLayoutOfVirtualRegisters(layout: Layout): Layout =
             )
         is ClosureLayout ->
             ClosureLayout(layout.vars.mapValues { (_, subLayout) -> generateLayoutOfVirtualRegisters(subLayout) as SimpleLayout })
-        is VoidLayout -> VoidLayout()
+        is VoidLayout -> VoidLayout
     }
 
 fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
@@ -41,7 +41,7 @@ fun generateLayoutOfVirtualRegisters(type: TypeExpr): Layout =
                 SimpleLayout(registerUse(Register.VirtualRegister(), false), false),
                 SimpleLayout(registerUse(Register.VirtualRegister(), true), true),
             )
-        TypeExpr.VoidType -> VoidLayout()
+        TypeExpr.VoidType -> VoidLayout
     }
 
 fun generateLayoutOfVirtualRegisters(type: Type): Layout =
