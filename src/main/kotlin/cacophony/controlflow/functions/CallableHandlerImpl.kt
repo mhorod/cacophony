@@ -167,4 +167,6 @@ sealed class CallableHandlerImpl(
         heapVariablePointers.getOrElse(variable) {
             throw IllegalArgumentException("Variable $variable is not allocated on heap inside $this FunctionHandler")
         }
+
+    override fun getBodyReference() = function
 }
