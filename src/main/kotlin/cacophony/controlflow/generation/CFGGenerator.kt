@@ -103,7 +103,8 @@ internal class CFGGenerator(
             }
 
             is ClosureLayout -> {
-                error("Unexpected assignment to internal layout type ClosureLayout")
+                require(destination is ClosureLayout)
+                destination.vars.flatMap { (variable, layout) -> makeVerticesForAssignment(source.vars[variable]!!, layout) }
             }
 
             is VoidLayout -> emptyList()
@@ -313,24 +314,26 @@ internal class CFGGenerator(
                                 },
                             )
 
-                        val allocCFG =
-                            allocAndCopy(
-                                outlineLocation,
-                                sourceLayout,
-                            ) { pointerLayout -> generateLayoutOfClosure(pointerLayout.access, offsets) }
+                        if (offsets.isEmpty()) {
+                            SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(integer(0))))
+                        } else {
+                            val allocCFG =
+                                allocAndCopy(
+                                    outlineLocation,
+                                    sourceLayout,
+                                ) { pointerLayout -> generateLayoutOfClosure(pointerLayout.access, offsets) }
 
-                        val closureLink = allocCFG.access
-                        require(closureLink is SimpleLayout)
-
-                        SubCFG.Extracted(
-                            allocCFG.entry,
-                            allocCFG.exit,
-                            FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
-                        )
+                            val closureLink = allocCFG.access
+                            require(closureLink is SimpleLayout)
+                            SubCFG.Extracted(
+                                allocCFG.entry,
+                                allocCFG.exit,
+                                FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
+                            )
+                        }
                     }
 
                     else -> {
-                        /* let f = ([x: Int] => x) */
                         throw NotImplementedError("Anonymous functions cannot be called statically")
                     }
                 }
