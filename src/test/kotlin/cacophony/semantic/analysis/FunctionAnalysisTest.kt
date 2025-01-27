@@ -3,8 +3,8 @@ package cacophony.semantic.analysis
 import cacophony.*
 import cacophony.controlflow.Variable
 import cacophony.semantic.*
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
+import cacophony.semantic.types.ResolvedVariables
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

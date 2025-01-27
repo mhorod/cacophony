@@ -24,9 +24,9 @@ import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.LambdaExpression
 import cacophony.semantic.syntaxtree.generateAST
+import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
 import cacophony.semantic.types.TypeExpr
-import cacophony.semantic.types.checkTypes
 import cacophony.token.Token
 import cacophony.token.TokenCategorySpecific
 import cacophony.utils.CompileException
@@ -111,22 +111,17 @@ class CacophonyPipeline(
         return result
     }
 
-    fun resolveOverloads(ast: AST, nr: NameResolutionResult): ResolvedVariables {
-        val result =
-            try {
-                assertEmptyDiagnosticsAfter { resolveOverloads(ast, nr, diagnostics) }
-            } catch (e: CompileException) {
-                logger?.logFailedOverloadResolution()
-                throw e
-            }
-        logger?.logSuccessfulOverloadResolution(result)
-        return result
-    }
-
-    fun checkTypes(ast: AST, resolvedVariables: ResolvedVariables): TypeCheckingResult {
+    fun checkTypes(ast: AST, nr: NameResolutionResult): TypeCheckingResult {
         val types =
             try {
-                assertEmptyDiagnosticsAfter { checkTypes(ast, resolvedVariables, diagnostics) }
+                assertEmptyDiagnosticsAfter {
+                    cacophony.semantic.types.checkTypes(
+                        ast,
+                        nr.entityResolution,
+                        nr.shapeResolution,
+                        diagnostics,
+                    )
+                }
             } catch (e: CompileException) {
                 logger?.logFailedTypeChecking()
                 throw e
@@ -135,10 +130,10 @@ class CacophonyPipeline(
         return types
     }
 
-    fun createVariables(ast: AST, resolvedVariables: ResolvedVariables, types: TypeCheckingResult): VariablesMap {
+    fun createVariables(ast: AST, types: TypeCheckingResult): VariablesMap {
         val variableMap =
             try {
-                createVariablesMap(ast, resolvedVariables, types)
+                createVariablesMap(ast, types)
             } catch (e: CompileException) {
                 logger?.logFailedVariableCreation()
                 throw e
@@ -159,11 +154,11 @@ class CacophonyPipeline(
     }
 
     private fun filterForeignFunctions(nr: NameResolutionResult): Set<Definition.ForeignFunctionDeclaration> =
-        nr.values
-            .filterIsInstance<ResolvedName.Function>()
-            .flatMap {
-                it.def.toMap().values
-            }.filterIsInstance<Definition.ForeignFunctionDeclaration>()
+        nr.entityResolution
+            .values
+            .filterIsInstance<ResolvedEntity.WithOverloads>()
+            .flatMap { it.overloads.values }
+            .filterIsInstance<Definition.ForeignFunctionDeclaration>()
             .toSet()
 
     private fun getClosureAnalysis(ast: AST, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
@@ -192,11 +187,10 @@ class CacophonyPipeline(
 
     fun analyzeAst(ast: AST): AstAnalysisResult {
         val resolvedNames = resolveNames(ast)
-        val resolvedVariables = resolveOverloads(ast, resolvedNames)
-        val types = checkTypes(ast, resolvedVariables)
-        val variablesMap = createVariables(ast, resolvedVariables, types)
-        val analyzedFunctions = analyzeFunctions(ast, variablesMap, resolvedVariables)
-        val escapeAnalysis = findEscapingVariables(ast, resolvedVariables, analyzedFunctions, variablesMap, types)
+        val types = checkTypes(ast, resolvedNames)
+        val variablesMap = createVariables(ast, types)
+        val analyzedFunctions = analyzeFunctions(ast, variablesMap, types.resolvedVariables)
+        val escapeAnalysis = findEscapingVariables(ast, types.resolvedVariables, analyzedFunctions, variablesMap, types)
         val closureAnalysis = getClosureAnalysis(ast, escapeAnalysis)
         val handlers =
             generateCallableHandlers(
@@ -208,7 +202,7 @@ class CacophonyPipeline(
             )
         val foreignFunctions = filterForeignFunctions(resolvedNames)
         return AstAnalysisResult(
-            resolvedVariables,
+            types.resolvedVariables,
             types,
             variablesMap,
             handlers,

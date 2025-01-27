@@ -1,13 +1,9 @@
 package cacophony.semantic.analysis
 
 import cacophony.controlflow.Variable
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.LambdaExpression
-import cacophony.semantic.types.FunctionType
-import cacophony.semantic.types.StructType
-import cacophony.semantic.types.TypeCheckingResult
-import cacophony.semantic.types.TypeExpr
+import cacophony.semantic.types.*
 import kotlin.math.min
 
 typealias EscapeAnalysisResult = Set<Variable>
@@ -117,13 +113,14 @@ fun escapeAnalysis(
     // The escaping variables are all escaping Functional Variables and variables used by escaping lambdas
     return escapingFunctionalEntities
         .filterIsInstance<FunctionalEntity.FunctionalVariable>()
-        .map { it.variable }.toSet() union
-        escapingFunctionalEntities.filterIsInstance<FunctionalEntity.Lambda>()
+        .map { it.variable }
+        .toSet() union
+        escapingFunctionalEntities
+            .filterIsInstance<FunctionalEntity.Lambda>()
             .map { functionAnalysis[it.lambdaExpression]!! }
             .flatMap {
                 it.variables.minus(it.declaredVariables().toSet())
-            }
-            .map { it.origin }
+            }.map { it.origin }
 }
 
 /**

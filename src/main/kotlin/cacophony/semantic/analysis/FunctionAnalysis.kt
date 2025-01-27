@@ -4,10 +4,10 @@ import cacophony.controlflow.Variable
 import cacophony.controlflow.getAllNestedVariables
 import cacophony.graphs.getProperTransitiveClosure
 import cacophony.graphs.reverseGraph
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.LambdaExpression
+import cacophony.semantic.types.ResolvedVariables
 
 typealias FunctionAnalysisResult = Map<LambdaExpression, AnalyzedFunction>
 

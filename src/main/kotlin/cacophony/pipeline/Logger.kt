@@ -38,8 +38,6 @@ interface Logger {
 
     fun logFailedNameResolution()
 
-    fun logSuccessfulOverloadResolution(result: ResolvedVariables)
-
     fun logFailedOverloadResolution()
 
     fun logSuccessfulTypeChecking(result: TypeCheckingResult)

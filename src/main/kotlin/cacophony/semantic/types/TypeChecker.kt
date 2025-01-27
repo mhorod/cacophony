@@ -1,29 +1,67 @@
 package cacophony.semantic.types
 
 import cacophony.diagnostics.Diagnostics
-import cacophony.semantic.names.ResolvedVariables
+import cacophony.semantic.names.ArityResolutionResult
+import cacophony.semantic.names.EntityResolutionResult
+import cacophony.semantic.names.ResolvedEntity
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 
 // Result contains every variable that could be properly typed
-fun checkTypes(ast: AST, resolvedVariables: ResolvedVariables, diagnostics: Diagnostics): TypeCheckingResult {
-    val typer = Typer(diagnostics, resolvedVariables)
-    typer.typeExpression(ast)
-    return TypeCheckingResult(typer.result, typer.typedVariables)
+fun checkTypes(
+    ast: AST,
+    resolvedEntities: EntityResolutionResult,
+    resolvedShapes: ArityResolutionResult,
+    diagnostics: Diagnostics,
+): TypeCheckingResult {
+    val typer = Typer(diagnostics, resolvedEntities, resolvedShapes)
+    typer.typeExpression(ast, Expectation.Any)
+    return TypeCheckingResult(typer.result, typer.typedVariables, typer.resolvedVariables)
 }
+
+interface Expectation {
+    data class Arity(val n: Int) : Expectation
+
+    data object Any : Expectation
+
+    data object Value : Expectation
+}
+
+fun TypeExpr?.toExpectation(): Expectation =
+    when (this) {
+        BuiltinType.BooleanType -> Expectation.Value
+        BuiltinType.IntegerType -> Expectation.Value
+        BuiltinType.UnitType -> Expectation.Value
+        is FunctionType -> Expectation.Arity(this.args.size)
+        is ReferentialType -> Expectation.Value
+        is StructType -> Expectation.Value
+        TypeExpr.VoidType -> throw IllegalArgumentException("wdym void???")
+        null -> Expectation.Any
+    }
+
+fun Type?.toExpectation(): Expectation =
+    when (this) {
+        is BaseType.Basic -> Expectation.Value
+        is BaseType.Functional -> Expectation.Arity(this.argumentsType.size)
+        is BaseType.Referential -> Expectation.Value
+        is BaseType.Structural -> Expectation.Value
+        null -> Expectation.Any
+    }
 
 private class Typer(
     diagnostics: Diagnostics,
-    val resolvedVariables: ResolvedVariables,
+    val resolvedEntities: EntityResolutionResult,
+    val arities: ArityResolutionResult,
 ) {
     val result: MutableMap<Expression, TypeExpr> = mutableMapOf()
     val typedVariables: MutableMap<Definition, TypeExpr> = mutableMapOf()
     val functionContext = ArrayDeque<TypeExpr>()
     val error = ErrorHandler(diagnostics)
     val translator = TypeTranslator(diagnostics)
+    val resolvedVariables: MutableMap<VariableUse, Definition> = mutableMapOf()
     var whileDepth = 0
 
-    fun typeExpression(expression: Expression): TypeExpr? {
+    fun typeExpression(expression: Expression, expectation: Expectation): TypeExpr? {
         val expressionType: TypeExpr? =
             when (expression) {
                 is Block -> {
@@ -31,16 +69,21 @@ private class Typer(
                         BuiltinType.UnitType
                     } else {
                         var voided = false
-                        for (expr in expression.expressions) {
-                            val type = typeExpression(expr)
+                        for (expr in expression.expressions.dropLast(1)) {
+                            val type = typeExpression(expr, Expectation.Any)
                             if (type is TypeExpr.VoidType) voided = true
                         }
-                        if (voided) TypeExpr.VoidType else result[expression.expressions.last()]
+                        val type = typeExpression(expression.expressions.last(), expectation)
+                        if (voided) TypeExpr.VoidType else type
                     }
                 }
 
-                is Definition.VariableDeclaration -> {
-                    val deducedType = typeExpression(expression.value) ?: return null
+                is Definition.VariableDefinition -> {
+                    val expect =
+                        if (expression.type == null) {
+                            arities[expression]?.let { Expectation.Arity(it) } ?: Expectation.Value
+                        } else expression.type.toExpectation()
+                    val deducedType = typeExpression(expression.value, expect) ?: return null
                     val variableType = initializedType(expression.type, deducedType, expression.value.range) ?: return null
                     typedVariables[expression] = variableType
                     BuiltinType.UnitType
@@ -52,11 +95,23 @@ private class Typer(
                     argType
                 }
 
+                is Definition.FunctionDefinition -> {
+                    val argsType = parseArgs(expression.value.arguments) ?: return null
+                    val returnType = translator.translateType(expression.value.returnType) ?: return null
+                    val deducedType = FunctionType(argsType, returnType)
+                    val functionType = initializedType(expression.type, deducedType, expression.range) ?: return null
+                    typedVariables[expression] = functionType
+                    typeExpression(expression.value, functionType.toExpectation())
+                    BuiltinType.UnitType
+                }
+
                 is LambdaExpression -> {
                     val argsType = parseArgs(expression.arguments) ?: return null
                     val returnType = translator.translateType(expression.returnType) ?: return null
+                    val deducedType = FunctionType(argsType, returnType)
+                    val functionType = initializedType(null, deducedType, expression.range) ?: return null
                     functionContext.addLast(returnType)
-                    val bodyType = typeExpression(expression.body) ?: return null
+                    val bodyType = typeExpression(expression.body, returnType.toExpectation()) ?: return null
                     functionContext.removeLast()
                     if (!isSubtype(bodyType, returnType)) {
                         error.typeMismatchError(returnType, bodyType, expression.body.range)
@@ -81,7 +136,7 @@ private class Typer(
                                 field.name to (
                                     initializedType(
                                         field.type,
-                                        (typeExpression(fieldExpr) ?: return null),
+                                        (typeExpression(fieldExpr, field.type.toExpectation()) ?: return null),
                                         fieldExpr.range,
                                     ) ?: return null
                                 )
@@ -92,7 +147,7 @@ private class Typer(
                     BuiltinType.UnitType
                 }
                 is FieldRef -> {
-                    val structType = typeExpression(expression.struct())
+                    val structType = typeExpression(expression.struct(), Expectation.Value)
                     if (structType !is StructType) {
                         error.expectedStructure(expression.struct().range)
                         return null
@@ -106,17 +161,21 @@ private class Typer(
 
                 is Empty -> BuiltinType.UnitType
                 is FunctionCall -> {
-                    val argsTypes = expression.arguments.map { typeExpression(it) }
-                    val functionType = typeExpression(expression.function) ?: return null
+                    val functionType = typeExpression(expression.function, Expectation.Arity(expression.arguments.size)) ?: return null
                     if (functionType !is FunctionType) {
                         error.expectedFunction(expression.function.range)
                         return null
                     }
+
                     if (functionType.args.size != expression.arguments.size) {
                         throw IllegalStateException(
                             "Arity of function resolved in previous step does not match",
                         )
                     }
+                    val argsTypes =
+                        expression.arguments.zip(functionType.args).map { (expr, type) ->
+                            typeExpression(expr, type.toExpectation())
+                        }
                     (argsTypes zip functionType.args)
                         .mapIndexed { ind, (deduced, required) ->
                             if (deduced == null) {
@@ -144,11 +203,12 @@ private class Typer(
                 is OperatorBinary.DivisionAssignment -> typeOperatorAssignment(expression)
                 is OperatorBinary.ModuloAssignment -> typeOperatorAssignment(expression)
                 is OperatorBinary.Assignment -> {
-                    val (lhsType, rhsType) = typeBinary(expression) ?: return null
                     if (expression.lhs !is Assignable) {
                         error.expectedLvalue(expression.lhs.range)
                         return null
                     }
+                    val lhsType = typeExpression(expression.lhs, Expectation.Any) ?: return null
+                    val rhsType = typeExpression(expression.rhs, lhsType.toExpectation()) ?: return null
                     if (!isSubtype(rhsType, lhsType)) {
                         error.typeMismatchError(lhsType, rhsType, expression.rhs.range)
                         return null
@@ -189,7 +249,7 @@ private class Typer(
                 is OperatorBinary.LogicalAnd -> typeOperatorBinary(expression, BuiltinType.BooleanType, BuiltinType.BooleanType)
                 is OperatorBinary.LogicalOr -> typeOperatorBinary(expression, BuiltinType.BooleanType, BuiltinType.BooleanType)
                 is OperatorUnary.Minus -> {
-                    val innerType = typeExpression(expression.expression) ?: return null
+                    val innerType = typeExpression(expression.expression, Expectation.Value) ?: return null
                     if (!isSubtype(innerType, BuiltinType.IntegerType)) {
                         error.operationNotSupportedOn("unary - operator", innerType, expression.expression.range)
                         return null
@@ -198,7 +258,7 @@ private class Typer(
                 }
 
                 is OperatorUnary.Negation -> {
-                    val innerType = typeExpression(expression.expression) ?: return null
+                    val innerType = typeExpression(expression.expression, Expectation.Value) ?: return null
                     if (!isSubtype(innerType, BuiltinType.BooleanType)) {
                         error.operationNotSupportedOn("unary ! operator", innerType, expression.expression.range)
                         return null
@@ -215,15 +275,15 @@ private class Typer(
                 }
 
                 is Statement.IfElseStatement -> {
-                    val trueBranchType = typeExpression(expression.doExpression)
+                    val trueBranchType = typeExpression(expression.doExpression, expectation)
                     val falseBranchType =
                         if (expression.elseExpression == null) {
                             // if non-existent, the else branch has the Unit type
                             BuiltinType.UnitType
                         } else {
-                            typeExpression(expression.elseExpression)
+                            typeExpression(expression.elseExpression, expectation)
                         }
-                    val conditionType = typeExpression(expression.testExpression)
+                    val conditionType = typeExpression(expression.testExpression, Expectation.Value)
                     if (conditionType == null || trueBranchType == null || falseBranchType == null) return null
                     if (!isSubtype(conditionType, BuiltinType.BooleanType)) {
                         error.typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
@@ -240,11 +300,13 @@ private class Typer(
                 }
 
                 is Statement.ReturnStatement -> {
-                    val returnedType = typeExpression(expression.value) ?: return null
                     if (functionContext.isEmpty()) {
                         error.returnOutsideFunction(expression.range)
                         return null
                     }
+
+                    val returnedType = typeExpression(expression.value, functionContext.last().toExpectation()) ?: return null
+
                     if (!isSubtype(returnedType, functionContext.last())) {
                         error.typeMismatchError(functionContext.last(), returnedType, expression.range)
                         return null
@@ -254,9 +316,9 @@ private class Typer(
 
                 is Statement.WhileStatement -> {
                     whileDepth++
-                    typeExpression(expression.doExpression)
+                    typeExpression(expression.doExpression, Expectation.Any)
                     whileDepth--
-                    val conditionType = typeExpression(expression.testExpression) ?: return null
+                    val conditionType = typeExpression(expression.testExpression, Expectation.Value) ?: return null
                     if (!isSubtype(conditionType, BuiltinType.BooleanType)) {
                         error.typeMismatchError(BuiltinType.BooleanType, conditionType, expression.testExpression.range)
                         return null
@@ -265,7 +327,7 @@ private class Typer(
                 }
 
                 is Allocation -> {
-                    val valueType = typeExpression(expression.value) ?: return null
+                    val valueType = typeExpression(expression.value, Expectation.Value) ?: return null
 
                     if (NON_ALLOCATABLE_TYPES.contains(valueType)) {
                         error.invalidAllocation(expression.range, valueType)
@@ -276,7 +338,7 @@ private class Typer(
                 }
 
                 is Dereference -> {
-                    val referenceType = typeExpression(expression.value) ?: return null
+                    val referenceType = typeExpression(expression.value, Expectation.Value) ?: return null
                     if (referenceType !is ReferentialType) {
                         error.expectedReferentialType(expression.range)
                         return null
@@ -284,7 +346,43 @@ private class Typer(
                     referenceType.type
                 }
 
-                is VariableUse -> typedVariables[resolvedVariables[expression]!!]
+                is VariableUse -> {
+                    val def =
+                        when (expectation) {
+                            is Expectation.Arity ->
+                                when (val entity = resolvedEntities[expression]) {
+                                    is ResolvedEntity.Unambiguous -> entity.definition
+                                    is ResolvedEntity.WithOverloads -> {
+                                        when (val def = entity.overloads[expectation.n]) {
+                                            null -> {
+                                                error.expectedFunction(expression.range)
+                                                return null
+                                            }
+
+                                            else -> def
+                                        }
+                                    }
+
+                                    null -> throw IllegalArgumentException("Entity not resolved :(")
+                                }
+                            else -> {
+                                when (val entity = resolvedEntities[expression]) {
+                                    is ResolvedEntity.Unambiguous -> entity.definition
+                                    is ResolvedEntity.WithOverloads -> {
+                                        if (entity.overloads.size == 1) {
+                                            entity.overloads.values.first()
+                                        } else {
+                                            error.tooManyOverloads(expression.range)
+                                            return null
+                                        }
+                                    }
+                                    null -> throw IllegalArgumentException("Entity not resolved :( $expression")
+                                }
+                            }
+                        }
+                    resolvedVariables[expression] = def
+                    typedVariables[def]!!
+                }
             }
         if (expressionType != null) result[expression] = expressionType
         return expressionType
@@ -305,11 +403,11 @@ private class Typer(
     }
 
     private fun parseArgs(arguments: List<Definition.FunctionArgument>): List<TypeExpr>? =
-        arguments.map { typeExpression(it) }.map { it ?: return null }
+        arguments.map { typeExpression(it, Expectation.Any) }.map { it ?: return null }
 
     private fun typeBinary(expression: OperatorBinary): Pair<TypeExpr, TypeExpr>? {
-        val lhsType = typeExpression(expression.lhs)
-        val rhsType = typeExpression(expression.rhs)
+        val lhsType = typeExpression(expression.lhs, Expectation.Value)
+        val rhsType = typeExpression(expression.rhs, Expectation.Value)
         if (lhsType == null || rhsType == null) return null
         return lhsType to rhsType
     }

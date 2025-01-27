@@ -2,7 +2,6 @@ package cacophony.semantic.analysis
 
 import cacophony.*
 import cacophony.controlflow.Variable
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.types.BuiltinType
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
@@ -19,15 +18,15 @@ class VariablesMapCreationTest {
         val xUse = variableUse("x")
         val ast = block(xDef, xUse)
 
-        val resolvedVariables = mapOf(xUse to xDef)
         val types =
             TypeCheckingResult(
                 mapOf(xDef to BuiltinType.UnitType, xUse to BuiltinType.IntegerType),
                 mapOf(xDef to BuiltinType.IntegerType),
+                mapOf(xUse to xDef),
             )
 
         // when
-        val variables = createVariablesMap(ast, resolvedVariables, types)
+        val variables = createVariablesMap(ast, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xDef)
@@ -41,7 +40,6 @@ class VariablesMapCreationTest {
         val xUse = variableUse("x")
         val fDef = intFunctionDefinition("f", listOf(xArg), xUse)
 
-        val resolvedVariables = mapOf(xUse to xArg)
         val types =
             TypeCheckingResult(
                 mapOf(xArg to BuiltinType.IntegerType, xUse to BuiltinType.IntegerType),
@@ -49,10 +47,11 @@ class VariablesMapCreationTest {
                     xArg to BuiltinType.IntegerType,
                     fDef to functionTypeExpr(BuiltinType.IntegerType, result = BuiltinType.IntegerType),
                 ),
+                mapOf(xUse to xArg),
             )
 
         // when
-        val variables = createVariablesMap(fDef, resolvedVariables, types)
+        val variables = createVariablesMap(fDef, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xArg)
@@ -67,8 +66,6 @@ class VariablesMapCreationTest {
         val xCall = call(xUse, lit(1))
         val fDef = intFunctionDefinition("f", listOf(xArg), xCall)
 
-        val resolvedVariables = mapOf(xUse to xArg)
-
         val xType = functionTypeExpr(BuiltinType.IntegerType, result = BuiltinType.IntegerType)
         val types =
             TypeCheckingResult(
@@ -77,10 +74,11 @@ class VariablesMapCreationTest {
                     xArg to xType,
                     fDef to functionTypeExpr(xType, result = BuiltinType.IntegerType),
                 ),
+                mapOf(xUse to xArg),
             )
 
         // when
-        val variables = createVariablesMap(fDef, resolvedVariables, types)
+        val variables = createVariablesMap(fDef, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xArg)
@@ -95,15 +93,15 @@ class VariablesMapCreationTest {
         val xUse = variableUse("x")
         val ast = block(xDef, xUse)
 
-        val resolvedVariables = mapOf(xUse to xDef)
         val types =
             TypeCheckingResult(
                 mapOf(xDef to BuiltinType.UnitType, xUse to FunctionType(emptyList(), BuiltinType.IntegerType)),
                 mapOf(xDef to FunctionType(emptyList(), BuiltinType.IntegerType)),
+                mapOf(xUse to xDef),
             )
 
         // when
-        val variables = createVariablesMap(ast, resolvedVariables, types)
+        val variables = createVariablesMap(ast, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xDef)
@@ -119,15 +117,15 @@ class VariablesMapCreationTest {
         val xUse = variableUse("x")
         val ast = block(xDef, xUse)
 
-        val resolvedVariables = mapOf(xUse to xDef)
         val types =
             TypeCheckingResult(
                 mapOf(xDef to BuiltinType.UnitType, xUse to FunctionType(emptyList(), BuiltinType.IntegerType)),
                 mapOf(xDef to FunctionType(emptyList(), BuiltinType.IntegerType)),
+                mapOf(xUse to xDef),
             )
 
         // when
-        val variables = createVariablesMap(ast, resolvedVariables, types)
+        val variables = createVariablesMap(ast, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xDef)
@@ -143,16 +141,16 @@ class VariablesMapCreationTest {
         val aUse = lvalueFieldRef(xUse, "a")
         val fDef = intFunctionDefinition("f", listOf(xArg), aUse)
 
-        val resolvedVariables = mapOf(xUse to xArg)
         val xType = structTypeExpr("a" to BuiltinType.IntegerType)
         val types =
             TypeCheckingResult(
                 mapOf(xArg to xType, xUse to BuiltinType.IntegerType),
                 mapOf(xArg to xType, fDef to functionTypeExpr(xType, result = BuiltinType.IntegerType)),
+                mapOf(xUse to xArg),
             )
 
         // when
-        val variables = createVariablesMap(fDef, resolvedVariables, types)
+        val variables = createVariablesMap(fDef, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xArg)
@@ -169,7 +167,6 @@ class VariablesMapCreationTest {
         val aUse = lvalueFieldRef(xUse2, "a")
         val ast = block(xDef, xUse1, aUse)
 
-        val resolvedVariables = mapOf(xUse1 to xDef, xUse2 to xDef)
         val types =
             TypeCheckingResult(
                 mapOf(
@@ -178,10 +175,11 @@ class VariablesMapCreationTest {
                     xUse2 to BuiltinType.IntegerType,
                 ),
                 mapOf(xDef to structTypeExpr("a" to BuiltinType.IntegerType)),
+                mapOf(xUse1 to xDef, xUse2 to xDef),
             )
 
         // when
-        val variables = createVariablesMap(ast, resolvedVariables, types)
+        val variables = createVariablesMap(ast, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xDef)
@@ -201,7 +199,6 @@ class VariablesMapCreationTest {
         val bUse = lvalueFieldRef(aUse, "b")
         val ast = block(xDef, xUse1, bUse)
 
-        val resolvedVariables = mapOf(xUse1 to xDef, xUse2 to xDef)
         val types =
             TypeCheckingResult(
                 mapOf(
@@ -211,10 +208,11 @@ class VariablesMapCreationTest {
                     xUse2 to BuiltinType.IntegerType,
                 ),
                 mapOf(xDef to structTypeExpr("a" to structTypeExpr("b" to BuiltinType.IntegerType))),
+                mapOf(xUse1 to xDef, xUse2 to xDef),
             )
 
         // when
-        val variables = createVariablesMap(ast, resolvedVariables, types)
+        val variables = createVariablesMap(ast, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xDef)
@@ -239,7 +237,6 @@ class VariablesMapCreationTest {
         val block = block(xDef, aUse, yDef, yUse)
         val bUse = rvalueFieldRef(block, "b")
 
-        val resolvedVariables = mapOf(xUse to xDef, yUse to yDef)
         val types =
             TypeCheckingResult(
                 mapOf(
@@ -252,10 +249,11 @@ class VariablesMapCreationTest {
                     bUse to BuiltinType.IntegerType,
                 ),
                 mapOf(xDef to structTypeExpr("a" to BuiltinType.IntegerType), yDef to structTypeExpr("b" to BuiltinType.IntegerType)),
+                mapOf(xUse to xDef, yUse to yDef),
             )
 
         // when
-        val variables = createVariablesMap(bUse, resolvedVariables, types)
+        val variables = createVariablesMap(bUse, types)
 
         // then
         assertThat(variables.definitions).containsKeys(xDef, yDef)
@@ -270,7 +268,6 @@ class VariablesMapCreationTest {
         val struct = struct("a" to lit(1))
         val access = rvalueFieldRef(struct, "a")
 
-        val resolvedVariables: ResolvedVariables = emptyMap()
         val types =
             TypeCheckingResult(
                 mapOf(
@@ -278,10 +275,11 @@ class VariablesMapCreationTest {
                     access to BuiltinType.IntegerType,
                 ),
                 emptyMap(),
+                emptyMap(),
             )
 
         // when
-        val variables = createVariablesMap(access, resolvedVariables, types)
+        val variables = createVariablesMap(access, types)
 
         // then
         assertThat(variables.definitions).isEmpty()
@@ -299,7 +297,6 @@ class VariablesMapCreationTest {
         // let p; @p; @(1; p)
         val ast = block(pDef, standaloneDeref, blockDeref)
 
-        val resolvedVariables = mapOf(pUseStandalone to pDef, pUseInBlock to pDef)
         val pType = ReferentialType(BuiltinType.IntegerType)
         val types =
             TypeCheckingResult(
@@ -311,10 +308,11 @@ class VariablesMapCreationTest {
                     blockDeref to BuiltinType.IntegerType,
                 ),
                 mapOf(pDef to ReferentialType(BuiltinType.IntegerType)),
+                mapOf(pUseStandalone to pDef, pUseInBlock to pDef),
             )
 
         // when
-        val variables = createVariablesMap(ast, resolvedVariables, types)
+        val variables = createVariablesMap(ast, types)
 
         // then
         assertThat(variables.definitions).containsKey(pDef)
