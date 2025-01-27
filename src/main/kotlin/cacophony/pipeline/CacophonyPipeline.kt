@@ -117,8 +117,7 @@ class CacophonyPipeline(
                 assertEmptyDiagnosticsAfter {
                     cacophony.semantic.types.checkTypes(
                         ast,
-                        nr.entityResolution,
-                        nr.shapeResolution,
+                        nr,
                         diagnostics,
                     )
                 }

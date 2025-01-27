@@ -66,4 +66,8 @@ class TypeCheckerDiagnostics {
     data object TooManyOverloads : DiagnosticMessage {
         override fun getMessage() = "Too many possible overloads in assignment"
     }
+
+    data object TooFewOverloads : DiagnosticMessage {
+        override fun getMessage() = "Non of the overloads match"
+    }
 }

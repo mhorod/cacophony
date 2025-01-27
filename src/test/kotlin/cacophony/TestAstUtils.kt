@@ -85,7 +85,7 @@ fun foreignFunctionDeclaration(identifier: String, argumentsType: List<Type>, re
         returnType,
     )
 
-fun typedVariableDefinition(identifier: String, type: BaseType.Basic?, value: Expression) =
+fun typedVariableDefinition(identifier: String, type: Type?, value: Expression) =
     Definition.VariableDefinition(
         mockRange(),
         identifier,

@@ -1415,7 +1415,7 @@ class NameResolverTest {
         }
 
         @Test
-        fun `error when finds argument of functional type`() {
+        fun `ok - argument of functional type`() {
             // let f = [x: () -> Int] -> Int => 0
 
             // given
@@ -1435,10 +1435,13 @@ class NameResolverTest {
                     ),
                 )
 
-            // when & then
-            resolveNames(ast, diagnostics)
-            verify(exactly = 1) { diagnostics.report(NRDiagnostics.IllegalFunctionalArgument("x"), functionalArgumentRange) }
-            confirmVerified(diagnostics)
+            // when
+            val resolvedNames = resolveNames(ast, diagnostics)
+
+            // then
+            assertThatResolvedNames(resolvedNames)
+                .andNothingElse()
+            verify { diagnostics wasNot Called }
         }
 
         @Test

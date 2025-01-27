@@ -3,18 +3,14 @@ package cacophony.semantic.types
 import cacophony.diagnostics.Diagnostics
 import cacophony.semantic.names.ArityResolutionResult
 import cacophony.semantic.names.EntityResolutionResult
+import cacophony.semantic.names.NameResolutionResult
 import cacophony.semantic.names.ResolvedEntity
 import cacophony.semantic.syntaxtree.*
 import cacophony.utils.Location
 
 // Result contains every variable that could be properly typed
-fun checkTypes(
-    ast: AST,
-    resolvedEntities: EntityResolutionResult,
-    resolvedShapes: ArityResolutionResult,
-    diagnostics: Diagnostics,
-): TypeCheckingResult {
-    val typer = Typer(diagnostics, resolvedEntities, resolvedShapes)
+fun checkTypes(ast: AST, nr: NameResolutionResult, diagnostics: Diagnostics): TypeCheckingResult {
+    val typer = Typer(diagnostics, nr.entityResolution, nr.shapeResolution)
     typer.typeExpression(ast, Expectation.Any)
     return TypeCheckingResult(typer.result, typer.typedVariables, typer.resolvedVariables)
 }
@@ -207,6 +203,10 @@ private class Typer(
                         error.expectedLvalue(expression.lhs.range)
                         return null
                     }
+                    if (expression.lhs is VariableUse && resolvedEntities[expression.lhs] is ResolvedEntity.WithOverloads) {
+                        error.expectedLvalue(expression.lhs.range)
+                        return null
+                    }
                     val lhsType = typeExpression(expression.lhs, Expectation.Any) ?: return null
                     val rhsType = typeExpression(expression.rhs, lhsType.toExpectation()) ?: return null
                     if (!isSubtype(rhsType, lhsType)) {
@@ -355,7 +355,7 @@ private class Typer(
                                     is ResolvedEntity.WithOverloads -> {
                                         when (val def = entity.overloads[expectation.n]) {
                                             null -> {
-                                                error.expectedFunction(expression.range)
+                                                error.tooFewOverloads(expression.range)
                                                 return null
                                             }
 

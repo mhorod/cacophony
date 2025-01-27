@@ -52,7 +52,7 @@ private class AssignableMapBuilder(val resolvedVariables: ResolvedVariables, val
             is FieldRef.RValue -> visit(expression.obj)
 
             is FunctionCall -> {
-                visit(expression.function)
+//                visit(expression.function) TODO: wtf, man?
                 expression.arguments.forEach { visit(it) }
             }
 

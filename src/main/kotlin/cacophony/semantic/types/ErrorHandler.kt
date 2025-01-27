@@ -59,4 +59,8 @@ internal class ErrorHandler(
     fun tooManyOverloads(range: Pair<Location, Location>) {
         diagnostics.report(TypeCheckerDiagnostics.TooManyOverloads, range)
     }
+
+    fun tooFewOverloads(range: Pair<Location, Location>) {
+        diagnostics.report(TypeCheckerDiagnostics.TooFewOverloads, range)
+    }
 }
