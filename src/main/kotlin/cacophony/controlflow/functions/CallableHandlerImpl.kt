@@ -16,7 +16,7 @@ sealed class CallableHandlerImpl(
     private val analyzedFunction: AnalyzedFunction,
     private val function: LambdaExpression,
     private val variablesMap: VariablesMap,
-    private val escapedVariables: EscapeAnalysisResult,
+    private val escapeAnalysisResult: EscapeAnalysisResult
 ) : CallableHandler {
     private var stackSpace = REGISTER_SIZE
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
@@ -27,10 +27,10 @@ sealed class CallableHandlerImpl(
         analyzedFunction.variables
             .map {
                 it.origin
-            }.filter {
-                escapedVariables.contains(it)
             }.filterIsInstance<Variable.PrimitiveVariable>()
-            .associateWith { Variable.PrimitiveVariable(true) }
+            .filter {
+                escapeAnalysisResult.contains(it)
+            }.associateWith { Variable.PrimitiveVariable(true) }
 
     // Initially variables may be allocated in virtualRegisters, only after spill handling we know
     // if they're truly on stack or in registers.
