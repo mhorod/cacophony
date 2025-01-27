@@ -145,6 +145,8 @@ fun variableWrite(variableUse: VariableUse, value: Expression) =
 
 fun primVar(name: String = "") = Variable.PrimitiveVariable(name)
 
+fun funVar() = Variable.FunctionVariable(primVar(), primVar())
+
 fun allocation(value: Expression) = Allocation(mockRange(), value)
 
 fun dereference(value: Expression) = Dereference(mockRange(), value)
