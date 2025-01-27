@@ -123,7 +123,7 @@ fun generateLayoutOfClosure(base: CFGNode, closure: Map<Variable.PrimitiveVariab
 
 fun getFunctionLayout(callerHandler: CallableHandler, calleeHandler: StaticFunctionHandler) =
     FunctionLayout(
-        SimpleLayout(dataLabel(calleeHandler.getFunctionDeclaration().getLabel())),
+        SimpleLayout(dataLabel(calleeHandler.getBodyReference().getLabel())),
         SimpleLayout(calleeHandler.generateStaticLinkVariable(callerHandler), true),
     )
 
