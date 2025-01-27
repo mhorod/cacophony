@@ -68,6 +68,6 @@ class TypeCheckerDiagnostics {
     }
 
     data object TooFewOverloads : DiagnosticMessage {
-        override fun getMessage() = "Non of the overloads match"
+        override fun getMessage() = "None of the overloads match"
     }
 }
