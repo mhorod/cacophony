@@ -249,10 +249,7 @@ class CacophonyPipeline(
             OutlineCollection(
                 createObjectOutlines(getUsedTypes(semantics.types)),
                 generateClosureOutlines(semantics.callableHandlers.closureHandlers),
-                generateStackFrameOutlines(
-                    semantics.callableHandlers.staticFunctionHandlers.values union
-                        semantics.callableHandlers.closureHandlers.values,
-                ),
+                generateStackFrameOutlines(semantics.callableHandlers.staticFunctionHandlers.values),
             )
         val cfg =
             generateControlFlowGraph(
