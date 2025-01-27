@@ -70,7 +70,7 @@ sealed class BaseType(override val range: Pair<Location, Location>) : Type {
     ) : BaseType(range) {
         override fun toString() = "[${argumentsType.joinToString(", ")}] => $returnType"
 
-        override fun size(): Int = throw IllegalArgumentException("Function does not have size")
+        override fun size(): Int = 2
 
         override fun isEquivalent(other: SyntaxTree?): Boolean =
             super.isEquivalent(other) &&
@@ -211,10 +211,11 @@ class LambdaExpression(
     val arguments: List<Definition.FunctionArgument>,
     val returnType: Type,
     val body: Expression,
+    val label1: String? = null
 ) : BaseExpression(range) {
     override fun toString() = "[${arguments.joinToString(", ")}] -> $returnType"
 
-    fun getLabel() = "Lambda_${arguments.size}_${hashCode().toULong()}"
+    fun getLabel() = label1 ?: "Lambda_${arguments.size}_${hashCode().toULong()}"
 
     override fun children() = arguments + listOf(body)
 

@@ -249,7 +249,7 @@ class CacophonyPipeline(
             OutlineCollection(
                 createObjectOutlines(getUsedTypes(semantics.types)),
                 generateClosureOutlines(semantics.callableHandlers.closureHandlers),
-                generateStackFrameOutlines(semantics.callableHandlers.staticFunctionHandlers.values),
+                generateStackFrameOutlines(semantics.callableHandlers.getAll().values),
             )
         val cfg =
             generateControlFlowGraph(
@@ -295,7 +295,7 @@ class CacophonyPipeline(
         asmFile.writeText(generateAsm(input))
         assemble(asmFile, objFile)
         val sources = listOf(objFile) + libraryFiles
-        val options = listOf("g++", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
+        val options = listOf("g++", "-g", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
         val gcc = ProcessBuilder(options).inheritIO().start()
         gcc.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedLinking(status)

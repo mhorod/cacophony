@@ -10,6 +10,7 @@ import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
+import java.util.function.Function
 
 /**
  * Converts Expressions into CFG
@@ -287,7 +288,23 @@ internal class CFGGenerator(
         val handler = callableHandlers.getCallableHandler(body)
         return when (handler) {
             is StaticFunctionHandler -> {
-                SubCFG.Immediate(noOpOrUnit(mode))
+                val functionLayout = getFunctionLayout(getCurrentCallableHandler(), handler)
+
+                /*assignmentHandler.generateAssignment(
+                    getVariableLayout(getCurrentCallableHandler(), variablesMap.definitions[expression]!!),
+                    expression.value,
+                    mode,
+                    context,
+                    false,
+                )*/
+
+                assignLayoutWithValue(
+                    functionLayout,
+                    getVariableLayout(getCurrentCallableHandler(), variablesMap.definitions[expression]!!),
+                    VoidLayout()
+                )
+
+                // SubCFG.Immediate(noOpOrUnit(mode))
             }
 
             is ClosureHandler -> {

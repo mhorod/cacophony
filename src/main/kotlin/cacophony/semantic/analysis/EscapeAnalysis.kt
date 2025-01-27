@@ -68,7 +68,7 @@ fun escapeAnalysis(
     // Update usageDepth for Functional Entities in return statements.
     baseResult.returned.forEach { (fromLambda, returnedEntities) ->
         returnedEntities.forEach {
-            usageDepth[it] = min(usageDepth[it]!!, functionAnalysis[fromLambda]!!.staticDepth - 1)
+            usageDepth[it] = min(usageDepth.getValue(it), functionAnalysis.getValue(fromLambda).staticDepth - 1)
         }
     }
 
@@ -197,6 +197,7 @@ private class BaseEscapeAnalysisVisitor(
             is Struct -> expr.fields.values.forEach { visit(it) }
             is Allocation -> visitExpression(expr.value)
             is Dereference -> visitExpression(expr.value)
+            is Definition.FunctionArgument -> visitFunctionArgument(expr)
             is LeafExpression -> {
                 // do nothing
             }
@@ -268,6 +269,12 @@ private class BaseEscapeAnalysisVisitor(
         }
     }
 
+    private fun visitFunctionArgument(expr: Definition.FunctionArgument) {
+        val variable = variablesMap.definitions[expr]!!
+        val functionalEntity = FunctionalEntity.from(variable)
+        allFunctionalEntities.add(functionalEntity)
+    }
+
     private fun visitLambdaExpression(expr: LambdaExpression) {
         val functionalEntity = FunctionalEntity.from(expr)
         allFunctionalEntities.add(functionalEntity)
@@ -287,6 +294,8 @@ private class BaseEscapeAnalysisVisitor(
 
         lambdaExpressionsStack.add(expr)
         functionTypeStack.add(types.expressionTypes[expr] as FunctionType)
+
+        expr.arguments.forEach { visitExpression(it) }
 
         visitFunctionBody(expr.body)
 

@@ -145,7 +145,7 @@ sealed class CallableHandlerImpl(
 
     override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
 
-    override fun getFunctionLabel(): String = "lambda_${function.hashCode()}"
+    override fun getFunctionLabel(): String = function.getLabel()
 
     private val resultLayout = generateLayoutOfVirtualRegisters(function.returnType)
 
