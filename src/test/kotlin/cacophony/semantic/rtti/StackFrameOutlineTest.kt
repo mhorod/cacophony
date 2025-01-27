@@ -17,7 +17,7 @@ class StackFrameOutlineTest {
 
     @BeforeEach
     fun setUp() {
-        every { staticFunctionHandler.getFunctionDeclaration() } returns function
+        every { staticFunctionHandler.getBodyReference() } returns function
         every { function.getLabel() } returns "f"
     }
 

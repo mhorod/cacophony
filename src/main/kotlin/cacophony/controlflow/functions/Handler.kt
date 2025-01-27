@@ -39,19 +39,17 @@ sealed interface CallableHandler {
     fun getAnalyzedFunction(): AnalyzedFunction
 
     fun generateAccessToFramePointer(other: CallableHandler): CFGNode
+
+    fun getBodyReference(): LambdaExpression
 }
 
 sealed interface ClosureHandler : CallableHandler {
-    fun getBodyReference(): LambdaExpression
-
     fun getClosureLink(): Variable.PrimitiveVariable
 
     fun getCapturedVariableOffsets(): Map<Variable.PrimitiveVariable, Int>
 }
 
 sealed interface StaticFunctionHandler : CallableHandler {
-    fun getFunctionDeclaration(): LambdaExpression
-
     // Returns static link to parent
     fun getStaticLink(): Variable.PrimitiveVariable
 

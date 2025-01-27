@@ -55,7 +55,8 @@ class ClosureHandlerImpl(
     private val prologueEpilogueHandler: PrologueEpilogueHandler
 
     private val offsetsMap: Map<Variable.PrimitiveVariable, Int> =
-        analyzedFunction.outerVariables()
+        analyzedFunction
+            .outerVariables()
             .filterIsInstance<Variable.PrimitiveVariable>()
             .mapIndexed { index, it ->
                 it to index * REGISTER_SIZE
@@ -76,8 +77,6 @@ class ClosureHandlerImpl(
     }
 
     override fun getPrologueEpilogueHandler() = prologueEpilogueHandler
-
-    override fun getBodyReference() = function
 
     override fun getClosureLink() = closureLink
 
