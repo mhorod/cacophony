@@ -16,7 +16,7 @@ fun checkTypes(ast: AST, nr: NameResolutionResult, diagnostics: Diagnostics): Ty
 }
 
 interface Expectation {
-    data class Arity(val n: Int) : Expectation
+    data class Arity(val arity: Int) : Expectation
 
     data object Any : Expectation
 
@@ -31,7 +31,7 @@ fun TypeExpr?.toExpectation(): Expectation =
         is FunctionType -> Expectation.Arity(this.args.size)
         is ReferentialType -> Expectation.Value
         is StructType -> Expectation.Value
-        TypeExpr.VoidType -> throw IllegalArgumentException("wdym void???")
+        TypeExpr.VoidType -> throw IllegalArgumentException("Void type cannot appear in ast, thus it has no expectation")
         null -> Expectation.Any
     }
 
@@ -353,7 +353,7 @@ private class Typer(
                                 when (val entity = resolvedEntities[expression]) {
                                     is ResolvedEntity.Unambiguous -> entity.definition
                                     is ResolvedEntity.WithOverloads -> {
-                                        when (val def = entity.overloads[expectation.n]) {
+                                        when (val def = entity.overloads[expectation.arity]) {
                                             null -> {
                                                 error.tooFewOverloads(expression.range)
                                                 return null

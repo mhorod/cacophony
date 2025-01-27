@@ -12,22 +12,21 @@ fun isSubtype(type: TypeExpr, other: TypeExpr): Boolean {
     }
 }
 
-fun isSubtypeBuiltin(type: TypeExpr, other: BuiltinType): Boolean {
-    return when (other) {
+fun isSubtypeBuiltin(type: TypeExpr, other: BuiltinType): Boolean =
+    when (other) {
         is BuiltinType.IntegerType -> type is BuiltinType.IntegerType
         is BuiltinType.BooleanType -> type is BuiltinType.BooleanType
         is BuiltinType.UnitType -> type is BuiltinType.UnitType
     }
-}
 
 fun isSubtypeFunction(type: TypeExpr, other: FunctionType): Boolean {
     if (type !is FunctionType) return false
-    if (!isSubtype(type.result, other.result)) return false
+    if (type.result != other.result) return false
     val functionArgs = other.args
     val typeArgs = type.args
     if (typeArgs.size != functionArgs.size) return false
     return typeArgs.zip(functionArgs).all { (argSubtype, argFunction) ->
-        isSubtype(argFunction, argSubtype) // contravariance
+        argFunction == argSubtype
     }
 }
 
