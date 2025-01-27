@@ -44,12 +44,12 @@ fun escapeAnalysis(
     val baseResult = baseVisitor.getResult()
 
     // Set definitionDepth of all Functional Entities of static depth of lambda expressions
-    // defining them, or -1 if they are defined globally.
+    // defining them, or 0 if they are defined globally.
     val definitionDepth: Map<FunctionalEntity, Int> =
         baseResult.allFunctionalEntities
             .associateWith {
                 baseResult.definingLambda[it]?.let { parentLambda -> functionAnalysis[parentLambda]!!.staticDepth }
-                    ?: -1
+                    ?: 0
             }
     val usageDepth = definitionDepth.toMutableMap()
 

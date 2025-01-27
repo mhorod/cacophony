@@ -162,7 +162,6 @@ class CacophonyPipeline(
 
     private fun getClosureAnalysis(ast: AST, variablesMap: VariablesMap, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
         val analyzedClosures = analyzeClosures(ast, variablesMap, escapeAnalysis)
-        println(analyzedClosures)
         logger?.logSuccessfulClosureAnalysis(analyzedClosures)
         return analyzedClosures
     }
@@ -250,7 +249,10 @@ class CacophonyPipeline(
             OutlineCollection(
                 createObjectOutlines(getUsedTypes(semantics.types)),
                 generateClosureOutlines(semantics.callableHandlers.closureHandlers),
-                generateStackFrameOutlines(semantics.callableHandlers.staticFunctionHandlers.values),
+                generateStackFrameOutlines(
+                    semantics.callableHandlers.staticFunctionHandlers.values union
+                        semantics.callableHandlers.closureHandlers.values,
+                ),
             )
         val cfg =
             generateControlFlowGraph(

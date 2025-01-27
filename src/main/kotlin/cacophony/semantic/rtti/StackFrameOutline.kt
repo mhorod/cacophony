@@ -1,12 +1,12 @@
 package cacophony.semantic.rtti
 
-import cacophony.controlflow.functions.StaticFunctionHandler
+import cacophony.controlflow.functions.CallableHandler
 import cacophony.semantic.syntaxtree.LambdaExpression
 
-fun generateStackFrameOutlines(staticFunctionHandlers: Collection<StaticFunctionHandler>): List<String> =
-    staticFunctionHandlers.map { generateStackFrameOutline(it) }
+fun generateStackFrameOutlines(functionHandlers: Collection<CallableHandler>): List<String> =
+    functionHandlers.map { generateStackFrameOutline(it) }
 
-fun generateStackFrameOutline(handler: StaticFunctionHandler): String {
+fun generateStackFrameOutline(handler: CallableHandler): String {
     val frameSize =
         handler.getStackSpace().value.let {
             require(it % 8 == 0)

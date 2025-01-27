@@ -397,7 +397,7 @@ private fun wrapInFunction(originalAST: AST): AST {
     val beforeStart = Location(-1)
     val behindEnd = Location(originalAST.range.second.value + 1)
     val program =
-        Definition.VariableDefinition(
+        Definition.FunctionDefinition(
             Pair(beforeStart, behindEnd),
             MAIN_FUNCTION_IDENTIFIER,
             BaseType.Functional(
