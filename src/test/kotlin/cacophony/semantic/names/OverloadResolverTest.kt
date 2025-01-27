@@ -134,4 +134,33 @@ class OverloadResolverTest {
         }
         confirmVerified(diagnostics)
     }
+
+    @Test
+    fun `ok - nested resolution`() {
+        // let h: [] -> () = if true then f else g;
+        val defF0 = functionDefinition("f", emptyList(), block())
+        val defF1 = functionDefinition("f", listOf(arg("x")), block())
+        val defG0 = functionDefinition("g", emptyList(), block())
+        val defG1 = functionDefinition("g", listOf(arg("x")), block())
+
+        val useF = variableUse("f")
+        val useG = variableUse("g")
+
+        val ast =
+            block(
+                defF0,
+                defF1,
+                defG0,
+                defG1,
+                typedVariableDefinition(
+                    "h",
+                    functionalType(emptyList(), basicType("Unit")),
+                    ifThenElse(lit(true), useF, useG),
+                ),
+            )
+        val result = checkTypes(ast)
+        assertThat(result.resolvedVariables[useF]).isEqualTo(defF0)
+        assertThat(result.resolvedVariables[useG]).isEqualTo(defG0)
+        confirmVerified(diagnostics)
+    }
 }
