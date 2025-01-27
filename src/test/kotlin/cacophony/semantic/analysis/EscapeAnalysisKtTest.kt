@@ -48,12 +48,10 @@ class EscapeAnalysisKtTest {
                     fDef to fType,
                     gDef to gType,
                 ),
-            )
-
-        val resolvedVariables =
-            mapOf(
-                xUse to xDef,
-                gUse to gDef,
+                mapOf(
+                    xUse to xDef,
+                    gUse to gDef,
+                ),
             )
 
         val xVar = Variable.PrimitiveVariable()
@@ -89,7 +87,7 @@ class EscapeAnalysisKtTest {
         val result =
             escapeAnalysis(
                 ast,
-                resolvedVariables,
+                types.resolvedVariables,
                 functionAnalysis,
                 variablesMap,
                 types,
@@ -135,13 +133,11 @@ class EscapeAnalysisKtTest {
                     fDef to fType,
                     gDef to gType,
                 ),
-            )
-
-        val resolvedVariables =
-            mapOf(
-                xUse to xDef,
-                gUse to gDef,
-                hUse to hDef,
+                mapOf(
+                    xUse to xDef,
+                    gUse to gDef,
+                    hUse to hDef,
+                ),
             )
 
         val xVar = Variable.PrimitiveVariable()
@@ -177,7 +173,7 @@ class EscapeAnalysisKtTest {
         val result =
             escapeAnalysis(
                 ast,
-                resolvedVariables,
+                types.resolvedVariables,
                 functionAnalysis,
                 variablesMap,
                 types,
@@ -223,13 +219,11 @@ class EscapeAnalysisKtTest {
                     fDef to fType,
                     gDef to gType,
                 ),
-            )
-
-        val resolvedVariables =
-            mapOf(
-                xUse to xDef,
-                gUse to gDef,
-                sUse to sDef,
+                mapOf(
+                    xUse to xDef,
+                    gUse to gDef,
+                    sUse to sDef,
+                ),
             )
 
         val xVar = Variable.PrimitiveVariable()
@@ -265,7 +259,7 @@ class EscapeAnalysisKtTest {
         val result =
             escapeAnalysis(
                 ast,
-                resolvedVariables,
+                types.resolvedVariables,
                 functionAnalysis,
                 variablesMap,
                 types,
@@ -315,13 +309,11 @@ class EscapeAnalysisKtTest {
                     fDef to fType,
                     gDef to gType,
                 ),
-            )
-
-        val resolvedVariables =
-            mapOf(
-                xUse to xDef,
-                gUse to gDef,
-                hUse to hDef,
+                mapOf(
+                    xUse to xDef,
+                    gUse to gDef,
+                    hUse to hDef,
+                ),
             )
 
         val xVar = Variable.PrimitiveVariable()
@@ -358,7 +350,7 @@ class EscapeAnalysisKtTest {
         val result =
             escapeAnalysis(
                 ast,
-                resolvedVariables,
+                types.resolvedVariables,
                 functionAnalysis,
                 variablesMap,
                 types,
@@ -397,11 +389,9 @@ class EscapeAnalysisKtTest {
                     xDef to BuiltinType.IntegerType,
                     fDef to fType,
                 ),
-            )
-
-        val resolvedVariables =
-            mapOf(
-                xUse to xDef,
+                mapOf(
+                    xUse to xDef,
+                ),
             )
 
         val xVar = Variable.PrimitiveVariable()
@@ -434,7 +424,7 @@ class EscapeAnalysisKtTest {
         val result =
             escapeAnalysis(
                 ast,
-                resolvedVariables,
+                types.resolvedVariables,
                 functionAnalysis,
                 variablesMap,
                 types,
@@ -466,9 +456,8 @@ class EscapeAnalysisKtTest {
                 mapOf(
                     fDef to fType,
                 ),
+                mapOf(xUse to xDef),
             )
-
-        val resolvedVariables = mapOf(xUse to xDef)
 
         val fVar = Variable.PrimitiveVariable()
         val xVar = Variable.PrimitiveVariable()
@@ -491,7 +480,7 @@ class EscapeAnalysisKtTest {
         val result =
             escapeAnalysis(
                 ast,
-                resolvedVariables,
+                types.resolvedVariables,
                 functionAnalysis,
                 variablesMap,
                 types,
@@ -526,9 +515,8 @@ class EscapeAnalysisKtTest {
                     xDef to BuiltinType.IntegerType,
                     fDef to fType,
                 ),
+                mapOf(xUse to xDef),
             )
-
-        val resolvedVariables = mapOf(xUse to xDef)
 
         val fVar = Variable.PrimitiveVariable()
         val xVar = Variable.PrimitiveVariable()
@@ -550,7 +538,7 @@ class EscapeAnalysisKtTest {
         val result =
             escapeAnalysis(
                 ast,
-                resolvedVariables,
+                types.resolvedVariables,
                 functionAnalysis,
                 variablesMap,
                 types,
@@ -592,9 +580,8 @@ class EscapeAnalysisKtTest {
                     xDef to BuiltinType.IntegerType,
                     fDef to fType,
                 ),
+                mapOf(xUse to xDef, yUse to yDef),
             )
-
-        val resolvedVariables = mapOf(xUse to xDef, yUse to yDef)
 
         val fVar = Variable.PrimitiveVariable()
         val yVar = Variable.PrimitiveVariable()
@@ -615,7 +602,7 @@ class EscapeAnalysisKtTest {
         val result =
             escapeAnalysis(
                 ast,
-                resolvedVariables,
+                types.resolvedVariables,
                 functionAnalysis,
                 variablesMap,
                 types,

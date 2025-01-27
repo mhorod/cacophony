@@ -2,9 +2,9 @@ package cacophony.semantic.names
 
 import cacophony.*
 import cacophony.diagnostics.Diagnostics
-import cacophony.diagnostics.ORDiagnostics
-import cacophony.semantic.syntaxtree.Definition
-import cacophony.semantic.syntaxtree.FunctionCall
+import cacophony.diagnostics.TypeCheckerDiagnostics
+import cacophony.semantic.syntaxtree.AST
+import cacophony.semantic.types.*
 import cacophony.utils.Location
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
@@ -13,192 +13,154 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class OverloadResolverTest {
+    private fun checkTypes(ast: AST): TypeCheckingResult {
+        val nr = resolveNames(ast, diagnostics)
+        return checkTypes(ast, nr, diagnostics)
+    }
+
     @MockK
     lateinit var diagnostics: Diagnostics
 
     @BeforeEach
     fun setUpMocks() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        every { diagnostics.report(any(), any<Pair<Location, Location>>()) } just runs
+        every { diagnostics.report(any(), any<Location>()) } just runs
     }
 
     @Test
-    fun `single overload`() {
-        // f[]
-        val func = variableUse("f")
-        val funcCall = call(func)
-        val ast = block(funcCall)
-
-        val overloadSet = mockk<OverloadSet>()
-        val def = mockk<Definition.FunctionDefinition>()
-        every { overloadSet[0] } returns def
-        val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
-
-        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
-
-        assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
-            mapOf(func to def),
-        )
+    fun `ok - single overload`() {
+        val def = functionDefinition("f", emptyList(), block())
+        val use = variableUse("f")
+        val ast =
+            block(
+                def,
+                use,
+            )
+        val result = checkTypes(ast)
+        assertThat(result.resolvedVariables[use]).isEqualTo(def)
+        confirmVerified(diagnostics)
     }
 
     @Test
-    fun `multiple overloads`() {
-        // f[0]
-        val func = variableUse("f")
-        val arg = lit(0)
-        val funcCall = call(func, arg)
-        val ast = block(funcCall)
-
-        val overloadSet = mockk<OverloadSet>()
-        val def0 = mockk<Definition.FunctionDefinition>()
-        val def1 = mockk<Definition.FunctionDefinition>()
-        val def2 = mockk<Definition.FunctionDefinition>()
-        every { overloadSet[0] } returns def0
-        every { overloadSet[1] } returns def1
-        every { overloadSet[2] } returns def2
-        val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
-
-        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
-
-        assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
-            mapOf(func to def1),
-        )
+    fun `wrong - multiple overloads`() {
+        val def1 = functionDefinition("f", emptyList(), block())
+        val def2 = functionDefinition("f", listOf(arg("x")), block())
+        val use = variableUse("f")
+        val ast =
+            block(
+                def1,
+                def2,
+                use,
+            )
+        checkTypes(ast)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TooManyOverloads,
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
-    fun `no suitable overload`() {
-        // f[0]
-        val func = variableUse("f")
-        val arg = lit(0)
-        val funcCall = call(func, arg)
-        val ast = block(funcCall)
-
-        val overloadSet = mockk<OverloadSet>()
-        val def0 = mockk<Definition.FunctionDefinition>()
-        val def2 = mockk<Definition.FunctionDefinition>()
-        every { overloadSet[0] } returns def0
-        every { overloadSet[1] } returns null
-        every { overloadSet[2] } returns def2
-        val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
-
-        resolveOverloads(ast, nr, diagnostics)
-        verify(exactly = 1) { diagnostics.report(ORDiagnostics.IdentifierNotFound("f"), any<Pair<Location, Location>>()) }
+    fun `ok - multiple overloads with hint 1`() {
+        val def1 = functionDefinition("f", emptyList(), block())
+        val def2 = functionDefinition("f", listOf(arg("x")), block())
+        val use = variableUse("f")
+        val ast =
+            block(
+                def1,
+                def2,
+                typedVariableDefinition("x", functionalType(emptyList(), basicType("Unit")), use),
+            )
+        val result = checkTypes(ast)
+        assertThat(result.resolvedVariables[use]).isEqualTo(def1)
+        confirmVerified(diagnostics)
     }
 
     @Test
-    fun `simple variable use in block`() {
-        // (a)
-        val variable = variableUse("a")
-        val block = block(variable)
-        val ast = block(block)
-
-        val def = mockk<Definition.VariableDeclaration>()
-        val nr: NameResolutionResult = mapOf(variable to ResolvedName.Variable(def))
-
-        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
-
-        assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
-            mapOf(variable to def),
-        )
+    fun `ok - multiple overloads with hint 2`() {
+        val def1 = functionDefinition("f", emptyList(), block())
+        val def2 = functionDefinition("f", listOf(arg("x")), block())
+        val use = variableUse("f")
+        val ast =
+            block(
+                def1,
+                def2,
+                typedVariableDefinition("x", functionalType(listOf(basicType("Unit")), basicType("Unit")), use),
+            )
+        val result = checkTypes(ast)
+        assertThat(result.resolvedVariables[use]).isEqualTo(def2)
+        confirmVerified(diagnostics)
     }
 
     @Test
-    fun `simple argument use in block`() {
-        // (a)
-        val variable = variableUse("a")
-        val block = block(variable)
-        val ast = block(block)
-
-        val def = mockk<Definition.FunctionArgument>()
-        val nr: NameResolutionResult = mapOf(variable to ResolvedName.Argument(def))
-
-        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
-
-        assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
-            mapOf(variable to def),
-        )
+    fun `wrong - multiple overloads with not matching hint`() {
+        val def1 = functionDefinition("f", emptyList(), block())
+        val def2 = functionDefinition("f", listOf(arg("x")), block())
+        val use = variableUse("f")
+        val ast =
+            block(
+                def1,
+                def2,
+                typedVariableDefinition("x", functionalType(listOf(basicType("Unit"), basicType("Unit")), basicType("Unit")), use),
+            )
+        checkTypes(ast)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.TooFewOverloads,
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
-    fun `throws when function name is not a simple expression`() {
-        // (f)[0]
-        val func = variableUse("f")
-        val arg = lit(0)
-        val block = block(func)
-        val funcCall = FunctionCall(mockRange(), block, listOf(arg))
-        val ast = block(funcCall)
-
-        val overloadSet = mockk<OverloadSet>()
-        val def = mockk<Definition.FunctionDefinition>()
-        every { overloadSet[1] } returns def
-        val nr: NameResolutionResult = mapOf(func to ResolvedName.Function(overloadSet))
-
-        resolveOverloads(ast, nr, diagnostics)
-        verify(exactly = 1) { diagnostics.report(ORDiagnostics.FunctionIsNotVariableUse, any<Pair<Location, Location>>()) }
+    fun `wrong - assignment to static function`() {
+        val def1 = functionDefinition("f", emptyList(), block())
+        val def2 = functionDefinition("g", emptyList(), block())
+        val ast =
+            block(
+                def1,
+                def2,
+                variableUse("f") assign variableUse("g"),
+            )
+        checkTypes(ast)
+        verify(exactly = 1) {
+            diagnostics.report(
+                TypeCheckerDiagnostics.ExpectedLValueReference,
+                any<Pair<Location, Location>>(),
+            )
+        }
+        confirmVerified(diagnostics)
     }
 
     @Test
-    fun `throws when function name is a variable`() {
-        // f[0]
-        val func = variableUse("f")
-        val arg = lit(0)
-        val funcCall = call(func, arg)
-        val ast = block(funcCall)
+    fun `ok - nested resolution`() {
+        // let h: [] -> () = if true then f else g;
+        val defF0 = functionDefinition("f", emptyList(), block())
+        val defF1 = functionDefinition("f", listOf(arg("x")), block())
+        val defG0 = functionDefinition("g", emptyList(), block())
+        val defG1 = functionDefinition("g", listOf(arg("x")), block())
 
-        val def = mockk<Definition.VariableDeclaration>()
-        val nr: NameResolutionResult = mapOf(func to ResolvedName.Variable(def))
+        val useF = variableUse("f")
+        val useG = variableUse("g")
 
-        resolveOverloads(ast, nr, diagnostics)
-        verify(exactly = 1) { diagnostics.report(ORDiagnostics.UsingVariableAsFunction("f"), any<Pair<Location, Location>>()) }
-    }
-
-    @Test
-    fun `throws when function name is a function argument`() {
-        // f[0]
-        val func = variableUse("f")
-        val arg = lit(0)
-        val funcCall = call(func, arg)
-        val ast = block(funcCall)
-
-        val def = mockk<Definition.FunctionArgument>()
-        val nr: NameResolutionResult = mapOf(func to ResolvedName.Argument(def))
-
-        resolveOverloads(ast, nr, diagnostics)
-        verify(exactly = 1) { diagnostics.report(ORDiagnostics.UsingArgumentAsFunction("f"), any<Pair<Location, Location>>()) }
-    }
-
-    @Test
-    fun `recurses into if statement`() {
-        // if true then a
-        val variable = variableUse("a")
-        val trueLiteral = lit(true)
-        val ifThen = ifThenElse(trueLiteral, variable, empty())
-        val ast = block(ifThen)
-
-        val def = mockk<Definition.VariableDeclaration>()
-        val nr: NameResolutionResult = mapOf(variable to ResolvedName.Variable(def))
-
-        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
-
-        assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
-            mapOf(variable to def),
-        )
-    }
-
-    @Test
-    fun `recurses into struct`() {
-        // {x = a}
-        val variable = variableUse("a")
-        val struct = structDeclaration(structField("x") to variable)
-        val ast = block(struct)
-
-        val def = mockk<Definition.VariableDeclaration>()
-        val nr: NameResolutionResult = mapOf(variable to ResolvedName.Variable(def))
-
-        val resolvedVariables = resolveOverloads(ast, nr, diagnostics)
-
-        assertThat(resolvedVariables).containsExactlyInAnyOrderEntriesOf(
-            mapOf(variable to def),
-        )
+        val ast =
+            block(
+                defF0,
+                defF1,
+                defG0,
+                defG1,
+                typedVariableDefinition(
+                    "h",
+                    functionalType(emptyList(), basicType("Unit")),
+                    ifThenElse(lit(true), useF, useG),
+                ),
+            )
+        val result = checkTypes(ast)
+        assertThat(result.resolvedVariables[useF]).isEqualTo(defF0)
+        assertThat(result.resolvedVariables[useG]).isEqualTo(defG0)
+        confirmVerified(diagnostics)
     }
 }

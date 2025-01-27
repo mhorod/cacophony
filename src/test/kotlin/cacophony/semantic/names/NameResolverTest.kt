@@ -4,9 +4,6 @@ import cacophony.*
 import cacophony.basicType
 import cacophony.diagnostics.Diagnostics
 import cacophony.diagnostics.NRDiagnostics
-import cacophony.semantic.names.ResolvedName.Argument
-import cacophony.semantic.names.ResolvedName.Function
-import cacophony.semantic.names.ResolvedName.Variable
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.syntaxtree.Definition.FunctionArgument
 import cacophony.semantic.syntaxtree.Definition.VariableDeclaration
@@ -45,34 +42,36 @@ class NameResolverTest {
 
         return object : ResolvedNamesAssert {
             override fun hasVariable(binding: Pair<VariableUse, VariableDeclaration>): ResolvedNamesAssert {
-                val resolvedName = resolvedNames[binding.first]
+                val resolvedName = resolvedNames.entityResolution[binding.first]
                 assert(resolvedName !== null)
-                assert(resolvedName is Variable)
-                assertThat((resolvedName as Variable).def).isEqualTo(binding.second)
+                assert(resolvedName is ResolvedEntity.Unambiguous)
+                assertThat((resolvedName as ResolvedEntity.Unambiguous).definition).isEqualTo(binding.second)
                 checked.add(binding.first)
                 return this
             }
 
             override fun hasArgument(binding: Pair<VariableUse, FunctionArgument>): ResolvedNamesAssert {
-                val resolvedName = resolvedNames[binding.first]
+                val resolvedName = resolvedNames.entityResolution[binding.first]
                 assert(resolvedName !== null)
-                assert(resolvedName is Argument)
-                assertThat((resolvedName as Argument).def).isEqualTo(binding.second)
+                assert(resolvedName is ResolvedEntity.Unambiguous)
+                assertThat((resolvedName as ResolvedEntity.Unambiguous).definition).isEqualTo(binding.second)
                 checked.add(binding.first)
                 return this
             }
 
             override fun hasOverloadSet(binding: Pair<VariableUse, Map<Int, Definition>>): ResolvedNamesAssert {
-                val overloadSet = resolvedNames[binding.first]
+                val overloadSet = resolvedNames.entityResolution[binding.first]
                 assert(overloadSet !== null)
-                assert(overloadSet is Function)
-                assertThat((overloadSet as Function).def.toMap()).containsExactlyInAnyOrderEntriesOf(binding.second)
+                assert(overloadSet is ResolvedEntity.WithOverloads)
+                assertThat(
+                    (overloadSet as ResolvedEntity.WithOverloads).overloads.toMap(),
+                ).containsExactlyInAnyOrderEntriesOf(binding.second)
                 checked.add(binding.first)
                 return this
             }
 
             override fun andNothingElse() {
-                assertThat(resolvedNames.keys).containsExactlyInAnyOrderElementsOf(checked)
+                assertThat(resolvedNames.entityResolution.keys).containsExactlyInAnyOrderElementsOf(checked)
             }
         }
     }
@@ -1416,7 +1415,7 @@ class NameResolverTest {
         }
 
         @Test
-        fun `error when finds argument of functional type`() {
+        fun `ok - argument of functional type`() {
             // let f = [x: () -> Int] -> Int => 0
 
             // given
@@ -1436,10 +1435,13 @@ class NameResolverTest {
                     ),
                 )
 
-            // when & then
-            resolveNames(ast, diagnostics)
-            verify(exactly = 1) { diagnostics.report(NRDiagnostics.IllegalFunctionalArgument("x"), functionalArgumentRange) }
-            confirmVerified(diagnostics)
+            // when
+            val resolvedNames = resolveNames(ast, diagnostics)
+
+            // then
+            assertThatResolvedNames(resolvedNames)
+                .andNothingElse()
+            verify { diagnostics wasNot Called }
         }
 
         @Test

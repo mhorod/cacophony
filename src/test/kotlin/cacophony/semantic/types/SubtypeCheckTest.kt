@@ -100,7 +100,7 @@ class SubtypeCheckTest {
     }
 
     @Test
-    fun `covariance on function return types`() {
+    fun `no covariance on function return types`() {
         val fType =
             FunctionType(
                 listOf(BuiltinType.IntegerType),
@@ -112,11 +112,11 @@ class SubtypeCheckTest {
                 TypeExpr.VoidType,
             )
         assertThat(isSubtype(fType, gType)).isFalse
-        assertThat(isSubtype(gType, fType)).isTrue
+        assertThat(isSubtype(gType, fType)).isFalse
     }
 
     @Test
-    fun `contravariance on function argument types`() {
+    fun `no contravariance on function argument types`() {
         val fType =
             FunctionType(
                 listOf(BuiltinType.IntegerType),
@@ -127,7 +127,7 @@ class SubtypeCheckTest {
                 listOf(TypeExpr.VoidType),
                 BuiltinType.IntegerType,
             )
-        assertThat(isSubtype(fType, gType)).isTrue
+        assertThat(isSubtype(fType, gType)).isFalse
         assertThat(isSubtype(gType, fType)).isFalse
     }
 

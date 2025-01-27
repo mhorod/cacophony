@@ -3,12 +3,12 @@ package cacophony.controlflow.generation
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.*
 import cacophony.semantic.analysis.VariablesMap
-import cacophony.semantic.names.ResolvedVariables
 import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
+import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
 
 /**
