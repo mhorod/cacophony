@@ -22,28 +22,31 @@ fun generateCallableHandlers(
     val ancestorHandlers = mutableMapOf<LambdaExpression, List<CallableHandler>>()
 
     analyzedFunctions.entries.sortedBy { it.value.staticDepth }.forEach { (lambda, analyzed) ->
-        if (closureAnalysis.staticFunctions.contains(lambda)) {
-            closureHandlers[lambda] = ClosureHandlerImpl(
-                callConvention,
-                lambda,
-                analyzed,
-                variablesMap,
-                escapeAnalysis
-            )
-        } else if (closureAnalysis.closures.contains(lambda)) {
-            val handlerChain = analyzed.parentLink?.let { link ->
-                val parent = link.parent
-                val parentHandler = getHandler(parent)
-                listOf(parentHandler) + (ancestorHandlers[parent] ?: emptyList())
-            } ?: emptyList()
-            staticFunctionHandlers[lambda] = StaticFunctionHandlerImpl(
-                lambda,
-                analyzed,
-                handlerChain,
-                callConvention,
-                variablesMap,
-                escapeAnalysis
-            )
+        if (closureAnalysis.closures.contains(lambda)) {
+            closureHandlers[lambda] =
+                ClosureHandlerImpl(
+                    callConvention,
+                    lambda,
+                    analyzed,
+                    variablesMap,
+                    escapeAnalysis,
+                )
+        } else if (closureAnalysis.staticFunctions.contains(lambda)) {
+            val handlerChain =
+                analyzed.parentLink?.let { link ->
+                    val parent = link.parent
+                    val parentHandler = getHandler(parent)
+                    listOf(parentHandler) + (ancestorHandlers[parent] ?: emptyList())
+                } ?: emptyList()
+            staticFunctionHandlers[lambda] =
+                StaticFunctionHandlerImpl(
+                    lambda,
+                    analyzed,
+                    handlerChain,
+                    callConvention,
+                    variablesMap,
+                    escapeAnalysis,
+                )
             ancestorHandlers[lambda] = handlerChain
         } else {
             error("Lambda expression $lambda is neither a closure nor a static function")

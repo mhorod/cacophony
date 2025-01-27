@@ -25,7 +25,7 @@ private class FunctionIdentityVisitor {
             is Block -> ast.children().forEach { visit(it) }
             is Definition.FunctionDefinition -> {
                 namedFunctions[ast.value] = ast
-                visit(ast.value)
+                visit(ast.value.body)
             }
             is Definition.VariableDefinition -> visit(ast.value)
             is FieldRef.RValue -> visit(ast.obj)
