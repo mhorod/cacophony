@@ -36,8 +36,6 @@ class StaticFunctionHandlerImpl(
         analyzedFunction.auxVariables.add(staticLink)
     }
 
-    override fun getFunctionDeclaration(): LambdaExpression = function
-
     private fun traverseStaticLink(depth: Int): CFGNode =
         if (depth == 0) {
             registerUse(rbp, false)
