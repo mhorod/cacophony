@@ -105,8 +105,7 @@ private class NameResolver(val diagnostics: Diagnostics) {
 
     private fun traverseForeignFunctionDeclaration(declaration: ForeignFunctionDeclaration): Set<Shape> {
         symbolsTable.define(declaration.identifier, declaration)
-        // TODO: Add diagnostic
-        val type = declaration.type!!
+        val type = declaration.type
         defsToShapes[declaration] = Shape.Functional(type.argumentsType.size, Shape.from(type.returnType))
         // TODO: Unfortunately, we do not use alloc_func as VariableUse anywhere, but we need it in the preamble
         if (declaration === Builtin.allocStruct) {
@@ -127,7 +126,6 @@ private class NameResolver(val diagnostics: Diagnostics) {
         check(chosen.size <= 1) { "At most one function with a given arity should be visible at any given point" }
         if (chosen.size == 1)
             return setOf(chosen.last().result)
-        // TODO: report diagnostics
         return setOf(Shape.Top)
     }
 
@@ -213,7 +211,6 @@ private class NameResolver(val diagnostics: Diagnostics) {
                 val shape = validShapes.last()
                 if (annotation == null) shape else expectedShape
             } else {
-                // TODO: report diagnostic
                 expectedShape
             }
         return decidedShape

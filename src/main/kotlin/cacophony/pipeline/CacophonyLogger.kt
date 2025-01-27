@@ -93,7 +93,9 @@ class CacophonyLogger(
         if (logNameRes) {
             logMaybeSave(
                 "Resolved names",
-                "dsfst", // TODO: restore
+                result.entityResolution.entries.joinToString("\n") {
+                    "${it.key.identifier} -> ${resolvedEntityToString(it.value)}"
+                },
             )
         }
     }
