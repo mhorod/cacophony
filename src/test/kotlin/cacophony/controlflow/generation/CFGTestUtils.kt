@@ -4,12 +4,15 @@ import cacophony.*
 import cacophony.controlflow.*
 import cacophony.controlflow.functions.CallGenerator
 import cacophony.controlflow.functions.SimpleCallGenerator
+import cacophony.semantic.analysis.VariablesMap
+import cacophony.semantic.analysis.escapeAnalysis
 import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Struct
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.spyk
 
 object MockFunctionParts {
@@ -22,8 +25,16 @@ internal fun generateSimplifiedCFG(
     realPrologue: Boolean = false,
     realEpilogue: Boolean = false,
     fullCallSequences: Boolean = false,
+    escapingVariables: Set<Definition> = emptySet(),
 ): ProgramCFG {
     val pipeline = testPipeline()
+    if (escapingVariables.isNotEmpty()) {
+        mockkStatic(::escapeAnalysis)
+        every { escapeAnalysis(any(), any(), any(), any(), any()) } answers {
+            val variablesMap = arg<VariablesMap>(3)
+            escapingVariables.map { variablesMap.definitions[it]!! }.toSet()
+        }
+    }
     val analyzedAST = pipeline.analyzeAst(ast)
     val stubbedFunctionHandlers =
         analyzedAST.functionHandlers.mapValues { (_, handler) ->
@@ -36,6 +47,9 @@ internal fun generateSimplifiedCFG(
         }
     val mockAnalyzedAST = spyk(analyzedAST)
     every { mockAnalyzedAST.functionHandlers } returns stubbedFunctionHandlers
+    if (escapingVariables.isNotEmpty())
+        every { mockAnalyzedAST.escapeAnalysisResult } returns
+            escapingVariables.map { mockAnalyzedAST.variablesMap.definitions[it]!! }.toSet()
     val callGenerator =
         if (fullCallSequences)
             SimpleCallGenerator()

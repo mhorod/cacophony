@@ -46,11 +46,12 @@ class PrologueEpilogueHandler(
                 .map { it is BaseType.Referential } + listOf(false)
 
         // Defined function arguments
-        for ((ind, destination) in flattenedArguments.zip(isReference).withIndex()) {
-            require(destination.first is CFGNode.LValue)
+        for ((ind, value) in flattenedArguments.zip(isReference).withIndex()) {
+            val (destination, ref) = value
+            require(destination is CFGNode.LValue)
             nodes.add(
-                (destination.first as CFGNode.LValue) assign
-                    wrapAllocation(callConvention.argumentAllocation(ind), destination.second),
+                destination assign
+                    wrapAllocation(callConvention.argumentAllocation(ind), ref),
             )
         }
 
