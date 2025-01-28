@@ -3,9 +3,6 @@ package cacophony.controlflow.generation
 import cacophony.*
 import cacophony.codegen.BlockLabel
 import cacophony.controlflow.*
-import cacophony.controlflow.print.cfgFragmentToGraphviz
-import cacophony.controlflow.print.programCfgToBuilder
-import cacophony.controlflow.print.programCfgToGraphviz
 import cacophony.semantic.syntaxtree.Definition
 import org.junit.jupiter.api.Test
 
@@ -197,10 +194,6 @@ class FunctionPrologueAndEpilogueTest {
         // when
         val actualCFG = generateCFGWithSimplifiedCalls(fDef, setOf(xDef))
 
-        println(programCfgToGraphviz(actualCFG))
-
-        println(programCfgToBuilder(actualCFG))
-
         // then
         val expectedCFG =
             singleFragmentCFG(fDef) {
@@ -252,8 +245,6 @@ class FunctionPrologueAndEpilogueTest {
 
         // when
         val actualCFG = generateCFGWithSimplifiedCalls(fDef, setOf(xDef))[fDef]!!
-
-        println(cfgFragmentToGraphviz(actualCFG))
 
         // then
         val expectedCFG =

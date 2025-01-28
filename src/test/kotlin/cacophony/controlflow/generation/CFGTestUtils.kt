@@ -10,10 +10,7 @@ import cacophony.semantic.syntaxtree.AST
 import cacophony.semantic.syntaxtree.BaseType
 import cacophony.semantic.syntaxtree.Definition
 import cacophony.semantic.syntaxtree.Struct
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.spyk
+import io.mockk.*
 
 object MockFunctionParts {
     val prologue: CFGNode = CFGNode.Comment("prologue")
@@ -60,6 +57,9 @@ internal fun generateSimplifiedCFG(
             }
             generator
         }
+    if (escapingVariables.isNotEmpty()) {
+        unmockkStatic(::escapeAnalysis)
+    }
     return pipeline.generateControlFlowGraph(mockAnalyzedAST, callGenerator, mockk(), mockk())
 }
 
