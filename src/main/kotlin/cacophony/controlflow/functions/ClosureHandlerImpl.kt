@@ -57,6 +57,7 @@ class ClosureHandlerImpl(
     private val offsetsMap: Map<Variable.PrimitiveVariable, Int> =
         analyzedFunction
             .outerVariables()
+            .map { it.origin }
             .filterIsInstance<Variable.PrimitiveVariable>()
             .mapIndexed { index, it ->
                 it to index * REGISTER_SIZE
@@ -80,7 +81,7 @@ class ClosureHandlerImpl(
 
     override fun getClosureLink() = closureLink
 
-    override fun getCapturedVariableOffsets() = offsetsMap // TODO: somebody need to allocate closure using this map
+    override fun getCapturedVariableOffsets() = offsetsMap
 
     override fun generateOutsideVariableAccess(variable: Variable.PrimitiveVariable): CFGNode.LValue {
         val offset =
@@ -88,14 +89,11 @@ class ClosureHandlerImpl(
                 throw GenerateVariableAccessException("Variable $variable is not in the closure of $function.")
             }
         return wrapAllocation(
-            VariableAllocation.ViaPointer(
                 VariableAllocation.ViaPointer(
                     getVariableAllocation(closureLink),
                     offset,
                 ),
-                0,
-            ),
-            true,
+            variable.holdsReference,
         )
     }
 }

@@ -83,7 +83,7 @@ class PrologueEpilogueHandler(
         val nodes = mutableListOf<CFGNode>()
 
         // We can use outline of int here
-        nodes.add(registerUse(rdi) assign dataLabel(typeToLabel(BuiltinType.IntegerType)))
+        nodes.add(registerUse(rdi) assign dataLabel("outline_${typeToLabel(BuiltinType.IntegerType)}"))
         nodes.add(registerUse(rsi) assign registerUse(rbp))
         nodes.add(call(dataLabel(Builtin.allocStruct.identifier), 2))
 

@@ -24,7 +24,7 @@ sealed class CallableHandlerImpl(
     // we want to create pointers for all variables
     // that need to be allocated on heap
     private val heapVariablePointers: Map<Variable.PrimitiveVariable, Variable.PrimitiveVariable> =
-        analyzedFunction.variables
+        analyzedFunction.declaredVariables()
             .map {
                 it.origin
             }.filterIsInstance<Variable.PrimitiveVariable>()

@@ -5,6 +5,7 @@ import cacophony.controlflow.functions.*
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
+import cacophony.semantic.rtti.getLambdaClosureLabel
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
@@ -322,7 +323,7 @@ internal class CFGGenerator(
                 val label = handler.getFunctionLabel()
                 when (handler) {
                     is ClosureHandler -> {
-                        val outlineLocation = lambdaOutlineLocation.getValue(lambda)
+                        val outlineLocation = getLambdaClosureLabel(lambda)
                         val offsets = handler.getCapturedVariableOffsets()
                         val sourceLayout =
                             ClosureLayout(
@@ -330,6 +331,10 @@ internal class CFGGenerator(
                                     SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
                                 },
                             )
+
+                        println(lambda)
+                        println("offsets\n${offsets}")
+                        println("sourceLayout\n${sourceLayout}")
 
                         if (offsets.isEmpty()) {
                             SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(integer(0))))

@@ -6,9 +6,9 @@ let get_beer_price = [beer_id: Int] -> [Int] -> Int => (
     [day_of_the_week: Int] -> Int => (
         let weekend_discount = 5;
         let price = if beer_id == 0 then beer_0_price else beer_1_price;
-        if day_of_the_week >= 6 then base_price -= weekend_discount;
-        return base_price;
-    );
+        if day_of_the_week >= 6 then price -= weekend_discount else price;
+        return price;
+    )
 );
 
 foreign read_int: [] -> Int;
