@@ -198,9 +198,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult) {
         if (logClosures) {
-            logMaybeSave("Closures (${result.closures.size})", result.closures.map { it.toString() }.joinToString { "_\n" })
-            println(result.closures.joinToString { " " })
-            logMaybeSave("Static functions (${result.staticFunctions.size})", result.staticFunctions.joinToString { "\n" })
+            TODO("Not implemented yet")
         }
     }
 
