@@ -317,6 +317,7 @@ internal class CFGGenerator(
     private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
         // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
         // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?
+        val calleeHandler = callableHandlers.getCallableHandler(function)
         return when (mode) {
             is EvalMode.Value -> {
                 val handler = callableHandlers.getCallableHandler(lambda)
@@ -328,13 +329,13 @@ internal class CFGGenerator(
                         val sourceLayout =
                             ClosureLayout(
                                 offsets.mapValues { (variable, _) ->
-                                    SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
+                                    SimpleLayout(calleeHandler.generateVariableAccess(variable), variable.holdsReference)
                                 },
                             )
 
-                        println(lambda)
-                        println("offsets\n${offsets}")
-                        println("sourceLayout\n${sourceLayout}")
+//                        println(lambda)
+//                        println("offsets\n${offsets}")
+//                        println("sourceLayout\n${sourceLayout}")
 
                         if (offsets.isEmpty()) {
                             SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(integer(0))))
