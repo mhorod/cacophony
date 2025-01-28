@@ -19,6 +19,29 @@ fun createObjectOutlines(types: List<TypeExpr>): ObjectOutlines {
     )
 }
 
+private fun getReferenceDepth(type: TypeExpr): Int =
+    when (type) {
+        is ReferentialType -> 1 + getReferenceDepth((type.type))
+        else -> 0
+    }
+
+private fun getReferenceBase(type: TypeExpr): TypeExpr =
+    when (type) {
+        is ReferentialType -> getReferenceBase(type.type)
+        else -> type
+    }
+
+fun typeToLabel(type: TypeExpr): String =
+    when (type) {
+        is StructType -> "S${type.hashCode().absoluteValue}"
+        is BuiltinType.BooleanType -> "B${type.hashCode().absoluteValue}"
+        is BuiltinType.IntegerType -> "I${type.hashCode().absoluteValue}"
+        is BuiltinType.UnitType -> "U${type.hashCode().absoluteValue}"
+        is FunctionType -> "F${type.hashCode().absoluteValue}"
+        is ReferentialType -> "${getReferenceDepth(type)}R${typeToLabel(getReferenceBase(type))}"
+        is TypeExpr.VoidType -> "V${type.hashCode().absoluteValue}"
+    }
+
 /**
  * Object outline consists of 8B blocks:
  * - The first block denotes object size (in 8B blocks, e.g. Int or a reference has size 1).
@@ -31,32 +54,14 @@ internal class ObjectOutlinesCreator {
     private val locations: MutableMap<TypeExpr, String> = mutableMapOf()
     private val asmDataSectionEntries = mutableListOf<String>()
 
-    private fun getReferenceDepth(type: TypeExpr): Int =
-        when (type) {
-            is ReferentialType -> 1 + getReferenceDepth((type.type))
-            else -> 0
-        }
-
-    private fun getReferenceBase(type: TypeExpr): TypeExpr =
-        when (type) {
-            is ReferentialType -> getReferenceBase(type.type)
-            else -> type
-        }
-
-    private fun typeToLabel(type: TypeExpr): String =
-        when (type) {
-            is StructType -> "S${type.hashCode().absoluteValue}"
-            is BuiltinType.BooleanType -> "B${type.hashCode().absoluteValue}"
-            is BuiltinType.IntegerType -> "I${type.hashCode().absoluteValue}"
-            is BuiltinType.UnitType -> "U${type.hashCode().absoluteValue}"
-            is FunctionType -> "F${type.hashCode().absoluteValue}"
-            is ReferentialType -> "${getReferenceDepth(type)}R${typeToLabel(getReferenceBase(type))}"
-            is TypeExpr.VoidType -> "V${type.hashCode().absoluteValue}"
-        }
-
     private fun toIsPointerList(type: TypeExpr): List<Boolean> =
         when (type) {
-            is StructType -> type.fields.entries.sortedBy { it.key }.map { it.value }.flatMap { toIsPointerList(it) }.toList()
+            is StructType ->
+                type.fields.entries
+                    .sortedBy { it.key }
+                    .map { it.value }
+                    .flatMap { toIsPointerList(it) }
+                    .toList()
             is ReferentialType -> listOf(true)
             is BuiltinType -> listOf(false)
             is FunctionType -> listOf(true) // maybe update in the future

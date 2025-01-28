@@ -27,10 +27,10 @@ abstract class CallableHandlerImpl(
         analyzedFunction.variables
             .map {
                 it.origin
-            }.filter {
-                escapeAnalysisResult.contains(it)
             }.filterIsInstance<Variable.PrimitiveVariable>()
-            .associateWith { Variable.PrimitiveVariable(true) }
+            .filter {
+                escapeAnalysisResult.contains(it)
+            }.associateWith { Variable.PrimitiveVariable(true) }
 
     // Initially variables may be allocated in virtualRegisters, only after spill handling we know
     // if they're truly on stack or in registers.

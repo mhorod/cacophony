@@ -179,12 +179,112 @@ class FunctionPrologueAndEpilogueTest {
 
         assertFragmentIsEquivalent(actualFragment, expectedFragment)
     }
+
+    @Test
+    fun `variable with ViaPointer allocation has heap space allocated in prologue`() {
+        // given
+
+        /*
+         * let f = [] -> Unit => (let x = 2;);
+         * where x escapes
+         */
+        val xDef = variableDeclaration("x", lit(2))
+        val fDef = unitFunctionDefinition("f", block(xDef, empty()))
+
+        // when
+        val actualCFG = generateCFGWithSimplifiedCalls(fDef, setOf(xDef))
+
+        // then
+        val expectedCFG =
+            singleFragmentCFG(fDef) {
+                setupStackFrame("entry", "clean references")
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
+                savePreservedRegisters("save preserved", "store static link")
+                "store static link" does
+                    jump("setup arg 1") {
+                        memoryAccess(registerUse(rbp) sub integer(8)) assign registerUse(rdi)
+                    }
+                "setup arg 1" does
+                    jump("setup arg 2") {
+                        registerUse(rdi) assign dataLabel("int layout")
+                    }
+                "setup arg 2" does
+                    jump("call alloc_struct") {
+                        registerUse(rsi) assign registerUse(rbp)
+                    }
+                "call alloc_struct" does jump("move rax") { call(dataLabel("alloc_struct"), 2) }
+                "move rax" does jump("write x value") { writeRegister("x", registerUse(rax)) }
+                "write x value" does
+                    jump("store result") {
+                        memoryAccess(registerUse("x") add integer(0)) assign integer(2)
+                    }
+                "store result" does jump("restore preserved") { writeRegister("result", CFGNode.UNIT) }
+                restorePreservedRegisters("restore preserved", "move result to rax")
+                "move result to rax" does jump("teardown") { writeRegister(rax, "result") }
+                teardownStackFrame("teardown", "exit")
+                "exit" does final { returnNode(1) }
+            }
+
+        assertEquivalent(actualCFG, expectedCFG)
+    }
+
+    @Test
+    fun `variable with ViaPointer allocation on stack has heap space allocated in prologue`() {
+        // given
+
+        /*
+         * let f = [] -> Unit => (
+         *  let x = 2;
+         *  let g = [] -> Int => x;
+         * );
+         * where x escapes
+         */
+        val xDef = variableDeclaration("x", lit(2))
+        val gDef = intFunctionDefinition("g", variableUse("x"))
+        val fDef = unitFunctionDefinition("f", block(xDef, gDef, empty()))
+
+        // when
+        val actualCFG = generateCFGWithSimplifiedCalls(fDef, setOf(xDef))[fDef]!!
+
+        // then
+        val expectedCFG =
+            singleFragmentCFG(fDef) {
+                setupStackFrame("entry", "clean references", 8)
+                "clean references" does jump("save preserved") { CFGNode.RawCall(BlockLabel("clean_refs")) }
+                savePreservedRegisters("save preserved", "store static link")
+                "store static link" does
+                    jump("adjust rsp") {
+                        memoryAccess(registerUse(rbp) sub integer(8)) assign registerUse(rdi)
+                    }
+                "adjust rsp" does jump("setup arg 1") { registerUse(rsp) subeq integer(8) }
+                "setup arg 1" does
+                    jump("setup arg 2") {
+                        registerUse(rdi) assign dataLabel("int layout")
+                    }
+                "setup arg 2" does
+                    jump("call alloc_struct") {
+                        registerUse(rsi) assign registerUse(rbp)
+                    }
+                "call alloc_struct" does jump("move rax") { call(dataLabel("alloc_struct"), 2) }
+                "move rax" does jump("fix rsp") { memoryAccess(registerUse(rbp) sub integer(16)) assign registerUse(rax) }
+                "fix rsp" does jump("write x value") { registerUse(rsp) addeq integer(8) }
+                "write x value" does
+                    jump("store result") {
+                        memoryAccess(memoryAccess(registerUse(rbp) sub integer(16)) add integer(0)) assign integer(2)
+                    }
+                "store result" does jump("restore preserved") { writeRegister("result", CFGNode.UNIT) }
+                restorePreservedRegisters("restore preserved", "move result to rax")
+                "move result to rax" does jump("teardown") { writeRegister(rax, "result") }
+                teardownStackFrame("teardown", "exit")
+                "exit" does final { returnNode(1) }
+            }
+
+        assertFragmentIsEquivalent(actualCFG, expectedCFG[fDef]!!)
+    }
 }
 
-// TODO: struct prologue and epilogue test
-
-private fun generateCFGWithSimplifiedCalls(definition: Definition.FunctionDefinition) =
-    generateSimplifiedCFG(definition, realPrologue = true, realEpilogue = true, fullCallSequences = false)
+private fun generateCFGWithSimplifiedCalls(definition: Definition.FunctionDefinition, escaping: Set<Definition> = emptySet()) =
+    generateSimplifiedCFG(definition, realPrologue = true, realEpilogue = true, fullCallSequences = false, escapingVariables = escaping)
 
 private fun CFGFragmentBuilder.savePreservedRegisters(localEntry: String, localExit: String) {
     localEntry does jump("save r12") { writeRegister("saved rbx", registerUse(rbx)) }
