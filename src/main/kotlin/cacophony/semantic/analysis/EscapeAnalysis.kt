@@ -48,7 +48,7 @@ fun escapeAnalysis(
     val definitionDepth: Map<FunctionalEntity, Int> =
         baseResult.allFunctionalEntities
             .associateWith {
-                baseResult.definingLambda[it]?.let { parentLambda -> functionAnalysis[parentLambda]!!.staticDepth }
+                baseResult.definingLambda[it]?.let { parentLambda -> functionAnalysis.getValue(parentLambda).staticDepth }
                     ?: 0
             }
     val usageDepth = definitionDepth.toMutableMap()
@@ -80,9 +80,9 @@ fun escapeAnalysis(
         fixedPointObtained = true
 
         baseResult.assigned.forEach { (lhs, rhs) ->
-            val minOfLhsDepths = lhs.minOf { usageDepth[it]!! }
+            val minOfLhsDepths = lhs.minOf { usageDepth.getValue(it) }
             rhs.forEach {
-                if (usageDepth[it]!! > minOfLhsDepths) {
+                if (usageDepth.getValue(it) > minOfLhsDepths) {
                     fixedPointObtained = false
                     usageDepth[it] = minOfLhsDepths
                 }
@@ -90,16 +90,16 @@ fun escapeAnalysis(
         }
 
         functionAnalysis.forEach { (lambda, analyzedFunction) ->
-            val lambdaUsageDepth = usageDepth[lambdaToFunctionalEntity[lambda]!!]!!
+            val lambdaUsageDepth = usageDepth.getValue(lambdaToFunctionalEntity.getValue(lambda))
             analyzedFunction.variables
                 .filterNot { analyzedFunction.declaredVariables().contains(it) }
                 .map { it.origin }
                 .filter { variableToFunctionalEntity.containsKey(it) }
                 .forEach {
-                    val functionalEntity = variableToFunctionalEntity[it]!!
-                    if (lambdaUsageDepth < usageDepth[functionalEntity]!!) {
+                    val functionalEntity = variableToFunctionalEntity.getValue(it)
+                    if (lambdaUsageDepth + 1 < usageDepth.getValue(functionalEntity)) {
                         fixedPointObtained = false
-                        usageDepth[functionalEntity] = lambdaUsageDepth
+                        usageDepth[functionalEntity] = lambdaUsageDepth + 1
                     }
                 }
         }
@@ -108,7 +108,7 @@ fun escapeAnalysis(
     // The escaping Functional Entities are those with usageDepth < definitionDepth
     val escapingFunctionalEntities =
         baseResult.allFunctionalEntities
-            .filter { usageDepth[it]!! < definitionDepth[it]!! }
+            .filter { usageDepth.getValue(it) < definitionDepth.getValue(it) }
 
     // The escaping variables are all escaping Functional Variables and variables used by escaping lambdas
     return escapingFunctionalEntities
@@ -117,7 +117,7 @@ fun escapeAnalysis(
         .toSet() union
         escapingFunctionalEntities
             .filterIsInstance<FunctionalEntity.Lambda>()
-            .map { functionAnalysis[it.lambdaExpression]!! }
+            .map { functionAnalysis.getValue(it.lambdaExpression) }
             .flatMap {
                 it.variables.minus(it.declaredVariables().toSet())
             }.map { it.origin }
@@ -271,8 +271,18 @@ private class BaseEscapeAnalysisVisitor(
 
     private fun visitFunctionArgument(expr: Definition.FunctionArgument) {
         val variable = variablesMap.definitions[expr]!!
-        val functionalEntity = FunctionalEntity.from(variable)
-        allFunctionalEntities.add(functionalEntity)
+        val variableType =
+            types.definitionTypes[expr]
+                ?: throw EscapeAnalysisException("Missing type of function argument: $expr")
+
+        if (canEscapeViaExpressionOfType(variableType)) {
+            val functionalEntity = FunctionalEntity.from(variable)
+            allFunctionalEntities.add(functionalEntity)
+
+            if (lambdaExpressionsStack.isNotEmpty()) {
+                definingLambda[functionalEntity] = lambdaExpressionsStack.last()
+            }
+        }
     }
 
     private fun visitLambdaExpression(expr: LambdaExpression) {

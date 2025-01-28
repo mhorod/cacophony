@@ -333,9 +333,6 @@ internal class CFGGenerator(
                                 },
                             )
 
-//                        println(lambda)
-//                        println("offsets\n${offsets}")
-//                        println("sourceLayout\n${sourceLayout}")
 
                         if (offsets.isEmpty()) {
                             SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(integer(0))))
