@@ -27,7 +27,8 @@ sealed class CallableHandlerImpl(
         analyzedFunction.declaredVariables()
             .map {
                 it.origin
-            }.filterIsInstance<Variable.PrimitiveVariable>()
+            }.filterNot { it in function.arguments.flatMap { variablesMap.definitions[it]!!.getPrimitives() } }
+            .filterIsInstance<Variable.PrimitiveVariable>()
             .filter {
                 escapeAnalysisResult.contains(it)
             }.associateWith { Variable.PrimitiveVariable(true) }
