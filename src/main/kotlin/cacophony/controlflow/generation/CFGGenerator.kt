@@ -495,7 +495,7 @@ internal class CFGGenerator(
         val trueCFG = extendWithAssignment(visit(expression.doExpression, mode, context), resultValueLayout, mode)
         val falseCFG =
             extendWithAssignment(
-                expression.elseExpression?.let { visit(it, mode, context) } ?: SubCFG.Immediate(CFGNode.NoOp, false),
+                expression.elseExpression?.let { visit(it, mode, context) } ?: SubCFG.Immediate(CFGNode.UNIT, false),
                 resultValueLayout,
                 mode,
             )
