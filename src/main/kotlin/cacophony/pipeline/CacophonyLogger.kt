@@ -198,7 +198,7 @@ class CacophonyLogger(
 
     override fun logSuccessfulClosureAnalysis(result: ClosureAnalysisResult) {
         if (logClosures) {
-            TODO("Log closure analysis")
+            TODO("Not implemented yet")
         }
     }
 

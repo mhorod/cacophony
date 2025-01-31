@@ -16,7 +16,7 @@ sealed class CallableHandlerImpl(
     private val analyzedFunction: AnalyzedFunction,
     private val function: LambdaExpression,
     private val variablesMap: VariablesMap,
-    private val escapedVariables: EscapeAnalysisResult,
+    private val escapeAnalysisResult: EscapeAnalysisResult,
 ) : CallableHandler {
     private var stackSpace = REGISTER_SIZE
     private val variableAllocation: MutableMap<Variable.PrimitiveVariable, VariableAllocation> = mutableMapOf()
@@ -24,13 +24,14 @@ sealed class CallableHandlerImpl(
     // we want to create pointers for all variables
     // that need to be allocated on heap
     private val heapVariablePointers: Map<Variable.PrimitiveVariable, Variable.PrimitiveVariable> =
-        analyzedFunction.variables
+        analyzedFunction.declaredVariables()
             .map {
                 it.origin
-            }.filter {
-                escapedVariables.contains(it)
-            }.filterIsInstance<Variable.PrimitiveVariable>()
-            .associateWith { Variable.PrimitiveVariable(true) }
+            }.filterNot { it in function.arguments.flatMap { variablesMap.definitions[it]!!.getPrimitives() } }
+            .filterIsInstance<Variable.PrimitiveVariable>()
+            .filter {
+                escapeAnalysisResult.contains(it)
+            }.associateWith { Variable.PrimitiveVariable(true) }
 
     // Initially variables may be allocated in virtualRegisters, only after spill handling we know
     // if they're truly on stack or in registers.
@@ -145,7 +146,7 @@ sealed class CallableHandlerImpl(
 
     override fun getStackSpace(): CFGNode.ConstantLazy = CFGNode.ConstantLazy { stackSpace }
 
-    override fun getFunctionLabel(): String = "lambda_${function.hashCode()}"
+    override fun getFunctionLabel(): String = function.getLabel()
 
     private val resultLayout = generateLayoutOfVirtualRegisters(function.returnType)
 

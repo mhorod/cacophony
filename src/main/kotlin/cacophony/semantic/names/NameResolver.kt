@@ -87,7 +87,8 @@ private class NameResolver(val diagnostics: Diagnostics) {
 
     private fun traverseVariableDefinition(definition: Definition.VariableDefinition): Set<Shape> {
         val decidedShape = decideSingleShape(definition.type, definition.value)
-        symbolsTable.define(definition.identifier, definition)
+        val arity = (decidedShape as? Shape.Functional)?.arity
+        symbolsTable.define(definition.identifier, definition, arity)
         defsToShapes[definition] = decidedShape
         return setOf(Shape.Atomic)
     }
@@ -114,8 +115,13 @@ private class NameResolver(val diagnostics: Diagnostics) {
     }
 
     private fun traverseFunctionArgument(argument: FunctionArgument): Set<Shape> {
-        symbolsTable.define(argument.identifier, argument)
-        return emptySet()
+        val decidedShape = Shape.from(argument.type) // decideSingleShape(argument.type, argument.value)
+        val arity = (decidedShape as? Shape.Functional)?.arity
+        symbolsTable.define(argument.identifier, argument, arity)
+        defsToShapes[argument] = decidedShape
+        return setOf(Shape.Atomic)
+        // symbolsTable.define(argument.identifier, argument)
+        // return emptySet()
     }
 
     private fun traverseFunctionCall(call: FunctionCall): Set<Shape> {
@@ -240,7 +246,7 @@ private class SymbolsTable {
         }
     }
 
-    fun define(id: String, definition: Definition) {
+    fun define(id: String, definition: Definition, arity: Int? = null) {
         if (blocks.isEmpty())
             return
         if (!idToBlocks.containsKey(id)) {

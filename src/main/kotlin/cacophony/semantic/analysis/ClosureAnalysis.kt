@@ -11,11 +11,13 @@ import cacophony.semantic.syntaxtree.LambdaExpression
  */
 class ClosureAnalysisResult(val closures: Set<LambdaExpression>, val staticFunctions: Set<LambdaExpression>)
 
-// TODO: Implement distinction between closures and static functions
-//  Static functions are the ones that:
-//      - are syntactically static i.e. let f = [] => ();
-//      - don't escape i.e. it makes sense to use static link
-fun analyseClosures(ast: AST, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
-    val namedFunctionInfo = getNamedFunctions(ast)
-    return ClosureAnalysisResult(emptySet(), emptySet())
+fun analyzeClosures(ast: AST, variablesMap: VariablesMap, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
+    val functionIdentities = getFunctionIdentities(ast)
+    val (dynamic, static) =
+        functionIdentities
+            .namedFunctions
+            .entries
+            .partition { (_, definition) -> escapeAnalysis.contains(variablesMap.definitions[definition]!!) }
+            .let { (first, second) -> Pair(first.map { it.key }.toSet(), second.map { it.key }.toSet()) }
+    return ClosureAnalysisResult(dynamic union functionIdentities.anonymousFunctions, static)
 }

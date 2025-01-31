@@ -31,7 +31,7 @@ fun TypeExpr?.toExpectation(): Expectation =
         is FunctionType -> Expectation.Arity(this.args.size)
         is ReferentialType -> Expectation.Value
         is StructType -> Expectation.Value
-        TypeExpr.VoidType -> throw IllegalArgumentException("Void type cannot appear in ast, thus it has no expectation")
+        is TypeExpr.VoidType -> throw IllegalArgumentException("Void type cannot appear in ast, thus it has no expectation")
         null -> Expectation.Any
     }
 

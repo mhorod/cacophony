@@ -1,0 +1,8 @@
+foreign write_int: [Int] -> Unit;
+
+let f = [] -> [] -> Int => (
+    let y = 1;
+    [] -> Int => y
+);
+
+write_int[f[][]];
