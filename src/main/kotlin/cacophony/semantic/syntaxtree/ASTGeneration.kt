@@ -416,7 +416,7 @@ private fun wrapInFunction(originalAST: AST): AST {
                         Statement.ReturnStatement(Pair(behindEnd, behindEnd), Literal.IntLiteral(Pair(behindEnd, behindEnd), 0)),
                     ),
                 ),
-                "main"
+                "main",
             ),
         )
     val programCall =

@@ -115,13 +115,13 @@ private class NameResolver(val diagnostics: Diagnostics) {
     }
 
     private fun traverseFunctionArgument(argument: FunctionArgument): Set<Shape> {
-        val decidedShape = Shape.from(argument.type) //decideSingleShape(argument.type, argument.value)
+        val decidedShape = Shape.from(argument.type) // decideSingleShape(argument.type, argument.value)
         val arity = (decidedShape as? Shape.Functional)?.arity
         symbolsTable.define(argument.identifier, argument, arity)
         defsToShapes[argument] = decidedShape
         return setOf(Shape.Atomic)
-        //symbolsTable.define(argument.identifier, argument)
-        //return emptySet()
+        // symbolsTable.define(argument.identifier, argument)
+        // return emptySet()
     }
 
     private fun traverseFunctionCall(call: FunctionCall): Set<Shape> {

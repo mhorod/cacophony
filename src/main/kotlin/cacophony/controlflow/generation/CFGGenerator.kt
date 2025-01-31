@@ -11,7 +11,6 @@ import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
 import cacophony.semantic.types.ResolvedVariables
 import cacophony.semantic.types.TypeCheckingResult
-import java.util.function.Function
 
 /**
  * Converts Expressions into CFG
@@ -302,7 +301,7 @@ internal class CFGGenerator(
                 assignLayoutWithValue(
                     functionLayout,
                     getVariableLayout(getCurrentCallableHandler(), variablesMap.definitions[expression]!!),
-                    VoidLayout()
+                    VoidLayout(),
                 )
 
                 // SubCFG.Immediate(noOpOrUnit(mode))
@@ -332,7 +331,6 @@ internal class CFGGenerator(
                                     SimpleLayout(calleeHandler.generateVariableAccess(variable), variable.holdsReference)
                                 },
                             )
-
 
                         if (offsets.isEmpty()) {
                             SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(integer(0))))

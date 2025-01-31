@@ -89,10 +89,10 @@ class ClosureHandlerImpl(
                 throw GenerateVariableAccessException("Variable $variable is not in the closure of $function.")
             }
         return wrapAllocation(
-                VariableAllocation.ViaPointer(
-                    getVariableAllocation(closureLink),
-                    offset,
-                ),
+            VariableAllocation.ViaPointer(
+                getVariableAllocation(closureLink),
+                offset,
+            ),
             variable.holdsReference,
         )
     }

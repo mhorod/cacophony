@@ -211,7 +211,7 @@ class LambdaExpression(
     val arguments: List<Definition.FunctionArgument>,
     val returnType: Type,
     val body: Expression,
-    val label1: String? = null
+    val label1: String? = null,
 ) : BaseExpression(range) {
     override fun toString() = "[${arguments.joinToString(", ")}] -> $returnType"
 
