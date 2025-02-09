@@ -14,6 +14,7 @@ plugins {
     application
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     kotlin("plugin.serialization") version "2.0.20"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "tcs"

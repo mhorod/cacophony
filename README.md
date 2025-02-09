@@ -5,7 +5,15 @@ An imperative language made as team project for Compilers course.
 ## Usage
 
 To compile a file run `./compile.sh <path-to-file>`.
-For now, it only prints errors and retrieved tokens.
+
+## Installing with Nix
+
+This repository is a flake. Run it using
+
+```console
+nix shell github:mhorod/cacophony
+cacophonyc <path-to-file>
+```
 
 ## Syntax Highlighting
 
