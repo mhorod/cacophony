@@ -31,7 +31,8 @@ fun generateCallableHandlers(
                     variablesMap,
                     escapeAnalysis,
                 )
-        } else if (closureAnalysis.staticFunctions.contains(lambda)) {
+        } else {
+            require(closureAnalysis.staticFunctions.contains(lambda))
             val handlerChain =
                 analyzed.parentLink?.let { link ->
                     val parent = link.parent
@@ -48,8 +49,6 @@ fun generateCallableHandlers(
                     escapeAnalysis,
                 )
             ancestorHandlers[lambda] = handlerChain
-        } else {
-            error("Lambda expression $lambda is neither a closure nor a static function")
         }
     }
 

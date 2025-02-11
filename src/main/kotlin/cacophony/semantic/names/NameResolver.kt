@@ -246,7 +246,7 @@ private class SymbolsTable {
         }
     }
 
-    fun define(id: String, definition: Definition, arity: Int? = null) {
+    fun define(id: String, definition: Definition) {
         if (blocks.isEmpty())
             return
         if (!idToBlocks.containsKey(id)) {
