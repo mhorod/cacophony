@@ -5,6 +5,7 @@ import cacophony.controlflow.functions.*
 import cacophony.semantic.analysis.VariablesMap
 import cacophony.semantic.rtti.LambdaOutlineLocation
 import cacophony.semantic.rtti.ObjectOutlineLocation
+import cacophony.semantic.rtti.getLambdaClosureLabel
 import cacophony.semantic.syntaxtree.*
 import cacophony.semantic.types.FunctionType
 import cacophony.semantic.types.ReferentialType
@@ -103,7 +104,8 @@ internal class CFGGenerator(
             }
 
             is ClosureLayout -> {
-                error("Unexpected assignment to internal layout type ClosureLayout")
+                require(destination is ClosureLayout)
+                destination.vars.flatMap { (variable, layout) -> makeVerticesForAssignment(source.vars[variable]!!, layout) }
             }
 
             is VoidLayout -> emptyList()
@@ -286,7 +288,23 @@ internal class CFGGenerator(
         val handler = callableHandlers.getCallableHandler(body)
         return when (handler) {
             is StaticFunctionHandler -> {
-                SubCFG.Immediate(noOpOrUnit(mode))
+                val functionLayout = getFunctionLayout(getCurrentCallableHandler(), handler)
+
+                /*assignmentHandler.generateAssignment(
+                    getVariableLayout(getCurrentCallableHandler(), variablesMap.definitions[expression]!!),
+                    expression.value,
+                    mode,
+                    context,
+                    false,
+                )*/
+
+                assignLayoutWithValue(
+                    functionLayout,
+                    getVariableLayout(getCurrentCallableHandler(), variablesMap.definitions[expression]!!),
+                    VoidLayout(),
+                )
+
+                // SubCFG.Immediate(noOpOrUnit(mode))
             }
 
             is ClosureHandler -> {
@@ -298,39 +316,42 @@ internal class CFGGenerator(
     private fun visitLambdaExpression(lambda: LambdaExpression, mode: EvalMode): SubCFG {
         // alloc_struct(lambdaOutlineLocation[lambda], rbp) -> ptr
         // ptr <- wrzucić na offsety odpowiednie (jakie?) variable/layout/cfgnode?
+        val calleeHandler = callableHandlers.getCallableHandler(function)
         return when (mode) {
             is EvalMode.Value -> {
                 val handler = callableHandlers.getCallableHandler(lambda)
                 val label = handler.getFunctionLabel()
                 when (handler) {
                     is ClosureHandler -> {
-                        val outlineLocation = lambdaOutlineLocation.getValue(lambda)
+                        val outlineLocation = getLambdaClosureLabel(lambda)
                         val offsets = handler.getCapturedVariableOffsets()
                         val sourceLayout =
                             ClosureLayout(
                                 offsets.mapValues { (variable, _) ->
-                                    SimpleLayout(handler.generateVariableAccess(variable), variable.holdsReference)
+                                    SimpleLayout(calleeHandler.generateVariableAccess(variable), variable.holdsReference)
                                 },
                             )
 
-                        val allocCFG =
-                            allocAndCopy(
-                                outlineLocation,
-                                sourceLayout,
-                            ) { pointerLayout -> generateLayoutOfClosure(pointerLayout.access, offsets) }
+                        if (offsets.isEmpty()) {
+                            SubCFG.Immediate(FunctionLayout(SimpleLayout(dataLabel(label)), SimpleLayout(integer(0))))
+                        } else {
+                            val allocCFG =
+                                allocAndCopy(
+                                    outlineLocation,
+                                    sourceLayout,
+                                ) { pointerLayout -> generateLayoutOfClosure(pointerLayout.access, offsets) }
 
-                        val closureLink = allocCFG.access
-                        require(closureLink is SimpleLayout)
-
-                        SubCFG.Extracted(
-                            allocCFG.entry,
-                            allocCFG.exit,
-                            FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
-                        )
+                            val closureLink = allocCFG.access
+                            require(closureLink is SimpleLayout)
+                            SubCFG.Extracted(
+                                allocCFG.entry,
+                                allocCFG.exit,
+                                FunctionLayout(SimpleLayout(dataLabel(label)), closureLink),
+                            )
+                        }
                     }
 
                     else -> {
-                        /* let f = ([x: Int] => x) */
                         throw NotImplementedError("Anonymous functions cannot be called statically")
                     }
                 }
@@ -472,7 +493,7 @@ internal class CFGGenerator(
         val trueCFG = extendWithAssignment(visit(expression.doExpression, mode, context), resultValueLayout, mode)
         val falseCFG =
             extendWithAssignment(
-                expression.elseExpression?.let { visit(it, mode, context) } ?: SubCFG.Immediate(CFGNode.NoOp, false),
+                expression.elseExpression?.let { visit(it, mode, context) } ?: SubCFG.Immediate(CFGNode.UNIT, false),
                 resultValueLayout,
                 mode,
             )

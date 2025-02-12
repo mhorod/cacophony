@@ -1,6 +1,7 @@
 package cacophony.semantic.rtti
 
 import cacophony.semantic.types.*
+import kotlin.math.absoluteValue
 
 typealias ObjectOutlineLocation = Map<TypeExpr, String>
 
@@ -17,6 +18,29 @@ fun createObjectOutlines(types: List<TypeExpr>): ObjectOutlines {
         objectOutlinesCreator.getAsm(),
     )
 }
+
+private fun getReferenceDepth(type: TypeExpr): Int =
+    when (type) {
+        is ReferentialType -> 1 + getReferenceDepth((type.type))
+        else -> 0
+    }
+
+private fun getReferenceBase(type: TypeExpr): TypeExpr =
+    when (type) {
+        is ReferentialType -> getReferenceBase(type.type)
+        else -> type
+    }
+
+fun typeToLabel(type: TypeExpr): String =
+    when (type) {
+        is StructType -> "S${type.hashCode().absoluteValue}"
+        is BuiltinType.BooleanType -> "B${type.hashCode().absoluteValue}"
+        is BuiltinType.IntegerType -> "I${type.hashCode().absoluteValue}"
+        is BuiltinType.UnitType -> "U${type.hashCode().absoluteValue}"
+        is FunctionType -> "F${type.hashCode().absoluteValue}"
+        is ReferentialType -> "${getReferenceDepth(type)}R${typeToLabel(getReferenceBase(type))}"
+        is TypeExpr.VoidType -> "V${type.hashCode().absoluteValue}"
+    }
 
 /**
  * Object outline consists of 8B blocks:

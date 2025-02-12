@@ -4,7 +4,9 @@ import cacophony.codegen.BlockLabel
 import cacophony.controlflow.*
 import cacophony.controlflow.generation.Layout
 import cacophony.semantic.rtti.getStackFrameLocation
+import cacophony.semantic.rtti.typeToLabel
 import cacophony.semantic.syntaxtree.BaseType
+import cacophony.semantic.types.BuiltinType
 
 class PrologueEpilogueHandler(
     private val handler: CallableHandler,
@@ -13,7 +15,6 @@ class PrologueEpilogueHandler(
     private val flattenedArguments: List<CFGNode>,
     private val resultAccess: Layout,
     private val heapVariablePointers: Map<Variable.PrimitiveVariable, Variable.PrimitiveVariable>,
-    // TODO: heap variables should be allocated in prologue
 ) {
     // Preserved registers cannot contain references
     private val spaceForPreservedRegisters: List<Register.VirtualRegister> =
@@ -52,19 +53,42 @@ class PrologueEpilogueHandler(
                     wrapAllocation(callConvention.argumentAllocation(ind), destination.second),
             )
         }
+
+        // Variables with ViaPointer allocation
+        if (heapVariablePointers.isNotEmpty()) {
+            // align stack before calls to alloc_struct
+            if (stackSpace.value % 16 == 8) {
+                nodes.add(registerUse(rsp) subeq integer(8))
+            }
+            for ((_, destination) in heapVariablePointers) {
+                nodes.addAll(allocateHeapSpace())
+                nodes.add(
+                    wrapAllocation(handler.getVariableAllocation(destination), true)
+                        assign registerUse(rax),
+                )
+            }
+            if (stackSpace.value % 16 == 8) {
+                nodes.add(registerUse(rsp) addeq integer(8))
+            }
+        }
         return nodes
     }
 
-    private val returnLocations =
-        listOf(
-            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RAX)),
-            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RDI)),
-            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RSI)),
-            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RDX)),
-            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.RCX)),
-            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.R8)),
-            VariableAllocation.InRegister(Register.FixedRegister(HardwareRegister.R9)),
-        )
+    // Allocates memory for the primitive variable
+    // Return value in RAX
+    private fun allocateHeapSpace(): List<CFGNode> {
+        // We do not use CallGenerator directly, as we have simpler situation
+        // and do not need to use getForeignFunctionLayout()
+
+        val nodes = mutableListOf<CFGNode>()
+
+        // We can use outline of int here
+        nodes.add(registerUse(rdi) assign dataLabel("outline_${typeToLabel(BuiltinType.IntegerType)}"))
+        nodes.add(registerUse(rsi) assign registerUse(rbp))
+        nodes.add(call(dataLabel(Builtin.allocStruct.identifier), 2))
+
+        return nodes
+    }
 
     private fun getReturnLocation(index: Int): VariableAllocation =
         // + 1 argument for static link

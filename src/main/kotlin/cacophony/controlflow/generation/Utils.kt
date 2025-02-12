@@ -68,6 +68,8 @@ fun generateSubLayout(layout: Layout, type: TypeExpr): Layout {
         )
     } else if (layout is SimpleLayout && type !is StructType) {
         return layout
+    } else if (layout is FunctionLayout && type is FunctionType) {
+        return layout
     }
     throw IllegalArgumentException("layout does not match type")
 }

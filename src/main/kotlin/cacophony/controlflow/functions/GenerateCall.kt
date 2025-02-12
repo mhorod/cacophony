@@ -66,7 +66,7 @@ fun generateCall(
 
     val alignmentShift = CFGNode.ConstantLazy { (callerFunctionStackSize.value + stackShift) % 16 }
 
-    val rsp = CFGNode.RegisterUse(Register.FixedRegister(HardwareRegister.RSP), false)
+    val rsp = registerUse(rsp, false)
     nodes.add(rsp subeq alignmentShift)
 
     if (stackResultsSize > 0) nodes.add(rsp subeq integer(8 * stackResultsSize))

@@ -160,8 +160,8 @@ class CacophonyPipeline(
             .filterIsInstance<Definition.ForeignFunctionDeclaration>()
             .toSet()
 
-    private fun getClosureAnalysis(ast: AST, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
-        val analyzedClosures = analyseClosures(ast, escapeAnalysis)
+    private fun getClosureAnalysis(ast: AST, variablesMap: VariablesMap, escapeAnalysis: EscapeAnalysisResult): ClosureAnalysisResult {
+        val analyzedClosures = analyzeClosures(ast, variablesMap, escapeAnalysis)
         logger?.logSuccessfulClosureAnalysis(analyzedClosures)
         return analyzedClosures
     }
@@ -190,7 +190,7 @@ class CacophonyPipeline(
         val variablesMap = createVariables(ast, types)
         val analyzedFunctions = analyzeFunctions(ast, variablesMap, types.resolvedVariables)
         val escapeAnalysis = findEscapingVariables(ast, types.resolvedVariables, analyzedFunctions, variablesMap, types)
-        val closureAnalysis = getClosureAnalysis(ast, escapeAnalysis)
+        val closureAnalysis = getClosureAnalysis(ast, variablesMap, escapeAnalysis)
         val handlers =
             generateCallableHandlers(
                 analyzedFunctions,
@@ -249,7 +249,7 @@ class CacophonyPipeline(
             OutlineCollection(
                 createObjectOutlines(getUsedTypes(semantics.types)),
                 generateClosureOutlines(semantics.callableHandlers.closureHandlers),
-                generateStackFrameOutlines(semantics.callableHandlers.staticFunctionHandlers.values),
+                generateStackFrameOutlines(semantics.callableHandlers.getAll().values),
             )
         val cfg =
             generateControlFlowGraph(
@@ -295,7 +295,7 @@ class CacophonyPipeline(
         asmFile.writeText(generateAsm(input))
         assemble(asmFile, objFile)
         val sources = listOf(objFile) + libraryFiles
-        val options = listOf("g++", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
+        val options = listOf("g++", "-g", "-no-pie", "-z", "noexecstack", "-o", binFile.toString()) + sources.map { it.toString() }
         val gcc = ProcessBuilder(options).inheritIO().start()
         gcc.waitFor().takeIf { it != 0 }?.let { status ->
             logger?.logFailedLinking(status)

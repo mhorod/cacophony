@@ -1,16 +1,16 @@
 foreign read_int: [] -> Int;
 foreign write_int: [Int] -> Unit;
 
-let traverse = [n: Int, on_even: [] -> Int, on_odd: [] -> Int] -> Unit => (
+let collatz = [n: Int, on_even: [Int] -> Int, on_odd: [Int] -> Int] -> Unit => (
     write_int[n];
 
     if n == 1 then
         return
 
     if n % 2 == 0 then
-        traverse[on_even[n], on_even, on_odd]
+        collatz[on_even[n], on_even, on_odd]
     else
-        traverse[on_odd[n], on_even, on_odd];
+        collatz[on_odd[n], on_even, on_odd];
 );
 
 let n = read_int[];

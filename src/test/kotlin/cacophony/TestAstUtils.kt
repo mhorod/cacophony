@@ -68,6 +68,8 @@ fun typedFunctionDefinition(
     lambda(arguments, outType, body),
 )
 
+fun functionDefinition(identifier: String, body: LambdaExpression) = Definition.FunctionDefinition(mockRange(), identifier, null, body)
+
 fun functionDefinition(identifier: String, arguments: List<Definition.FunctionArgument>, body: Expression) =
     typedFunctionDefinition(
         identifier,

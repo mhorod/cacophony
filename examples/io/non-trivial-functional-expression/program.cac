@@ -1,0 +1,8 @@
+foreign write_int: [Int] -> Unit;
+
+write_int[(
+    if true then
+         ([] -> Int => 1)
+    else
+         ([] -> Int => 2)
+)[]];
